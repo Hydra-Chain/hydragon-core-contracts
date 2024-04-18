@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../AccessControl/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import "./../../ValidatorSetBase.sol";
 import "./IPowerExponent.sol";
 
-abstract contract PowerExponent is IPowerExponent, AccessControl {
+abstract contract PowerExponent is IPowerExponent, Initializable, Ownable2StepUpgradeable {
     PowerExponentStore public powerExponent;
 
     function __PowerExponent_init() internal onlyInitializing {

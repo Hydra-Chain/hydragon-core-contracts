@@ -1,4 +1,4 @@
-# PowerExponent
+# Ownable2StepUpgradeable
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-
+*Contract module which provides access control mechanism, where there is an account (an owner) that can be granted exclusive access to specific functions. By default, the owner account will be the one that deploys the contract. This can later be changed with {transferOwnership} and {acceptOwnership}. This module is used through inheritance. It will make available all functions from parent (Ownable).*
 
 ## Methods
 
@@ -20,24 +20,6 @@ function acceptOwnership() external nonpayable
 
 *The new owner accepts the ownership transfer.*
 
-
-### getExponent
-
-```solidity
-function getExponent() external view returns (uint256 numerator, uint256 denominator)
-```
-
-Return the Voting Power Exponent Numerator and Denominator
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| numerator | uint256 | undefined |
-| denominator | uint256 | undefined |
 
 ### owner
 
@@ -73,24 +55,6 @@ function pendingOwner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
-### powerExponent
-
-```solidity
-function powerExponent() external view returns (uint128 value, uint128 pendingValue)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| value | uint128 | undefined |
-| pendingValue | uint128 | undefined |
-
 ### renounceOwnership
 
 ```solidity
@@ -117,22 +81,6 @@ function transferOwnership(address newOwner) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | newOwner | address | undefined |
-
-### updateExponent
-
-```solidity
-function updateExponent(uint256 newValue) external nonpayable
-```
-
-Set new pending exponent, to be activated in the next commit epoch
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newValue | uint256 | New Voting Power Exponent Numerator |
 
 
 

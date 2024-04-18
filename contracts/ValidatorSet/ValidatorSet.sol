@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/utils/ArraysUpgradeable.sol";
 
 import "./ValidatorSetBase.sol";
-import "./modules/AccessControl/AccessControl.sol";
 import "./modules/PowerExponent/PowerExponent.sol";
 import "./modules/Staking/Staking.sol";
 import "./modules/Delegation/Delegation.sol";
@@ -14,7 +13,7 @@ import "./../common/libs/SafeMathInt.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
-contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent, Staking, Delegation {
+contract ValidatorSet is ValidatorSetBase, System, PowerExponent, Staking, Delegation {
     using ArraysUpgradeable for uint256[];
 
     /// @notice Epoch data linked with the epoch id
