@@ -10,7 +10,7 @@ import {
   BLS__factory,
   LiquidityToken__factory,
   RewardPool__factory,
-  ValidatorSet__factory,
+  ValidatorSetV2__factory,
 } from "../typechain-types";
 import { CHAIN_ID, DOMAIN, SYSTEM, VESTING_DURATION_WEEKS } from "./constants";
 import {
@@ -29,7 +29,7 @@ async function systemFixtureFunction(this: Mocha.Context) {
 }
 
 async function presetValidatorSetStateFixtureFunction(this: Mocha.Context) {
-  const ValidatorSetFactory = new ValidatorSet__factory(this.signers.admin);
+  const ValidatorSetFactory = new ValidatorSetV2__factory(this.signers.admin);
   const validatorSet = await ValidatorSetFactory.deploy();
 
   await hre.network.provider.send("hardhat_setBalance", [SYSTEM, "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"]);
