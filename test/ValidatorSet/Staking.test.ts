@@ -40,6 +40,20 @@ export function RunStakingTests(): void {
       expect(validator.totalStake, "total stake").to.equal(this.minStake);
     });
 
+    it.only("should allow fully-unstaked validator to stake again", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake });
+      let validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.stake).to.equal(this.minStake);
+
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake);
+      validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.stake).to.equal(0);
+
+      await expect(validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake })).to.not.be.reverted;
+    });
+
     it("should get all active validators", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
