@@ -34,12 +34,13 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable, Vali
     }
 
     function _addToWhitelist(address account) internal {
-        validators[account].whitelisted = true;
+        validators[account].status = ValidatorStatus.Whitelisted;
         emit AddedToWhitelist(account);
     }
 
     function _removeFromWhitelist(address account) internal {
-        validators[account].whitelisted = false;
+        if (validators[account].status != ValidatorStatus.Whitelisted) revert("Must be whitelisted.");
+        validators[account].status = ValidatorStatus.None;
         emit RemovedFromWhitelist(account);
     }
 

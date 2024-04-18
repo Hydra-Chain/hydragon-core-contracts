@@ -6,7 +6,6 @@ interface IStaking {
     event CommissionUpdated(address indexed validator, uint256 oldCommission, uint256 newCommission);
     event Staked(address indexed validator, uint256 amount);
     event Unstaked(address indexed validator, uint256 amount);
-    event ValidatorDeactivated(address indexed validator);
 
     /**
      * @notice Sets commission for validator.
