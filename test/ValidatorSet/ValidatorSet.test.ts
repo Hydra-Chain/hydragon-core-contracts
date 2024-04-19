@@ -362,7 +362,7 @@ describe("ValidatorSet", function () {
         );
       });
 
-      it("!!owner should not whitelist user that is already whitelisted", async function () {
+      it("owner should not whitelist user that is already whitelisted", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
         await expect(
@@ -433,7 +433,7 @@ describe("ValidatorSet", function () {
         );
       });
 
-      it("!!should not be able to whitelist user that is with status Registered/Banned or already Whitelisted", async function () {
+      it("should not be able to whitelist user that is with status Registered/Banned or already Whitelisted", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
         expect(
