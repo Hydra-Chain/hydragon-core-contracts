@@ -59,6 +59,29 @@ export function RunDelegationTests(): void {
       expect(delegatedAmount).to.equal(delegateAmount);
     });
 
+    it("should allow delegate to fully-unstaked and then restaked validator", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+      const delegateAmount = this.minDelegation.mul(2);
+
+      await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake });
+      let validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.stake).to.equal(this.minStake);
+
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake);
+      validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.stake).to.equal(0);
+
+      await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake });
+      validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.stake).to.gt(0);
+
+      await expect(
+        validatorSet.connect(this.signers.delegator).delegate(this.signers.validators[0].address, {
+          value: delegateAmount,
+        })
+      ).to.not.be.reverted;
+    });
+
     it("should delegate again and register a withdrawal for the claimed rewards automatically", async function () {
       const { validatorSet, rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
 
