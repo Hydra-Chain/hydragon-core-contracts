@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, INITIAL_RSI_BONUS } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests } from "../RewardPool/RewardPool.test";
 
@@ -199,7 +199,7 @@ export function RunStakingTests(): void {
 
         expect(vestingData.duration, "duration").to.be.equal(vestingDuration * 2);
         expect(vestingData.end, "end").to.be.equal(vestingData.start.add(vestingDuration * 2));
-        expect(vestingData.rsiBonus, "rsiBonus").to.be.equal(0);
+        expect(vestingData.rsiBonus, "rsiBonus").to.be.equal(INITIAL_RSI_BONUS);
 
         await commitEpochs(
           systemValidatorSet,

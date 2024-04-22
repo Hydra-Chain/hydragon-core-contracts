@@ -9,3 +9,5 @@ error ZeroAddress();
 error SendFailed();
 error InvalidCommission(uint256 commission);
 error InvalidMinStake(uint256 minStake);
+error TooLowRSI(uint256 newRSI, uint256 minRSI);
+error TooHighRSI(uint256 newRSI, uint256 maxRSI);

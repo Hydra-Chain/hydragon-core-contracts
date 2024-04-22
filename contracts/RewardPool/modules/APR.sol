@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import "./../../common/Errors.sol";
+
 contract APR is Initializable, AccessControl {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
@@ -41,7 +43,10 @@ contract APR is Initializable, AccessControl {
     }
 
     function setRSI(uint256 newRSI) public onlyRole(MANAGER_ROLE) {
-        require(newRSI <= getMaxRSI(), "TOO_HIGH_RSI");
+        if (newRSI < INITIAL_RSI_BONUS) revert TooLowRSI(newRSI, INITIAL_RSI_BONUS);
+
+        uint256 maxRSI = getMaxRSI();
+        if (newRSI > getMaxRSI()) revert TooHighRSI(newRSI, maxRSI);
 
         rsi = newRSI;
     }
@@ -57,10 +62,10 @@ contract APR is Initializable, AccessControl {
 
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
         // TODO: Base + vesting and RSI must return the max possible value here (implement max base)
-        uint256 vesting = getVestingBonus(52);
+        uint256 vestBonus = getVestingBonus(52);
         uint256 rsiBonusFactor = getMaxRSI();
 
-        nominator = (base + vesting) * macroFactor * rsiBonusFactor;
+        nominator = (base + vestBonus) * macroFactor * rsiBonusFactor;
         denominator = 10000 * 10000 * 10000;
     }
 

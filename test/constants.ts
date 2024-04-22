@@ -12,15 +12,12 @@ export const INITIAL_COMMISSION = ethers.BigNumber.from(10);
 export const MAX_COMMISSION = ethers.BigNumber.from(100);
 export const WEEK = 60 * 60 * 24 * 7;
 export const VESTING_DURATION_WEEKS = 10; // in weeks
-export const EPOCHS_YEAR = 31500;
-export const DENOMINATOR = 10000;
-/* eslint-disable no-unused-vars */
-export enum VALIDATOR_STATUS {
-  None = 0,
-  Whitelisted = 1,
-  Registered = 2,
-  Banned = 3,
-}
+export const EPOCHS_YEAR = ethers.BigNumber.from(31500);
+export const INITIAL_BASE_APR = ethers.BigNumber.from(500);
+export const INITIAL_MACRO_FACTOR = ethers.BigNumber.from(7500);
+export const INITIAL_RSI_BONUS = ethers.BigNumber.from(10000);
+export const DENOMINATOR = ethers.BigNumber.from(10000);
+export const MAX_RSI = ethers.BigNumber.from(15000);
 
 /// @notice This bytecode is used to mock and return true with any input
 export const alwaysTrueBytecode = "0x600160005260206000F3";
@@ -28,3 +25,9 @@ export const alwaysTrueBytecode = "0x600160005260206000F3";
 export const alwaysFalseBytecode = "0x60206000F3";
 /// @notice This bytecode is used to mock and revert with any input
 export const alwaysRevertBytecode = "0x60006000FD";
+
+export const ERRORS = {
+  accessControl: (account: string, role: string) => {
+    return `AccessControl: account ${account} is missing role ${role}`;
+  },
+};

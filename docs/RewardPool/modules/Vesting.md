@@ -875,3 +875,40 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 
+## Errors
+
+### TooHighRSI
+
+```solidity
+error TooHighRSI(uint256 newRSI, uint256 maxRSI)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRSI | uint256 | undefined |
+| maxRSI | uint256 | undefined |
+
+### TooLowRSI
+
+```solidity
+error TooLowRSI(uint256 newRSI, uint256 minRSI)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRSI | uint256 | undefined |
+| minRSI | uint256 | undefined |
+
+

@@ -10,6 +10,7 @@ import { commitEpoch, generateValidatorBls, initializeContext } from "../helper"
 import { RunSystemTests } from "./System.test";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegationTests } from "./Delegation.test";
+import { RunAPRTests } from "../RewardPool/APR.test";
 
 describe("ValidatorSet", function () {
   before(async function () {
@@ -323,6 +324,10 @@ describe("ValidatorSet", function () {
       expect(storedEpoch.startBlock).to.equal(hre.ethers.constants.Zero);
       expect(storedEpoch.endBlock).to.equal(hre.ethers.constants.Zero);
       expect(storedEpoch.epochRoot).to.equal(hre.ethers.constants.HashZero);
+    });
+
+    describe("APR", function () {
+      RunAPRTests();
     });
 
     describe("Whitelist", function () {

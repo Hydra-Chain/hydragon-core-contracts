@@ -125,7 +125,7 @@ abstract contract Vesting is APR {
         uint256 durationIncrease = _calculateDurationIncrease(amount, oldBalance, duration);
         positions[staker].duration = duration + durationIncrease;
         positions[staker].end = positions[staker].end + durationIncrease;
-        positions[staker].rsiBonus = 0;
+        positions[staker].rsiBonus = rsi;
     }
 
     /**
