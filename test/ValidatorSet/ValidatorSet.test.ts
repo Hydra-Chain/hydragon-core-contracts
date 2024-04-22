@@ -375,7 +375,7 @@ describe("ValidatorSet", function () {
           validatorSet
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.reverted;
+        ).to.be.revertedWith("Previously whitelisted.");
 
         expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
           VALIDATOR_STATUS.Whitelisted
@@ -433,50 +433,26 @@ describe("ValidatorSet", function () {
         );
       });
 
-      it("should not be able to whitelist user that is with status Registered/Banned or already Whitelisted", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
-
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = whitelisted"
-        ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
-
-        const keyPair = mcl.newKeyPair();
-        const signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[0].address,
-          keyPair.secret
-        ).signature;
-
-        const tx = await validatorSet
-          .connect(this.signers.validators[0])
-          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
-
-        await expect(tx, "emit NewValidator")
-          .to.emit(validatorSet, "NewValidator")
-          .withArgs(
-            this.signers.validators[0].address,
-            mcl.g2ToHex(keyPair.pubkey).map((x) => hre.ethers.BigNumber.from(x))
-          );
+      it("should not be able to whitelist user that is with status different from None", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
         expect(
           (await validatorSet.validators(this.signers.validators[0].address)).status,
           "status = Registered"
         ).to.be.equal(VALIDATOR_STATUS.Registered);
+
         const validator = await validatorSet.getValidator(this.signers.validators[0].address);
 
         expect(validator.stake, "stake").to.equal(0);
         expect(validator.totalStake, "total stake").to.equal(0);
         expect(validator.commission).to.equal(INITIAL_COMMISSION);
         expect(validator.active).to.equal(true);
-        expect(validator.blsKey.map((x: any) => x.toHexString())).to.deep.equal(mcl.g2ToHex(keyPair.pubkey));
 
         await expect(
           validatorSet
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.reverted;
+        ).to.be.revertedWith("Previously whitelisted.");
 
         expect(
           (await validatorSet.validators(this.signers.validators[0].address)).status,
