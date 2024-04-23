@@ -349,7 +349,7 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward)
 ```
 
-Returns the total reward that is generate for a position
+Returns the total reward that is generated for a position
 
 
 

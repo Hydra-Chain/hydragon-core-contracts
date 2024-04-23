@@ -247,7 +247,7 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward)
 ```
 
-Returns the total reward that is generate for a position
+Returns the total reward that is generated for a position
 
 
 
@@ -589,6 +589,29 @@ function getRPSValues(address validator, uint256 startEpoch, uint256 endEpoch) e
 | Name | Type | Description |
 |---|---|---|
 | _0 | RPS[] | undefined |
+
+### getRawDelegatorReward
+
+```solidity
+function getRawDelegatorReward(address validator, address delegator) external view returns (uint256)
+```
+
+Gets delegator&#39;s unclaimed rewards without custom rewards
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of validator |
+| delegator | address | Address of delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
 
 ### getRoleAdmin
 
