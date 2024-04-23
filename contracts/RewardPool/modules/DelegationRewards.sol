@@ -371,10 +371,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     // _______________ Public functions _______________
 
     /**
-     * @notice Gets delegator's unclaimed rewards without custom rewards
-     * @param validator Address of validator
-     * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards with validator (in MATIC wei)
+     * @inheritdoc IRewardPool
      */
     function getRawDelegatorReward(address validator, address delegator) public view returns (uint256) {
         DelegationPool storage delegation = delegationPools[validator];

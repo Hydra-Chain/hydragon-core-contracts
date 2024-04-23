@@ -151,6 +151,14 @@ interface IRewardPool {
     function getValidatorReward(address validator) external view returns (uint256);
 
     /**
+     * @notice Gets delegator's unclaimed rewards without custom rewards
+     * @param validator Address of validator
+     * @param delegator Address of delegator
+     * @return Delegator's unclaimed rewards with validator (in MATIC wei)
+     */
+    function getRawDelegatorReward(address validator, address delegator) external view returns (uint256);
+
+    /**
      * @notice Gets delegators's unclaimed rewards including custom rewards
      * @param validator Address of validator
      * @param delegator Address of delegator
@@ -211,7 +219,7 @@ interface IRewardPool {
     ) external view returns (uint256 penalty);
 
     /**
-     * @notice Returns the total reward that is generate for a position
+     * @notice Returns the total reward that is generated for a position
      * @param validator The address of the validator
      * @param delegator The address of the delegator
      * @return reward for the delegator
