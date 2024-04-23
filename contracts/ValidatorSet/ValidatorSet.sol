@@ -89,8 +89,10 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }
 
-    /// @notice Get the validator by its address
-    /// @param validatorAddress address
+    /**
+     * @notice Get the validator by its address
+     * @param validatorAddress address
+     */
     function getValidator(
         address validatorAddress
     )
