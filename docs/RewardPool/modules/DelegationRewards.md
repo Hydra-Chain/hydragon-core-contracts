@@ -193,13 +193,13 @@ function beforeTopUpParams(address, address) external view returns (uint256 rewa
 | balance | uint256 | undefined |
 | correction | int256 | undefined |
 
-### calculateDelegatePositionPenalty
+### calculatePositionPenalty
 
 ```solidity
-function calculateDelegatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty, uint256 reward)
+function calculatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty)
 ```
 
-Returns the penalty and reward that will be burned, if vested delegate position is active
+Returns the penalty that will taken from the delegator, if the position is still active
 
 
 
@@ -216,7 +216,6 @@ Returns the penalty and reward that will be burned, if vested delegate position 
 | Name | Type | Description |
 |---|---|---|
 | penalty | uint256 | for the delegator |
-| reward | uint256 | of the delegator |
 
 ### calculateStakePositionPenalty
 
@@ -241,6 +240,29 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 |---|---|---|
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
+
+### calculateTotalPositionReward
+
+```solidity
+function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward)
+```
+
+Returns the total reward that is generated for a position
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The address of the validator |
+| delegator | address | The address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | for the delegator |
 
 ### claimDelegatorReward
 
@@ -440,7 +462,7 @@ Gets delegators&#39;s history of the delegated position
 ### getDelegatorPositionReward
 
 ```solidity
-function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 topUpIndex) external view returns (uint256)
+function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 topUpIndex) external view returns (uint256 sumReward)
 ```
 
 Gets delegators&#39;s unclaimed rewards including custom rewards for a position
@@ -460,7 +482,7 @@ Gets delegators&#39;s unclaimed rewards including custom rewards for a position
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
+| sumReward | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
 
 ### getDelegatorReward
 
@@ -572,7 +594,7 @@ function getRPSValues(address validator, uint256 startEpoch, uint256 endEpoch) e
 function getRawDelegatorReward(address validator, address delegator) external view returns (uint256)
 ```
 
-Gets delegators&#39;s unclaimed rewards without custom rewards
+Gets delegator&#39;s unclaimed rewards without custom rewards
 
 
 

@@ -7,7 +7,11 @@ import * as hre from "hardhat";
 import { VestManager__factory } from "../../typechain-types";
 import { VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import { calculatePenalty, claimPositionRewards, commitEpoch, commitEpochs, getUserManager } from "../helper";
-import { RunDelegateClaimTests, RunVestedDelegateClaimTests } from "../RewardPool/RewardPool.test";
+import {
+  RunDelegateClaimTests,
+  RunVestedDelegateClaimTests,
+  RunVestedDelegationRewardsTests,
+} from "../RewardPool/RewardPool.test";
 
 export function RunDelegationTests(): void {
   describe("Delegate", function () {
@@ -452,11 +456,12 @@ export function RunDelegationTests(): void {
         const latestTimestamp = hre.ethers.BigNumber.from(await time.latest());
 
         // get the penalty and reward from the contract
-        const { penalty, reward } = await rewardPool.calculateDelegatePositionPenalty(
+        const penalty = await rewardPool.calculatePositionPenalty(
           delegatedValidator.address,
           vestManager.address,
           this.minStake
         );
+        const reward = await rewardPool.calculateTotalPositionReward(delegatedValidator.address, vestManager.address);
 
         // calculate penalty locally
         const calculatedPenalty = await calculatePenalty(position, latestTimestamp, this.minStake);
@@ -823,6 +828,10 @@ export function RunDelegationTests(): void {
           .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
           .withArgs("vesting", "POSITION_NOT_ACTIVE");
       });
+    });
+
+    describe("Reward Pool - rewards", async function () {
+      RunVestedDelegationRewardsTests();
     });
 
     describe("Reward Pool - Vested delegate claim", async function () {

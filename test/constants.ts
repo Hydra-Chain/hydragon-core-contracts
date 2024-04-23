@@ -13,6 +13,7 @@ export const MAX_COMMISSION = ethers.BigNumber.from(100);
 export const WEEK = 60 * 60 * 24 * 7;
 export const VESTING_DURATION_WEEKS = 10; // in weeks
 export const EPOCHS_YEAR = 31500;
+export const DENOMINATOR = 10000;
 
 /// @notice This bytecode is used to mock and return true with any input
 export const alwaysTrueBytecode = "0x600160005260206000F3";

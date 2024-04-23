@@ -151,7 +151,7 @@ interface IRewardPool {
     function getValidatorReward(address validator) external view returns (uint256);
 
     /**
-     * @notice Gets delegators's unclaimed rewards without custom rewards
+     * @notice Gets delegator's unclaimed rewards without custom rewards
      * @param validator Address of validator
      * @param delegator Address of delegator
      * @return Delegator's unclaimed rewards with validator (in MATIC wei)
@@ -206,18 +206,25 @@ interface IRewardPool {
     ) external view returns (uint256 penalty, uint256 reward);
 
     /**
-     * @notice Returns the penalty and reward that will be burned, if vested delegate position is active
+     * @notice Returns the penalty that will taken from the delegator, if the position is still active
      * @param validator The address of the validator
      * @param delegator The address of the delegator
      * @param amount The amount that is going to be undelegated
      * @return penalty for the delegator
-     * @return reward of the delegator
      */
-    function calculateDelegatePositionPenalty(
+    function calculatePositionPenalty(
         address validator,
         address delegator,
         uint256 amount
-    ) external view returns (uint256 penalty, uint256 reward);
+    ) external view returns (uint256 penalty);
+
+    /**
+     * @notice Returns the total reward that is generated for a position
+     * @param validator The address of the validator
+     * @param delegator The address of the delegator
+     * @return reward for the delegator
+     */
+    function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward);
 
     /**
      * @notice Claims reward for the vest manager (delegator).

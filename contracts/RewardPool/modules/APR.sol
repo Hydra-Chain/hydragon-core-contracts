@@ -96,6 +96,12 @@ contract APR is Initializable, AccessControl {
         return 1e18;
     }
 
+    /**
+     * @notice Function that calculates the end reward for a user (without vesting bonuses) based on the pool reward index.
+     * @dev Denominator is used because we should work with floating-point numbers
+     * @param reward index The reward to which we gonna apply the base APR
+     * @dev The reward with the applied APR
+     */
     function _applyCustomReward(uint256 reward) internal view returns (uint256) {
         return _applyBaseAPR(reward) / EPOCHS_YEAR;
     }

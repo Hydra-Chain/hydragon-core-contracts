@@ -3,12 +3,14 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { EPOCHS_YEAR, WEEK } from "../constants";
+import { EPOCHS_YEAR, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,
   commitEpochs,
+  createManagerAndVest,
   findProperRPSIndex,
+  getDelegatorPositionReward,
   getValidatorReward,
   retrieveRPSData,
 } from "../helper";
@@ -158,6 +160,192 @@ export function RunDelegateClaimTests(): void {
       expect(event?.args?.validator, "event.arg.validator").to.equal(this.signers.validators[0].address);
       expect(event?.args?.delegator, "event.arg.delegator").to.equal(this.signers.delegator.address);
       expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
+    });
+  });
+}
+
+export function RunVestedDelegationRewardsTests(): void {
+  describe("Delegate position rewards", async function () {
+    it("should get no rewards if the position is still active", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const validator = this.signers.validators[1];
+      const manager = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(100)
+      );
+
+      // pass two weeks ahead
+      await time.increase(WEEK * 2);
+
+      // Commit epochs so rewards to be distributed
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], validator],
+        10, // number of epochs to commit
+        this.epochSize
+      );
+
+      const managerRewards = await getDelegatorPositionReward(
+        validatorSet,
+        rewardPool,
+        validator.address,
+        manager.address
+      );
+
+      expect(managerRewards).to.equal(0);
+    });
+
+    it("should generate partial rewards when enter maturing period", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool, vestManager, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      // enter maturing period
+      await time.increase(WEEK * 1 + 1);
+
+      // Commit epoch so some more rewards are distributed
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], delegatedValidator],
+        this.epochSize
+      );
+
+      const managerRewards = await getDelegatorPositionReward(
+        validatorSet,
+        rewardPool,
+        delegatedValidator.address,
+        vestManager.address
+      );
+      const totalRewards = await rewardPool.calculateTotalPositionReward(
+        delegatedValidator.address,
+        vestManager.address
+      );
+
+      expect(managerRewards).to.be.lessThan(totalRewards);
+    });
+
+    it("should have the same rewards if the position size and period are the same", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const validator = this.signers.validators[2];
+      const manager1 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(100)
+      );
+      const manager2 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(100)
+      );
+
+      // pass two weeks ahead
+      await time.increase(WEEK * 2);
+
+      // Commit epochs so rewards to be distributed
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        10, // number of epochs to commit
+        this.epochSize
+      );
+
+      const manager1rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager1.address);
+      const manager2rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager2.address);
+
+      expect(manager1rewards).to.equal(manager2rewards);
+    });
+
+    it("should have different rewards if the position period differs", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const validator = this.signers.validators[2];
+      const manager1 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(100)
+      );
+      const manager2 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        52, // max weeks
+        this.minDelegation.mul(100)
+      );
+
+      // pass three weeks ahead
+      await time.increase(WEEK * 3);
+
+      // Commit epochs so rewards to be distributed
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        20, // number of epochs to commit
+        this.epochSize
+      );
+
+      const manager1rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager1.address);
+      const manager2rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager2.address);
+
+      expect(manager2rewards).to.be.greaterThan(manager1rewards);
+    });
+
+    it("should have different rewards when the position differs", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const validator = this.signers.validators[2];
+      const manager1 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(100)
+      );
+      const manager2 = await createManagerAndVest(
+        validatorSet,
+        rewardPool,
+        this.signers.accounts[4],
+        validator.address,
+        VESTING_DURATION_WEEKS,
+        this.minDelegation.mul(2)
+      );
+
+      // pass five weeks ahead
+      await time.increase(WEEK * 5);
+
+      // Commit epochs so rewards to be distributed
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        20, // number of epochs to commit
+        this.epochSize
+      );
+
+      const manager1rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager1.address);
+      const manager2rewards = await rewardPool.calculateTotalPositionReward(validator.address, manager2.address);
+
+      expect(manager1rewards).to.be.greaterThan(manager2rewards);
     });
   });
 }

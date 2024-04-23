@@ -10,13 +10,13 @@ the base state variables and functionality needed in different modules that the 
 
 ## Methods
 
-### calculateDelegatePositionPenalty
+### calculatePositionPenalty
 
 ```solidity
-function calculateDelegatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty, uint256 reward)
+function calculatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty)
 ```
 
-Returns the penalty and reward that will be burned, if vested delegate position is active
+Returns the penalty that will taken from the delegator, if the position is still active
 
 
 
@@ -33,7 +33,6 @@ Returns the penalty and reward that will be burned, if vested delegate position 
 | Name | Type | Description |
 |---|---|---|
 | penalty | uint256 | for the delegator |
-| reward | uint256 | of the delegator |
 
 ### calculateStakePositionPenalty
 
@@ -58,6 +57,29 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 |---|---|---|
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
+
+### calculateTotalPositionReward
+
+```solidity
+function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward)
+```
+
+Returns the total reward that is generated for a position
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The address of the validator |
+| delegator | address | The address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | for the delegator |
 
 ### claimDelegatorReward
 
@@ -212,7 +234,7 @@ Gets delegators&#39;s unclaimed rewards including custom rewards
 function getRawDelegatorReward(address validator, address delegator) external view returns (uint256)
 ```
 
-Gets delegators&#39;s unclaimed rewards without custom rewards
+Gets delegator&#39;s unclaimed rewards without custom rewards
 
 
 

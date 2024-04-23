@@ -10,7 +10,7 @@ import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
 import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
 import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
-import { CHAIN_ID, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
+import { CHAIN_ID, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -181,7 +181,7 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
 
   // basis points used for precise percentage calculations
   const bps = leftWeeks.mul(30);
-  return amount.mul(bps).div(10000);
+  return amount.mul(bps).div(DENOMINATOR);
 }
 
 export async function getUserManager(
@@ -253,7 +253,7 @@ export async function calculateExpectedReward(
     .add(vestBonus)
     .mul(rsi)
     .mul(reward)
-    .div(10000 * 10000)
+    .div(DENOMINATOR * DENOMINATOR)
     .div(EPOCHS_YEAR);
 }
 
@@ -267,7 +267,7 @@ export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) 
     .add(vestBonus)
     .mul(rsi)
     .mul(reward)
-    .div(10000 * 10000)
+    .div(DENOMINATOR * DENOMINATOR)
     .div(EPOCHS_YEAR);
 }
 
@@ -281,10 +281,10 @@ export async function applyCustomReward(
   const position = await rewardPool.delegationPositions(validator, delegator);
 
   let bonus = position.base.add(position.vestBonus);
-  let divider = 10000;
+  let divider = DENOMINATOR;
   if (rsi) {
     bonus = bonus.mul(position.rsiBonus);
-    divider *= 10000;
+    divider *= DENOMINATOR;
   }
 
   return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);
@@ -309,4 +309,33 @@ export function generateValidatorBls(account: SignerWithAddress) {
 
 export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair) {
   return mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
+}
+
+export async function createManagerAndVest(
+  validatorSet: ValidatorSet,
+  rewardPool: RewardPool,
+  account: SignerWithAddress,
+  validator: string,
+  duration: number,
+  amount: BigNumber
+) {
+  const { newManager } = await createNewVestManager(validatorSet, rewardPool, account);
+
+  await newManager.openVestedDelegatePosition(validator, duration, {
+    value: amount,
+  });
+
+  return newManager;
+}
+
+export async function getDelegatorPositionReward(
+  validatorSet: ValidatorSet,
+  rewardPool: RewardPool,
+  validator: string,
+  delegator: string
+) {
+  // prepare params for call
+  const { epochNum, topUpIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
+
+  return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, topUpIndex);
 }

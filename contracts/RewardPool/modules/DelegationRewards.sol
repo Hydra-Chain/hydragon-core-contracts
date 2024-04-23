@@ -52,14 +52,6 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     /**
      * @inheritdoc IRewardPool
      */
-    function getRawDelegatorReward(address validator, address delegator) external view returns (uint256) {
-        DelegationPool storage delegation = delegationPools[validator];
-        return delegation.claimableRewards(delegator);
-    }
-
-    /**
-     * @inheritdoc IRewardPool
-     */
     function getDelegatorReward(address validator, address delegator) external view returns (uint256) {
         DelegationPool storage delegation = delegationPools[validator];
         uint256 reward = delegation.claimableRewards(delegator);
@@ -74,13 +66,12 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         address delegator,
         uint256 epochNumber,
         uint256 topUpIndex
-    ) external view returns (uint256) {
+    ) external view returns (uint256 sumReward) {
         VestingPosition memory position = delegationPositions[validator][delegator];
         if (_noRewardConditions(position)) {
             return 0;
         }
 
-        uint256 sumReward;
         DelegationPool storage delegationPool = delegationPools[validator];
         bool rsi = true;
         if (_isTopUpMade(validator, delegator)) {
@@ -95,13 +86,15 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             sumReward += _applyCustomReward(position, rsiReward, true);
         }
 
+        // distribute the proper vesting reward
         (uint256 epochRPS, uint256 balance, int256 correction) = _rewardParams(
             validator,
             delegator,
             epochNumber,
             topUpIndex
         );
-        uint256 reward = delegationPool.claimableRewards(delegator, epochRPS, balance, correction) - sumReward;
+
+        uint256 reward = delegationPool.claimableRewards(delegator, epochRPS, balance, correction);
         reward = _applyCustomReward(position, reward, rsi);
         sumReward += reward;
 
@@ -111,25 +104,28 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             additionalReward = _applyCustomReward(additionalReward);
             sumReward += additionalReward;
         }
-
-        return sumReward;
     }
 
     /**
      * @inheritdoc IRewardPool
      */
-    function calculateDelegatePositionPenalty(
+    function calculatePositionPenalty(
         address validator,
         address delegator,
         uint256 amount
-    ) external view returns (uint256 penalty, uint256 reward) {
-        DelegationPool storage pool = delegationPools[validator];
+    ) external view returns (uint256 penalty) {
         VestingPosition memory position = delegationPositions[validator][delegator];
         if (position.isActive()) {
             penalty = _calcSlashing(position, amount);
-            // apply the max Vesting bonus, because the full reward must be burned
-            reward = applyMaxReward(pool.claimableRewards(delegator));
         }
+    }
+
+    /**
+     * @inheritdoc IRewardPool
+     */
+    function calculateTotalPositionReward(address validator, address delegator) external view returns (uint256 reward) {
+        VestingPosition memory position = delegationPositions[validator][delegator];
+        reward = _applyCustomReward(position, getRawDelegatorReward(validator, delegator), true);
     }
 
     /**
@@ -149,6 +145,9 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         delegationPools[validator].validator = validator;
     }
 
+    /**
+     * @inheritdoc IRewardPool
+     */
     function onDelegate(address validator, address delegator, uint256 amount) external onlyValidatorSet {
         DelegationPool storage delegation = delegationPools[validator];
 
@@ -370,6 +369,14 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     }
 
     // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IRewardPool
+     */
+    function getRawDelegatorReward(address validator, address delegator) public view returns (uint256) {
+        DelegationPool storage delegation = delegationPools[validator];
+        return delegation.claimableRewards(delegator);
+    }
 
     // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     /**
