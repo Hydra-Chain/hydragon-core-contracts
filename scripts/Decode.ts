@@ -17,7 +17,7 @@ async function decodeTransaction() {
   const contractInstance = Contract.attach(contractAddress);
   const decodedData = contractInstance.interface.decodeFunctionData(functionName, transaction.data);
 
-  console.log("Decoded Input Data:");
+  console.log("___________Decoded Input Data___________");
   console.log(decodedData);
 }
 

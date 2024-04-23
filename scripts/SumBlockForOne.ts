@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/SumForUser.ts --network childTest
+// Run: npx hardhat run scripts/SumBlockForOne.ts --network childTest
 import { ethers } from "hardhat";
 
 // Input parameters for the function:
@@ -8,7 +8,7 @@ const USER_ADDRESS = "0x00...";
 const contractAddress = "0x0000000000000000000000000000000000000105";
 const functionName = "distributeRewardsFor";
 
-// Get the 2nd transaction in a block that should give give the uptime
+// Get the 2nd transaction in a block that should give the uptime
 async function getTransactionsByBlock(_blockNumber: number) {
   const provider = ethers.provider;
   const block = await provider.getBlockWithTransactions(_blockNumber);
@@ -36,7 +36,7 @@ function getAddressBigNumber(data: any, address: any) {
       return element[1];
     }
   }
-  return 0; // Address not found
+  return 0; // Add 0 if address didn't sign any blocks
 }
 
 // Get the sum of signed blocks for user
