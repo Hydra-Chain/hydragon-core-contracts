@@ -2,7 +2,7 @@
 import { ethers } from "hardhat";
 
 const contractAddress = "0x0000000000000000000000000000000000000105";
-const transactionHash = "0xe50acba3e9b8acdf7383d07fcdd399d24a1aad1d37a8d1f6587995fb1b0d064e";
+const transactionHash = "0x4a2876153031b3c560c0c4333591aaeb4ccfe59cb742b17d50b3f0bfa684723a";
 const functionName = "distributeRewardsFor";
 
 async function decodeTransaction() {
