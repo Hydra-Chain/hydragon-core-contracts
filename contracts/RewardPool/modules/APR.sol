@@ -98,7 +98,7 @@ contract APR is Initializable, AccessControl {
 
     /**
      * @notice Function that calculates the end reward for a user (without vesting bonuses) based on the pool reward index.
-     * @dev Denominator is used because we should work with numbers with floating point
+     * @dev Denominator is used because we should work with floating-point numbers
      * @param reward index The reward to which we gonna apply the base APR
      * @dev The reward with the applied APR
      */

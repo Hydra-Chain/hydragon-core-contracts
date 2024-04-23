@@ -140,10 +140,12 @@ abstract contract Vesting is APR {
         historyRPS[validator][epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }
 
-    /// @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
-    /// @dev Denominator is used because we should work with numbers with floating point
-    /// @param reward The reward to which we gonna apply the custom APR
-    /// @return The reward with the applied APR
+    /**
+     * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
+     * @dev Denominator is used because we should work with floating-point numbers
+     * @param reward index The reward to which we gonna apply the custom APR
+     * @dev The reward with the applied APR
+     */
     function _applyCustomReward(
         VestingPosition memory position,
         uint256 reward,
