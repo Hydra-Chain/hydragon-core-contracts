@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 // Input parameters for the function:
 const blockNumber = 1301000;
 const maxBlockNumber = 1335500;
-const validatorAddress = "PUT ADDRESS HERE";
+const validatorAddress = "PUT_ADDRESS_HERE";
 const contractAddress = "0x0000000000000000000000000000000000000105";
 const functionName = "distributeRewardsFor";
 
@@ -41,6 +41,15 @@ function getAddressBigNumber(data: any, address: any) {
 
 // Get the sum of signed blocks for user
 async function getSumBlocks() {
+  console.log(
+    ` 
+     _________________________________
+
+Summing the signed blocks 
+for ${validatorAddress} 
+from ${blockNumber} to ${maxBlockNumber} block
+     _________________________________`
+  );
   let sum: number = 0;
   for (let i = blockNumber; i < maxBlockNumber; i += 500) {
     const blocks = await getTransactionsByBlock(i);
