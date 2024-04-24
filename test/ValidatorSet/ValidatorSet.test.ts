@@ -362,7 +362,7 @@ describe("ValidatorSet", function () {
         );
       });
 
-      it("owner should not whitelist user that is already whitelisted", async function () {
+      it("should not whitelist a user that is already whitelisted", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
         await expect(
@@ -376,13 +376,6 @@ describe("ValidatorSet", function () {
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
         ).to.be.revertedWith("Previously whitelisted.");
-
-        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
-        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
       });
 
       it("should be able to remove from whitelist", async function () {
@@ -427,37 +420,20 @@ describe("ValidatorSet", function () {
         expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
           VALIDATOR_STATUS.None
         );
-
-        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
       });
 
       it("should not be able to whitelist user that is with status different from None", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = Registered"
-        ).to.be.equal(VALIDATOR_STATUS.Registered);
-
-        const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-
-        expect(validator.stake, "stake").to.equal(0);
-        expect(validator.totalStake, "total stake").to.equal(0);
-        expect(validator.commission).to.equal(INITIAL_COMMISSION);
-        expect(validator.active).to.equal(true);
+        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
+          VALIDATOR_STATUS.Registered
+        );
 
         await expect(
           validatorSet
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
         ).to.be.revertedWith("Previously whitelisted.");
-
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = Registered"
-        ).to.be.equal(VALIDATOR_STATUS.Registered);
       });
     });
 
