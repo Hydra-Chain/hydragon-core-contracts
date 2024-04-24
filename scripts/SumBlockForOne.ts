@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 // Input parameters for the function:
 const blockNumber = 1301000;
 const maxBlockNumber = 1335500;
-const USER_ADDRESS = "0x00...";
+const validatorAddress = "PUT ADDRESS HERE";
 const contractAddress = "0x0000000000000000000000000000000000000105";
 const functionName = "distributeRewardsFor";
 
@@ -25,7 +25,7 @@ async function decodeTransaction(transactionHashNow: any) {
   const Contract = await ethers.getContractFactory("RewardPool");
   const contractInstance = Contract.attach(contractAddress);
   const decodedData = contractInstance.interface.decodeFunctionData(functionName, transaction.data);
-  const signedBlocks = getAddressBigNumber(decodedData.uptime, USER_ADDRESS);
+  const signedBlocks = getAddressBigNumber(decodedData.uptime, validatorAddress);
   return signedBlocks;
 }
 
@@ -46,9 +46,9 @@ async function getSumBlocks() {
     const blocks = await getTransactionsByBlock(i);
     const blockToNum = parseInt(blocks);
     sum += blockToNum;
-    console.log(`Blocks: ${blocks}`);
+    console.log(`Signed blocks: ${blocks}`);
   }
-  console.log(`Sum of blocks: ${sum}`);
+  console.log(`Sum of signed blocks: ${sum}`);
 }
 
 // Run the script
