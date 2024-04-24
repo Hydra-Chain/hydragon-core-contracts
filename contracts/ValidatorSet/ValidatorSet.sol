@@ -36,7 +36,6 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
      * @dev only callable by client, can only be called once
      * @param init: newEpochReward reward for a proposed epoch
      *              newMinStake minimum stake to become a validator
-     *              newMinDelegation minimum amount to delegate to a validator
      * @param newValidators: addr addresses of initial validators
      *                    pubkey uint256[4] BLS public keys of initial validators
      *                    signature uint256[2] signature of initial validators
