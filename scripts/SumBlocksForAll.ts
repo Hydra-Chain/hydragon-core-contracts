@@ -2,12 +2,12 @@
 import { ethers } from "hardhat";
 
 // Input parameters for the function:
-const BlockBackToBeChecked = 100000; // Number of blocks to check behind fom blockNumber
+const blocksToBeChecked = 100000; // Number of blocks to check behind from the given block number
 const contractAddress = "0x0000000000000000000000000000000000000105";
 const functionName = "distributeRewardsFor";
 
 // Get the last block number that gave rewards
-async function getLastBlockNumber() {
+async function getLastBlockNumberReward() {
   const currentBlockNumber = await ethers.provider.getBlockNumber();
   const roundedValue = Math.floor(currentBlockNumber / 500) * 500;
   return roundedValue;
@@ -66,8 +66,9 @@ async function sumValuesForAddresses(_blockNumber: number, _BlockBackToBeChecked
 
 // Run the script
 (async () => {
-  const latestBlockNumber = await getLastBlockNumber(); // Can Hardcode value for specific block number
-  sumValuesForAddresses(latestBlockNumber, BlockBackToBeChecked).catch((error) => {
+  // Can Hardcode value for specific block number (make sure it is rounded to 500)
+  const latestBlockNumber = await getLastBlockNumberReward();
+  sumValuesForAddresses(latestBlockNumber, blocksToBeChecked).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });

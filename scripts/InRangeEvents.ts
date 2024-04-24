@@ -2,15 +2,15 @@
 import { ethers } from "hardhat";
 
 // eslint-disable-next-line no-unused-vars
-const EXAMPLE_BLOK = 1300500; // 17:23 19.04.2024 1300500 block
+const EXAMPLE_BLOCK = 1300500; // 17:23 19.04.2024 1300500 block
 
 // Input parameters for the function:
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
 const CONTRACT_NAME = "RewardPool";
 const EVENT = "ValidatorRewardDistributed(address indexed validator, uint256 amount)";
 const VALIDATOR_ADDRESS = "PUT ADDRESS HERE";
-const YOUR_START_BLOCK = EXAMPLE_BLOK - 1000;
-const YOUR_END_BLOCK = EXAMPLE_BLOK;
+const YOUR_START_BLOCK = EXAMPLE_BLOCK - 1000;
+const YOUR_END_BLOCK = EXAMPLE_BLOCK;
 
 async function getEventsByIndexedAddress(
   contractAddress: string,
@@ -31,7 +31,7 @@ async function getEventsByIndexedAddress(
 
   const filter = {
     address: contractAddress,
-    topics: [encodedEvent, encodedAddress], // if you wanna filter all, remove encodedAddress and put null
+    topics: [encodedEvent, encodedAddress], // if you wanna filter all addresses, remove 'encodedAddress' and put null
     fromBlock: startBlock,
     toBlock: endBlock,
   };
