@@ -165,7 +165,7 @@ abstract contract Vesting is APR {
         uint256 divider = DENOMINATOR;
         if (rsi) {
             bonus = bonus * position.rsiBonus;
-            divider *= DENOMINATOR;
+            divider *= divider;
         }
 
         return (reward * bonus) / divider / EPOCHS_YEAR;

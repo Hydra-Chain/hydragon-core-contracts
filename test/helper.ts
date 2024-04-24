@@ -284,7 +284,7 @@ export async function applyCustomReward(
   let divider = DENOMINATOR;
   if (rsi) {
     bonus = bonus.mul(position.rsiBonus);
-    divider *= DENOMINATOR;
+    divider **= 2;
   }
 
   return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);
