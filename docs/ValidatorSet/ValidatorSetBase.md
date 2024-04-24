@@ -208,7 +208,7 @@ Returns the total supply
 ### validators
 
 ```solidity
-function validators(address) external view returns (uint256 liquidDebt, uint256 commission, bool active, bool whitelisted, bool registered)
+function validators(address) external view returns (uint256 liquidDebt, uint256 commission, enum ValidatorStatus status)
 ```
 
 
@@ -227,9 +227,7 @@ function validators(address) external view returns (uint256 liquidDebt, uint256 
 |---|---|---|
 | liquidDebt | uint256 | undefined |
 | commission | uint256 | undefined |
-| active | bool | undefined |
-| whitelisted | bool | undefined |
-| registered | bool | undefined |
+| status | enum ValidatorStatus | undefined |
 
 ### validatorsAddresses
 

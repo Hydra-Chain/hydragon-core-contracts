@@ -364,7 +364,7 @@ Set new pending exponent, to be activated in the next commit epoch
 ### validators
 
 ```solidity
-function validators(address) external view returns (uint256 liquidDebt, uint256 commission, bool active, bool whitelisted, bool registered)
+function validators(address) external view returns (uint256 liquidDebt, uint256 commission, enum ValidatorStatus status)
 ```
 
 
@@ -383,9 +383,7 @@ function validators(address) external view returns (uint256 liquidDebt, uint256 
 |---|---|---|
 | liquidDebt | uint256 | undefined |
 | commission | uint256 | undefined |
-| active | bool | undefined |
-| whitelisted | bool | undefined |
-| registered | bool | undefined |
+| status | enum ValidatorStatus | undefined |
 
 ### validatorsAddresses
 
@@ -513,6 +511,31 @@ event RemovedFromWhitelist(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+
+
+## Errors
+
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
 
 
 

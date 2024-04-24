@@ -160,21 +160,5 @@ event Unstaked(address indexed validator, uint256 amount)
 | validator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
-### ValidatorDeactivated
-
-```solidity
-event ValidatorDeactivated(address indexed validator)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator `indexed` | address | undefined |
-
 
 

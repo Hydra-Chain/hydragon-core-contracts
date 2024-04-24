@@ -113,7 +113,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
         stake = totalStake - rewardPool.totalDelegationOf(validatorAddress);
         commission = v.commission;
         withdrawableRewards = rewardPool.getValidatorReward(validatorAddress);
-        active = v.active;
+        active = v.status == ValidatorStatus.Registered;
     }
 
     /**

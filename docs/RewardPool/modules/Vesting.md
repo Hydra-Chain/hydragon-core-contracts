@@ -176,7 +176,7 @@ function beforeTopUpParams(address, address) external view returns (uint256 rewa
 
 
 
-*Keep the account parameters before the top-up, so we can separately calculate the rewards made before a top-up is madeThis is because we need to apply the RSI bonus to the rewards made before the top-upand not apply the RSI bonus to the rewards made after the top-up*
+*Keep the account parameters before the top-up, so we can separately calculate the rewards made before a top-up is made This is because we need to apply the RSI bonus to the rewards made before the top-up and not apply the RSI bonus to the rewards made after the top-up*
 
 #### Parameters
 
@@ -225,7 +225,7 @@ Historical Validator Delegation Pool&#39;s Params per delegator
 function delegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus)
 ```
 
-The vesting positions for every delegator.
+The vesting positions for every delegator
 
 *Validator =&gt; Delegator =&gt; VestingPosition*
 

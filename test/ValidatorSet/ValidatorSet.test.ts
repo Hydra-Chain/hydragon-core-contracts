@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MAX_COMMISSION } from "../constants";
+import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS } from "../constants";
 import { generateFixtures } from "../fixtures";
 import { commitEpoch, generateValidatorBls, initializeContext } from "../helper";
 import { RunSystemTests } from "./System.test";
@@ -12,8 +12,6 @@ import { RunStakingTests } from "./Staking.test";
 import { RunDelegationTests } from "./Delegation.test";
 
 describe("ValidatorSet", function () {
-  /** Variables */
-
   before(async function () {
     // * Initialize the this context of mocha
     await initializeContext(this);
@@ -356,18 +354,86 @@ describe("ValidatorSet", function () {
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
         ).to.not.be.reverted;
 
-        expect((await validatorSet.validators(this.signers.validators[0].address)).whitelisted).to.be.true;
-        expect((await validatorSet.validators(this.signers.validators[1].address)).whitelisted).to.be.true;
+        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
+          VALIDATOR_STATUS.Whitelisted
+        );
+        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
+          VALIDATOR_STATUS.Whitelisted
+        );
+      });
+
+      it("should not whitelist a user that is already whitelisted", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+        await expect(
+          validatorSet
+            .connect(this.signers.governance)
+            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+        ).to.not.be.reverted;
+
+        await expect(
+          validatorSet
+            .connect(this.signers.governance)
+            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+        ).to.be.revertedWith("Previously whitelisted.");
       });
 
       it("should be able to remove from whitelist", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
         await expect(
+          validatorSet
+            .connect(this.signers.governance)
+            .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
+        ).to.not.be.reverted;
+
+        await expect(
           validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
         ).to.not.be.reverted;
 
-        expect((await validatorSet.validators(this.signers.validators[1].address)).whitelisted).to.be.false;
+        expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
+          VALIDATOR_STATUS.None
+        );
+
+        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
+          VALIDATOR_STATUS.Whitelisted
+        );
+      });
+
+      it("should revert if we remove from whitelist twice", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+        await expect(
+          validatorSet
+            .connect(this.signers.governance)
+            .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
+        ).to.not.be.reverted;
+
+        await expect(
+          validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
+        ).to.not.be.reverted;
+
+        await expect(
+          validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
+        ).to.be.revertedWith("Must be whitelisted.");
+
+        expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
+          VALIDATOR_STATUS.None
+        );
+      });
+
+      it("should not be able to whitelist user that is with status different from None", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
+          VALIDATOR_STATUS.Registered
+        );
+
+        await expect(
+          validatorSet
+            .connect(this.signers.governance)
+            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+        ).to.be.revertedWith("Previously whitelisted.");
       });
     });
 
@@ -403,8 +469,10 @@ describe("ValidatorSet", function () {
       it("should revert when register with invalid commission", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-        expect((await validatorSet.validators(this.signers.validators[0].address)).whitelisted, "whitelisted = true").to
-          .be.true;
+        expect(
+          (await validatorSet.validators(this.signers.validators[0].address)).status,
+          "status = whitelisted"
+        ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
 
         const keyPair = mcl.newKeyPair();
         const signature = mcl.signValidatorMessage(
@@ -427,8 +495,10 @@ describe("ValidatorSet", function () {
       it("should register", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-        expect((await validatorSet.validators(this.signers.validators[0].address)).whitelisted, "whitelisted = true").to
-          .be.true;
+        expect(
+          (await validatorSet.validators(this.signers.validators[0].address)).status,
+          "status = whitelisted"
+        ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
 
         const keyPair = mcl.newKeyPair();
         const signature = mcl.signValidatorMessage(
@@ -449,8 +519,10 @@ describe("ValidatorSet", function () {
             mcl.g2ToHex(keyPair.pubkey).map((x) => hre.ethers.BigNumber.from(x))
           );
 
-        expect((await validatorSet.validators(this.signers.validators[0].address)).whitelisted, "whitelisted = false")
-          .to.be.false;
+        expect(
+          (await validatorSet.validators(this.signers.validators[0].address)).status,
+          "status = Registered"
+        ).to.be.equal(VALIDATOR_STATUS.Registered);
         const validator = await validatorSet.getValidator(this.signers.validators[0].address);
 
         expect(validator.stake, "stake").to.equal(0);
@@ -464,7 +536,10 @@ describe("ValidatorSet", function () {
         // * Only the first two validators are being registered
         const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-        expect((await validatorSet.validators(this.signers.validators[0].address)).active, "active = true").to.be.true;
+        expect(
+          (await validatorSet.validators(this.signers.validators[0].address)).status,
+          "status = Registered"
+        ).to.be.equal(VALIDATOR_STATUS.Registered);
 
         const keyPair = mcl.newKeyPair();
         const signature = mcl.signValidatorMessage(
@@ -480,8 +555,8 @@ describe("ValidatorSet", function () {
             .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION),
           "register"
         )
-          .to.be.revertedWithCustomError(validatorSet, "AlreadyRegistered")
-          .withArgs(this.signers.validators[0].address);
+          .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+          .withArgs("WHITELIST");
       });
     });
 

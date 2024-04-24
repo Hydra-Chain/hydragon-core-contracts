@@ -21,13 +21,18 @@ struct Epoch {
     bytes32 epochRoot;
 }
 
+enum ValidatorStatus {
+    None,
+    Whitelisted,
+    Registered,
+    Banned
+}
+
 struct Validator {
     uint256[4] blsKey;
     uint256 liquidDebt;
     uint256 commission;
-    bool active;
-    bool whitelisted;
-    bool registered; // TODO: use a single property for status instead active, whitelisted and registered
+    ValidatorStatus status;
 }
 
 interface IValidatorSet {

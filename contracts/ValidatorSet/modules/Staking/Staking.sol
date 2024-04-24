@@ -26,8 +26,9 @@ abstract contract Staking is
 
     // _______________ Modifiers _______________
 
+    // Only address that is allowed to be a validator
     modifier onlyValidator() {
-        if (!validators[msg.sender].active) revert Unauthorized("VALIDATOR");
+        if (validators[msg.sender].status != ValidatorStatus.Registered) revert Unauthorized("VALIDATOR");
         _;
     }
 
@@ -56,10 +57,8 @@ abstract contract Staking is
      * @inheritdoc IStaking
      */
     function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 commission) external {
-        if (validators[msg.sender].registered) revert AlreadyRegistered(msg.sender);
-        if (!validators[msg.sender].whitelisted) revert Unauthorized("WHITELIST");
+        if (validators[msg.sender].status != ValidatorStatus.Whitelisted) revert Unauthorized("WHITELIST");
         _register(msg.sender, signature, pubkey, commission);
-        _removeFromWhitelist(msg.sender);
 
         emit NewValidator(msg.sender, pubkey);
     }
@@ -104,10 +103,8 @@ abstract contract Staking is
     ) internal {
         _verifyValidatorRegistration(validator, signature, pubkey);
         validators[validator].blsKey = pubkey;
-        validators[validator].active = true;
-        validators[validator].registered = true;
+        validators[validator].status = ValidatorStatus.Registered;
         _setCommission(validator, commission);
-
         validatorsAddresses.push(validator);
         rewardPool.onNewValidator(validator);
     }
@@ -134,16 +131,8 @@ abstract contract Staking is
             revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
         _burn(msg.sender, amount);
-        _removeIfValidatorUnstaked(msg.sender, balanceAfterUnstake);
 
         return balanceAfterUnstake;
-    }
-
-    function _removeIfValidatorUnstaked(address validator, uint256 newStake) private {
-        if (newStake == 0) {
-            validators[validator].active = false;
-            emit ValidatorDeactivated(validator);
-        }
     }
 
     function _ensureStakeIsInRange(uint256 amount, uint256 currentBalance) private view {
