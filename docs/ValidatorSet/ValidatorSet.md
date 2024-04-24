@@ -1447,10 +1447,32 @@ error InvalidSignature(address signer)
 |---|---|---|
 | signer | address | undefined |
 
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
 ### NotVestingManager
 
 ```solidity
 error NotVestingManager()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
 ```
 
 

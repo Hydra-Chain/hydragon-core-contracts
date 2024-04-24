@@ -6,6 +6,9 @@ import "./IAccessControl.sol";
 import "./../../ValidatorSetBase.sol";
 
 abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable, ValidatorSetBase {
+    error MustBeWhitelisted();
+    error PreviouslyWhitelisted();
+
     // TODO: We must be able to enable/disable this feature
     function __AccessControl_init(address governance) internal onlyInitializing {
         __AccessControl_init_unchained(governance);
@@ -34,13 +37,13 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable, Vali
     }
 
     function _addToWhitelist(address account) internal {
-        if (validators[account].status != ValidatorStatus.None) revert("Previously whitelisted.");
+        if (validators[account].status != ValidatorStatus.None) revert PreviouslyWhitelisted();
         validators[account].status = ValidatorStatus.Whitelisted;
         emit AddedToWhitelist(account);
     }
 
     function _removeFromWhitelist(address account) internal {
-        if (validators[account].status != ValidatorStatus.Whitelisted) revert("Must be whitelisted.");
+        if (validators[account].status != ValidatorStatus.Whitelisted) revert MustBeWhitelisted();
         validators[account].status = ValidatorStatus.None;
         emit RemovedFromWhitelist(account);
     }

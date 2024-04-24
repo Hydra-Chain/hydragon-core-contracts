@@ -861,6 +861,28 @@ error InvalidSignature(address signer)
 |---|---|---|
 | signer | address | undefined |
 
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
 ### StakeRequirement
 
 ```solidity

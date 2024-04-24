@@ -462,3 +462,28 @@ event RemovedFromWhitelist(address indexed validator)
 
 
 
+## Errors
+
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
+
