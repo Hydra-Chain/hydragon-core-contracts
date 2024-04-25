@@ -11,7 +11,6 @@ struct ValidatorInit {
 struct InitStruct {
     uint256 epochReward;
     uint256 minStake;
-    uint256 minDelegation;
     uint256 epochSize;
 }
 

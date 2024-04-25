@@ -55,7 +55,6 @@ describe("ValidatorSet", function () {
           {
             epochReward: this.epochReward,
             minStake: this.minStake,
-            minDelegation: this.minDelegation,
             epochSize: this.epochSize,
           },
           [this.validatorInit],
@@ -85,7 +84,6 @@ describe("ValidatorSet", function () {
           {
             epochReward: this.epochReward,
             minStake: this.minStake,
-            minDelegation: this.minDelegation,
             epochSize: this.epochSize,
           },
           // eslint-disable-next-line node/no-unsupported-features/es-syntax
@@ -113,7 +111,6 @@ describe("ValidatorSet", function () {
           {
             epochReward: this.epochReward,
             minStake: this.minStake,
-            minDelegation: this.minDelegation,
             epochSize: this.epochSize,
           },
           [this.validatorInit],
@@ -156,7 +153,6 @@ describe("ValidatorSet", function () {
         {
           epochReward: this.epochReward,
           minStake: this.minStake,
-          minDelegation: this.minDelegation,
           epochSize: this.epochSize,
         },
         [this.validatorInit],
@@ -196,7 +192,6 @@ describe("ValidatorSet", function () {
           {
             epochReward: this.epochReward,
             minStake: this.minStake,
-            minDelegation: this.minDelegation,
             epochSize: this.epochSize,
           },
           [this.validatorInit],

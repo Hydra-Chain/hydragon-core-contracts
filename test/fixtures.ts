@@ -90,7 +90,6 @@ async function initializedValidatorSetStateFixtureFunction(this: Mocha.Context) 
     {
       epochReward: this.epochReward,
       minStake: this.minStake,
-      minDelegation: this.minDelegation,
       epochSize: this.epochSize,
     },
     [validatorInit],
