@@ -1,36 +1,26 @@
 // Run: npx hardhat run scripts/SumBlockForOne.ts --network childTest
-import { ethers } from "hardhat";
+import { getTransactionsByBlock, decodeTransaction } from "./_helper";
 
-// Input parameters for the function:
-const blockNumber = 1301000;
-const maxBlockNumber = 1335500;
-const validatorAddress = "PUT_ADDRESS_HERE";
-const contractAddress = "0x0000000000000000000000000000000000000105";
-const functionName = "distributeRewardsFor";
+// Input parameters for the script:
+const BLOCK_NUMBER = 1301000;
+const MAX_BLOCK_NUMBER = 1335500;
+const VALIDATOR_ADDRESS = process.env.ADDRESS_FOR_SCRIPTS;
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
+const FUNCTION_NAME = "distributeRewardsFor";
 
-// Get the 2nd transaction in a block that should give the uptime
-async function getTransactionsByBlock(_blockNumber: number) {
-  const provider = ethers.provider;
-  const block = await provider.getBlockWithTransactions(_blockNumber);
-  return decodeTransaction(block.transactions[1].hash);
-}
-
-// Decode the transaction input data
-async function decodeTransaction(transactionHashNow: any) {
-  const transaction = await ethers.provider.getTransaction(transactionHashNow);
-  if (!transaction) {
-    console.log("Transaction not found.");
-    return;
+// Get the signed blocks for validator from each the block
+async function getDataFromBlock(_blockNumber: number) {
+  const block = await getTransactionsByBlock(_blockNumber);
+  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
+  if (decodedData === undefined || decodedData.uptime === undefined) {
+    return 0;
   }
-  const Contract = await ethers.getContractFactory("RewardPool");
-  const contractInstance = Contract.attach(contractAddress);
-  const decodedData = contractInstance.interface.decodeFunctionData(functionName, transaction.data);
-  const signedBlocks = getAddressBigNumber(decodedData.uptime, validatorAddress);
+  const signedBlocks = getAddressValue(decodedData.uptime, VALIDATOR_ADDRESS);
   return signedBlocks;
 }
 
-// Helper function to get the BigNumber object for a given address
-function getAddressBigNumber(data: any, address: any) {
+// Helper function to get the number of signed blocks for a given address
+function getAddressValue(data: any, address: any) {
   for (const element of data) {
     if (element[0] === address) {
       return element[1];
@@ -43,16 +33,16 @@ function getAddressBigNumber(data: any, address: any) {
 async function getSumBlocks() {
   console.log(
     ` 
-     _________________________________
+_________________________________
 
 Summing the signed blocks 
-for ${validatorAddress} 
-from ${blockNumber} to ${maxBlockNumber} block
-     _________________________________`
+for ${VALIDATOR_ADDRESS} 
+from ${BLOCK_NUMBER} to ${MAX_BLOCK_NUMBER} block
+_________________________________`
   );
   let sum: number = 0;
-  for (let i = blockNumber; i < maxBlockNumber; i += 500) {
-    const blocks = await getTransactionsByBlock(i);
+  for (let i = BLOCK_NUMBER; i < MAX_BLOCK_NUMBER; i += 500) {
+    const blocks = await getDataFromBlock(i);
     const blockToNum = parseInt(blocks);
     sum += blockToNum;
     console.log(`Signed blocks: ${blocks}`);

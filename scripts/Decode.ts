@@ -1,27 +1,18 @@
 // Run: npx hardhat run scripts/Decode.ts --network childTest
-import { ethers } from "hardhat";
+import { decodeTransaction } from "./_helper";
 
-const contractAddress = "0x0000000000000000000000000000000000000105";
-const transactionHash = "0x4a2876153031b3c560c0c4333591aaeb4ccfe59cb742b17d50b3f0bfa684723a";
-const functionName = "distributeRewardsFor";
+// Input parameters for the script:
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
+const TRANSACTION_HASH = "0x4a2876153031b3c560c0c4333591aaeb4ccfe59cb742b17d50b3f0bfa684723a";
+const FUNCTION_NAME = "distributeRewardsFor";
 
-async function decodeTransaction() {
-  // Step 1: Get the transaction details
-  const transaction = await ethers.provider.getTransaction(transactionHash);
-  if (!transaction) {
-    console.log("Transaction not found.");
-    return;
-  }
-  // Step 2: Decode the input data using the contract's details
-  const Contract = await ethers.getContractFactory("RewardPool");
-  const contractInstance = Contract.attach(contractAddress);
-  const decodedData = contractInstance.interface.decodeFunctionData(functionName, transaction.data);
-
+async function decodeTransactionInput() {
+  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, TRANSACTION_HASH, FUNCTION_NAME);
   console.log("___________Decoded Input Data___________");
   console.log(decodedData);
 }
 
-decodeTransaction().catch((error) => {
+decodeTransactionInput().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
