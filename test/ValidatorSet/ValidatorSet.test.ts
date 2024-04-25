@@ -370,7 +370,7 @@ describe("ValidatorSet", function () {
           validatorSet
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.revertedWith("Previously whitelisted.");
+        ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
       });
 
       it("should be able to remove from whitelist", async function () {
@@ -410,7 +410,7 @@ describe("ValidatorSet", function () {
 
         await expect(
           validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
-        ).to.be.revertedWith("Must be whitelisted.");
+        ).to.be.revertedWithCustomError(validatorSet, "MustBeWhitelisted");
 
         expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
           VALIDATOR_STATUS.None
@@ -428,7 +428,7 @@ describe("ValidatorSet", function () {
           validatorSet
             .connect(this.signers.governance)
             .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.revertedWith("Previously whitelisted.");
+        ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
       });
     });
 
