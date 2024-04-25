@@ -29,7 +29,7 @@ function getAddressValue(data: any, address: any) {
   return 0; // Add 0 if address didn't sign any blocks
 }
 
-// Get the sum of signed blocks for user
+// Get the sum of signed blocks for the validator
 async function getSumBlocks() {
   console.log(
     ` 
