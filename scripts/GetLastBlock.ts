@@ -1,13 +1,10 @@
-// Run: npx hardhat run scripts/GetBlockAndTime.ts --network childTest
-import { ethers } from "hardhat";
+// Run: npx hardhat run scripts/GetLastBlock.ts --network childTest
+import { getCurrentBlock } from "./_helper";
 
 async function getCurrentTimestamp() {
-  const provider = ethers.provider;
-
-  const blockNumber = await provider.getBlockNumber();
-  const block = await provider.getBlock(blockNumber);
+  const block = await getCurrentBlock();
+  const blockNumber = block.number;
   const currentTimestamp = block.timestamp;
-
   console.log(`
   _________________________________________
 

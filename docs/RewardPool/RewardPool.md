@@ -508,7 +508,7 @@ Keeps the delegation pools
 function delegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus)
 ```
 
-The vesting positions for every delegator.
+The vesting positions for every delegator
 
 
 

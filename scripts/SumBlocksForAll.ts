@@ -1,42 +1,33 @@
 // Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest
-import { ethers } from "hardhat";
+import { getTransactionsByBlock, decodeTransaction, getCurrentBlock } from "./_helper";
 
-// Input parameters for the function:
-const blocksToBeChecked = 100000; // Number of blocks to check behind from the given block number
-const contractAddress = "0x0000000000000000000000000000000000000105";
-const functionName = "distributeRewardsFor";
+// Input parameters for the script:
+const CHECKED_BLOCKS = 100000; // Number of blocks to check behind from the given block number
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
+const FUNCTION_NAME = "distributeRewardsFor";
 
-// Get the last block number that gave rewards
+// Get the last block that gave uptime
 async function getLastBlockNumberReward() {
-  const currentBlockNumber = await ethers.provider.getBlockNumber();
+  const currentBlock = await getCurrentBlock();
+  const currentBlockNumber = currentBlock.number;
   const roundedValue = Math.floor(currentBlockNumber / 500) * 500;
   return roundedValue;
 }
 
-// Get the 2nd transaction in a block that should give the uptime
-async function getTransactionsByBlock(_blockNumber: number) {
-  const provider = ethers.provider;
-  const block = await provider.getBlockWithTransactions(_blockNumber);
-  return decodeTransaction(block.transactions[1].hash);
-}
-
-// Decode the transaction input data
-async function decodeTransaction(transactionHashNow: any) {
-  const transaction = await ethers.provider.getTransaction(transactionHashNow);
-  if (!transaction) {
-    console.log("Transaction not found.");
-    return;
+// Get the signed blocks for validators from each block
+async function getDataFromBlock(_blockNumber: number) {
+  const block = await getTransactionsByBlock(_blockNumber);
+  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
+  if (decodedData === undefined || decodedData.uptime === undefined) {
+    return 0;
   }
-  const Contract = await ethers.getContractFactory("RewardPool");
-  const contractInstance = Contract.attach(contractAddress);
-  const decodedData = contractInstance.interface.decodeFunctionData(functionName, transaction.data);
   return decodedData.uptime;
 }
 
-// Loop through the blocks and sum the signed blocks for each address
+// Loop through the blocks and sum the signed blocks for each validator
 async function sumValuesForAddresses(_blockNumber: number, _BlockBackToBeChecked: number) {
   const sums: { [address: string]: number } = {};
-  const block = await ethers.provider.getBlockWithTransactions(_blockNumber);
+  const block = await getTransactionsByBlock(_blockNumber);
   console.log(`
   _____________________________________________________
   Getting the sum of values for the last ${_BlockBackToBeChecked} blocks 
@@ -45,8 +36,9 @@ async function sumValuesForAddresses(_blockNumber: number, _BlockBackToBeChecked
   ${new Date(block.timestamp * 1000)}:
   _____________________________________________________
   `);
+
   for (let i = _blockNumber; i > _blockNumber - _BlockBackToBeChecked; i -= 500) {
-    const blocks = await getTransactionsByBlock(i);
+    const blocks = await getDataFromBlock(i);
     blocks.forEach((item: any) => {
       const address = item[0];
       const value = parseInt(item[1]);
@@ -68,7 +60,7 @@ async function sumValuesForAddresses(_blockNumber: number, _BlockBackToBeChecked
 (async () => {
   // Can Hardcode value for specific block number (make sure it is rounded to 500)
   const latestBlockNumber = await getLastBlockNumberReward();
-  sumValuesForAddresses(latestBlockNumber, blocksToBeChecked).catch((error) => {
+  sumValuesForAddresses(latestBlockNumber, CHECKED_BLOCKS).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });
