@@ -7,8 +7,8 @@ import {
   ERRORS,
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
-  INITIAL_RSI_BONUS,
-  MAX_RSI,
+  MAX_RSI_BONUS,
+  MIN_RSI_BONUS,
 } from "../constants";
 import { ethers } from "hardhat";
 import { applyMaxReward } from "../helper";
@@ -22,7 +22,9 @@ export function RunAPRTests(): void {
       expect(await rewardPool.hasRole(managerRole, this.signers.system.address)).to.be.true;
       expect(await rewardPool.base()).to.be.equal(INITIAL_BASE_APR);
       expect(await rewardPool.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
-      expect(await rewardPool.rsi()).to.be.equal(INITIAL_RSI_BONUS);
+      expect(await rewardPool.rsi()).to.be.equal(0);
+      expect(await rewardPool.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
+      expect(await rewardPool.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
       expect(await rewardPool.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
       expect(await rewardPool.DENOMINATOR()).to.be.equal(DENOMINATOR);
     });
@@ -34,16 +36,10 @@ export function RunAPRTests(): void {
       expect(await rewardPool.getVestingBonus(52)).to.be.equal(2178);
     });
 
-    it("should get initial RSI", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-      expect(await rewardPool.getDefaultRSI()).to.be.equal(INITIAL_RSI_BONUS);
-    });
-
     it("should get max RSI", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-      expect(await rewardPool.getMaxRSI()).to.be.equal(MAX_RSI);
+      expect(await rewardPool.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
     });
 
     it("should get max APR", async function () {
@@ -52,7 +48,7 @@ export function RunAPRTests(): void {
       const base = await rewardPool.base();
       const macroFactor = await rewardPool.macroFactor();
       const vestingBonus = await rewardPool.getVestingBonus(52);
-      const rsiBonus = await rewardPool.getMaxRSI();
+      const rsiBonus = await rewardPool.MAX_RSI_BONUS();
       const nominator = base.add(vestingBonus).mul(macroFactor).mul(rsiBonus);
       const denominator = DENOMINATOR.mul(DENOMINATOR).mul(DENOMINATOR);
 
@@ -81,7 +77,7 @@ export function RunAPRTests(): void {
     });
   });
 
-  describe("Setters", function () {
+  describe("Set base", function () {
     it("should revert when trying to set base without manager role", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
       const managerRole = await rewardPool.MANAGER_ROLE();
@@ -91,6 +87,16 @@ export function RunAPRTests(): void {
       );
     });
 
+    it("should set base", async function () {
+      const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+      await rewardPool.connect(this.signers.system).setBase(1500);
+
+      expect(await rewardPool.base()).to.be.equal(1500);
+    });
+  });
+
+  describe("Set macro", function () {
     it("should revert when trying to set macro without manager role", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
       const managerRole = await rewardPool.MANAGER_ROLE();
@@ -100,6 +106,16 @@ export function RunAPRTests(): void {
       );
     });
 
+    it("should set macro", async function () {
+      const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+      await rewardPool.connect(this.signers.system).setMacro(10000);
+
+      expect(await rewardPool.macroFactor()).to.be.equal(10000);
+    });
+  });
+
+  describe("Set RSI", function () {
     it("should revert when trying to set rsi without manager role", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
       const managerRole = await rewardPool.MANAGER_ROLE();
@@ -109,39 +125,21 @@ export function RunAPRTests(): void {
       );
     });
 
-    it("should revert when trying to set lower rsi", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-      const newRSI = 5000;
-
-      await expect(rewardPool.connect(this.signers.system).setRSI(newRSI))
-        .to.be.revertedWithCustomError(rewardPool, "TooLowRSI")
-        .withArgs(newRSI, INITIAL_RSI_BONUS);
-    });
-
     it("should revert when trying to set higher rsi", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-      const newRSI = 20000;
-      const maxRSI = await rewardPool.getMaxRSI();
 
-      await expect(rewardPool.connect(this.signers.system).setRSI(newRSI))
-        .to.be.revertedWithCustomError(rewardPool, "TooHighRSI")
-        .withArgs(newRSI, maxRSI);
+      await expect(rewardPool.connect(this.signers.system).setRSI(20000)).to.be.revertedWithCustomError(
+        rewardPool,
+        "InvalidRSI"
+      );
     });
 
-    it("should set base", async function () {
+    it("should set rsi to zero, if the input is lower than the minimum", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+      const newRSI = MIN_RSI_BONUS.div(2); // ensure it will be lower than the min
+      await rewardPool.connect(this.signers.system).setRSI(newRSI);
 
-      await rewardPool.connect(this.signers.system).setBase(1500);
-
-      expect(await rewardPool.base()).to.be.equal(1500);
-    });
-
-    it("should set macro", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-      await rewardPool.connect(this.signers.system).setMacro(10000);
-
-      expect(await rewardPool.macroFactor()).to.be.equal(10000);
+      expect(await rewardPool.rsi()).to.be.equal(0);
     });
 
     it("should set rsi", async function () {

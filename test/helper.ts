@@ -272,7 +272,7 @@ export async function applyCustomReward(
 
   let bonus = position.base.add(position.vestBonus);
   let divider = DENOMINATOR;
-  if (rsi) {
+  if (rsi && !position.rsiBonus.isZero()) {
     bonus = bonus.mul(position.rsiBonus);
     divider = divider.mul(DENOMINATOR);
   }

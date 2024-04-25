@@ -7,9 +7,12 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./../../common/Errors.sol";
 
 contract APR is Initializable, AccessControl {
+    error InvalidRSI();
+
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
-    uint256 public constant INITIAL_RSI_BONUS = 10000;
+    uint256 public constant MIN_RSI_BONUS = 10000;
+    uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant DENOMINATOR = 10000;
     uint256 public constant EPOCHS_YEAR = 31500;
     bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
@@ -22,7 +25,6 @@ contract APR is Initializable, AccessControl {
     function __APR_init(address manager) internal onlyInitializing {
         base = INITIAL_BASE_APR;
         macroFactor = INITIAL_MACRO_FACTOR;
-        rsi = INITIAL_RSI_BONUS;
 
         initializeVestingBonus();
 
@@ -43,39 +45,27 @@ contract APR is Initializable, AccessControl {
     }
 
     function setRSI(uint256 newRSI) public onlyRole(MANAGER_ROLE) {
-        if (newRSI < INITIAL_RSI_BONUS) revert TooLowRSI(newRSI, INITIAL_RSI_BONUS);
+        if (newRSI > MAX_RSI_BONUS) revert InvalidRSI();
 
-        uint256 maxRSI = getMaxRSI();
-        if (newRSI > getMaxRSI()) revert TooHighRSI(newRSI, maxRSI);
+        if (newRSI < MIN_RSI_BONUS) newRSI = 0;
 
         rsi = newRSI;
-    }
-
-    function getDefaultRSI() public pure returns (uint256 nominator) {
-        return DENOMINATOR;
-    }
-
-    // TODO: Ensure the fetched from oracles value is smaller or equal to this
-    function getMaxRSI() public pure returns (uint256 nominator) {
-        return 15000;
     }
 
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
         // TODO: Base + vesting and RSI must return the max possible value here (implement max base)
         uint256 vestBonus = getVestingBonus(52);
-        uint256 rsiBonusFactor = getMaxRSI();
 
-        nominator = (base + vestBonus) * macroFactor * rsiBonusFactor;
+        nominator = (base + vestBonus) * macroFactor * MAX_RSI_BONUS;
         denominator = 10000 * 10000 * 10000;
     }
 
     function applyMaxReward(uint256 reward) public view returns (uint256) {
         // TODO: Consider setting max base
         // max vesting bonus is 52 weeks
-        uint256 maxRSI = getMaxRSI();
         uint256 vestBonus = getVestingBonus(52);
 
-        uint256 bonus = (base + vestBonus) * maxRSI;
+        uint256 bonus = (base + vestBonus) * MAX_RSI_BONUS;
 
         return ((reward * bonus) / (10000 * 10000)) / EPOCHS_YEAR;
     }

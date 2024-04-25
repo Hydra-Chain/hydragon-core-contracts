@@ -12,7 +12,7 @@ import {
   RewardPool__factory,
   ValidatorSet__factory,
 } from "../typechain-types";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, SYSTEM, VESTING_DURATION_WEEKS } from "./constants";
+import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS } from "./constants";
 import {
   getMaxEpochReward,
   commitEpochs,
@@ -191,6 +191,8 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     this.fixtures.registeredValidatorsStateFixture
   );
 
+  // set the rsi to the minimum value
+  await rewardPool.connect(this.signers.system).setRSI(MIN_RSI_BONUS);
   await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
   await validatorSet.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
 
