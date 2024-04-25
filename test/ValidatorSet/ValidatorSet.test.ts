@@ -854,10 +854,15 @@ describe("ValidatorSet", function () {
       it("should set commission", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
-        await validatorSet.connect(this.signers.validators[0]).setCommission(MAX_COMMISSION.div(2));
+        // set commission and verify event
+        const newCommission = MAX_COMMISSION.div(2);
+        await expect(validatorSet.connect(this.signers.validators[0]).setCommission(newCommission))
+          .to.emit(validatorSet, "CommissionUpdated")
+          .withArgs(this.signers.validators[0].address, newCommission);
 
+        // get the update validator and ensure that the new commission is set
         const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-        expect(validator.commission).to.equal(MAX_COMMISSION.div(2));
+        expect(validator.commission).to.equal(newCommission);
       });
     });
   });

@@ -144,7 +144,7 @@ abstract contract Staking is
 
         validators[validator].commission = newCommission;
 
-        emit CommissionUpdated(msg.sender, validators[msg.sender].commission, newCommission);
+        emit CommissionUpdated(validator, newCommission);
     }
 
     // slither-disable-next-line unused-state,naming-convention

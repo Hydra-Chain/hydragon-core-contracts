@@ -622,7 +622,7 @@ event AddedToWhitelist(address indexed validator)
 ### CommissionUpdated
 
 ```solidity
-event CommissionUpdated(address indexed validator, uint256 oldCommission, uint256 newCommission)
+event CommissionUpdated(address indexed validator, uint256 newCommission)
 ```
 
 
@@ -634,7 +634,6 @@ event CommissionUpdated(address indexed validator, uint256 oldCommission, uint25
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
-| oldCommission  | uint256 | undefined |
 | newCommission  | uint256 | undefined |
 
 ### Initialized

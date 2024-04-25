@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 interface IStaking {
     event NewValidator(address indexed validator, uint256[4] blsKey);
-    event CommissionUpdated(address indexed validator, uint256 oldCommission, uint256 newCommission);
+    event CommissionUpdated(address indexed validator, uint256 newCommission);
     event Staked(address indexed validator, uint256 amount);
     event Unstaked(address indexed validator, uint256 amount);
 
