@@ -12,6 +12,7 @@ async function decodeTransactionInput() {
   console.log(decodedData);
 }
 
+// Run the script
 decodeTransactionInput().catch((error) => {
   console.error(error);
   process.exitCode = 1;

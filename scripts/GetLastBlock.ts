@@ -14,6 +14,7 @@ async function getCurrentTimestamp() {
   `);
 }
 
+// Run the script
 getCurrentTimestamp().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -16,6 +16,7 @@ _________________________________
   console.log(block);
 }
 
+// Run the script
 getBlockData(BLOCK_NUMBER).catch((error) => {
   console.error(error);
   process.exitCode = 1;
