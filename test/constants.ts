@@ -18,6 +18,13 @@ export const INITIAL_MACRO_FACTOR = ethers.BigNumber.from(7500);
 export const MIN_RSI_BONUS = ethers.BigNumber.from(10000);
 export const MAX_RSI_BONUS = ethers.BigNumber.from(17000);
 export const DENOMINATOR = ethers.BigNumber.from(10000);
+/* eslint-disable no-unused-vars */
+export enum VALIDATOR_STATUS {
+  None = 0,
+  Whitelisted = 1,
+  Registered = 2,
+  Banned = 3,
+}
 
 /// @notice This bytecode is used to mock and return true with any input
 export const alwaysTrueBytecode = "0x600160005260206000F3";
