@@ -22,6 +22,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
         assert(to != address(0));
         WithdrawalQueue storage queue = _withdrawals[msg.sender];
         (uint256 amount, uint256 newHead) = queue.withdrawable();
+        require(amount > 0, "NO_WITHDRAWAL_AVAILABLE");
         queue.head = newHead;
 
         emit WithdrawalFinished(msg.sender, to, amount);

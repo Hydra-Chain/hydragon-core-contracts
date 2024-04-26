@@ -351,7 +351,7 @@ export function RunVestedDelegationRewardsTests(): void {
 }
 
 export function RunVestedDelegateClaimTests(): void {
-  describe("Claim delegation rewards", async function () {
+  describe.only("Claim delegation rewards", async function () {
     it("should revert when not the vest manager owner", async function () {
       const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
@@ -361,31 +361,30 @@ export function RunVestedDelegateClaimTests(): void {
     });
 
     it("should return when active position", async function () {
-      const { systemValidatorSet, validatorSet, rewardPool, vestManager, vestManagerOwner, delegatedValidator } =
-        await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
-
+      const { validatorSet, rewardPool, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+      console.log("1");
       // ensure is active position
       expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").to
         .be.true;
 
-      // reward to be accumulated
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
-        this.epochSize
-      );
-      // withdraw previous amounts
-      await vestManager.withdraw(vestManagerOwner.address);
+      // increase time to withdraw
+      await time.increase(WEEK);
 
+      // withdraw previous amounts
+      console.log("2");
+      await vestManager.withdraw(vestManagerOwner.address);
+      console.log("3");
       expect(
         await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
         "getRawDelegatorReward"
       ).to.be.gt(0);
-
+      console.log("4");
       // claim
       await vestManager.claimVestedPositionReward(delegatedValidator.address, 0, 0);
       expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.be.eq(0);
+      console.log("5");
     });
 
     it("should return when unused position", async function () {

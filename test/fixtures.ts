@@ -260,7 +260,7 @@ async function withdrawableFixtureFunction(this: Mocha.Context) {
   await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
   await time.increase(WEEK);
 
-  // * stake for the third validator in the latest epoch
+  // * stake for the third validator after a week
   await validatorSet.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
 
   return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };

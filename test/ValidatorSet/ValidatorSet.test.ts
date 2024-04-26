@@ -1,10 +1,10 @@
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture, setBalance } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, setBalance, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS } from "../constants";
+import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS, WEEK } from "../constants";
 import { generateFixtures } from "../fixtures";
 import { commitEpoch, generateValidatorBls, initializeContext } from "../helper";
 import { RunSystemTests } from "./System.test";
@@ -809,6 +809,45 @@ describe("ValidatorSet", function () {
         ).to.be.revertedWith("WITHDRAWAL_FAILED");
       });
 
+      it("should fail the withdrawal before withdraw time passes", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        await expect(
+          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+        ).to.be.revertedWith("NO_WITHDRAWAL_AVAILABLE");
+      });
+
+      it("should give the right amount on view function with multiple stake ", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+        // unstake second time same amount
+        await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
+
+        const withdrawable = await validatorSet.withdrawable(this.signers.validators[0].address);
+        const pending = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+        expect(withdrawable).to.equal(this.minStake.div(2)).and.to.equal(pending);
+
+        // increase time to pass the withdraw time for 2nd stake
+        await time.increase(WEEK);
+
+        const withdrawableAfter = await validatorSet.withdrawable(this.signers.validators[0].address);
+        const pendingAfter = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+        expect(withdrawableAfter).to.equal(this.minStake);
+        expect(pendingAfter).to.equal(0);
+
+        // withdraw
+        await expect(
+          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+        ).to.emit(validatorSet, "WithdrawalFinished");
+
+        const withdrawableAfterWithdraw = await validatorSet.withdrawable(this.signers.validators[0].address);
+        const pendingAfterWithdraw = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+        expect(withdrawableAfterWithdraw).to.equal(0).and.to.equal(pendingAfterWithdraw);
+      });
+
       it("should withdraw", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
@@ -825,6 +864,22 @@ describe("ValidatorSet", function () {
           "pendingWithdrawals"
         ).to.equal(0);
         expect(await validatorSet.withdrawable(this.signers.validators[0].address), "withdrawable").to.equal(0);
+      });
+
+      it("should fail to update withdraw time if not governance", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+        await expect(
+          validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("should update withdraw time by governance account", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+        await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
+        const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
+        expect(waitPeriod).to.be.equal(WEEK * 2);
       });
     });
 

@@ -56,9 +56,10 @@ library WithdrawalQueueLib {
     function withdrawable(
         WithdrawalQueue storage self
     ) internal view returns (uint256 amount, uint256 newHead) {
+        uint256 currentTimestamp = block.timestamp;
         for (newHead = self.head; newHead < self.tail; newHead++) {
             WithdrawalData memory withdrawal = self.withdrawals[newHead];
-            if (withdrawal.time > block.timestamp) return (amount, newHead);
+            if (withdrawal.time > currentTimestamp) return (amount, newHead);
             amount += withdrawal.amount;
         }
     }
@@ -72,9 +73,10 @@ library WithdrawalQueueLib {
     function pending(WithdrawalQueue storage self) internal view returns (uint256 amount) {
         uint256 tail = self.tail;
         if (tail == 0) return 0;
+        uint256 currentTimestamp = block.timestamp;
         for (uint256 i = tail - 1; i >= self.head; i--) {
             WithdrawalData memory withdrawal = self.withdrawals[i];
-            if (withdrawal.time <= block.timestamp) break;
+            if (withdrawal.time <= currentTimestamp) break;
             amount += withdrawal.amount;
             if (i == 0) break;
         }
