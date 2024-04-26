@@ -249,12 +249,7 @@ export async function calculateExpectedReward(
   reward: BigNumber
 ) {
   // calculate expected reward based on the given apr factors
-  return base
-    .add(vestBonus)
-    .mul(rsi)
-    .mul(reward)
-    .div(DENOMINATOR * DENOMINATOR)
-    .div(EPOCHS_YEAR);
+  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
 export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) {
@@ -263,12 +258,7 @@ export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) 
   const vestBonus = await rewardPool.getVestingBonus(52);
 
   // calculate expected reward
-  return base
-    .add(vestBonus)
-    .mul(rsi)
-    .mul(reward)
-    .div(DENOMINATOR * DENOMINATOR)
-    .div(EPOCHS_YEAR);
+  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
 export async function applyCustomReward(
@@ -282,9 +272,9 @@ export async function applyCustomReward(
 
   let bonus = position.base.add(position.vestBonus);
   let divider = DENOMINATOR;
-  if (rsi) {
+  if (rsi && !position.rsiBonus.isZero()) {
     bonus = bonus.mul(position.rsiBonus);
-    divider **= 2;
+    divider = divider.mul(DENOMINATOR);
   }
 
   return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);

@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { EPOCHS_YEAR, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { EPOCHS_YEAR, MIN_RSI_BONUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,
@@ -460,7 +460,7 @@ export function RunVestedDelegateClaimTests(): void {
 
       // calculate max reward
       const maxVestBonus = await rewardPool.getVestingBonus(52);
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 
       // enter the maturing state
@@ -504,7 +504,7 @@ export function RunVestedDelegateClaimTests(): void {
 
       // calculate max reward
       const maxVestBonus = await rewardPool.getVestingBonus(52);
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 
       // ensure maturing has finished
@@ -580,14 +580,14 @@ export function RunVestedDelegateClaimTests(): void {
       const topUpReward = (await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address)).sub(
         baseReward
       );
+
       // no rsi because top-up is used
-      const defaultRSI = await rewardPool.getDefaultRSI();
-      const expectedTopUpReward = await calculateExpectedReward(base, vestBonus, defaultRSI, topUpReward);
+      const expectedTopUpReward = await calculateExpectedReward(base, vestBonus, MIN_RSI_BONUS, topUpReward);
       const expectedReward = expectedBaseReward.add(expectedTopUpReward);
 
       // calculate max reward
       const maxVestBonus = await rewardPool.getVestingBonus(52);
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxBaseReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
       const maxTopUpReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, topUpReward);
       const maxReward = maxBaseReward.add(maxTopUpReward);
@@ -636,7 +636,6 @@ export function RunVestedDelegateClaimTests(): void {
       const base = await rewardPool.base();
       const vestBonus = await rewardPool.getVestingBonus(1);
       const rsi = await rewardPool.rsi();
-      const defaultRSI = await rewardPool.getDefaultRSI();
       const expectedBaseReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
 
       // top-up
@@ -654,12 +653,12 @@ export function RunVestedDelegateClaimTests(): void {
       const topUpReward = (await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address)).sub(
         baseReward
       );
-      const expectedTopUpReward = await calculateExpectedReward(base, vestBonus, defaultRSI, topUpReward);
+      const expectedTopUpReward = await calculateExpectedReward(base, vestBonus, MIN_RSI_BONUS, topUpReward);
 
       const expectedReward = expectedBaseReward.add(expectedTopUpReward);
 
       // calculate max reward
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxVestBonus = await rewardPool.getVestingBonus(52);
       const maxBaseReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
       const maxTopUpReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, topUpReward);
@@ -879,7 +878,7 @@ export function RunVestedDelegateClaimTests(): void {
       const rsi = await rewardPool.rsi();
       const expectedBaseReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
 
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxVestBonus = await rewardPool.getVestingBonus(52);
       const maxBaseReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 
@@ -941,7 +940,7 @@ export function RunVestedDelegateClaimTests(): void {
       const rsi = await rewardPool.rsi();
       const reward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
 
-      const maxRSI = await rewardPool.getMaxRSI();
+      const maxRSI = await rewardPool.MAX_RSI_BONUS();
       const maxVestBonus = await rewardPool.getVestingBonus(52);
       const maxBaseReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 

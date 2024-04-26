@@ -125,7 +125,7 @@ abstract contract Vesting is APR {
         uint256 durationIncrease = _calculateDurationIncrease(amount, oldBalance, duration);
         positions[staker].duration = duration + durationIncrease;
         positions[staker].end = positions[staker].end + durationIncrease;
-        positions[staker].rsiBonus = 0;
+        positions[staker].rsiBonus = rsi;
     }
 
     /**
@@ -163,7 +163,7 @@ abstract contract Vesting is APR {
     ) internal pure returns (uint256) {
         uint256 bonus = (position.base + position.vestBonus);
         uint256 divider = DENOMINATOR;
-        if (rsi) {
+        if (rsi && position.rsiBonus != 0) {
             bonus = bonus * position.rsiBonus;
             divider *= divider;
         }

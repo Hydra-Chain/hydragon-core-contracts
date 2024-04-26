@@ -95,23 +95,6 @@ function INITIAL_MACRO_FACTOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### INITIAL_RSI_BONUS
-
-```solidity
-function INITIAL_RSI_BONUS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MANAGER_ROLE
 
 ```solidity
@@ -128,6 +111,40 @@ function MANAGER_ROLE() external view returns (bytes32)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes32 | undefined |
+
+### MAX_RSI_BONUS
+
+```solidity
+function MAX_RSI_BONUS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### MIN_RSI_BONUS
+
+```solidity
+function MIN_RSI_BONUS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### applyMaxReward
 
@@ -421,23 +438,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 | uptime | Uptime[] | undefined |
 | epochSize | uint256 | undefined |
 
-### getDefaultRSI
-
-```solidity
-function getDefaultRSI() external pure returns (uint256 nominator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
-
 ### getDelegationPoolParamsHistory
 
 ```solidity
@@ -548,23 +548,6 @@ function getMaxAPR() external view returns (uint256 nominator, uint256 denominat
 |---|---|---|
 | nominator | uint256 | undefined |
 | denominator | uint256 | undefined |
-
-### getMaxRSI
-
-```solidity
-function getMaxRSI() external pure returns (uint256 nominator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
 
 ### getRPSValues
 
@@ -1491,6 +1474,17 @@ event ValidatorRewardDistributed(address indexed validator, uint256 amount)
 
 
 ## Errors
+
+### InvalidRSI
+
+```solidity
+error InvalidRSI()
+```
+
+
+
+
+
 
 ### StakeRequirement
 

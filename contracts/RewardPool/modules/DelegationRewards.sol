@@ -192,12 +192,12 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         uint256 newBalance = balance + amount;
         if (newBalance < minDelegation) revert DelegateRequirement({src: "vesting", msg: "DELEGATION_TOO_LOW"});
 
-        // @note Potentially use memory variable to avoid get from storage twice
-        if (delegationPositions[validator][delegator].isMaturing()) {
+        VestingPosition memory position = delegationPositions[validator][delegator];
+        if (position.isMaturing()) {
             revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
         }
 
-        if (delegationPositions[validator][delegator].isActive()) {
+        if (position.isActive()) {
             revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
         }
 
