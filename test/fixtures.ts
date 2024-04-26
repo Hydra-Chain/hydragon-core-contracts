@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 /* eslint-disable camelcase */
 /* eslint-disable no-undef */
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 
 import * as mcl from "../ts/mcl";
@@ -12,7 +12,7 @@ import {
   RewardPool__factory,
   ValidatorSet__factory,
 } from "../typechain-types";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS } from "./constants";
+import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS, WEEK } from "./constants";
 import {
   getMaxEpochReward,
   commitEpochs,
@@ -258,14 +258,7 @@ async function withdrawableFixtureFunction(this: Mocha.Context) {
   );
 
   await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
-
-  await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
-    [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-    3, // number of epochs to commit
-    this.epochSize
-  );
+  await time.increase(WEEK);
 
   // * stake for the third validator in the latest epoch
   await validatorSet.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });

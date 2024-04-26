@@ -472,8 +472,9 @@ export function RunDelegationTests(): void {
       });
 
       it("should slash the amount when in active position", async function () {
-        const { systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } =
-          await loadFixture(this.fixtures.vestedDelegationFixture);
+        const { rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
 
         // ensure position is active
         const isActive = await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address);
@@ -525,13 +526,8 @@ export function RunDelegationTests(): void {
         // check if amount is properly slashed
         const balanceBefore = await vestManagerOwner.getBalance();
 
-        // commit Epoch so reward is available for withdrawal
-        await commitEpoch(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
-          this.epochSize
-        );
+        // commit increase time so reward is available for withdrawal
+        await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 
         const balanceAfter = await vestManagerOwner.getBalance();
@@ -543,8 +539,9 @@ export function RunDelegationTests(): void {
       });
 
       it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
-        const { systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } =
-          await loadFixture(this.fixtures.vestedDelegationFixture);
+        const { rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
 
         // ensure position is active
         const isActive = await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address);
@@ -577,13 +574,8 @@ export function RunDelegationTests(): void {
         // check if amount is properly slashed
         const balanceBefore = await vestManagerOwner.getBalance();
 
-        // commit Epoch so reward is available for withdrawal
-        await commitEpoch(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
-          this.epochSize
-        );
+        // commit increase time so reward is available for withdrawal
+        await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 
         const balanceAfter = await vestManagerOwner.getBalance();
@@ -619,14 +611,8 @@ export function RunDelegationTests(): void {
         await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedBalance);
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedBalance);
 
-        // commit one more epoch so withdraw to be available
-        await commitEpochs(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
-          3,
-          this.epochSize
-        );
+        // commit increase time so reward is available for withdrawal
+        await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 
         const balanceAfter = await vestManagerOwner.getBalance();

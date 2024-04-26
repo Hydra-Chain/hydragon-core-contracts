@@ -276,15 +276,8 @@ export function RunStakingTests(): void {
         const withdrawalAmount = await stakerValidatorSet.pendingWithdrawals(this.staker.address);
         expect(withdrawalAmount, "withdrawal amount = calculated amount").to.equal(unstakeAmount.sub(penalty));
 
-        // commit epoch after unstake, because it is required to wait 1 epoch to withdraw
-        await commitEpochs(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
-        );
-
+        // increase time to be able to withdraw
+        await time.increase(WEEK);
         await expect(stakerValidatorSet.withdraw(this.staker.address), "withdraw").to.changeEtherBalance(
           stakerValidatorSet,
           unstakeAmount.sub(penalty).mul(-1)
@@ -292,9 +285,7 @@ export function RunStakingTests(): void {
       });
 
       it("should slash when unstakes exactly 1 week after the start of the vesting position", async function () {
-        const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-          this.fixtures.newVestingValidatorFixture
-        );
+        const { stakerValidatorSet, rewardPool } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         const position = await rewardPool.positions(this.staker.address);
         const nextTimestamp = position.start.add(WEEK);
@@ -308,15 +299,8 @@ export function RunStakingTests(): void {
         const withdrawalAmount = await stakerValidatorSet.pendingWithdrawals(this.staker.address);
         expect(withdrawalAmount, "withdrawal amount = calculated amount").to.equal(this.minStake.sub(penalty));
 
-        // commit epoch after unstake, because it is required to wait 1 epoch to withdraw
-        await commitEpochs(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
-        );
-
+        // increase time to be able to withdraw
+        await time.increase(WEEK);
         await expect(stakerValidatorSet.withdraw(this.staker.address), "withdraw").to.changeEtherBalance(
           stakerValidatorSet,
           this.minStake.sub(penalty).mul(-1)
@@ -338,22 +322,14 @@ export function RunStakingTests(): void {
       });
 
       it("should withdraw and validate there are no pending withdrawals", async function () {
-        const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-          this.fixtures.newVestingValidatorFixture
-        );
+        const { stakerValidatorSet } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         const validator = await stakerValidatorSet.getValidator(this.staker.address);
 
         await stakerValidatorSet.unstake(validator.stake);
 
-        await commitEpochs(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
-        );
-
+        // increase time to be able to withdraw
+        await time.increase(WEEK);
         await stakerValidatorSet.withdraw(this.staker.address);
 
         expect(await stakerValidatorSet.pendingWithdrawals(this.staker.address)).to.equal(0);
