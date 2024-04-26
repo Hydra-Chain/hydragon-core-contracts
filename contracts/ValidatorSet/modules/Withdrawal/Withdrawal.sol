@@ -2,14 +2,13 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./IWithdrawal.sol";
+import "./../AccessControl/AccessControl.sol";
 import "./../../ValidatorSetBase.sol";
-
 import "./../../libs/WithdrawalQueue.sol";
 
-abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase, OwnableUpgradeable {
+abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase, AccessControl {
     using WithdrawalQueueLib for WithdrawalQueue;
 
     // TODO: This should be a parameter of the contract. Add NetworkParams based on the Polygon implementation

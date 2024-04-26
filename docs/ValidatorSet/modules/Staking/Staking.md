@@ -127,6 +127,22 @@ function bls() external view returns (contract IBLS)
 |---|---|---|
 | _0 | contract IBLS | undefined |
 
+### changeWithdrawalWaitPeriod
+
+```solidity
+function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
+```
+
+Changes the withdrawal wait period.
+
+*This function should be called only by the Governed contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newWaitPeriod | uint256 | The new withdrawal wait period |
+
 ### currentEpochId
 
 ```solidity
@@ -583,7 +599,7 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 function withdrawable(address account) external view returns (uint256 amount)
 ```
 
-Calculates how much can be withdrawn for account in this epoch.
+Calculates how much can be withdrawn for account in this time.
 
 
 
