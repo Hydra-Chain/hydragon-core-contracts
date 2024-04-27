@@ -351,7 +351,7 @@ export function RunVestedDelegationRewardsTests(): void {
 }
 
 export function RunVestedDelegateClaimTests(): void {
-  describe.only("Claim delegation rewards", async function () {
+  describe("Claim delegation rewards", async function () {
     it("should revert when not the vest manager owner", async function () {
       const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
@@ -360,31 +360,65 @@ export function RunVestedDelegateClaimTests(): void {
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    it("should return when active position", async function () {
-      const { validatorSet, rewardPool, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
-        this.fixtures.weeklyVestedDelegationFixture
-      );
-      console.log("1");
+    it("should return when active position & withdraw", async function () {
+      const {
+        systemValidatorSet,
+        validatorSet,
+        rewardPool,
+        liquidToken,
+        vestManager,
+        vestManagerOwner,
+        delegatedValidator,
+      } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
       // ensure is active position
       expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").to
         .be.true;
 
-      // increase time to withdraw
-      await time.increase(WEEK);
+      await time.increase(WEEK * 2);
 
-      // withdraw previous amounts
-      console.log("2");
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation.div(2));
+      await vestManager.cutVestedDelegatePosition(delegatedValidator.address, this.minDelegation.div(2));
+
+      await time.increase(WEEK);
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize
+      );
+
       await vestManager.withdraw(vestManagerOwner.address);
-      console.log("3");
       expect(
         await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
         "getRawDelegatorReward"
       ).to.be.gt(0);
-      console.log("4");
+      expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.be.eq(0);
+    });
+
+    it("should return when active position & claim", async function () {
+      const { systemValidatorSet, validatorSet, rewardPool, vestManager, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      // ensure is active position
+      expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").to
+        .be.true;
+
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize
+      );
+
+      expect(
+        await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
+        "getRawDelegatorReward"
+      ).to.be.gt(0);
       // claim
       await vestManager.claimVestedPositionReward(delegatedValidator.address, 0, 0);
       expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.be.eq(0);
-      console.log("5");
     });
 
     it("should return when unused position", async function () {
