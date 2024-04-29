@@ -1,11 +1,11 @@
-// Run: npx hardhat run scripts/InRangeEvents.ts --network childTest
+// Run: npx hardhat run scripts/InRangeEvents.ts --network childTest || npm run InRangeEvents:childTest
 import { getEventsByFilters } from "./_helper";
 
 // Input parameters for the script:
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
 const CONTRACT_NAME = "RewardPool";
 const EVENT = "ValidatorRewardDistributed(address indexed validator, uint256 amount)";
-const VALIDATOR_ADDRESS = process.env.ADDRESS_FOR_SCRIPTS;
+const VALIDATOR_ADDRESS = process.env.VALIDATOR_ADDRESS_FOR_SCRIPTS;
 const YOUR_START_BLOCK = 1300500;
 const YOUR_END_BLOCK = 1301500;
 

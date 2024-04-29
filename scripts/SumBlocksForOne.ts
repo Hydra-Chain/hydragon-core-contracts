@@ -1,11 +1,11 @@
-// Run: npx hardhat run scripts/SumBlockForOne.ts --network childTest
+// Run: npx hardhat run scripts/SumBlocksForOne.ts --network childTest || npm run SumBlocksForOne:childTest
 import { getTransactionsByBlock, decodeTransaction } from "./_helper";
 
 // Input parameters for the script:
 const BLOCK_NUMBER = 1301000;
 const MAX_BLOCK_NUMBER = 1335500;
-const VALIDATOR_ADDRESS = process.env.ADDRESS_FOR_SCRIPTS;
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
+const VALIDATOR_ADDRESS = process.env.VALIDATOR_ADDRESS_FOR_SCRIPTS;
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105"; // RewardPool contract address
 const FUNCTION_NAME = "distributeRewardsFor";
 
 // Get the signed blocks for validator from each the block

@@ -34,7 +34,13 @@
     "coverage": "npx hardhat coverage",
     "coverage:foundry": "forge coverage --report lcov && genhtml -o forge-coverage lcov.info",
     "prepare": "husky install",
-    "husky:pre-commit": ""
+    "husky:pre-commit": "",
+    "Decode:childTest": "npx hardhat run scripts/Decode.ts --network childTest",
+    "GetBlockData:childTest": "npx hardhat run scripts/GetBlockData.ts --network childTest",
+    "GetLastBlock:childTest": "npx hardhat run scripts/GetLastBlock.ts --network childTest",
+    "InRangeEvents:childTest": "npx hardhat run scripts/InRangeEvents.ts --network childTest",
+    "SumBlocksForOne:childTest": "npx hardhat run scripts/SumBlocksForOne.ts --network childTest",
+    "SumBlocksForAll:childTest": "npx hardhat run scripts/SumBlocksForAll.ts --network childTest"
   },
   "dependencies": {
     "@defi-wonderland/smock": "^2.3.4",
