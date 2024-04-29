@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/Decode.ts --network childTest
+// Run: npx hardhat run scripts/Decode.ts --network childTest || npm run Decode:childTest
 import { decodeTransaction } from "./_helper";
 
 // Input parameters for the script:

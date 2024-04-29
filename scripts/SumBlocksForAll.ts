@@ -1,9 +1,9 @@
-// Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest
+// Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest || npm run SumBlocksForAll:childTest
 import { getTransactionsByBlock, decodeTransaction, getCurrentBlock } from "./_helper";
 
 // Input parameters for the script:
 const CHECKED_BLOCKS = 100000; // Number of blocks to check behind from the given block number
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105"; // RewardPool contract address
 const FUNCTION_NAME = "distributeRewardsFor";
 
 // Get the last block that gave uptime
