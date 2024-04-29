@@ -250,4 +250,11 @@ interface IRewardPool {
      * @return Amount delegated (in MATIC wei)
      */
     function totalDelegationOf(address validator) external view returns (uint256);
+
+    /**
+     * @dev Should be called only by the Governance.
+     * @notice Changes the minDelegationAmount
+     * @param newMinDelegation New minimum delegation amount
+     */
+    function changeMinDelegation(uint256 newMinDelegation) external;
 }

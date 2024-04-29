@@ -10,6 +10,22 @@
 
 ## Methods
 
+### changeMinStake
+
+```solidity
+function changeMinStake(uint256 newMinStake) external nonpayable
+```
+
+Changes minimum stake required for validators.
+
+*Should be called by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinStake | uint256 | New minimum stake |
+
 ### register
 
 ```solidity

@@ -37,4 +37,11 @@ interface IStaking {
      * @param amount Amount to unstake
      */
     function unstake(uint256 amount) external;
+
+    /**
+     * @dev Should be called by the Governance.
+     * @notice Changes minimum stake required for validators.
+     * @param newMinStake New minimum stake
+     */
+    function changeMinStake(uint256 newMinStake) external;
 }

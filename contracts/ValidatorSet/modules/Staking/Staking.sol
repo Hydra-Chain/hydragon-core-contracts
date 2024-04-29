@@ -38,8 +38,8 @@ abstract contract Staking is
     }
 
     function __Staking_init_unchained(uint256 newMinStake) internal onlyInitializing {
-        if (newMinStake < 1 ether) revert InvalidMinStake(newMinStake);
-        minStake = newMinStake;
+        _changeMinStake(newMinStake);
+
     }
 
     // _______________ External functions _______________
@@ -89,6 +89,13 @@ abstract contract Staking is
         _registerWithdrawal(msg.sender, amountToWithdraw);
 
         emit Unstaked(msg.sender, amount);
+    }
+
+    /**
+     * @inheritdoc IStaking
+     */
+    function changeMinStake(uint256 newMinStake) external onlyOwner {
+        _changeMinStake(newMinStake);
     }
 
     // _______________ Internal functions _______________
@@ -143,6 +150,11 @@ abstract contract Staking is
         validators[validator].commission = newCommission;
 
         emit CommissionUpdated(validator, newCommission);
+    }
+
+    function _changeMinStake(uint256 newMinStake) private {
+        if (newMinStake < 1 ether) revert InvalidMinStake(newMinStake);
+        minStake = newMinStake;
     }
 
     // slither-disable-next-line unused-state,naming-convention

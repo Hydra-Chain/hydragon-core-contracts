@@ -137,11 +137,22 @@ Changes the withdrawal wait period.
 
 *This function should be called only by the Governed contract.*
 
+### changeMinStake
+
+```solidity
+function changeMinStake(uint256 newMinStake) external nonpayable
+```
+
+Changes minimum stake required for validators.
+
+*Should be called by the Governance.*
+
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+| newMinStake | uint256 | New minimum stake |
 
 ### currentEpochId
 
@@ -859,6 +870,22 @@ error InvalidCommission(uint256 commission)
 | Name | Type | Description |
 |---|---|---|
 | commission | uint256 | undefined |
+
+### InvalidMinStake
+
+```solidity
+error InvalidMinStake(uint256 minStake)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| minStake | uint256 | undefined |
 
 ### InvalidSignature
 

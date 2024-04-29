@@ -383,6 +383,22 @@ Returns the total reward that is generated for a position
 |---|---|---|
 | reward | uint256 | for the delegator |
 
+### changeMinDelegation
+
+```solidity
+function changeMinDelegation(uint256 newMinDelegation) external nonpayable
+```
+
+Changes the minDelegationAmount
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinDelegation | uint256 | New minimum delegation amount |
+
 ### claimDelegatorReward
 
 ```solidity
@@ -1734,6 +1750,22 @@ error DelegateRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### InvalidMinDelegation
+
+```solidity
+error InvalidMinDelegation(uint256 minDelegation)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| minDelegation | uint256 | undefined |
 
 ### InvalidRSI
 

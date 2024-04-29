@@ -8,6 +8,37 @@ import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator }
 import { RunStakingClaimTests } from "../RewardPool/RewardPool.test";
 
 export function RunStakingTests(): void {
+  describe("Change minStake", function () {
+    it("should revert if non-Govern address try to change min stake", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      await expect(validatorSet.connect(this.signers.validators[0]).changeMinStake(this.minStake)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+    });
+
+    it("should revert if minStake is too low", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      const newMinStakeLow = this.minStake.div(2);
+
+      await expect(validatorSet.connect(this.signers.governance).changeMinStake(newMinStakeLow))
+        .to.be.revertedWithCustomError(validatorSet, "InvalidMinStake")
+        .withArgs(newMinStakeLow);
+
+      expect(await validatorSet.minStake()).to.be.equal(this.minStake);
+    });
+
+    it("should change min stake by Govern address", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      const newMinStake = this.minStake.mul(2);
+
+      await expect(validatorSet.connect(this.signers.governance).changeMinStake(newMinStake)).to.not.be.reverted;
+
+      expect(await validatorSet.minStake()).to.be.equal(newMinStake);
+    });
+  });
   describe("Stake", function () {
     it("should allow only registered validators to stake", async function () {
       // * Only the first three validators are being registered
