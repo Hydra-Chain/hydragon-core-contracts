@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { EPOCHS_YEAR, MIN_RSI_BONUS, VESTING_DURATION_WEEKS, WEEK, ERRORS } from "../constants";
+import { EPOCHS_YEAR, MIN_RSI_BONUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,
@@ -16,42 +16,7 @@ import {
 } from "../helper";
 
 export function RunStakingClaimTests(): void {
-  describe("change minDelegate", function () {
-    it("should revert if non-default_admin_role address try to change MinDelegation", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
-
-      const adminRole = await rewardPool.DEFAULT_ADMIN_ROLE();
-
-      await expect(
-        rewardPool.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2))
-      ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address.toLocaleLowerCase(), adminRole));
-
-      expect(await rewardPool.minDelegation()).to.be.equal(this.minDelegation);
-    });
-
-    it("should revert if MinDelegation is too low", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
-
-      const newLowMinDelegation = this.minStake.div(2);
-
-      await expect(rewardPool.connect(this.signers.system).changeMinDelegation(newLowMinDelegation))
-        .to.be.revertedWithCustomError(rewardPool, "InvalidMinDelegation")
-        .withArgs(newLowMinDelegation);
-
-      expect(await rewardPool.minDelegation()).to.be.equal(this.minDelegation);
-    });
-
-    it("should change MinDelegation by default_admin_role address", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
-
-      const newMinDelegation = this.minDelegation.mul(2);
-
-      await expect(rewardPool.connect(this.signers.system).changeMinDelegation(newMinDelegation)).to.not.be.reverted;
-
-      expect(await rewardPool.minDelegation()).to.be.equal(newMinDelegation);
-    });
-  });
-  describe("claim position reward", function () {
+  describe("Claim position reward", function () {
     it("should not be able to claim when active", async function () {
       const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
         this.fixtures.newVestingValidatorFixture

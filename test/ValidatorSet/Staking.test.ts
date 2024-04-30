@@ -39,6 +39,7 @@ export function RunStakingTests(): void {
       expect(await validatorSet.minStake()).to.be.equal(newMinStake);
     });
   });
+
   describe("Stake", function () {
     it("should allow only registered validators to stake", async function () {
       // * Only the first three validators are being registered
