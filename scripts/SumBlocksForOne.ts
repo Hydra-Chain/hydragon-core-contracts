@@ -1,16 +1,21 @@
-// Run: npx hardhat run scripts/SumBlocksForOne.ts --network childTest || npm run SumBlocksForOne:childTest
+// Run: npx hardhat run scripts/SumBlocksForOne.ts --network childTest
 import { getTransactionsByBlock, decodeTransaction } from "./_helper";
 
 // Input parameters for the script:
-const BLOCK_NUMBER = 1301000;
-const MAX_BLOCK_NUMBER = 1335500;
-const VALIDATOR_ADDRESS = process.env.VALIDATOR_ADDRESS_FOR_SCRIPTS;
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105"; // RewardPool contract address
-const FUNCTION_NAME = "distributeRewardsFor";
+const BLOCK_NUMBER = process.env.SUM_BLOCKS_FOR_ONE_BLOCK_NUMBER;
+const MAX_BLOCK_NUMBER = process.env.SUM_BLOCKS_FOR_ONE_MAX_BLOCK_NUMBER;
+const VALIDATOR_ADDRESS = process.env.SUM_BLOCKS_FOR_ONE_VALIDATOR_ADDRESS;
+const CONTRACT_ADDRESS = process.env.SUM_BLOCKS_FOR_ONE_CONTRACT_ADDRESS;
+const FUNCTION_NAME = process.env.SUM_BLOCKS_FOR_ONE_FUNCTION_NAME;
 
 // Get the signed blocks for validator from each the block
 async function getDataFromBlock(_blockNumber: number) {
   const block = await getTransactionsByBlock(_blockNumber);
+  if (!CONTRACT_ADDRESS || !FUNCTION_NAME || !VALIDATOR_ADDRESS) {
+    console.error("Environment variables are not set.");
+    process.exitCode = 1;
+    return;
+  }
   const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
   if (decodedData === undefined || decodedData.uptime === undefined) {
     return 0;
@@ -41,7 +46,12 @@ from ${BLOCK_NUMBER} to ${MAX_BLOCK_NUMBER} block
 _________________________________`
   );
   let sum: number = 0;
-  for (let i = BLOCK_NUMBER; i < MAX_BLOCK_NUMBER; i += 500) {
+  if (!BLOCK_NUMBER || !MAX_BLOCK_NUMBER) {
+    console.error("Environment variables are not set.");
+    process.exitCode = 1;
+    return;
+  }
+  for (let i = Number(BLOCK_NUMBER); i < Number(MAX_BLOCK_NUMBER); i += 500) {
     const blocks = await getDataFromBlock(i);
     const blockToNum = parseInt(blocks);
     sum += blockToNum;
@@ -55,14 +65,3 @@ getSumBlocks().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
-// eslint-disable-next-line no-unused-vars
-const FRI_TIMESTAMP = 1713537000; // 17:30 19.04.2024
-// eslint-disable-next-line no-unused-vars
-const BFR_TIMESTAMP = 1713536588; // 17:23 19.04.2024 1300500 block
-// eslint-disable-next-line no-unused-vars
-const AFT_TIMESTAMP = 1713537763; // 17:42 19.04.2024 1301000 block
-// eslint-disable-next-line no-unused-vars
-const SAT_TIMESTAMP = 1713623400; // 17:30 20.04.2024
-// eslint-disable-next-line no-unused-vars
-const MAX_TIMESTAMP = 1713623616; // 17:33 20.04.2024 1335500 block

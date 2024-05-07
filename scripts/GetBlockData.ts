@@ -1,11 +1,15 @@
-// Run: npx hardhat run scripts/GetBlockData.ts --network childTest || npm run GetBlockData:childTest
+// Run: npx hardhat run scripts/GetBlockData.ts --network childTest
 import { getTransactionsByBlock } from "./_helper";
 
 // Input parameters for the script:
-const BLOCK_NUMBER = 1441500;
+const BLOCK_NUMBER = process.env.GET_BLOCK_DATA_BLOCK_NUMBER;
 
-async function getBlockData(blockNumber: number) {
-  const block = await getTransactionsByBlock(blockNumber);
+async function getBlockData() {
+  if (!BLOCK_NUMBER) {
+    console.error("The GET_BLOCK_DATA_BLOCK_NUMBER environment variable is not set.");
+    process.exitCode = 1;
+  }
+  const block = await getTransactionsByBlock(Number(BLOCK_NUMBER));
   console.log(`
 __________Block details__________
 
@@ -17,7 +21,7 @@ _________________________________
 }
 
 // Run the script
-getBlockData(BLOCK_NUMBER).catch((error) => {
+getBlockData().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });

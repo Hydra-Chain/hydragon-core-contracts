@@ -1,13 +1,13 @@
-// Run: npx hardhat run scripts/InRangeEvents.ts --network childTest || npm run InRangeEvents:childTest
+// Run: npx hardhat run scripts/InRangeEvents.ts --network childTest
 import { getEventsByFilters } from "./_helper";
 
 // Input parameters for the script:
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105";
-const CONTRACT_NAME = "RewardPool";
-const EVENT = "ValidatorRewardDistributed(address indexed validator, uint256 amount)";
-const VALIDATOR_ADDRESS = process.env.VALIDATOR_ADDRESS_FOR_SCRIPTS;
-const YOUR_START_BLOCK = 1300500;
-const YOUR_END_BLOCK = 1301500;
+const CONTRACT_ADDRESS = process.env.IN_RANGE_EVENTS_CONTRACT_ADDRESS;
+const CONTRACT_NAME = process.env.IN_RANGE_EVENTS_CONTRACT_NAME;
+const EVENT = process.env.IN_RANGE_EVENTS_EVENT;
+const VALIDATOR_ADDRESS = process.env.IN_RANGE_EVENTS_VALIDATOR_ADDRESS;
+const YOUR_START_BLOCK = process.env.IN_RANGE_EVENTS_START_BLOCK;
+const YOUR_END_BLOCK = process.env.IN_RANGE_EVENTS_END_BLOCK;
 
 async function getEventsByIndexedAddress(
   contractAddress: string,
@@ -31,14 +31,19 @@ _________________________________`
 }
 
 // Run the script
-getEventsByIndexedAddress(
-  CONTRACT_ADDRESS,
-  CONTRACT_NAME,
-  EVENT,
-  VALIDATOR_ADDRESS,
-  YOUR_START_BLOCK,
-  YOUR_END_BLOCK
-).catch((error) => {
-  console.error(error);
+if (CONTRACT_ADDRESS && CONTRACT_NAME && EVENT && YOUR_START_BLOCK && YOUR_END_BLOCK) {
+  getEventsByIndexedAddress(
+    CONTRACT_ADDRESS,
+    CONTRACT_NAME,
+    EVENT,
+    VALIDATOR_ADDRESS,
+    Number(YOUR_START_BLOCK),
+    Number(YOUR_END_BLOCK)
+  ).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+} else {
+  console.error("Environment variables are not set.");
   process.exitCode = 1;
-});
+}
