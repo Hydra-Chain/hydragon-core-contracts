@@ -1,10 +1,10 @@
-// Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest || npm run SumBlocksForAll:childTest
+// Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest
 import { getTransactionsByBlock, decodeTransaction, getCurrentBlock } from "./_helper";
 
 // Input parameters for the script:
-const CHECKED_BLOCKS = 100000; // Number of blocks to check behind from the given block number
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000105"; // RewardPool contract address
-const FUNCTION_NAME = "distributeRewardsFor";
+const CHECKED_BLOCKS = process.env.SUM_BLOCKS_FOR_ALL_CHECKED_BLOCKS;
+const CONTRACT_ADDRESS = process.env.SUM_BLOCKS_FOR_ALL_CONTRACT_ADDRESS;
+const FUNCTION_NAME = process.env.SUM_BLOCKS_FOR_ALL_FUNCTION_NAME;
 
 // Get the last block that gave uptime
 async function getLastBlockNumberReward() {
@@ -17,6 +17,11 @@ async function getLastBlockNumberReward() {
 // Get the signed blocks for validators from each block
 async function getDataFromBlock(_blockNumber: number) {
   const block = await getTransactionsByBlock(_blockNumber);
+  if (!CONTRACT_ADDRESS || !FUNCTION_NAME) {
+    console.error("Environment variables are not set.");
+    process.exitCode = 1;
+    return;
+  }
   const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
   if (decodedData === undefined || decodedData.uptime === undefined) {
     return 0;
@@ -60,7 +65,13 @@ async function sumValuesForAddresses(_blockNumber: number, _BlockBackToBeChecked
 (async () => {
   // Can Hardcode value for specific block number (make sure it is rounded to 500)
   const latestBlockNumber = await getLastBlockNumberReward();
-  sumValuesForAddresses(latestBlockNumber, CHECKED_BLOCKS).catch((error) => {
+  if (!CHECKED_BLOCKS) {
+    console.error("Environment variables are not set.");
+    process.exitCode = 1;
+    return;
+  }
+  const checkedBlocks = parseInt(CHECKED_BLOCKS);
+  sumValuesForAddresses(latestBlockNumber, checkedBlocks).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });
