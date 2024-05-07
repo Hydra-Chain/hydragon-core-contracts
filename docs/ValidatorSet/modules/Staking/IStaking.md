@@ -206,4 +206,15 @@ error InvalidMinStake()
 
 
 
+### LowStake
+
+```solidity
+error LowStake()
+```
+
+
+
+
+
+
 

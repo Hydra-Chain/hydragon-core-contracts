@@ -9,6 +9,7 @@ interface IStaking {
 
     error InvalidCommission(uint256 commission);
     error InvalidMinStake();
+    error LowStake();
 
     /**
      * @notice Sets commission for validator.

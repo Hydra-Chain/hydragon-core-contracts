@@ -84,13 +84,7 @@ abstract contract Staking is
      * @inheritdoc IStaking
      */
     function unstake(uint256 amount) external {
-        uint256 balanceAfterUnstake = _unstake(amount);
-        StateSyncer._syncStake(msg.sender, balanceAfterUnstake);
-        LiquidStaking._collectTokens(msg.sender, amount);
-        uint256 amountToWithdraw = rewardPool.onUnstake(msg.sender, amount, balanceAfterUnstake);
-        _registerWithdrawal(msg.sender, amountToWithdraw);
-
-        emit Unstaked(msg.sender, amount);
+        _handleValidatorUnstake(msg.sender, amount);
     }
 
     /**
@@ -127,20 +121,30 @@ abstract contract Staking is
         emit Staked(account, amount);
     }
 
-    // _______________ Private functions _______________
-
-    function _unstake(uint256 amount) private returns (uint256) {
-        uint256 currentBalance = balanceOf(msg.sender);
+    function _unstake(address validator, uint256 amount) internal returns (uint256) {
+        uint256 currentBalance = balanceOf(validator);
         if (amount > currentBalance) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
         uint256 balanceAfterUnstake = currentBalance - amount;
         if (balanceAfterUnstake < minStake && balanceAfterUnstake != 0)
             revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
-        _burn(msg.sender, amount);
+        _burn(validator, amount);
 
         return balanceAfterUnstake;
     }
+
+    function _handleValidatorUnstake(address validator, uint256 amount) internal {
+        uint256 balanceAfterUnstake = _unstake(validator, amount);
+        StateSyncer._syncStake(validator, balanceAfterUnstake);
+        LiquidStaking._collectTokens(validator, amount);
+        uint256 amountToWithdraw = rewardPool.onUnstake(validator, amount, balanceAfterUnstake);
+        _registerWithdrawal(validator, amountToWithdraw);
+
+        emit Unstaked(validator, amount);
+    }
+
+    // _______________ Private functions _______________
 
     function _ensureStakeIsInRange(uint256 amount, uint256 currentBalance) private view {
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});

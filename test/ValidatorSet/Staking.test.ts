@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests } from "../RewardPool/RewardPool.test";
 
@@ -104,7 +104,7 @@ export function RunStakingTests(): void {
     it("should not be able to unstake if there is insufficient staked balance", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const unstakeInsufficientAmount = this.minStake.add(hre.ethers.utils.parseEther("5"));
+      const unstakeInsufficientAmount = this.minStake.mul(3);
       await expect(validatorSet.connect(this.signers.validators[0]).unstake(unstakeInsufficientAmount))
         .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
         .withArgs("unstake", "INSUFFICIENT_BALANCE");
@@ -137,8 +137,8 @@ export function RunStakingTests(): void {
     it("should take pending unstakes into account", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const unstakeInsufficientAmount = hre.ethers.utils.parseEther("2.5");
-      const stakeTooLowAmount = hre.ethers.utils.parseEther("1.5");
+      const unstakeInsufficientAmount = this.minStake.mul(3);
+      const stakeTooLowAmount = this.minStake.mul(2).sub(5);
       await expect(validatorSet.connect(this.signers.validators[0]).unstake(unstakeInsufficientAmount))
         .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
         .withArgs("unstake", "INSUFFICIENT_BALANCE");
@@ -326,7 +326,7 @@ export function RunStakingTests(): void {
 
         // hardcode the penalty percent by 0.3% a week (9 weeks should be left)
         const bps = 9 * 30;
-        const penalty = this.minStake.mul(bps).div(10000);
+        const penalty = this.minStake.mul(bps).div(DENOMINATOR);
 
         const withdrawalAmount = await stakerValidatorSet.pendingWithdrawals(this.staker.address);
         expect(withdrawalAmount, "withdrawal amount = calculated amount").to.equal(this.minStake.sub(penalty));

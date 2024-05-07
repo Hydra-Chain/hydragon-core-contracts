@@ -931,6 +931,17 @@ error InvalidWaitPeriod()
 
 
 
+### LowStake
+
+```solidity
+error LowStake()
+```
+
+
+
+
+
+
 ### MustBeWhitelisted
 
 ```solidity
