@@ -22,9 +22,9 @@ export function RunStakingTests(): void {
 
       const newMinStakeLow = this.minStake.div(2);
 
-      await expect(validatorSet.connect(this.signers.governance).changeMinStake(newMinStakeLow))
-        .to.be.revertedWithCustomError(validatorSet, "InvalidMinStake")
-        .withArgs(newMinStakeLow);
+      await expect(
+        validatorSet.connect(this.signers.governance).changeMinStake(newMinStakeLow)
+      ).to.be.revertedWithCustomError(validatorSet, "InvalidMinStake");
 
       expect(await validatorSet.minStake()).to.be.equal(this.minStake);
     });

@@ -18,8 +18,10 @@ export function RunAPRTests(): void {
     it("should initialize correctly", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
       const managerRole = await rewardPool.MANAGER_ROLE();
+      const adminRole = await rewardPool.DEFAULT_ADMIN_ROLE();
 
       expect(await rewardPool.hasRole(managerRole, this.signers.governance.address)).to.be.true;
+      expect(await rewardPool.hasRole(adminRole, this.signers.governance.address)).to.be.true;
       expect(await rewardPool.base()).to.be.equal(INITIAL_BASE_APR);
       expect(await rewardPool.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
       expect(await rewardPool.rsi()).to.be.equal(0);

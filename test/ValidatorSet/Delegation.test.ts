@@ -15,15 +15,6 @@ import {
 
 export function RunDelegationTests(): void {
   describe("Change minDelegate", function () {
-    it("should check that Governance has default_admin_role", async function () {
-      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
-
-      const adminRole = await rewardPool.DEFAULT_ADMIN_ROLE();
-
-      expect(await rewardPool.hasRole(adminRole, this.signers.system.address)).to.be.false;
-      expect(await rewardPool.hasRole(adminRole, this.signers.admin.address)).to.be.false;
-      expect(await rewardPool.hasRole(adminRole, this.signers.governance.address)).to.be.true;
-    });
     it("should revert if non-default_admin_role address try to change MinDelegation", async function () {
       const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
 
@@ -41,9 +32,9 @@ export function RunDelegationTests(): void {
 
       const newLowMinDelegation = this.minStake.div(2);
 
-      await expect(rewardPool.connect(this.signers.governance).changeMinDelegation(newLowMinDelegation))
-        .to.be.revertedWithCustomError(rewardPool, "InvalidMinDelegation")
-        .withArgs(newLowMinDelegation);
+      await expect(
+        rewardPool.connect(this.signers.governance).changeMinDelegation(newLowMinDelegation)
+      ).to.be.revertedWithCustomError(rewardPool, "InvalidMinDelegation");
 
       expect(await rewardPool.minDelegation()).to.be.equal(this.minDelegation);
     });

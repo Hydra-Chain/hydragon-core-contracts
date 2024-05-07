@@ -8,5 +8,5 @@ error InvalidSignature(address signer);
 error ZeroAddress();
 error SendFailed();
 error InvalidCommission(uint256 commission);
-error InvalidMinStake(uint256 minStake);
-error InvalidMinDelegation(uint256 minDelegation);
+error InvalidMinStake();
+error InvalidMinDelegation();

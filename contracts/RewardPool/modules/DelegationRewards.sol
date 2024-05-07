@@ -14,6 +14,8 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     using DelegationPoolLib for DelegationPool;
     using VestingPositionLib for VestingPosition;
 
+    /// @notice A constant for the minimum delegation limit
+    uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     // @note maybe this must be part of the ValidatorSet
@@ -410,9 +412,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     // _______________ Private functions _______________
 
     function _changeMinDelegation(uint256 newMinDelegation) private {
-        if (newMinDelegation < 1 ether) { 
-            revert InvalidMinDelegation(newMinDelegation);
-        }
+        if (newMinDelegation < MIN_DELEGATION_LIMIT) revert InvalidMinDelegation();
         minDelegation = newMinDelegation;
     }
 

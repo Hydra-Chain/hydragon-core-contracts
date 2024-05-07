@@ -44,6 +44,23 @@ A constant for the maximum comission a validator can receive from the delegator&
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MIN_STAKE_LIMIT
+
+```solidity
+function MIN_STAKE_LIMIT() external view returns (uint256)
+```
+
+A constant for the minimum stake limit
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -1444,18 +1461,13 @@ error InvalidCommission(uint256 commission)
 ### InvalidMinStake
 
 ```solidity
-error InvalidMinStake(uint256 minStake)
+error InvalidMinStake()
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| minStake | uint256 | undefined |
 
 ### InvalidSignature
 

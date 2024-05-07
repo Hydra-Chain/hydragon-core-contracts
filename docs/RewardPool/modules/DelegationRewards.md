@@ -129,6 +129,23 @@ function MAX_RSI_BONUS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MIN_DELEGATION_LIMIT
+
+```solidity
+function MIN_DELEGATION_LIMIT() external view returns (uint256)
+```
+
+A constant for the minimum delegation limit
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_RSI_BONUS
 
 ```solidity
@@ -1544,18 +1561,13 @@ error DelegateRequirement(string src, string msg)
 ### InvalidMinDelegation
 
 ```solidity
-error InvalidMinDelegation(uint256 minDelegation)
+error InvalidMinDelegation()
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| minDelegation | uint256 | undefined |
 
 ### InvalidRSI
 
