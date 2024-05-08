@@ -10,6 +10,8 @@ import "./../libs/VestingPositionLib.sol";
 
 import "./../../common/Errors.sol";
 
+error InvalidMinDelegation();
+
 abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
     using DelegationPoolLib for DelegationPool;
     using VestingPositionLib for VestingPosition;
