@@ -133,15 +133,15 @@ Returns the total balance of a given validator
 function banValidator(address validator) external nonpayable
 ```
 
+Manual ban of a validator
 
-
-
+*can be executed only the governor/owner*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| validator | address | Address of the validator |
 
 ### bls
 
@@ -466,7 +466,7 @@ Sets commission for validator.
 function setReporterReward(uint256 newReward) external nonpayable
 ```
 
-
+Set the reward of the person who reports a validator
 
 
 
@@ -474,7 +474,7 @@ function setReporterReward(uint256 newReward) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| newReward | uint256 | undefined |
+| newReward | uint256 | Amount of the reward |
 
 ### setValidatorPenalty
 
@@ -482,7 +482,7 @@ function setReporterReward(uint256 newReward) external nonpayable
 function setValidatorPenalty(uint256 newPenalty) external nonpayable
 ```
 
-
+Set the penalty amount for the banned validators
 
 
 
@@ -490,7 +490,7 @@ function setValidatorPenalty(uint256 newPenalty) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| newPenalty | uint256 | undefined |
+| newPenalty | uint256 | Amount of the penalty |
 
 ### stake
 
