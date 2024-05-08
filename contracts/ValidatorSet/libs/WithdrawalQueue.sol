@@ -30,8 +30,14 @@ library WithdrawalQueueLib {
             return;
         }
 
-        self.withdrawals[tail] = WithdrawalData(amount, withdrawableTime);
-        self.tail++;
+        uint256 lastestTime = self.withdrawals[tail - 1].time;
+        assert(withdrawableTime >= lastestTime);
+        if (lastestTime == withdrawableTime) {
+            self.withdrawals[tail - 1].amount += amount;
+        } else {
+            self.withdrawals[tail] = WithdrawalData(amount, withdrawableTime);
+            self.tail++;
+        }
     }
 
     /**

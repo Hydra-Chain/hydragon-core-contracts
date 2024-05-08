@@ -8,6 +8,9 @@ import "./../AccessControl/AccessControl.sol";
 import "./../../ValidatorSetBase.sol";
 import "./../../libs/WithdrawalQueue.sol";
 
+error NoWithdrawalAvailable();
+error InvalidWaitPeriod();
+
 abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase, AccessControl {
     using WithdrawalQueueLib for WithdrawalQueue;
 
@@ -22,7 +25,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
         assert(to != address(0));
         WithdrawalQueue storage queue = _withdrawals[msg.sender];
         (uint256 amount, uint256 newHead) = queue.withdrawable();
-        require(amount > 0, "NO_WITHDRAWAL_AVAILABLE");
+        if (amount == 0) revert NoWithdrawalAvailable();
         queue.head = newHead;
 
         emit WithdrawalFinished(msg.sender, to, amount);
@@ -50,7 +53,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
      * @inheritdoc IWithdrawal
      */
     function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
-        require(newWaitPeriod > 0, "INVALID_WAIT_PERIOD");
+        if (newWaitPeriod == 0) revert InvalidWaitPeriod();
         WITHDRAWAL_WAIT_PERIOD = newWaitPeriod;
     }
 

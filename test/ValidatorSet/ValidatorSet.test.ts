@@ -814,7 +814,7 @@ describe("ValidatorSet", function () {
 
         await expect(
           validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.be.revertedWith("NO_WITHDRAWAL_AVAILABLE");
+        ).to.be.revertedWithCustomError(validatorSet, "NoWithdrawalAvailable");
       });
 
       it("should give the right amount on view function with multiple stake ", async function () {
@@ -872,6 +872,14 @@ describe("ValidatorSet", function () {
         await expect(
           validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
         ).to.be.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("should fail update withdraw time if we pass 0", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+        await expect(
+          validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(0)
+        ).to.be.revertedWithCustomError(validatorSet, "InvalidWaitPeriod");
       });
 
       it("should update withdraw time by governance account", async function () {

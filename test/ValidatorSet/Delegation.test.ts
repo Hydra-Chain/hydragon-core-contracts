@@ -526,7 +526,7 @@ export function RunDelegationTests(): void {
         // check if amount is properly slashed
         const balanceBefore = await vestManagerOwner.getBalance();
 
-        // commit increase time so reward is available for withdrawal
+        // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 
@@ -574,7 +574,7 @@ export function RunDelegationTests(): void {
         // check if amount is properly slashed
         const balanceBefore = await vestManagerOwner.getBalance();
 
-        // commit increase time so reward is available for withdrawal
+        // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 
@@ -611,7 +611,7 @@ export function RunDelegationTests(): void {
         await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedBalance);
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedBalance);
 
-        // commit increase time so reward is available for withdrawal
+        // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
         await vestManager.withdraw(vestManagerOwner.address);
 

@@ -141,7 +141,7 @@ Changes the withdrawal wait period.
 
 | Name | Type | Description |
 |---|---|---|
-| newWaitPeriod | uint256 | The new withdrawal wait period |
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
 ### currentEpochId
 
@@ -599,7 +599,7 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 function withdrawable(address account) external view returns (uint256 amount)
 ```
 
-Calculates how much can be withdrawn for account in this time.
+Calculates how much can be withdrawn for account at this time.
 
 
 
@@ -876,10 +876,32 @@ error InvalidSignature(address signer)
 |---|---|---|
 | signer | address | undefined |
 
+### InvalidWaitPeriod
+
+```solidity
+error InvalidWaitPeriod()
+```
+
+
+
+
+
+
 ### MustBeWhitelisted
 
 ```solidity
 error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### NoWithdrawalAvailable
+
+```solidity
+error NoWithdrawalAvailable()
 ```
 
 
