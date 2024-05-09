@@ -8,8 +8,6 @@ import "./BalanceState.sol";
 import "./../Withdrawal/Withdrawal.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
-error InvalidCommission(uint256 commission);
-error InvalidMinStake();
 
 abstract contract Staking is
     IStaking,

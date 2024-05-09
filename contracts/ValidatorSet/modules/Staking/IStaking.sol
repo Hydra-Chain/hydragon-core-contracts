@@ -7,6 +7,9 @@ interface IStaking {
     event Staked(address indexed validator, uint256 amount);
     event Unstaked(address indexed validator, uint256 amount);
 
+    error InvalidCommission(uint256 commission);
+    error InvalidMinStake();
+
     /**
      * @notice Sets commission for validator.
      * @param newCommission New commission (100 = 100%)
