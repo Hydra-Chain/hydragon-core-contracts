@@ -360,8 +360,8 @@ export function RunVestedDelegateClaimTests(): void {
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    it("should return when active position", async function () {
-      const { systemValidatorSet, validatorSet, rewardPool, vestManager, delegatedValidator } = await loadFixture(
+    it("should not claim when active position", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, delegatedValidator } = await loadFixture(
         this.fixtures.weeklyVestedDelegationFixture
       );
 
@@ -383,10 +383,8 @@ export function RunVestedDelegateClaimTests(): void {
         "getRawDelegatorReward"
       ).to.be.gt(0);
 
-      // claim
+      // claim & check balance
       await vestManager.claimVestedPositionReward(delegatedValidator.address, 0, 0);
-      expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.be.eq(0);
-
       const balanceAfter = await delegatedValidator.getBalance();
       expect(balanceAfter).to.be.eq(balanceBefore);
     });

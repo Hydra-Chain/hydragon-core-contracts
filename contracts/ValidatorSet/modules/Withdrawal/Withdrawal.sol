@@ -8,9 +8,6 @@ import "./../AccessControl/AccessControl.sol";
 import "./../../ValidatorSetBase.sol";
 import "./../../libs/WithdrawalQueue.sol";
 
-error NoWithdrawalAvailable();
-error InvalidWaitPeriod();
-
 abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase, AccessControl {
     using WithdrawalQueueLib for WithdrawalQueue;
 
