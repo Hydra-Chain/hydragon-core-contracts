@@ -6,7 +6,6 @@ import "./StateSyncer.sol";
 import "./LiquidStaking.sol";
 import "./BalanceState.sol";
 import "./../Withdrawal/Withdrawal.sol";
-import "./../AccessControl/AccessControl.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -16,8 +15,7 @@ abstract contract Staking is
     BalanceState,
     Withdrawal,
     LiquidStaking,
-    StateSyncer,
-    AccessControl
+    StateSyncer
 {
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;

@@ -44,6 +44,33 @@ function WITHDRAWAL_WAIT_PERIOD() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### acceptOwnership
+
+```solidity
+function acceptOwnership() external nonpayable
+```
+
+
+
+*The new owner accepts the ownership transfer.*
+
+
+### addToWhitelist
+
+```solidity
+function addToWhitelist(address[] whitelistAddreses) external nonpayable
+```
+
+Adds addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddreses | address[] | Array of address to whitelist |
+
 ### balanceOf
 
 ```solidity
@@ -82,6 +109,22 @@ function bls() external view returns (contract IBLS)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IBLS | undefined |
+
+### changeWithdrawalWaitPeriod
+
+```solidity
+function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
+```
+
+Changes the withdrawal wait period.
+
+*This function should be called only by the Governed contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
 ### currentEpochId
 
@@ -166,6 +209,40 @@ Gets all validators. Returns already unactive validators as well.
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
 
+### owner
+
+```solidity
+function owner() external view returns (address)
+```
+
+
+
+*Returns the address of the current owner.*
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### pendingOwner
+
+```solidity
+function pendingOwner() external view returns (address)
+```
+
+
+
+*Returns the address of the pending owner.*
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -187,6 +264,33 @@ Calculates how much is yet to become withdrawable for account.
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
+
+### removeFromWhitelist
+
+```solidity
+function removeFromWhitelist(address[] whitelistAddreses) external nonpayable
+```
+
+Deletes addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddreses | address[] | Array of address to remove from whitelist |
+
+### renounceOwnership
+
+```solidity
+function renounceOwnership() external nonpayable
+```
+
+
+
+*Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
+
 
 ### rewardPool
 
@@ -243,6 +347,22 @@ Returns the total supply
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Total supply |
+
+### transferOwnership
+
+```solidity
+function transferOwnership(address newOwner) external nonpayable
+```
+
+
+
+*Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one. Can only be called by the current owner.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newOwner | address | undefined |
 
 ### validators
 
@@ -312,7 +432,7 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 function withdrawable(address account) external view returns (uint256 amount)
 ```
 
-Calculates how much can be withdrawn for account in this epoch.
+Calculates how much can be withdrawn for account at this time.
 
 
 
@@ -331,6 +451,22 @@ Calculates how much can be withdrawn for account in this epoch.
 
 
 ## Events
+
+### AddedToWhitelist
+
+```solidity
+event AddedToWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
 
 ### Initialized
 
@@ -367,6 +503,56 @@ event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed e
 | endBlock `indexed` | uint256 | undefined |
 | epochRoot  | bytes32 | undefined |
 
+### OwnershipTransferStarted
+
+```solidity
+event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| previousOwner `indexed` | address | undefined |
+| newOwner `indexed` | address | undefined |
+
+### OwnershipTransferred
+
+```solidity
+event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| previousOwner `indexed` | address | undefined |
+| newOwner `indexed` | address | undefined |
+
+### RemovedFromWhitelist
+
+```solidity
+event RemovedFromWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
+
 ### WithdrawalFinished
 
 ```solidity
@@ -401,6 +587,53 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 |---|---|---|
 | account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+
+
+## Errors
+
+### InvalidWaitPeriod
+
+```solidity
+error InvalidWaitPeriod()
+```
+
+
+
+
+
+
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### NoWithdrawalAvailable
+
+```solidity
+error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
 
 
 

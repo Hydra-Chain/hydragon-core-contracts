@@ -4,15 +4,15 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import "./IWithdrawal.sol";
+import "./../AccessControl/AccessControl.sol";
 import "./../../ValidatorSetBase.sol";
-
 import "./../../libs/WithdrawalQueue.sol";
 
-abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase {
+abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, ValidatorSetBase, AccessControl {
     using WithdrawalQueueLib for WithdrawalQueue;
 
     // TODO: This should be a parameter of the contract. Add NetworkParams based on the Polygon implementation
-    uint256 public constant WITHDRAWAL_WAIT_PERIOD = 1;
+    uint256 public WITHDRAWAL_WAIT_PERIOD = 7 days;
     mapping(address => WithdrawalQueue) private _withdrawals;
 
     /**
@@ -21,7 +21,8 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
     function withdraw(address to) external nonReentrant {
         assert(to != address(0));
         WithdrawalQueue storage queue = _withdrawals[msg.sender];
-        (uint256 amount, uint256 newHead) = queue.withdrawable(currentEpochId);
+        (uint256 amount, uint256 newHead) = queue.withdrawable();
+        if (amount == 0) revert NoWithdrawalAvailable();
         queue.head = newHead;
 
         emit WithdrawalFinished(msg.sender, to, amount);
@@ -35,18 +36,27 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
      * @inheritdoc IWithdrawal
      */
     function withdrawable(address account) external view returns (uint256 amount) {
-        (amount, ) = _withdrawals[account].withdrawable(currentEpochId);
+        (amount, ) = _withdrawals[account].withdrawable();
     }
 
     /**
      * @inheritdoc IWithdrawal
      */
     function pendingWithdrawals(address account) external view returns (uint256) {
-        return _withdrawals[account].pending(currentEpochId);
+        return _withdrawals[account].pending();
+    }
+
+    /**
+     * @inheritdoc IWithdrawal
+     */
+    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
+        if (newWaitPeriod == 0) revert InvalidWaitPeriod();
+        WITHDRAWAL_WAIT_PERIOD = newWaitPeriod;
     }
 
     function _registerWithdrawal(address account, uint256 amount) internal {
-        _withdrawals[account].append(amount, currentEpochId + WITHDRAWAL_WAIT_PERIOD);
+        _withdrawals[account].append(amount, block.timestamp + WITHDRAWAL_WAIT_PERIOD);
         emit WithdrawalRegistered(account, amount);
     }
+
 }

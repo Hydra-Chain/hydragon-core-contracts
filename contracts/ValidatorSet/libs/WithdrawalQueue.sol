@@ -12,34 +12,31 @@ import "./IWithdrawalQueue.sol";
 library WithdrawalQueueLib {
     /**
      * @notice update queue with new withdrawal data
-     * @dev if there is already a withdrawal for the epoch being submitted,
-     * the amount will be added to that epoch; otherwise, a new withdrawal
-     * struct will be created in the queue
+     * @dev every time a new struct will be sumbited for withdrawal in the queue
      * @param self the WithdrawalQueue struct
      * @param amount the amount to withdraw
-     * @param epoch the epoch to withdraw
+     * @param withdrawableTime the time at which the withdrawal can be processed
      */
-    function append(WithdrawalQueue storage self, uint256 amount, uint256 epoch) internal {
+    function append(WithdrawalQueue storage self, uint256 amount, uint256 withdrawableTime) internal {
         assert(amount != 0);
+        assert(withdrawableTime > block.timestamp);
         uint256 head = self.head;
         uint256 tail = self.tail;
 
         // first element in empty list
         if (tail == head) {
-            self.withdrawals[tail] = WithdrawalData(amount, epoch);
+            self.withdrawals[tail] = WithdrawalData(amount, withdrawableTime);
             self.tail++;
             return;
         }
 
-        uint256 latestEpoch = self.withdrawals[tail - 1].epoch;
-        assert(epoch >= latestEpoch);
-        if (latestEpoch < epoch) {
-            // new withdrawal for next epoch
-            self.withdrawals[tail] = WithdrawalData(amount, epoch);
-            self.tail++;
-        } else {
-            // adding to existing withdrawal for next epoch
+        uint256 lastestTime = self.withdrawals[tail - 1].time;
+        assert(withdrawableTime >= lastestTime);
+        if (lastestTime == withdrawableTime) {
             self.withdrawals[tail - 1].amount += amount;
+        } else {
+            self.withdrawals[tail] = WithdrawalData(amount, withdrawableTime);
+            self.tail++;
         }
     }
 
@@ -55,38 +52,37 @@ library WithdrawalQueueLib {
     }
 
     /**
-     * @notice returns the amount withdrawable through a specified epoch
+     * @notice returns the amount withdrawable through a specified time
      * and new head index at that point
-     * @dev meant to be used with the current epoch being passed in
+     * @dev meant to be used with the current timestamp
      * @param self the WithdrawalQueue struct
-     * @param currentEpoch the epoch to check until
-     * @return amount the amount withdrawable through the specified epoch
+     * @return amount the amount withdrawable through the specified time
      * @return newHead the head of the queue once these withdrawals have been processed
      */
     function withdrawable(
-        WithdrawalQueue storage self,
-        uint256 currentEpoch
+        WithdrawalQueue storage self
     ) internal view returns (uint256 amount, uint256 newHead) {
+        uint256 currentTimestamp = block.timestamp;
         for (newHead = self.head; newHead < self.tail; newHead++) {
             WithdrawalData memory withdrawal = self.withdrawals[newHead];
-            if (withdrawal.epoch > currentEpoch) return (amount, newHead);
+            if (withdrawal.time > currentTimestamp) return (amount, newHead);
             amount += withdrawal.amount;
         }
     }
 
     /**
-     * @notice returns the amount withdrawable beyond a specified epoch
-     * @dev meant to be used with the current epoch being passed in
+     * @notice returns the amount withdrawable beyond a specified time
+     * @dev meant to be used with the current timestamp
      * @param self the WithdrawalQueue struct
-     * @param currentEpoch the epoch to check from
-     * @return amount the amount withdrawable from beyond the specified epoch
+     * @return amount the amount withdrawable from beyond the specified time
      */
-    function pending(WithdrawalQueue storage self, uint256 currentEpoch) internal view returns (uint256 amount) {
+    function pending(WithdrawalQueue storage self) internal view returns (uint256 amount) {
         uint256 tail = self.tail;
         if (tail == 0) return 0;
+        uint256 currentTimestamp = block.timestamp;
         for (uint256 i = tail - 1; i >= self.head; i--) {
             WithdrawalData memory withdrawal = self.withdrawals[i];
-            if (withdrawal.epoch <= currentEpoch) break;
+            if (withdrawal.time <= currentTimestamp) break;
             amount += withdrawal.amount;
             if (i == 0) break;
         }

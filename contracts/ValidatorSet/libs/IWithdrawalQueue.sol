@@ -4,11 +4,11 @@ pragma solidity 0.8.17;
 /**
  * @notice data type for withdrawals
  * @param amount the amount to withdraw
- * @param epoch the epoch of the withdrawal
+ * @param time the timestamp of the withdrawal
  */
 struct WithdrawalData {
     uint256 amount;
-    uint256 epoch;
+    uint256 time;
 }
 
 /**

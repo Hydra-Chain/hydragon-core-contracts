@@ -360,13 +360,15 @@ export function RunVestedDelegateClaimTests(): void {
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    it("should return when active position", async function () {
-      const { systemValidatorSet, validatorSet, rewardPool, vestManager, vestManagerOwner, delegatedValidator } =
-        await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+    it("should not claim when active position", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
 
       // ensure is active position
       expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").to
         .be.true;
+      const balanceBefore = await delegatedValidator.getBalance();
 
       // reward to be accumulated
       await commitEpoch(
@@ -375,17 +377,16 @@ export function RunVestedDelegateClaimTests(): void {
         [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
         this.epochSize
       );
-      // withdraw previous amounts
-      await vestManager.withdraw(vestManagerOwner.address);
 
       expect(
         await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
         "getRawDelegatorReward"
       ).to.be.gt(0);
 
-      // claim
+      // claim & check balance
       await vestManager.claimVestedPositionReward(delegatedValidator.address, 0, 0);
-      expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.be.eq(0);
+      const balanceAfter = await delegatedValidator.getBalance();
+      expect(balanceAfter).to.be.eq(balanceBefore);
     });
 
     it("should return when unused position", async function () {

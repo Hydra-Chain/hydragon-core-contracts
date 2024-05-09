@@ -10,6 +10,22 @@
 
 ## Methods
 
+### changeWithdrawalWaitPeriod
+
+```solidity
+function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
+```
+
+Changes the withdrawal wait period.
+
+*This function should be called only by the Governed contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -54,7 +70,7 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 function withdrawable(address account) external view returns (uint256)
 ```
 
-Calculates how much can be withdrawn for account in this epoch.
+Calculates how much can be withdrawn for account at this time.
 
 
 
@@ -108,6 +124,31 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 |---|---|---|
 | account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+
+
+## Errors
+
+### InvalidWaitPeriod
+
+```solidity
+error InvalidWaitPeriod()
+```
+
+
+
+
+
+
+### NoWithdrawalAvailable
+
+```solidity
+error NoWithdrawalAvailable()
+```
+
+
+
+
 
 
 
