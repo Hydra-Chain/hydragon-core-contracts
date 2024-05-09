@@ -127,3 +127,28 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 
+## Errors
+
+### InvalidWaitPeriod
+
+```solidity
+error InvalidWaitPeriod()
+```
+
+
+
+
+
+
+### NoWithdrawalAvailable
+
+```solidity
+error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+
