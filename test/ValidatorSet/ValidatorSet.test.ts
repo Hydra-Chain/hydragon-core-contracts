@@ -776,22 +776,45 @@ describe("ValidatorSet", function () {
     it("should emit StakeChanged event on open vested position", async function () {
       const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
 
-      const validator = this.signers.validators[0];
-      const { totalStake } = await validatorSet.getValidator(validator.address);
+  describe("Withdraw", function () {
+    it("should fail the withdrawal", async function () {
+      const { validatorSet, unstakedValidator } = await loadFixture(this.fixtures.withdrawableFixture);
 
-      const vestingDuration = 12; // weeks
+      const validator = await validatorSet.getValidator(unstakedValidator.address);
+      const balanceAfterUnstake = this.minStake.mul(2).sub(this.minStake.div(2));
+      expect(validator.stake, "validator stake").to.equal(balanceAfterUnstake);
 
-      await expect(
-        vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake }),
-        "emit StakeChanged"
-      )
-        .to.emit(validatorSet, "StakeChanged")
-        .withArgs(validator.address, totalStake.add(this.minStake));
+      await setBalance(validatorSet.address, 0);
+      const balance = await hre.ethers.provider.getBalance(validatorSet.address);
+      expect(balance, "ValidatorSet balance").to.equal(0);
 
-      // to ensure that delegate is immediately applied on the validator stake
-      expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-        totalStake.add(this.minStake)
+      await expect(validatorSet.connect(unstakedValidator).withdraw(unstakedValidator.address)).to.be.revertedWith(
+        "WITHDRAWAL_FAILED"
       );
+    });
+
+    it("should withdraw", async function () {
+      const { validatorSet, unstakedValidator, unstakedAmount } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      expect(await validatorSet.connect(unstakedValidator).withdraw(unstakedValidator.address), "withdraw")
+        .to.emit(validatorSet, "WithdrawalFinished")
+        .withArgs(validatorSet.address, unstakedValidator.address, unstakedAmount);
+      expect(await validatorSet.pendingWithdrawals(unstakedValidator.address), "pendingWithdrawals").to.equal(0);
+      expect(await validatorSet.withdrawable(unstakedValidator.address), "withdrawable").to.equal(0);
+    });
+  });
+
+  describe("Delegation", function () {
+    RunDelegationTests();
+  });
+
+  describe("Set Commision", function () {
+    it("should revert when call setCommission for inactive validator", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(validatorSet.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
+        .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+        .withArgs("VALIDATOR");
     });
 
     it("should emit StakeChanged event on top-up vested position", async function () {

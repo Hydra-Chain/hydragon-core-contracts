@@ -237,7 +237,7 @@ function banValidator(address validator) external nonpayable
 
 Manual ban of a validator
 
-*can be executed only the governor/owner*
+*Function can be executed only by the governor/owner*
 
 #### Parameters
 
@@ -1153,6 +1153,17 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 |---|---|---|
 | to | address | Address to withdraw to |
 
+### withdrawBannedFunds
+
+```solidity
+function withdrawBannedFunds() external nonpayable
+```
+
+Withdraw funds left for a banned validator
+
+*Function can be executed only by the banned validator*
+
+
 ### withdrawable
 
 ```solidity
@@ -1174,6 +1185,29 @@ Calculates how much can be withdrawn for account at this time.
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | Amount withdrawable (in wei) |
+
+### withdrawalBalances
+
+```solidity
+function withdrawalBalances(address) external view returns (uint256 liquidTokens, uint256 withdrawableAmount)
+```
+
+The withdrawal info that is required for a banned validator to withdraw the funds left
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| liquidTokens | uint256 | undefined |
+| withdrawableAmount | uint256 | undefined |
 
 
 
@@ -1686,16 +1720,5 @@ error Unauthorized(string only)
 | Name | Type | Description |
 |---|---|---|
 | only | string | undefined |
-
-### ZeroAddress
-
-```solidity
-error ZeroAddress()
-```
-
-
-
-
-
 
 

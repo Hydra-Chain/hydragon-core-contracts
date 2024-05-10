@@ -84,7 +84,13 @@ abstract contract Staking is
      * @inheritdoc IStaking
      */
     function unstake(uint256 amount) external {
-        _handleValidatorUnstake(msg.sender, amount);
+        uint256 balanceAfterUnstake = _unstake(msg.sender, amount);
+        StateSyncer._syncStake(msg.sender, balanceAfterUnstake);
+        LiquidStaking._collectTokens(msg.sender, amount);
+        uint256 amountToWithdraw = rewardPool.onUnstake(msg.sender, amount, balanceAfterUnstake);
+        _registerWithdrawal(msg.sender, amountToWithdraw);
+
+        emit Unstaked(msg.sender, amount);
     }
 
     /**
@@ -132,16 +138,6 @@ abstract contract Staking is
         _burn(validator, amount);
 
         return balanceAfterUnstake;
-    }
-
-    function _handleValidatorUnstake(address validator, uint256 amount) internal {
-        uint256 balanceAfterUnstake = _unstake(validator, amount);
-        StateSyncer._syncStake(validator, balanceAfterUnstake);
-        LiquidStaking._collectTokens(validator, amount);
-        uint256 amountToWithdraw = rewardPool.onUnstake(validator, amount, balanceAfterUnstake);
-        _registerWithdrawal(validator, amountToWithdraw);
-
-        emit Unstaked(validator, amount);
     }
 
     // _______________ Private functions _______________

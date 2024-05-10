@@ -785,7 +785,7 @@ export function RunDelegationTests(): void {
 
         const maxTopUps = 52; // one cannot top-up more than 52 times
         for (let i = 0; i < maxTopUps; i++) {
-          const delegatingAmount = this.minDelegation.div(i + 1); //  mul(i + 1).div(5);
+          const delegatingAmount = this.minDelegation.mul(i + 1).div(5);
           await vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: delegatingAmount });
 
           // commit epoch cause only 1 top-up can be made per epoch

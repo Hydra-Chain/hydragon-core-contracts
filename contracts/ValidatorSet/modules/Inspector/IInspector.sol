@@ -1,12 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+/**
+ * @notice Data type for the banned validators' withdrawals
+ * @param liquidTokens The amount of liquid tokens to be
+ * @param withdrawableAmount The amount that is available for withdrawal
+ */
+struct WithdrawalInfo {
+    uint256 liquidTokens;
+    uint256 withdrawableAmount;
+}
+
 interface IInspector {
     event ValidatorBanned(address indexed validator);
 
     /**
      * @notice Manual ban of a validator
-     * @dev can be executed only the governor/owner
+     * @dev Function can be executed only by the governor/owner
      * @param validator Address of the validator
      */
     function banValidator(address validator) external;
@@ -22,4 +32,10 @@ interface IInspector {
      * @param newReward Amount of the reward
      */
     function setReporterReward(uint256 newReward) external;
+
+    /**
+     * @notice Withdraw funds left for a banned validator
+     * @dev Function can be executed only by the banned validator
+     */
+    function withdrawBannedFunds() external;
 }

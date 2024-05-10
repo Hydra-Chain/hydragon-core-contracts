@@ -7,10 +7,36 @@ import "./../../../common/Errors.sol";
 
 abstract contract Inspector is IInspector, Staking {
     /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
-    uint256 public validatorPenalty = 700 ether;
+    uint256 public validatorPenalty;
 
     /// @notice The reward for the person who reports a validator that have to be banned
-    uint256 public reporterReward = 300 ether;
+    uint256 public reporterReward;
+
+    /**
+     * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
+     * @dev The withdrawal amount is calculated as the difference between
+     * the validator's total stake and any penalties applied due to a ban
+     */
+    mapping(address => WithdrawalInfo) public withdrawalBalances;
+
+    // _______________ Modifiers _______________
+
+    // Only address that is banned
+    modifier onlyBanned() {
+        if (validators[msg.sender].status != ValidatorStatus.Banned) revert Unauthorized("BANNED_VALIDATOR");
+        _;
+    }
+
+    // _______________ Initializer _______________
+
+    function __Inspector_init() internal onlyInitializing {
+        __Inspector_init_unchained();
+    }
+
+    function __Inspector_init_unchained() internal onlyInitializing {
+        validatorPenalty = 700 ether;
+        reporterReward = 300 ether;
+    }
 
     // _______________ External functions _______________
 
@@ -18,16 +44,20 @@ abstract contract Inspector is IInspector, Staking {
      * @inheritdoc IInspector
      */
     function banValidator(address validator) external onlyOwner {
-        if (validator == address(0)) revert ZeroAddress();
         if (validators[validator].status != ValidatorStatus.Registered) revert Unauthorized("UNREGISTERED_VALIDATOR");
 
         uint256 stakedAmount = balanceOf(validator);
-        if (stakedAmount < validatorPenalty) revert LowStake();
+        if (stakedAmount != 0) {
+            _burn(validator, stakedAmount);
+            StateSyncer._syncStake(validator, 0);
+            uint256 amountLeft = rewardPool.onUnstake(validator, stakedAmount, 0);
 
-        _burnPenalty(validator);
+            uint256 penalty = validatorPenalty;
+            if (amountLeft < penalty) penalty = amountLeft;
 
-        uint256 unstakeAmount = stakedAmount - validatorPenalty;
-        _handleValidatorUnstake(validator, unstakeAmount);
+            withdrawalBalances[validator].liquidTokens = stakedAmount;
+            withdrawalBalances[validator].withdrawableAmount = amountLeft - penalty;
+        }
 
         validators[validator].status = ValidatorStatus.Banned;
 
@@ -50,11 +80,17 @@ abstract contract Inspector is IInspector, Staking {
         reporterReward = newReward;
     }
 
-    // _______________ Private functions _______________
+    /**
+     * @inheritdoc IInspector
+     */
+    function withdrawBannedFunds() public onlyBanned {
+        WithdrawalInfo memory withdrawalBalance = withdrawalBalances[msg.sender];
 
-    function _burnPenalty(address validator) private {
-        _burn(validator, validatorPenalty);
-        LiquidStaking._collectTokens(validator, validatorPenalty);
+        LiquidStaking._collectTokens(msg.sender, withdrawalBalance.liquidTokens);
+
+        _withdraw(msg.sender, withdrawalBalance.withdrawableAmount);
+
+        delete withdrawalBalances[msg.sender];
     }
 
     // slither-disable-next-line unused-state,naming-convention

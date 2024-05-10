@@ -18,7 +18,7 @@ function banValidator(address validator) external nonpayable
 
 Manual ban of a validator
 
-*can be executed only the governor/owner*
+*Function can be executed only by the governor/owner*
 
 #### Parameters
 
@@ -57,6 +57,17 @@ Set the penalty amount for the banned validators
 | Name | Type | Description |
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
+
+### withdrawBannedFunds
+
+```solidity
+function withdrawBannedFunds() external nonpayable
+```
+
+Withdraw funds left for a banned validator
+
+*Function can be executed only by the banned validator*
+
 
 
 

@@ -32,8 +32,8 @@ export async function initializeContext(context: any) {
   context.epochId = hre.ethers.BigNumber.from(1);
   context.epochSize = hre.ethers.BigNumber.from(64);
   context.epochReward = hre.ethers.utils.parseEther("0.0000001");
-  context.minStake = hre.ethers.utils.parseEther("1000");
-  context.minDelegation = hre.ethers.utils.parseEther("1000");
+  context.minStake = hre.ethers.utils.parseEther("1");
+  context.minDelegation = hre.ethers.utils.parseEther("1");
   context.epochsInYear = 31500;
   context.epoch = {
     startBlock: hre.ethers.BigNumber.from(1),
@@ -115,8 +115,7 @@ export function initValidators(accounts: SignerWithAddress[], from: number = 0, 
   return validators;
 }
 
-export async function registerValidator(validatorSet: ValidatorSet, governance: any, account: any) {
-  await validatorSet.connect(governance).addToWhitelist([account.address]);
+export async function registerValidator(validatorSet: ValidatorSet, account: any) {
   const keyPair = mcl.newKeyPair();
   const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
 

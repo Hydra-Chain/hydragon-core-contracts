@@ -15,21 +15,18 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
     uint256 public WITHDRAWAL_WAIT_PERIOD = 7 days;
     mapping(address => WithdrawalQueue) private _withdrawals;
 
+    // _______________ External functions _______________
+
     /**
      * @inheritdoc IWithdrawal
      */
     function withdraw(address to) external nonReentrant {
-        assert(to != address(0));
         WithdrawalQueue storage queue = _withdrawals[msg.sender];
         (uint256 amount, uint256 newHead) = queue.withdrawable();
         if (amount == 0) revert NoWithdrawalAvailable();
         queue.head = newHead;
 
-        emit WithdrawalFinished(msg.sender, to, amount);
-
-        // slither-disable-next-line low-level-calls
-        (bool success, ) = to.call{value: amount}(""); // solhint-disable-line avoid-low-level-calls
-        require(success, "WITHDRAWAL_FAILED");
+        _withdraw(to, amount);
     }
 
     /**
@@ -59,4 +56,12 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
         emit WithdrawalRegistered(account, amount);
     }
 
+    // _______________ Internal functions _______________
+
+    function _withdraw(address to, uint256 amount) internal {
+        (bool success, ) = to.call{value: amount}("");
+        require(success, "WITHDRAWAL_FAILED");
+
+        emit WithdrawalFinished(address(this), to, amount);
+    }
 }

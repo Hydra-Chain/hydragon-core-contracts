@@ -104,7 +104,7 @@ export function RunStakingTests(): void {
     it("should not be able to unstake if there is insufficient staked balance", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const unstakeInsufficientAmount = this.minStake.mul(3);
+      const unstakeInsufficientAmount = this.minStake.add(hre.ethers.utils.parseEther("5"));
       await expect(validatorSet.connect(this.signers.validators[0]).unstake(unstakeInsufficientAmount))
         .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
         .withArgs("unstake", "INSUFFICIENT_BALANCE");
@@ -137,8 +137,8 @@ export function RunStakingTests(): void {
     it("should take pending unstakes into account", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const unstakeInsufficientAmount = this.minStake.mul(3);
-      const stakeTooLowAmount = this.minStake.mul(2).sub(5);
+      const unstakeInsufficientAmount = hre.ethers.utils.parseEther("2.5");
+      const stakeTooLowAmount = hre.ethers.utils.parseEther("1.5");
       await expect(validatorSet.connect(this.signers.validators[0]).unstake(unstakeInsufficientAmount))
         .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
         .withArgs("unstake", "INSUFFICIENT_BALANCE");
@@ -178,7 +178,8 @@ export function RunStakingTests(): void {
           this.fixtures.stakedValidatorsStateFixture
         );
 
-        await registerValidator(validatorSet, this.signers.governance, this.staker);
+        await validatorSet.connect(this.signers.governance).addToWhitelist([this.staker.address]);
+        await registerValidator(validatorSet, this.staker);
         const stakerValidatorSet = validatorSet.connect(this.staker);
         const tx = await stakerValidatorSet.stakeWithVesting(VESTING_DURATION_WEEKS, {
           value: this.minStake,
