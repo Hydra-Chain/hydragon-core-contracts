@@ -83,7 +83,7 @@ async function initializedValidatorSetStateFixtureFunction(this: Mocha.Context) 
     validatorSet.address,
     this.signers.rewardWallet.address,
     this.minDelegation,
-    this.signers.system.address
+    this.signers.governance.address
   );
   await liquidToken.initialize("Liquidity Token", "LQT", this.signers.governance.address, systemValidatorSet.address);
   await systemValidatorSet.initialize(
@@ -192,7 +192,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
   );
 
   // set the rsi to the minimum value
-  await rewardPool.connect(this.signers.system).setRSI(MIN_RSI_BONUS);
+  await rewardPool.connect(this.signers.governance).setRSI(MIN_RSI_BONUS);
   await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
   await validatorSet.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
 

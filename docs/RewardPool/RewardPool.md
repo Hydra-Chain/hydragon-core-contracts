@@ -129,6 +129,23 @@ function MAX_RSI_BONUS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MIN_DELEGATION_LIMIT
+
+```solidity
+function MIN_DELEGATION_LIMIT() external view returns (uint256)
+```
+
+A constant for the minimum delegation limit
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_RSI_BONUS
 
 ```solidity
@@ -382,6 +399,22 @@ Returns the total reward that is generated for a position
 | Name | Type | Description |
 |---|---|---|
 | reward | uint256 | for the delegator |
+
+### changeMinDelegation
+
+```solidity
+function changeMinDelegation(uint256 newMinDelegation) external nonpayable
+```
+
+Changes the minDelegationAmount
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinDelegation | uint256 | New minimum delegation amount |
 
 ### claimDelegatorReward
 
@@ -1734,6 +1767,17 @@ error DelegateRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### InvalidMinDelegation
+
+```solidity
+error InvalidMinDelegation()
+```
+
+
+
+
+
 
 ### InvalidRSI
 

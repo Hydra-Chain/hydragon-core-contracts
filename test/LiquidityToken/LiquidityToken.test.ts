@@ -36,7 +36,7 @@ describe("LiquidityToken", async function () {
     return { token };
   }
 
-  it("should have default admin  role set", async () => {
+  it("should have default admin role set", async () => {
     const { token } = await loadFixture(deployFixture);
     expect(await token.DEFAULT_ADMIN_ROLE()).equal(governerRole);
   });

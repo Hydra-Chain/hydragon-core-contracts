@@ -17,6 +17,8 @@ abstract contract Staking is
     LiquidStaking,
     StateSyncer
 {
+    /// @notice A constant for the minimum stake limit
+    uint256 public constant MIN_STAKE_LIMIT = 1 ether;
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
     /// @notice A state variable to keep the minimum amount of stake
@@ -38,8 +40,8 @@ abstract contract Staking is
     }
 
     function __Staking_init_unchained(uint256 newMinStake) internal onlyInitializing {
-        if (newMinStake < 1 ether) revert InvalidMinStake(newMinStake);
-        minStake = newMinStake;
+        _changeMinStake(newMinStake);
+
     }
 
     // _______________ External functions _______________
@@ -89,6 +91,13 @@ abstract contract Staking is
         _registerWithdrawal(msg.sender, amountToWithdraw);
 
         emit Unstaked(msg.sender, amount);
+    }
+
+    /**
+     * @inheritdoc IStaking
+     */
+    function changeMinStake(uint256 newMinStake) external onlyOwner {
+        _changeMinStake(newMinStake);
     }
 
     // _______________ Internal functions _______________
@@ -143,6 +152,11 @@ abstract contract Staking is
         validators[validator].commission = newCommission;
 
         emit CommissionUpdated(validator, newCommission);
+    }
+
+    function _changeMinStake(uint256 newMinStake) private {
+        if (newMinStake < MIN_STAKE_LIMIT) revert InvalidMinStake();
+        minStake = newMinStake;
     }
 
     // slither-disable-next-line unused-state,naming-convention

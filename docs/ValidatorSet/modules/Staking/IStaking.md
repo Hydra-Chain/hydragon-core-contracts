@@ -10,6 +10,22 @@
 
 ## Methods
 
+### changeMinStake
+
+```solidity
+function changeMinStake(uint256 newMinStake) external nonpayable
+```
+
+Changes minimum stake required for validators.
+
+*Should be called by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinStake | uint256 | New minimum stake |
+
 ### register
 
 ```solidity
@@ -158,6 +174,36 @@ event Unstaked(address indexed validator, uint256 amount)
 |---|---|---|
 | validator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+
+
+## Errors
+
+### InvalidCommission
+
+```solidity
+error InvalidCommission(uint256 commission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| commission | uint256 | undefined |
+
+### InvalidMinStake
+
+```solidity
+error InvalidMinStake()
+```
+
+
+
+
 
 
 

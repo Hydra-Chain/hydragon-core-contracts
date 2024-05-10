@@ -5,7 +5,7 @@ import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
-import { VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import { calculatePenalty, claimPositionRewards, commitEpoch, commitEpochs, getUserManager } from "../helper";
 import {
   RunDelegateClaimTests,
@@ -14,6 +14,43 @@ import {
 } from "../RewardPool/RewardPool.test";
 
 export function RunDelegationTests(): void {
+  describe("Change minDelegate", function () {
+    it("should revert if non-default_admin_role address try to change MinDelegation", async function () {
+      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const adminRole = await rewardPool.DEFAULT_ADMIN_ROLE();
+
+      await expect(
+        rewardPool.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2))
+      ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address.toLocaleLowerCase(), adminRole));
+
+      expect(await rewardPool.minDelegation()).to.be.equal(this.minDelegation);
+    });
+
+    it("should revert if MinDelegation is too low", async function () {
+      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const newLowMinDelegation = this.minStake.div(2);
+
+      await expect(
+        rewardPool.connect(this.signers.governance).changeMinDelegation(newLowMinDelegation)
+      ).to.be.revertedWithCustomError(rewardPool, "InvalidMinDelegation");
+
+      expect(await rewardPool.minDelegation()).to.be.equal(this.minDelegation);
+    });
+
+    it("should change MinDelegation by default_admin_role address", async function () {
+      const { rewardPool } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const newMinDelegation = this.minDelegation.mul(2);
+
+      await expect(rewardPool.connect(this.signers.governance).changeMinDelegation(newMinDelegation)).to.not.be
+        .reverted;
+
+      expect(await rewardPool.minDelegation()).to.be.equal(newMinDelegation);
+    });
+  });
+
   describe("Delegate", function () {
     it("should revert when delegating zero amount", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);

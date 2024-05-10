@@ -16,7 +16,7 @@ import {
 } from "../helper";
 
 export function RunStakingClaimTests(): void {
-  describe("claim position reward", function () {
+  describe("Claim position reward", function () {
     it("should not be able to claim when active", async function () {
       const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
         this.fixtures.newVestingValidatorFixture

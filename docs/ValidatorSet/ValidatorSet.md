@@ -44,6 +44,23 @@ A constant for the maximum comission a validator can receive from the delegator&
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MIN_STAKE_LIMIT
+
+```solidity
+function MIN_STAKE_LIMIT() external view returns (uint256)
+```
+
+A constant for the minimum stake limit
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -228,6 +245,22 @@ function bls() external view returns (contract IBLS)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IBLS | undefined |
+
+### changeMinStake
+
+```solidity
+function changeMinStake(uint256 newMinStake) external nonpayable
+```
+
+Changes minimum stake required for validators.
+
+*Should be called by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinStake | uint256 | New minimum stake |
 
 ### changeWithdrawalWaitPeriod
 
@@ -1433,18 +1466,13 @@ error InvalidCommission(uint256 commission)
 ### InvalidMinStake
 
 ```solidity
-error InvalidMinStake(uint256 minStake)
+error InvalidMinStake()
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| minStake | uint256 | undefined |
 
 ### InvalidSignature
 

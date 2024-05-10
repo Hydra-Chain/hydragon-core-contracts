@@ -1,23 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../RewardPoolBase.sol";
 import "./Vesting.sol";
-import "./../../common/Errors.sol";
 import "./RewardsWithdrawal.sol";
 
+import "./../RewardPoolBase.sol";
 import "./../libs/DelegationPoolLib.sol";
 import "./../libs/VestingPositionLib.sol";
+
+import "./../../common/Errors.sol";
 
 abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
     using DelegationPoolLib for DelegationPool;
     using VestingPositionLib for VestingPosition;
 
+    /// @notice A constant for the minimum delegation limit
+    uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     // @note maybe this must be part of the ValidatorSet
     /// @notice The minimum delegation amount to be delegated
     uint256 public minDelegation;
+
+    error InvalidMinDelegation();
 
     // _______________ Initializer _______________
 
@@ -26,9 +31,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     }
 
     function __DelegationRewards_init_unchained(uint256 newMinDelegation) internal onlyInitializing {
-        // TODO: all requre statements should be replaced with Error
-        require(newMinDelegation >= 1 ether, "INVALID_MIN_DELEGATION");
-        minDelegation = newMinDelegation;
+        _changeMinDelegation(newMinDelegation);
     }
 
     // _______________ External functions _______________
@@ -368,6 +371,13 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         emit PositionRewardClaimed(msg.sender, validator, sumReward);
     }
 
+    /**
+     * @inheritdoc IRewardPool
+     */
+    function changeMinDelegation(uint256 newMinDelegation) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _changeMinDelegation(newMinDelegation);
+    }
+
     // _______________ Public functions _______________
 
     /**
@@ -402,6 +412,11 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     }
 
     // _______________ Private functions _______________
+
+    function _changeMinDelegation(uint256 newMinDelegation) private {
+        if (newMinDelegation < MIN_DELEGATION_LIMIT) revert InvalidMinDelegation();
+        minDelegation = newMinDelegation;
+    }
 
     function _noRewardConditions(VestingPosition memory position) private view returns (bool) {
         // If still unused position, there is no reward
