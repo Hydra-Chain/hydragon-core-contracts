@@ -691,90 +691,105 @@ describe("ValidatorSet", function () {
         );
       });
 
-      it("should fail the withdrawal before withdraw time passes", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      it("should emit StakeChanged event on open vested position", async function () {
+        const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+
+        const validator = this.signers.validators[0];
+        const { totalStake } = await validatorSet.getValidator(validator.address);
+
+        const vestingDuration = 12; // weeks
 
         await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.be.revertedWithCustomError(validatorSet, "NoWithdrawalAvailable");
-      });
-
-      it("should give the right amount on view function with multiple stake ", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        // unstake second time same amount
-        await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
-
-        const withdrawable = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pending = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawable).to.equal(this.minStake.div(2)).and.to.equal(pending);
-
-        // increase time to pass the withdraw time for 2nd stake
-        await time.increase(WEEK);
-
-        const withdrawableAfter = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pendingAfter = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawableAfter).to.equal(this.minStake);
-        expect(pendingAfter).to.equal(0);
-
-        // withdraw
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.emit(validatorSet, "WithdrawalFinished");
-
-        const withdrawableAfterWithdraw = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pendingAfterWithdraw = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawableAfterWithdraw).to.equal(0).and.to.equal(pendingAfterWithdraw);
-      });
-
-      it("should withdraw", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        const unstakedAmount = this.minStake.div(2);
-
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address),
-          "withdraw"
+          vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake }),
+          "emit StakeChanged"
         )
-          .to.emit(validatorSet, "WithdrawalFinished")
-          .withArgs(this.signers.validators[0].address, this.signers.validators[0].address, unstakedAmount);
-        expect(
-          await validatorSet.pendingWithdrawals(this.signers.validators[0].address),
-          "pendingWithdrawals"
-        ).to.equal(0);
-        expect(await validatorSet.withdrawable(this.signers.validators[0].address), "withdrawable").to.equal(0);
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.add(this.minStake));
+
+        // to ensure that delegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.add(this.minStake)
+        );
       });
 
-      it("should fail to update withdraw time if not governance", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on top-up vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool, vestManager } = await loadFixture(
+          this.fixtures.vestManagerFixture
+        );
+
+        const validator = this.signers.validators[0];
+        const vestingDuration = 12; // weeks
+        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
+        // because balance change can be made only once per epoch when vested delegation position
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+        const { totalStake } = await validatorSet.getValidator(validator.address);
 
         await expect(
-          validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
-        ).to.be.revertedWith("Ownable: caller is not the owner");
+          vestManager.topUpVestedDelegatePosition(validator.address, { value: this.minStake }),
+          "emit StakeChanged"
+        )
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.add(this.minStake));
+        // to ensure that delegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.add(this.minStake)
+        );
       });
 
-      it("should fail update withdraw time if we pass 0", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on undelegate", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.vestManagerFixture);
 
-        await expect(
-          validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(0)
-        ).to.be.revertedWithCustomError(validatorSet, "InvalidWaitPeriod");
+        const validator = this.signers.validators[0];
+        const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
+        await delegatorValidatorSet.delegate(validator.address, { value: this.minStake });
+        const { totalStake } = await validatorSet.getValidator(validator.address);
+
+        await expect(await delegatorValidatorSet.undelegate(validator.address, this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.sub(this.minStake));
+
+        // to ensure that undelegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.sub(this.minStake)
+        );
       });
 
-      it("should update withdraw time by governance account", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on cut vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
+          await loadFixture(this.fixtures.vestManagerFixture);
 
-        await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
-        const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
-        expect(waitPeriod).to.be.equal(WEEK * 2);
+        const validator = this.signers.validators[0];
+        const vestingDuration = 12; // weeks
+        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
+        // because balance change can be made only once per epoch when vested delegation position
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+        const { totalStake } = await validatorSet.getValidator(validator.address);
+
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minStake);
+        await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.sub(this.minStake));
+        // to ensure that undelegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.sub(this.minStake)
+        );
       });
     });
+  });
 
-    it("should emit StakeChanged event on open vested position", async function () {
-      const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+  describe("Staking", function () {
+    RunStakingTests();
+  });
 
   describe("Withdraw", function () {
     it("should fail the withdrawal", async function () {
@@ -793,6 +808,45 @@ describe("ValidatorSet", function () {
       );
     });
 
+    it("should fail the withdrawal before withdraw time passes", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+      ).to.be.revertedWithCustomError(validatorSet, "NoWithdrawalAvailable");
+    });
+
+    it("should give the right amount on view function with multiple stake", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      // unstake second time same amount
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
+
+      const withdrawable = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pending = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawable).to.equal(this.minStake.div(2)).and.to.equal(pending);
+
+      // increase time to pass the withdraw time for 2nd stake
+      await time.increase(WEEK);
+
+      const withdrawableAfter = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pendingAfter = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawableAfter).to.equal(this.minStake);
+      expect(pendingAfter).to.equal(0);
+
+      // withdraw
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+      ).to.emit(validatorSet, "WithdrawalFinished");
+
+      const withdrawableAfterWithdraw = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pendingAfterWithdraw = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawableAfterWithdraw).to.equal(0).and.to.equal(pendingAfterWithdraw);
+    });
+
     it("should withdraw", async function () {
       const { validatorSet, unstakedValidator, unstakedAmount } = await loadFixture(this.fixtures.withdrawableFixture);
 
@@ -801,6 +855,30 @@ describe("ValidatorSet", function () {
         .withArgs(validatorSet.address, unstakedValidator.address, unstakedAmount);
       expect(await validatorSet.pendingWithdrawals(unstakedValidator.address), "pendingWithdrawals").to.equal(0);
       expect(await validatorSet.withdrawable(unstakedValidator.address), "withdrawable").to.equal(0);
+    });
+
+    it("should fail to update withdraw time if not governance", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("should fail update withdraw time if we pass 0", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(0)
+      ).to.be.revertedWithCustomError(validatorSet, "InvalidWaitPeriod");
+    });
+
+    it("should update withdraw time by governance account", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
+      const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
+      expect(waitPeriod).to.be.equal(WEEK * 2);
     });
   });
 
@@ -817,156 +895,32 @@ describe("ValidatorSet", function () {
         .withArgs("VALIDATOR");
     });
 
-    it("should emit StakeChanged event on top-up vested position", async function () {
-      const { validatorSet, systemValidatorSet, rewardPool, vestManager } = await loadFixture(
-        this.fixtures.vestManagerFixture
-      );
+    it("should revert with invalid commission", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
-      const validator = this.signers.validators[0];
-      const vestingDuration = 12; // weeks
-      await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
-      // because balance change can be made only once per epoch when vested delegation position
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-        this.epochSize
-      );
-      const { totalStake } = await validatorSet.getValidator(validator.address);
+      const exceededCommission = MAX_COMMISSION.add(1);
 
-      await expect(
-        vestManager.topUpVestedDelegatePosition(validator.address, { value: this.minStake }),
-        "emit StakeChanged"
-      )
-        .to.emit(validatorSet, "StakeChanged")
-        .withArgs(validator.address, totalStake.add(this.minStake));
-      // to ensure that delegate is immediately applied on the validator stake
-      expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-        totalStake.add(this.minStake)
-      );
+      await expect(validatorSet.connect(this.signers.validators[0]).setCommission(exceededCommission))
+        .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
+        .withArgs(exceededCommission);
     });
 
-    it("should emit StakeChanged event on undelegate", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.vestManagerFixture);
+    it("should set commission", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
-      const validator = this.signers.validators[0];
-      const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
-      await delegatorValidatorSet.delegate(validator.address, { value: this.minStake });
-      const { totalStake } = await validatorSet.getValidator(validator.address);
+      // set commission and verify event
+      const newCommission = MAX_COMMISSION.div(2);
+      await expect(validatorSet.connect(this.signers.validators[0]).setCommission(newCommission))
+        .to.emit(validatorSet, "CommissionUpdated")
+        .withArgs(this.signers.validators[0].address, newCommission);
 
-      await expect(await delegatorValidatorSet.undelegate(validator.address, this.minStake), "emit StakeChanged")
-        .to.emit(validatorSet, "StakeChanged")
-        .withArgs(validator.address, totalStake.sub(this.minStake));
-
-      // to ensure that undelegate is immediately applied on the validator stake
-      expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-        totalStake.sub(this.minStake)
-      );
-    });
-
-    it("should emit StakeChanged event on cut vested position", async function () {
-      const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
-        await loadFixture(this.fixtures.vestManagerFixture);
-
-      const validator = this.signers.validators[0];
-      const vestingDuration = 12; // weeks
-      await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
-      // because balance change can be made only once per epoch when vested delegation position
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-        this.epochSize
-      );
-      const { totalStake } = await validatorSet.getValidator(validator.address);
-
-      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minStake);
-      await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minStake), "emit StakeChanged")
-        .to.emit(validatorSet, "StakeChanged")
-        .withArgs(validator.address, totalStake.sub(this.minStake));
-      // to ensure that undelegate is immediately applied on the validator stake
-      expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-        totalStake.sub(this.minStake)
-      );
+      // get the update validator and ensure that the new commission is set
+      const validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.commission).to.equal(newCommission);
     });
   });
-});
 
-describe("Staking", function () {
-  RunStakingTests();
-});
-
-describe("Withdraw", function () {
-  it("should fail the withdrawal", async function () {
-    const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-    const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-    const balanceAfterUnstake = this.minStake.mul(2).sub(this.minStake.div(2));
-    expect(validator.stake, "validator stake").to.equal(balanceAfterUnstake);
-
-    await setBalance(validatorSet.address, 0);
-    const balance = await hre.ethers.provider.getBalance(validatorSet.address);
-    expect(balance, "ValidatorSet balance").to.equal(0);
-
-    await expect(
-      validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-    ).to.be.revertedWith("WITHDRAWAL_FAILED");
+  describe("Inspector", function () {
+    RunInspectorTests();
   });
-
-  it("should withdraw", async function () {
-    const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-    const unstakedAmount = this.minStake.div(2);
-
-    await expect(
-      validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address),
-      "withdraw"
-    )
-      .to.emit(validatorSet, "WithdrawalFinished")
-      .withArgs(this.signers.validators[0].address, this.signers.validators[0].address, unstakedAmount);
-    expect(await validatorSet.pendingWithdrawals(this.signers.validators[0].address), "pendingWithdrawals").to.equal(0);
-    expect(await validatorSet.withdrawable(this.signers.validators[0].address), "withdrawable").to.equal(0);
-  });
-});
-
-describe("Delegation", function () {
-  RunDelegationTests();
-});
-
-describe("Set Commision", function () {
-  it("should revert when call setCommission for inactive validator", async function () {
-    const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-    await expect(validatorSet.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
-      .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-      .withArgs("VALIDATOR");
-  });
-
-  it("should revert with invalid commission", async function () {
-    const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-    const exceededCommission = MAX_COMMISSION.add(1);
-
-    await expect(validatorSet.connect(this.signers.validators[0]).setCommission(exceededCommission))
-      .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
-      .withArgs(exceededCommission);
-  });
-
-  it("should set commission", async function () {
-    const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-    // set commission and verify event
-    const newCommission = MAX_COMMISSION.div(2);
-    await expect(validatorSet.connect(this.signers.validators[0]).setCommission(newCommission))
-      .to.emit(validatorSet, "CommissionUpdated")
-      .withArgs(this.signers.validators[0].address, newCommission);
-
-    // get the update validator and ensure that the new commission is set
-    const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-    expect(validator.commission).to.equal(newCommission);
-  });
-});
-
-describe("Inspector", function () {
-  RunInspectorTests();
 });
