@@ -246,16 +246,6 @@ function bls() external view returns (contract IBLS)
 |---|---|---|
 | _0 | contract IBLS | undefined |
 
-### changeWithdrawalWaitPeriod
-
-```solidity
-function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
-```
-
-Changes the withdrawal wait period.
-
-*This function should be called only by the Governed contract.*
-
 ### changeMinStake
 
 ```solidity
@@ -270,8 +260,23 @@ Changes minimum stake required for validators.
 
 | Name | Type | Description |
 |---|---|---|
-| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 | newMinStake | uint256 | New minimum stake |
+
+### changeWithdrawalWaitPeriod
+
+```solidity
+function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
+```
+
+Changes the withdrawal wait period.
+
+*This function should be called only by the Governed contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
 ### commitEpoch
 
