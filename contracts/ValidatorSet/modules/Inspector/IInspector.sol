@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 /**
  * @notice Data type for the banned validators' withdrawals
- * @param liquidTokens The amount of liquid tokens to be
- * @param withdrawableAmount The amount that is available for withdrawal
+ * @param liquidTokens The amount of liquid tokens to be taken on withdrawal from the penalized validator
+ * @param withdrawableAmount The amount that is available for withdrawal after validator's penalty
  */
 struct WithdrawalInfo {
     uint256 liquidTokens;

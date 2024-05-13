@@ -86,11 +86,11 @@ abstract contract Inspector is IInspector, Staking {
     function withdrawBannedFunds() public onlyBanned {
         WithdrawalInfo memory withdrawalBalance = withdrawalBalances[msg.sender];
 
+        delete withdrawalBalances[msg.sender];
+
         LiquidStaking._collectTokens(msg.sender, withdrawalBalance.liquidTokens);
 
         _withdraw(msg.sender, withdrawalBalance.withdrawableAmount);
-
-        delete withdrawalBalances[msg.sender];
     }
 
     // slither-disable-next-line unused-state,naming-convention

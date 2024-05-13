@@ -240,7 +240,8 @@ async function vestingRewardsFixtureFunction(this: Mocha.Context) {
     this.epochSize
   );
 
-  await stakerValidatorSet.stake({ value: hre.ethers.utils.parseEther("1000") });
+  // await stakerValidatorSet.stake({ value: hre.ethers.utils.parseEther("1000") });
+  await stakerValidatorSet.stake({ value: this.minStake });
 
   await commitEpochs(
     systemValidatorSet,
