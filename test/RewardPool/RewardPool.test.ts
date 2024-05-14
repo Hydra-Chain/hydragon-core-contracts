@@ -176,7 +176,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(100)
+        this.minDelegation
       );
 
       // pass two weeks ahead
@@ -241,7 +241,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(100)
+        this.minDelegation
       );
       const manager2 = await createManagerAndVest(
         validatorSet,
@@ -249,7 +249,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(100)
+        this.minDelegation
       );
 
       // pass two weeks ahead
@@ -280,7 +280,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(100)
+        this.minDelegation
       );
       const manager2 = await createManagerAndVest(
         validatorSet,
@@ -288,7 +288,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         52, // max weeks
-        this.minDelegation.mul(100)
+        this.minDelegation
       );
 
       // pass three weeks ahead
@@ -319,7 +319,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(100)
+        this.minDelegation.mul(2)
       );
       const manager2 = await createManagerAndVest(
         validatorSet,
@@ -327,7 +327,7 @@ export function RunVestedDelegationRewardsTests(): void {
         this.signers.accounts[4],
         validator.address,
         VESTING_DURATION_WEEKS,
-        this.minDelegation.mul(2)
+        this.minDelegation
       );
 
       // pass five weeks ahead

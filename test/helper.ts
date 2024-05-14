@@ -115,8 +115,7 @@ export function initValidators(accounts: SignerWithAddress[], from: number = 0, 
   return validators;
 }
 
-export async function registerValidator(validatorSet: ValidatorSet, governance: any, account: any) {
-  await validatorSet.connect(governance).addToWhitelist([account.address]);
+export async function registerValidator(validatorSet: ValidatorSet, account: any) {
   const keyPair = mcl.newKeyPair();
   const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
 

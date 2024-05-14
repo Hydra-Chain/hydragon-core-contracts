@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests } from "../RewardPool/RewardPool.test";
 
@@ -178,7 +178,8 @@ export function RunStakingTests(): void {
           this.fixtures.stakedValidatorsStateFixture
         );
 
-        await registerValidator(validatorSet, this.signers.governance, this.staker);
+        await validatorSet.connect(this.signers.governance).addToWhitelist([this.staker.address]);
+        await registerValidator(validatorSet, this.staker);
         const stakerValidatorSet = validatorSet.connect(this.staker);
         const tx = await stakerValidatorSet.stakeWithVesting(VESTING_DURATION_WEEKS, {
           value: this.minStake,
@@ -326,7 +327,7 @@ export function RunStakingTests(): void {
 
         // hardcode the penalty percent by 0.3% a week (9 weeks should be left)
         const bps = 9 * 30;
-        const penalty = this.minStake.mul(bps).div(10000);
+        const penalty = this.minStake.mul(bps).div(DENOMINATOR);
 
         const withdrawalAmount = await stakerValidatorSet.pendingWithdrawals(this.staker.address);
         expect(withdrawalAmount, "withdrawal amount = calculated amount").to.equal(this.minStake.sub(penalty));

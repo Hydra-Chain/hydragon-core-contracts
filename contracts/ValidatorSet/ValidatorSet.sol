@@ -8,13 +8,14 @@ import "./modules/AccessControl/AccessControl.sol";
 import "./modules/PowerExponent/PowerExponent.sol";
 import "./modules/Staking/Staking.sol";
 import "./modules/Delegation/Delegation.sol";
+import "./modules/Inspector/Inspector.sol";
 import "./../common/System/System.sol";
 
 import "./../common/libs/SafeMathInt.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
-contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent, Staking, Delegation {
+contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent, Staking, Delegation, Inspector {
     using ArraysUpgradeable for uint256[];
 
     /// @notice Epoch data linked with the epoch id
@@ -57,6 +58,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
         __AccessControl_init(governance);
         __Staking_init(init.minStake, liquidToken);
         __Delegation_init();
+        __Inspector_init();
         __ReentrancyGuard_init();
         _initialize(newValidators, initialCommission);
     }

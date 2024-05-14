@@ -205,7 +205,8 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
   );
 
   const staker = this.signers.accounts[9];
-  await registerValidator(validatorSet, this.signers.governance, staker);
+  await validatorSet.connect(this.signers.governance).addToWhitelist([staker.address]);
+  await registerValidator(validatorSet, staker);
 
   const stakerValidatorSet = validatorSet.connect(staker);
   await stakerValidatorSet.stakeWithVesting(VESTING_DURATION_WEEKS, {
@@ -257,13 +258,23 @@ async function withdrawableFixtureFunction(this: Mocha.Context) {
     this.fixtures.stakedValidatorsStateFixture
   );
 
-  await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
-  await time.increase(WEEK);
+  const unstakedValidator = this.signers.validators[0];
+  const unstakedAmount = this.minStake.div(2);
+  await validatorSet.connect(unstakedValidator).unstake(unstakedAmount);
+
+  await commitEpochs(
+    systemValidatorSet,
+    rewardPool,
+    [unstakedValidator, this.signers.validators[1], this.signers.validators[2]],
+    3, // number of epochs to commit
+    this.epochSize
+  );
 
   // * stake for the third validator after a week
+  await time.increase(WEEK);
   await validatorSet.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken, unstakedValidator, unstakedAmount };
 }
 
 async function delegatedFixtureFunction(this: Mocha.Context) {
@@ -390,6 +401,24 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
   };
 }
 
+async function bannedValidatorFixtureFunction(this: Mocha.Context) {
+  const { validatorSet, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+  await validatorSet.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
+
+  const validator = this.signers.validators[0];
+  const stakedAmount = await validatorSet.balanceOf(validator.address);
+
+  await validatorSet.connect(this.signers.governance).banValidator(validator.address);
+
+  return {
+    validatorSet,
+    liquidToken,
+    bannedValidator: validator,
+    stakedAmount,
+  };
+}
+
 async function blsFixtureFunction(this: Mocha.Context) {
   const BLSFactory = new BLS__factory(this.signers.admin);
   const BLS = await BLSFactory.deploy();
@@ -426,4 +455,5 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.vestManagerFixture = vestManagerFixtureFunction.bind(context);
   context.fixtures.vestedDelegationFixture = vestedDelegationFixtureFunction.bind(context);
   context.fixtures.weeklyVestedDelegationFixture = weeklyVestedDelegationFixtureFunction.bind(context);
+  context.fixtures.bannedValidatorFixture = bannedValidatorFixtureFunction.bind(context);
 }

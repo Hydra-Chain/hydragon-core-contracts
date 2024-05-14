@@ -11,6 +11,7 @@ import { RunSystemTests } from "./System.test";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegationTests } from "./Delegation.test";
 import { RunAPRTests } from "../RewardPool/APR.test";
+import { RunInspectorTests } from "./Inspector.test";
 
 describe("ValidatorSet", function () {
   before(async function () {
@@ -325,608 +326,601 @@ describe("ValidatorSet", function () {
       expect(storedEpoch.endBlock).to.equal(hre.ethers.constants.Zero);
       expect(storedEpoch.epochRoot).to.equal(hre.ethers.constants.HashZero);
     });
+  });
 
-    describe("APR", function () {
-      RunAPRTests();
+  describe("APR", function () {
+    RunAPRTests();
+  });
+
+  describe("Whitelist", function () {
+    it("should be modified only by the owner", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).addToWhitelist([this.signers.validators[0].address]),
+        "addToWhitelist"
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).removeFromWhitelist([this.signers.validators[0].address]),
+        "removeFromWhitelist"
+      ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    describe("Whitelist", function () {
-      it("should be modified only by the owner", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+    it("should be able to add to whitelist", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).addToWhitelist([this.signers.validators[0].address]),
-          "addToWhitelist"
-        ).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+      ).to.not.be.reverted;
 
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).removeFromWhitelist([this.signers.validators[0].address]),
-          "removeFromWhitelist"
-        ).to.be.revertedWith("Ownable: caller is not the owner");
-      });
-
-      it("should be able to add to whitelist", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.not.be.reverted;
-
-        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
-        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
-      });
-
-      it("should not whitelist a user that is already whitelisted", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.not.be.reverted;
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
-      });
-
-      it("should be able to remove from whitelist", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
-        ).to.not.be.reverted;
-
-        await expect(
-          validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
-        ).to.not.be.reverted;
-
-        expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
-          VALIDATOR_STATUS.None
-        );
-
-        expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Whitelisted
-        );
-      });
-
-      it("should revert if we remove from whitelist twice", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
-        ).to.not.be.reverted;
-
-        await expect(
-          validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
-        ).to.not.be.reverted;
-
-        await expect(
-          validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
-        ).to.be.revertedWithCustomError(validatorSet, "MustBeWhitelisted");
-
-        expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
-          VALIDATOR_STATUS.None
-        );
-      });
-
-      it("should not be able to whitelist user that is with status different from None", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
-
-        expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
-          VALIDATOR_STATUS.Registered
-        );
-
-        await expect(
-          validatorSet
-            .connect(this.signers.governance)
-            .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
-        ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
-      });
+      expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
+        VALIDATOR_STATUS.Whitelisted
+      );
+      expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
+        VALIDATOR_STATUS.Whitelisted
+      );
     });
 
-    describe("Register", function () {
-      it("should be able to register only whitelisted", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+    it("should not whitelist a user that is already whitelisted", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-        await expect(validatorSet.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0], INITIAL_COMMISSION))
-          .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-          .withArgs("WHITELIST");
-      });
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+      ).to.not.be.reverted;
 
-      it("should not be able to register with invalid signature", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+      ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
+    });
 
-        const keyPair = mcl.newKeyPair();
-        const signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.accounts[10].address,
-          keyPair.secret
-        ).signature;
+    it("should be able to remove from whitelist", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-        await expect(
-          validatorSet
-            .connect(this.signers.validators[1])
-            .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION)
-        )
-          .to.be.revertedWithCustomError(validatorSet, "InvalidSignature")
-          .withArgs(this.signers.validators[1].address);
-      });
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
+      ).to.not.be.reverted;
 
-      it("should revert when register with invalid commission", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+      await expect(
+        validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
+      ).to.not.be.reverted;
 
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = whitelisted"
-        ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
+      expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
+        VALIDATOR_STATUS.None
+      );
 
-        const keyPair = mcl.newKeyPair();
-        const signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[0].address,
-          keyPair.secret
-        ).signature;
+      expect((await validatorSet.validators(this.signers.validators[1].address)).status).to.be.equal(
+        VALIDATOR_STATUS.Whitelisted
+      );
+    });
 
-        const exceededCommission = MAX_COMMISSION.add(1);
-        await expect(
-          validatorSet
-            .connect(this.signers.validators[0])
-            .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), exceededCommission)
-        )
-          .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
-          .withArgs(exceededCommission);
-      });
+    it("should revert if we remove from whitelist twice", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-      it("should register", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[1].address, this.signers.validators[3].address])
+      ).to.not.be.reverted;
 
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = whitelisted"
-        ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
+      await expect(
+        validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
+      ).to.not.be.reverted;
 
-        const keyPair = mcl.newKeyPair();
-        const signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[0].address,
-          keyPair.secret
-        ).signature;
+      await expect(
+        validatorSet.connect(this.signers.governance).removeFromWhitelist([this.signers.validators[3].address])
+      ).to.be.revertedWithCustomError(validatorSet, "MustBeWhitelisted");
 
-        const tx = await validatorSet
+      expect((await validatorSet.validators(this.signers.validators[3].address)).status).to.be.equal(
+        VALIDATOR_STATUS.None
+      );
+    });
+
+    it("should not be able to whitelist user that is with status different from None", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      expect((await validatorSet.validators(this.signers.validators[0].address)).status).to.be.equal(
+        VALIDATOR_STATUS.Registered
+      );
+
+      await expect(
+        validatorSet
+          .connect(this.signers.governance)
+          .addToWhitelist([this.signers.validators[0].address, this.signers.validators[1].address])
+      ).to.be.revertedWithCustomError(validatorSet, "PreviouslyWhitelisted");
+    });
+  });
+
+  describe("Register", function () {
+    it("should be able to register only whitelisted", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+
+      await expect(validatorSet.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0], INITIAL_COMMISSION))
+        .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+        .withArgs("WHITELIST");
+    });
+
+    it("should not be able to register with invalid signature", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.accounts[10].address,
+        keyPair.secret
+      ).signature;
+
+      await expect(
+        validatorSet
+          .connect(this.signers.validators[1])
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION)
+      )
+        .to.be.revertedWithCustomError(validatorSet, "InvalidSignature")
+        .withArgs(this.signers.validators[1].address);
+    });
+
+    it("should revert when register with invalid commission", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+
+      expect(
+        (await validatorSet.validators(this.signers.validators[0].address)).status,
+        "status = whitelisted"
+      ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.validators[0].address,
+        keyPair.secret
+      ).signature;
+
+      const exceededCommission = MAX_COMMISSION.add(1);
+      await expect(
+        validatorSet
           .connect(this.signers.validators[0])
-          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), exceededCommission)
+      )
+        .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
+        .withArgs(exceededCommission);
+    });
 
-        await expect(tx, "emit NewValidator")
-          .to.emit(validatorSet, "NewValidator")
-          .withArgs(
-            this.signers.validators[0].address,
-            mcl.g2ToHex(keyPair.pubkey).map((x) => hre.ethers.BigNumber.from(x))
-          );
+    it("should register", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = Registered"
-        ).to.be.equal(VALIDATOR_STATUS.Registered);
-        const validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(
+        (await validatorSet.validators(this.signers.validators[0].address)).status,
+        "status = whitelisted"
+      ).to.be.equal(VALIDATOR_STATUS.Whitelisted);
 
-        expect(validator.stake, "stake").to.equal(0);
-        expect(validator.totalStake, "total stake").to.equal(0);
-        expect(validator.commission).to.equal(INITIAL_COMMISSION);
-        expect(validator.active).to.equal(true);
-        expect(validator.blsKey.map((x: any) => x.toHexString())).to.deep.equal(mcl.g2ToHex(keyPair.pubkey));
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.validators[0].address,
+        keyPair.secret
+      ).signature;
+
+      const tx = await validatorSet
+        .connect(this.signers.validators[0])
+        .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+
+      await expect(tx, "emit NewValidator")
+        .to.emit(validatorSet, "NewValidator")
+        .withArgs(
+          this.signers.validators[0].address,
+          mcl.g2ToHex(keyPair.pubkey).map((x) => hre.ethers.BigNumber.from(x))
+        );
+
+      expect(
+        (await validatorSet.validators(this.signers.validators[0].address)).status,
+        "status = Registered"
+      ).to.be.equal(VALIDATOR_STATUS.Registered);
+      const validator = await validatorSet.getValidator(this.signers.validators[0].address);
+
+      expect(validator.stake, "stake").to.equal(0);
+      expect(validator.totalStake, "total stake").to.equal(0);
+      expect(validator.commission).to.equal(INITIAL_COMMISSION);
+      expect(validator.active).to.equal(true);
+      expect(validator.blsKey.map((x: any) => x.toHexString())).to.deep.equal(mcl.g2ToHex(keyPair.pubkey));
+    });
+
+    it("should revert when attempt to register twice", async function () {
+      // * Only the first two validators are being registered
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+      expect(
+        (await validatorSet.validators(this.signers.validators[0].address)).status,
+        "status = Registered"
+      ).to.be.equal(VALIDATOR_STATUS.Registered);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.validators[0].address,
+        keyPair.secret
+      ).signature;
+
+      await expect(
+        validatorSet
+          .connect(this.signers.validators[0])
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION),
+        "register"
+      )
+        .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+        .withArgs("WHITELIST");
+    });
+  });
+
+  describe("StakeSyncer", function () {
+    describe("Stake", function () {
+      it("should emit StakeChanged event on stake", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+        const validatorValidatorSet = validatorSet.connect(this.signers.validators[0]);
+
+        await expect(validatorValidatorSet.stake({ value: this.minStake }), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(this.signers.validators[0].address, this.minStake);
+
+        // ensure proper staked amount is fetched
+        const validatorData = await validatorSet.getValidator(this.signers.validators[0].address);
+        expect(validatorData.totalStake, "totalStake").to.equal(this.minStake);
       });
 
-      it("should revert when attempt to register twice", async function () {
-        // * Only the first two validators are being registered
+      it("should emit StakeChanged event on opening a vested position", async function () {
         const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-        expect(
-          (await validatorSet.validators(this.signers.validators[0].address)).status,
-          "status = Registered"
-        ).to.be.equal(VALIDATOR_STATUS.Registered);
-
-        const keyPair = mcl.newKeyPair();
-        const signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[0].address,
-          keyPair.secret
-        ).signature;
-
+        const validator = this.signers.validators[1];
+        const validatorValidatorSet = validatorSet.connect(validator);
+        const vestingDuration = 12; // weeks
         await expect(
-          validatorSet
-            .connect(this.signers.validators[0])
-            .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION),
-          "register"
+          validatorValidatorSet.stakeWithVesting(vestingDuration, { value: this.minStake }),
+          "emit StakeChanged"
         )
-          .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-          .withArgs("WHITELIST");
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, this.minStake);
+
+        // ensure proper staked amount is fetched
+        const validatorData = await validatorSet.getValidator(validator.address);
+        expect(validatorData.totalStake, "totalStake").to.equal(this.minStake);
+      });
+
+      it("should emit StakeChanged event on top-up vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
+          this.fixtures.registeredValidatorsStateFixture
+        );
+
+        const validator = this.signers.validators[2];
+        const validatorValidatorSet = validatorSet.connect(validator);
+        const vestingDuration = 12; // weeks
+        await validatorValidatorSet.stakeWithVesting(vestingDuration, { value: this.minStake });
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], validator],
+          this.epochSize
+        );
+
+        await expect(validatorValidatorSet.stake({ value: this.minStake.mul(2) }), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, this.minStake.mul(2).add(this.minStake));
+
+        // ensure proper staked amount is fetched
+        const validatorData = await validatorSet.getValidator(validator.address);
+        expect(validatorData.totalStake, "totalStake").to.equal(this.minStake.mul(3));
+      });
+
+      it("should emit StakeChanged event on unstake", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
+          this.fixtures.registeredValidatorsStateFixture
+        );
+
+        const validator = this.signers.validators[0];
+        const validatorValidatorSet = validatorSet.connect(validator);
+        await validatorValidatorSet.stake({ value: this.minStake });
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [validator, this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+
+        await expect(validatorValidatorSet.unstake(this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, 0);
+
+        // ensure that the amount is properly unstaked
+        const validatorData = await validatorSet.getValidator(validator.address);
+        expect(validatorData.totalStake, "totalStake").to.equal(0);
+      });
+
+      it("should emit StakeChanged event on unstake from vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
+          this.fixtures.registeredValidatorsStateFixture
+        );
+
+        const validator = this.signers.validators[0];
+        const validatorValidatorSet = validatorSet.connect(validator);
+        const vestingDuration = 12; // weeks
+        const stakeAmount = this.minStake.mul(2);
+        await validatorValidatorSet.stakeWithVesting(vestingDuration, { value: stakeAmount });
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [validator, this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+
+        const unstakeAmount = this.minStake.div(3);
+        await expect(validatorValidatorSet.unstake(unstakeAmount), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, stakeAmount.sub(unstakeAmount));
+
+        // ensure proper staked amount is fetched
+        const validatorData = await validatorSet.getValidator(validator.address);
+        expect(validatorData.totalStake, "totalStake").to.equal(stakeAmount.sub(unstakeAmount));
       });
     });
 
-    describe("StakeSyncer", function () {
-      describe("Stake", function () {
-        it("should emit StakeChanged event on stake", async function () {
-          const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
-          const validatorValidatorSet = validatorSet.connect(this.signers.validators[0]);
+    describe("Delegation", () => {
+      it("should emit StakeChanged event on delegate", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-          await expect(validatorValidatorSet.stake({ value: this.minStake }), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(this.signers.validators[0].address, this.minStake);
+        const validator = this.signers.validators[0];
+        const { totalStake } = await validatorSet.getValidator(validator.address);
 
-          // ensure proper staked amount is fetched
-          const validatorData = await validatorSet.getValidator(this.signers.validators[0].address);
-          expect(validatorData.totalStake, "totalStake").to.equal(this.minStake);
-        });
+        const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
+        await expect(delegatorValidatorSet.delegate(validator.address, { value: this.minStake }), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, this.minStake);
 
-        it("should emit StakeChanged event on opening a vested position", async function () {
-          const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
-
-          const validator = this.signers.validators[1];
-          const validatorValidatorSet = validatorSet.connect(validator);
-          const vestingDuration = 12; // weeks
-          await expect(
-            validatorValidatorSet.stakeWithVesting(vestingDuration, { value: this.minStake }),
-            "emit StakeChanged"
-          )
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, this.minStake);
-
-          // ensure proper staked amount is fetched
-          const validatorData = await validatorSet.getValidator(validator.address);
-          expect(validatorData.totalStake, "totalStake").to.equal(this.minStake);
-        });
-
-        it("should emit StakeChanged event on top-up vested position", async function () {
-          const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-            this.fixtures.registeredValidatorsStateFixture
-          );
-
-          const validator = this.signers.validators[2];
-          const validatorValidatorSet = validatorSet.connect(validator);
-          const vestingDuration = 12; // weeks
-          await validatorValidatorSet.stakeWithVesting(vestingDuration, { value: this.minStake });
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [this.signers.validators[0], this.signers.validators[1], validator],
-            this.epochSize
-          );
-
-          await expect(validatorValidatorSet.stake({ value: this.minStake.mul(2) }), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, this.minStake.mul(2).add(this.minStake));
-
-          // ensure proper staked amount is fetched
-          const validatorData = await validatorSet.getValidator(validator.address);
-          expect(validatorData.totalStake, "totalStake").to.equal(this.minStake.mul(3));
-        });
-
-        it("should emit StakeChanged event on unstake", async function () {
-          const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-            this.fixtures.registeredValidatorsStateFixture
-          );
-
-          const validator = this.signers.validators[0];
-          const validatorValidatorSet = validatorSet.connect(validator);
-          await validatorValidatorSet.stake({ value: this.minStake });
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [validator, this.signers.validators[1], this.signers.validators[2]],
-            this.epochSize
-          );
-
-          await expect(validatorValidatorSet.unstake(this.minStake), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, 0);
-
-          // ensure that the amount is properly unstaked
-          const validatorData = await validatorSet.getValidator(validator.address);
-          expect(validatorData.totalStake, "totalStake").to.equal(0);
-        });
-
-        it("should emit StakeChanged event on unstake from vested position", async function () {
-          const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-            this.fixtures.registeredValidatorsStateFixture
-          );
-
-          const validator = this.signers.validators[0];
-          const validatorValidatorSet = validatorSet.connect(validator);
-          const vestingDuration = 12; // weeks
-          const stakeAmount = this.minStake.mul(2);
-          await validatorValidatorSet.stakeWithVesting(vestingDuration, { value: stakeAmount });
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [validator, this.signers.validators[1], this.signers.validators[2]],
-            this.epochSize
-          );
-
-          const unstakeAmount = this.minStake.div(3);
-          await expect(validatorValidatorSet.unstake(unstakeAmount), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, stakeAmount.sub(unstakeAmount));
-
-          // ensure proper staked amount is fetched
-          const validatorData = await validatorSet.getValidator(validator.address);
-          expect(validatorData.totalStake, "totalStake").to.equal(stakeAmount.sub(unstakeAmount));
-        });
+        // to ensure that delegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake).to.equal(
+          totalStake.add(this.minStake),
+          "totalStake"
+        );
       });
 
-      describe("Delegation", () => {
-        it("should emit StakeChanged event on delegate", async function () {
-          const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+      it("should emit StakeChanged event on open vested position", async function () {
+        const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
 
-          const validator = this.signers.validators[0];
-          const { totalStake } = await validatorSet.getValidator(validator.address);
+        const validator = this.signers.validators[0];
+        const { totalStake } = await validatorSet.getValidator(validator.address);
 
-          const delegatorChildValidatorSet = validatorSet.connect(this.signers.delegator);
-          await expect(
-            delegatorChildValidatorSet.delegate(validator.address, { value: this.minStake }),
-            "emit StakeChanged"
-          )
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, this.minStake);
-
-          // to ensure that delegate is immediately applied on the validator stake
-          expect((await validatorSet.getValidator(validator.address)).totalStake).to.equal(
-            totalStake.add(this.minStake),
-            "totalStake"
-          );
-        });
-
-        it("should emit StakeChanged event on open vested position", async function () {
-          const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
-
-          const validator = this.signers.validators[0];
-          const { totalStake } = await validatorSet.getValidator(validator.address);
-
-          const vestingDuration = 12; // weeks
-
-          await expect(
-            vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake }),
-            "emit StakeChanged"
-          )
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, totalStake.add(this.minStake));
-
-          // to ensure that delegate is immediately applied on the validator stake
-          expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-            totalStake.add(this.minStake)
-          );
-        });
-
-        it("should emit StakeChanged event on top-up vested position", async function () {
-          const { validatorSet, systemValidatorSet, rewardPool, vestManager } = await loadFixture(
-            this.fixtures.vestManagerFixture
-          );
-
-          const validator = this.signers.validators[0];
-          const vestingDuration = 12; // weeks
-          await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
-          // because balance change can be made only once per epoch when vested delegation position
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-            this.epochSize
-          );
-          const { totalStake } = await validatorSet.getValidator(validator.address);
-
-          await expect(
-            vestManager.topUpVestedDelegatePosition(validator.address, { value: this.minStake }),
-            "emit StakeChanged"
-          )
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, totalStake.add(this.minStake));
-          // to ensure that delegate is immediately applied on the validator stake
-          expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-            totalStake.add(this.minStake)
-          );
-        });
-
-        it("should emit StakeChanged event on undelegate", async function () {
-          const { validatorSet } = await loadFixture(this.fixtures.vestManagerFixture);
-
-          const validator = this.signers.validators[0];
-          const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
-          await delegatorValidatorSet.delegate(validator.address, { value: this.minStake });
-          const { totalStake } = await validatorSet.getValidator(validator.address);
-
-          await expect(await delegatorValidatorSet.undelegate(validator.address, this.minStake), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, totalStake.sub(this.minStake));
-
-          // to ensure that undelegate is immediately applied on the validator stake
-          expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-            totalStake.sub(this.minStake)
-          );
-        });
-
-        it("should emit StakeChanged event on cut vested position", async function () {
-          const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
-            await loadFixture(this.fixtures.vestManagerFixture);
-
-          const validator = this.signers.validators[0];
-          const vestingDuration = 12; // weeks
-          await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
-          // because balance change can be made only once per epoch when vested delegation position
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-            this.epochSize
-          );
-          const { totalStake } = await validatorSet.getValidator(validator.address);
-
-          await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minStake);
-          await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minStake), "emit StakeChanged")
-            .to.emit(validatorSet, "StakeChanged")
-            .withArgs(validator.address, totalStake.sub(this.minStake));
-          // to ensure that undelegate is immediately applied on the validator stake
-          expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-            totalStake.sub(this.minStake)
-          );
-        });
-      });
-    });
-
-    describe("Staking", function () {
-      RunStakingTests();
-    });
-
-    describe("Withdraw", function () {
-      it("should fail the withdrawal", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-        const balanceAfterUnstake = this.minStake.mul(2).sub(this.minStake.div(2));
-        expect(validator.stake, "validator stake").to.equal(balanceAfterUnstake);
-
-        await setBalance(validatorSet.address, 0);
-        const balance = await hre.ethers.provider.getBalance(validatorSet.address);
-        expect(balance, "ValidatorSet balance").to.equal(0);
+        const vestingDuration = 12; // weeks
 
         await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.be.revertedWith("WITHDRAWAL_FAILED");
-      });
-
-      it("should fail the withdrawal before withdraw time passes", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.be.revertedWithCustomError(validatorSet, "NoWithdrawalAvailable");
-      });
-
-      it("should give the right amount on view function with multiple stake ", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        // unstake second time same amount
-        await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
-
-        const withdrawable = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pending = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawable).to.equal(this.minStake.div(2)).and.to.equal(pending);
-
-        // increase time to pass the withdraw time for 2nd stake
-        await time.increase(WEEK);
-
-        const withdrawableAfter = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pendingAfter = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawableAfter).to.equal(this.minStake);
-        expect(pendingAfter).to.equal(0);
-
-        // withdraw
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
-        ).to.emit(validatorSet, "WithdrawalFinished");
-
-        const withdrawableAfterWithdraw = await validatorSet.withdrawable(this.signers.validators[0].address);
-        const pendingAfterWithdraw = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
-
-        expect(withdrawableAfterWithdraw).to.equal(0).and.to.equal(pendingAfterWithdraw);
-      });
-
-      it("should withdraw", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        const unstakedAmount = this.minStake.div(2);
-
-        await expect(
-          validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address),
-          "withdraw"
+          vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake }),
+          "emit StakeChanged"
         )
-          .to.emit(validatorSet, "WithdrawalFinished")
-          .withArgs(this.signers.validators[0].address, this.signers.validators[0].address, unstakedAmount);
-        expect(
-          await validatorSet.pendingWithdrawals(this.signers.validators[0].address),
-          "pendingWithdrawals"
-        ).to.equal(0);
-        expect(await validatorSet.withdrawable(this.signers.validators[0].address), "withdrawable").to.equal(0);
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.add(this.minStake));
+
+        // to ensure that delegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.add(this.minStake)
+        );
       });
 
-      it("should fail to update withdraw time if not governance", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on top-up vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool, vestManager } = await loadFixture(
+          this.fixtures.vestManagerFixture
+        );
+
+        const validator = this.signers.validators[0];
+        const vestingDuration = 12; // weeks
+        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
+        // because balance change can be made only once per epoch when vested delegation position
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+        const { totalStake } = await validatorSet.getValidator(validator.address);
 
         await expect(
-          validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
-        ).to.be.revertedWith("Ownable: caller is not the owner");
+          vestManager.topUpVestedDelegatePosition(validator.address, { value: this.minStake }),
+          "emit StakeChanged"
+        )
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.add(this.minStake));
+        // to ensure that delegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.add(this.minStake)
+        );
       });
 
-      it("should fail update withdraw time if we pass 0", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on undelegate", async function () {
+        const { validatorSet } = await loadFixture(this.fixtures.vestManagerFixture);
 
-        await expect(
-          validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(0)
-        ).to.be.revertedWithCustomError(validatorSet, "InvalidWaitPeriod");
+        const validator = this.signers.validators[0];
+        const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
+        await delegatorValidatorSet.delegate(validator.address, { value: this.minStake });
+        const { totalStake } = await validatorSet.getValidator(validator.address);
+
+        await expect(await delegatorValidatorSet.undelegate(validator.address, this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.sub(this.minStake));
+
+        // to ensure that undelegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.sub(this.minStake)
+        );
       });
 
-      it("should update withdraw time by governance account", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should emit StakeChanged event on cut vested position", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
+          await loadFixture(this.fixtures.vestManagerFixture);
 
-        await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
-        const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
-        expect(waitPeriod).to.be.equal(WEEK * 2);
-      });
-    });
+        const validator = this.signers.validators[0];
+        const vestingDuration = 12; // weeks
+        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
+        // because balance change can be made only once per epoch when vested delegation position
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+        const { totalStake } = await validatorSet.getValidator(validator.address);
 
-    describe("Delegation", function () {
-      RunDelegationTests();
-    });
-
-    describe("Set Commision", function () {
-      it("should revert when call setCommission for inactive validator", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        await expect(validatorSet.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
-          .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-          .withArgs("VALIDATOR");
-      });
-
-      it("should revert with invalid commission", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        const exceededCommission = MAX_COMMISSION.add(1);
-
-        await expect(validatorSet.connect(this.signers.validators[0]).setCommission(exceededCommission))
-          .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
-          .withArgs(exceededCommission);
-      });
-
-      it("should set commission", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        // set commission and verify event
-        const newCommission = MAX_COMMISSION.div(2);
-        await expect(validatorSet.connect(this.signers.validators[0]).setCommission(newCommission))
-          .to.emit(validatorSet, "CommissionUpdated")
-          .withArgs(this.signers.validators[0].address, newCommission);
-
-        // get the update validator and ensure that the new commission is set
-        const validator = await validatorSet.getValidator(this.signers.validators[0].address);
-        expect(validator.commission).to.equal(newCommission);
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minStake);
+        await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.sub(this.minStake));
+        // to ensure that undelegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.sub(this.minStake)
+        );
       });
     });
+  });
+
+  describe("Staking", function () {
+    RunStakingTests();
+  });
+
+  describe("Withdraw", function () {
+    it("should fail the withdrawal", async function () {
+      const { validatorSet, unstakedValidator } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      const validator = await validatorSet.getValidator(unstakedValidator.address);
+      const balanceAfterUnstake = this.minStake.mul(2).sub(this.minStake.div(2));
+      expect(validator.stake, "validator stake").to.equal(balanceAfterUnstake);
+
+      await setBalance(validatorSet.address, 0);
+      const balance = await hre.ethers.provider.getBalance(validatorSet.address);
+      expect(balance, "ValidatorSet balance").to.equal(0);
+
+      await expect(validatorSet.connect(unstakedValidator).withdraw(unstakedValidator.address)).to.be.revertedWith(
+        "WITHDRAWAL_FAILED"
+      );
+    });
+
+    it("should fail the withdrawal before withdraw time passes", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+      ).to.be.revertedWithCustomError(validatorSet, "NoWithdrawalAvailable");
+    });
+
+    it("should give the right amount on view function with multiple stake", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      // unstake second time same amount
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
+
+      const withdrawable = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pending = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawable).to.equal(this.minStake.div(2)).and.to.equal(pending);
+
+      // increase time to pass the withdraw time for 2nd stake
+      await time.increase(WEEK);
+
+      const withdrawableAfter = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pendingAfter = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawableAfter).to.equal(this.minStake);
+      expect(pendingAfter).to.equal(0);
+
+      // withdraw
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address)
+      ).to.emit(validatorSet, "WithdrawalFinished");
+
+      const withdrawableAfterWithdraw = await validatorSet.withdrawable(this.signers.validators[0].address);
+      const pendingAfterWithdraw = await validatorSet.pendingWithdrawals(this.signers.validators[0].address);
+
+      expect(withdrawableAfterWithdraw).to.equal(0).and.to.equal(pendingAfterWithdraw);
+    });
+
+    it("should withdraw", async function () {
+      const { validatorSet, unstakedValidator, unstakedAmount } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      expect(await validatorSet.connect(unstakedValidator).withdraw(unstakedValidator.address), "withdraw")
+        .to.emit(validatorSet, "WithdrawalFinished")
+        .withArgs(validatorSet.address, unstakedValidator.address, unstakedAmount);
+      expect(await validatorSet.pendingWithdrawals(unstakedValidator.address), "pendingWithdrawals").to.equal(0);
+      expect(await validatorSet.withdrawable(unstakedValidator.address), "withdrawable").to.equal(0);
+    });
+
+    it("should fail to update withdraw time if not governance", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("should fail update withdraw time if we pass 0", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(
+        validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(0)
+      ).to.be.revertedWithCustomError(validatorSet, "InvalidWaitPeriod");
+    });
+
+    it("should update withdraw time by governance account", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
+      const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
+      expect(waitPeriod).to.be.equal(WEEK * 2);
+    });
+  });
+
+  describe("Delegation", function () {
+    RunDelegationTests();
+  });
+
+  describe("Set Commision", function () {
+    it("should revert when call setCommission for inactive validator", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(validatorSet.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
+        .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+        .withArgs("VALIDATOR");
+    });
+
+    it("should revert with invalid commission", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      const exceededCommission = MAX_COMMISSION.add(1);
+
+      await expect(validatorSet.connect(this.signers.validators[0]).setCommission(exceededCommission))
+        .to.be.revertedWithCustomError(validatorSet, "InvalidCommission")
+        .withArgs(exceededCommission);
+    });
+
+    it("should set commission", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      // set commission and verify event
+      const newCommission = MAX_COMMISSION.div(2);
+      await expect(validatorSet.connect(this.signers.validators[0]).setCommission(newCommission))
+        .to.emit(validatorSet, "CommissionUpdated")
+        .withArgs(this.signers.validators[0].address, newCommission);
+
+      // get the update validator and ensure that the new commission is set
+      const validator = await validatorSet.getValidator(this.signers.validators[0].address);
+      expect(validator.commission).to.equal(newCommission);
+    });
+  });
+
+  describe("Inspector", function () {
+    RunInspectorTests();
   });
 });

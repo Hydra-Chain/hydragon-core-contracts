@@ -104,6 +104,8 @@ export interface Fixtures {
       bls: BLS;
       rewardPool: RewardPool;
       liquidToken: LiquidityToken;
+      unstakedValidator: SignerWithAddress;
+      unstakedAmount: BigNumber;
     }>;
   };
   delegatedFixture: {
@@ -151,6 +153,14 @@ export interface Fixtures {
       vestManager: VestManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
+    }>;
+  };
+  bannedValidatorFixture: {
+    (): Promise<{
+      validatorSet: ValidatorSet;
+      liquidToken: LiquidityToken;
+      bannedValidator: SignerWithAddress;
+      stakedAmount: BigNumber;
     }>;
   };
 }
