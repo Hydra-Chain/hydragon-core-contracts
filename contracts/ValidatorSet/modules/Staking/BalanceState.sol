@@ -24,7 +24,7 @@ abstract contract BalanceState is IValidatorSet {
      * @dev Creates a `value` amount of tokens and assigns them to `account`.
      */
     function _mint(address account, uint256 value) internal {
-        require(msg.sender != address(0), "ZERO_ADDRESS");
+        require(account != address(0), "ZERO_ADDRESS");
 
         stakeBalances[account] += value;
         totalBalance += value;
@@ -34,7 +34,7 @@ abstract contract BalanceState is IValidatorSet {
      * @dev Destroys a `value` amount of tokens from `account`, lowering the balance.
      */
     function _burn(address account, uint256 value) internal {
-        require(msg.sender != address(0), "ZERO_ADDRESS");
+        require(account != address(0), "ZERO_ADDRESS");
         require(stakeBalances[account] - value >= 0, "LOW_BALANCE");
 
         stakeBalances[account] -= value;
