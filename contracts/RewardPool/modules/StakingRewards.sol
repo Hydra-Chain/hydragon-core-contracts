@@ -1,20 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../IRewardPool.sol";
 import "./Vesting.sol";
 import "./RewardsWithdrawal.sol";
-import "./../../common/Errors.sol";
 
+import "./../IRewardPool.sol";
+import "./../RewardPoolBase.sol";
 import "./../libs/DelegationPoolLib.sol";
 import "./../libs/VestingPositionLib.sol";
+
+import "./../../common/Errors.sol";
 
 struct ValReward {
     uint256 taken;
     uint256 total;
 }
 
-abstract contract StakingRewards is IRewardPool, Vesting, RewardsWithdrawal {
+abstract contract StakingRewards is IRewardPool, RewardPoolBase, Vesting, RewardsWithdrawal {
     using VestingPositionLib for VestingPosition;
     using DelegationPoolLib for DelegationPool;
 
@@ -24,7 +26,7 @@ abstract contract StakingRewards is IRewardPool, Vesting, RewardsWithdrawal {
     /**
      * @inheritdoc IRewardPool
      */
-    function onStake(address staker, uint256 amount, uint256 oldBalance) external {
+    function onStake(address staker, uint256 amount, uint256 oldBalance) external onlyValidatorSet {
         if (positions[staker].isActive()) {
             _handleStake(staker, amount, oldBalance);
         }
@@ -67,7 +69,7 @@ abstract contract StakingRewards is IRewardPool, Vesting, RewardsWithdrawal {
         address staker,
         uint256 amountUnstaked,
         uint256 amountLeft
-    ) external returns (uint256 amountToWithdraw) {
+    ) external onlyValidatorSet returns (uint256 amountToWithdraw) {
         VestingPosition memory position = positions[staker];
         if (position.isActive()) {
             // staker lose its reward
@@ -88,7 +90,7 @@ abstract contract StakingRewards is IRewardPool, Vesting, RewardsWithdrawal {
     /**
      * @inheritdoc IRewardPool
      */
-    function onNewStakePosition(address staker, uint256 durationWeeks) external {
+    function onNewStakePosition(address staker, uint256 durationWeeks) external onlyValidatorSet {
         if (positions[staker].isStakerInVestingCycle()) {
             revert StakeRequirement({src: "vesting", msg: "ALREADY_IN_VESTING"});
         }

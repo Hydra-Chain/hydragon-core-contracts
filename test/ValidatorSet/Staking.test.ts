@@ -5,7 +5,7 @@ import * as hre from "hardhat";
 
 import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
-import { RunStakingClaimTests } from "../RewardPool/RewardPool.test";
+import { RunStakingClaimTests, RunStakeFunctionsByValidatorSet } from "../RewardPool/RewardPool.test";
 
 export function RunStakingTests(): void {
   describe("Change minStake", function () {
@@ -371,6 +371,10 @@ export function RunStakingTests(): void {
 
     describe("Reward Pool - Staking claim", function () {
       RunStakingClaimTests();
+    });
+
+    describe("Reward Pool - ValidatorSet protected stake functions", function () {
+      RunStakeFunctionsByValidatorSet();
     });
   });
 }
