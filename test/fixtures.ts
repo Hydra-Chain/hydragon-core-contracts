@@ -451,7 +451,7 @@ async function bannedValidatorFixtureFunction(this: Mocha.Context) {
   const validator = this.signers.validators[0];
   const stakedAmount = await validatorSet.balanceOf(validator.address);
 
-  await validatorSet.connect(this.signers.governance).banValidator(validator.address);
+  await validatorSet.connect(this.signers.governance).banValidatorByOwner(validator.address);
 
   return {
     validatorSet,
