@@ -18,7 +18,6 @@ abstract contract VestedDelegation is IVestedDelegation, VestFactory {
         if (!isVestingManager(msg.sender)) {
             revert NotVestingManager();
         }
-
         _;
     }
 

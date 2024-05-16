@@ -23,7 +23,8 @@ export enum VALIDATOR_STATUS {
   None = 0,
   Whitelisted = 1,
   Registered = 2,
-  Banned = 3,
+  Active = 3,
+  Banned = 4,
 }
 
 /// @notice This bytecode is used to mock and return true with any input
@@ -34,6 +35,9 @@ export const alwaysFalseBytecode = "0x60206000F3";
 export const alwaysRevertBytecode = "0x60006000FD";
 
 export const ERRORS = {
+  ownable: "Ownable: caller is not the owner",
+  inactiveValidator: "INACTIVE_VALIDATOR",
+  invalidValidator: "INVALID_VALIDATOR",
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account} is missing role ${role}`;
   },

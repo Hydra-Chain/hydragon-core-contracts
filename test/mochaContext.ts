@@ -155,6 +155,12 @@ export interface Fixtures {
       delegatedValidator: SignerWithAddress;
     }>;
   };
+  validatorToBanFixture: {
+    (): Promise<{
+      validatorSet: ValidatorSet;
+      validatorToBan: SignerWithAddress;
+    }>;
+  };
   bannedValidatorFixture: {
     (): Promise<{
       validatorSet: ValidatorSet;

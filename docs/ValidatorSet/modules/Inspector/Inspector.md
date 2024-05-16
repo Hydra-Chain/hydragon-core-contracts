@@ -127,15 +127,48 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
+### banTreshold
+
+```solidity
+function banTreshold() external view returns (uint256)
+```
+
+The block numbers threshold that needs to be passed to ban a validator
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### banValidator
 
 ```solidity
 function banValidator(address validator) external nonpayable
 ```
 
-Manual ban of a validator
+Public method where anyone can execute to ban a validator
 
-*Function can be executed only by the governor/owner*
+*This function will ban only if the input validator has reached the ban treshold*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+### banValidatorByOwner
+
+```solidity
+function banValidatorByOwner(address validator) external nonpayable
+```
+
+Manually ban a validator by the owner
+
+
 
 #### Parameters
 
@@ -208,6 +241,52 @@ function currentEpochId() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### epochEndBlocks
+
+```solidity
+function epochEndBlocks(uint256) external view returns (uint256)
+```
+
+Array with epoch ending blocks
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### epochs
+
+```solidity
+function epochs(uint256) external view returns (uint256 startBlock, uint256 endBlock, bytes32 epochRoot)
+```
+
+Epoch data linked with the epoch id
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| startBlock | uint256 | undefined |
+| endBlock | uint256 | undefined |
+| epochRoot | bytes32 | undefined |
 
 ### getEpochByBlock
 
@@ -444,6 +523,22 @@ function rewardPool() external view returns (contract IRewardPool)
 |---|---|---|
 | _0 | contract IRewardPool | undefined |
 
+### setBanThreshold
+
+```solidity
+function setBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to ban a validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
 ### setCommission
 
 ```solidity
@@ -628,6 +723,45 @@ Unstakes amount for sender. Claims rewards beforehand.
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | Amount to unstake |
+
+### updateValidatorParticipation
+
+```solidity
+function updateValidatorParticipation(address validator) external nonpayable
+```
+
+A function to update when the validator was lastly active
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The validator to set the last participation for |
+
+### validatorParticipation
+
+```solidity
+function validatorParticipation(address) external view returns (uint256 activeFrom, uint256 lastlyActive)
+```
+
+A collection of the validators&#39; participation
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| activeFrom | uint256 | undefined |
+| lastlyActive | uint256 | undefined |
 
 ### validatorPenalty
 
@@ -1123,6 +1257,17 @@ error StakeRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### ThresholdNotReached
+
+```solidity
+error ThresholdNotReached()
+```
+
+
+
+
+
 
 ### Unauthorized
 

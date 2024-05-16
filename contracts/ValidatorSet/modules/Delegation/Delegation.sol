@@ -81,9 +81,7 @@ abstract contract Delegation is
 
     // _______________ Private functions _______________
 
-    function _delegate(address validator, address delegator, uint256 amount) private {
-        if (validators[validator].status != ValidatorStatus.Registered) revert Unauthorized("INVALID_VALIDATOR");
-
+    function _delegate(address validator, address delegator, uint256 amount) private onlyActiveValidator(validator) {
         _mint(validator, amount); // increase validator power
         StateSyncer._syncStake(validator, balanceOf(validator));
         LiquidStaking._distributeTokens(delegator, amount);

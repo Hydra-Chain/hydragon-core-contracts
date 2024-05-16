@@ -14,12 +14,13 @@ struct WithdrawalInfo {
 interface IInspector {
     event ValidatorBanned(address indexed validator);
 
+    error ThresholdNotReached();
+
     /**
-     * @notice Manual ban of a validator
-     * @dev Function can be executed only by the governor/owner
+     * @notice Manually ban a validator by the owner
      * @param validator Address of the validator
      */
-    function banValidator(address validator) external;
+    function banValidatorByOwner(address validator) external;
 
     /**
      * @notice Set the penalty amount for the banned validators
@@ -34,8 +35,21 @@ interface IInspector {
     function setReporterReward(uint256 newReward) external;
 
     /**
+     * @notice Set the threshold that needs to be reached to ban a validator
+     * @param newThreshold The new threshold in blocks
+     */
+    function setBanThreshold(uint256 newThreshold) external;
+
+    /**
      * @notice Withdraw funds left for a banned validator
      * @dev Function can be executed only by the banned validator
      */
     function withdrawBannedFunds() external;
+
+    /**
+     * @notice Public method where anyone can execute to ban a validator
+     * @dev This function will ban only if the input validator has reached the ban treshold
+     * @param validator Address of the validator
+     */
+    function banValidator(address validator) external;
 }

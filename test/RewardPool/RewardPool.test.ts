@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { EPOCHS_YEAR, MIN_RSI_BONUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { EPOCHS_YEAR, ERRORS, MIN_RSI_BONUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,
@@ -460,7 +460,7 @@ export function RunVestedDelegateClaimTests(): void {
 
       await expect(
         vestManager.connect(this.signers.accounts[10]).claimVestedPositionReward(delegatedValidator.address, 0, 0)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith(ERRORS.ownable);
     });
 
     it("should not claim when active position", async function () {

@@ -79,15 +79,18 @@ contract RewardPool is RewardPoolBase, System, StakingRewards, DelegationRewards
     ) private returns (uint256 reward) {
         require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
 
-        (, , uint256 totalStake, uint256 commission, , ) = validatorSet.getValidator(uptime.validator);
+        (, , uint256 totalStake, uint256 commission, , bool active) = validatorSet.getValidator(uptime.validator);
+        if (!active) {
+            return 0;
+        }
+
         DelegationPool storage delegationPool = delegationPools[uptime.validator];
-        uint256 delegation = delegationPool.supply;
         // slither-disable-next-line divide-before-multiply
-        uint256 validatorReward = (fullReward * (totalStake + delegation) * uptime.signedBlocks) /
+        uint256 validatorReward = (fullReward * (totalStake + delegationPool.supply) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 validatorShares, uint256 delegatorShares) = _calculateValidatorAndDelegatorShares(
             totalStake,
-            delegation,
+            delegationPool.supply,
             validatorReward,
             commission
         );
@@ -104,6 +107,9 @@ contract RewardPool is RewardPoolBase, System, StakingRewards, DelegationRewards
         if (validatorShares > 0) {
             _saveValRewardData(uptime.validator, epochId);
         }
+
+        // Update the validator's last activity
+        validatorSet.updateValidatorParticipation(uptime.validator);
 
         return validatorReward;
     }

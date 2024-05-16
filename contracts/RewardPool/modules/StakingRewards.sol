@@ -3,11 +3,10 @@ pragma solidity 0.8.17;
 
 import "./Vesting.sol";
 import "./RewardsWithdrawal.sol";
-
 import "./../RewardPoolBase.sol";
 import "./../libs/DelegationPoolLib.sol";
 import "./../libs/VestingPositionLib.sol";
-
+import "./../../common/Errors.sol";
 import "./../../common/Errors.sol";
 
 struct ValReward {
@@ -21,6 +20,8 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
 
     /// @notice The validator rewards mapped to a validator's address
     mapping(address => ValReward) public valRewards;
+
+    // _______________ External functions _______________
 
     /**
      * @inheritdoc IRewardPool
@@ -40,20 +41,6 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
         if (reward == 0) {
             return;
         }
-
-        _claimValidatorReward(msg.sender, reward);
-        _withdrawRewards(msg.sender, reward);
-
-        emit ValidatorRewardClaimed(msg.sender, reward);
-    }
-
-    function claimValidatorReward(uint256 rewardHistoryIndex) public {
-        if (!positions[msg.sender].isMaturing()) {
-            revert StakeRequirement({src: "vesting", msg: "NOT_MATURING"});
-        }
-
-        uint256 reward = _calcValidatorReward(msg.sender, rewardHistoryIndex);
-        if (reward == 0) return;
 
         _claimValidatorReward(msg.sender, reward);
         _withdrawRewards(msg.sender, reward);
@@ -125,6 +112,24 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
     function getValidatorReward(address validator) external view returns (uint256) {
         return valRewards[validator].total - valRewards[validator].taken;
     }
+
+    // _______________ Public functions _______________
+
+    function claimValidatorReward(uint256 rewardHistoryIndex) public {
+        if (!positions[msg.sender].isMaturing()) {
+            revert StakeRequirement({src: "vesting", msg: "NOT_MATURING"});
+        }
+
+        uint256 reward = _calcValidatorReward(msg.sender, rewardHistoryIndex);
+        if (reward == 0) return;
+
+        _claimValidatorReward(msg.sender, reward);
+        _withdrawRewards(msg.sender, reward);
+
+        emit ValidatorRewardClaimed(msg.sender, reward);
+    }
+
+    // _______________ Internal functions _______________
 
     function _saveValRewardData(address validator, uint256 epoch) internal {
         ValRewardHistory memory rewardData = ValRewardHistory({

@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS, WEEK } from "../constants";
+import { CHAIN_ID, DOMAIN, ERRORS, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS, WEEK } from "../constants";
 import { generateFixtures } from "../fixtures";
 import { commitEpoch, generateValidatorBls, initializeContext } from "../helper";
 import { RunSystemTests } from "./System.test";
@@ -339,12 +339,12 @@ describe("ValidatorSet", function () {
       await expect(
         validatorSet.connect(this.signers.validators[0]).addToWhitelist([this.signers.validators[0].address]),
         "addToWhitelist"
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith(ERRORS.ownable);
 
       await expect(
         validatorSet.connect(this.signers.validators[0]).removeFromWhitelist([this.signers.validators[0].address]),
         "removeFromWhitelist"
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith(ERRORS.ownable);
     });
 
     it("should be able to add to whitelist", async function () {
@@ -529,9 +529,12 @@ describe("ValidatorSet", function () {
 
       expect(validator.stake, "stake").to.equal(0);
       expect(validator.totalStake, "total stake").to.equal(0);
-      expect(validator.commission).to.equal(INITIAL_COMMISSION);
-      expect(validator.active).to.equal(true);
-      expect(validator.blsKey.map((x: any) => x.toHexString())).to.deep.equal(mcl.g2ToHex(keyPair.pubkey));
+      expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION);
+      expect(validator.active, "active").to.equal(false);
+      expect(
+        validator.blsKey.map((x: any) => x.toHexString()),
+        "blsKey"
+      ).to.deep.equal(mcl.g2ToHex(keyPair.pubkey));
     });
 
     it("should revert when attempt to register twice", async function () {
@@ -674,15 +677,16 @@ describe("ValidatorSet", function () {
 
     describe("Delegation", () => {
       it("should emit StakeChanged event on delegate", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+        const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
         const validator = this.signers.validators[0];
         const { totalStake } = await validatorSet.getValidator(validator.address);
+        const stakeAfterDelegate = totalStake.add(this.minStake);
 
         const delegatorValidatorSet = validatorSet.connect(this.signers.delegator);
         await expect(delegatorValidatorSet.delegate(validator.address, { value: this.minStake }), "emit StakeChanged")
           .to.emit(validatorSet, "StakeChanged")
-          .withArgs(validator.address, this.minStake);
+          .withArgs(validator.address, stakeAfterDelegate);
 
         // to ensure that delegate is immediately applied on the validator stake
         expect((await validatorSet.getValidator(validator.address)).totalStake).to.equal(
@@ -862,7 +866,7 @@ describe("ValidatorSet", function () {
 
       await expect(
         validatorSet.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith(ERRORS.ownable);
     });
 
     it("should fail update withdraw time if we pass 0", async function () {
@@ -887,12 +891,12 @@ describe("ValidatorSet", function () {
   });
 
   describe("Set Commision", function () {
-    it("should revert when call setCommission for inactive validator", async function () {
+    it("should revert when call setCommission for unregistered or inactive validator", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
       await expect(validatorSet.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
         .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-        .withArgs("VALIDATOR");
+        .withArgs(ERRORS.invalidValidator);
     });
 
     it("should revert with invalid commission", async function () {

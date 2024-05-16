@@ -18,18 +18,6 @@ import "./../common/libs/SafeMathInt.sol";
 contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent, Staking, Delegation, Inspector {
     using ArraysUpgradeable for uint256[];
 
-    /// @notice Epoch data linked with the epoch id
-    mapping(uint256 => Epoch) public epochs;
-    /// @notice Array with epoch ending blocks
-    uint256[] public epochEndBlocks;
-
-    // _______________ Modifiers _______________
-
-    modifier onlyRewardPool() {
-        if (msg.sender != address(rewardPool)) revert Unauthorized("REWARD_POOL");
-        _;
-    }
-
     // _______________ Initializer _______________
 
     /**
@@ -91,8 +79,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
     }
 
     /**
-     * @notice Get the validator by its address
-     * @param validatorAddress address
+     * @inheritdoc IValidatorSet
      */
     function getValidator(
         address validatorAddress
@@ -114,14 +101,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
         stake = totalStake - rewardPool.totalDelegationOf(validatorAddress);
         commission = v.commission;
         withdrawableRewards = rewardPool.getValidatorReward(validatorAddress);
-        active = v.status == ValidatorStatus.Registered;
-    }
-
-    /**
-     * @inheritdoc IValidatorSet
-     */
-    function getValidators() public view returns (address[] memory) {
-        return validatorsAddresses;
+        active = v.status == ValidatorStatus.Active;
     }
 
     /**
@@ -138,6 +118,15 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
     function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory) {
         uint256 epochIndex = epochEndBlocks.findUpperBound(blockNumber);
         return epochs[epochIndex];
+    }
+
+    // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IValidatorSet
+     */
+    function getValidators() public view returns (address[] memory) {
+        return validatorsAddresses;
     }
 
     // slither-disable-next-line unused-state,naming-convention

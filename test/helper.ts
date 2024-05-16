@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable node/no-extraneous-import */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { mine } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { BigNumber, ContractTransaction } from "ethers";
 
@@ -75,6 +76,8 @@ export async function commitEpoch(
   for (const validator of validators) {
     validatorsUptime.push({ validator: validator.address, signedBlocks: 64 });
   }
+
+  await mine(epochSize, { interval: 2 });
 
   const commitEpochTx = await systemValidatorSet.commitEpoch(currEpochId, newEpoch, epochSize);
 

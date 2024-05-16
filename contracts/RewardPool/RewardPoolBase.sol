@@ -14,6 +14,13 @@ abstract contract RewardPoolBase is IRewardPool, Initializable {
     /// @notice The address of the ValidatorSet contract
     IValidatorSet public validatorSet;
 
+    // _______________ Modifiers _______________
+
+    modifier onlyValidatorSet() {
+        if (msg.sender != address(validatorSet)) revert Unauthorized("VALIDATORSET");
+        _;
+    }
+
     // _______________ Initializer _______________
 
     function __RewardPoolBase_init(IValidatorSet newValidatorSet) internal onlyInitializing {
@@ -22,10 +29,5 @@ abstract contract RewardPoolBase is IRewardPool, Initializable {
 
     function __RewardPoolBase_init_unchained(IValidatorSet newValidatorSet) internal onlyInitializing {
         validatorSet = newValidatorSet;
-    }
-
-    modifier onlyValidatorSet() {
-        if (msg.sender != address(validatorSet)) revert Unauthorized("VALIDATORSET");
-        _;
     }
 }

@@ -11,13 +11,46 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_VALIDATOR_SET");
 
     IBLS public bls;
+
     IRewardPool public rewardPool;
+
     uint256 public currentEpochId;
+
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
+
     address[] public validatorsAddresses;
 
+    /// @notice Epoch data linked with the epoch id
+    mapping(uint256 => Epoch) public epochs;
+
+    /// @notice Array with epoch ending blocks
+    uint256[] public epochEndBlocks;
+
     mapping(uint256 => uint256) internal _commitBlockNumbers;
+
+    // _______________ Modifiers _______________
+
+    modifier onlyRewardPool() {
+        if (msg.sender != address(rewardPool)) revert Unauthorized("REWARD_POOL");
+        _;
+    }
+
+    modifier onlyActiveValidator(address validator) {
+        if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
+        _;
+    }
+
+    /// @notice Modifier to check if the validator is registered or active
+    modifier onlyValidator() {
+        if (
+            validators[msg.sender].status != ValidatorStatus.Registered &&
+            validators[msg.sender].status != ValidatorStatus.Active
+        ) revert Unauthorized("INVALID_VALIDATOR");
+        _;
+    }
+
+    // _______________ Initializer _______________
 
     function __ValidatorSetBase_init(IBLS newBls, IRewardPool newRewardPool) internal onlyInitializing {
         __ValidatorSetBase_init_unchained(newBls, newRewardPool);
@@ -28,6 +61,8 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
         rewardPool = newRewardPool;
         currentEpochId = 1;
     }
+
+    // _______________ Internal functions _______________
 
     function _verifyValidatorRegistration(
         address signer,

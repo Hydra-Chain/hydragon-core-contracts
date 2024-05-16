@@ -61,12 +61,12 @@ export function RunDelegationTests(): void {
         .withArgs("delegate", "DELEGATING_AMOUNT_ZERO");
     });
 
-    it("should not be able to delegate to missing or inactive validator", async function () {
+    it("should not be able to delegate to  inactive validator", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
       await expect(validatorSet.delegate(this.signers.validators[3].address, { value: this.minDelegation }))
         .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-        .withArgs("INVALID_VALIDATOR");
+        .withArgs(ERRORS.inactiveValidator);
     });
 
     it("should not be able to delegate less than minDelegation", async function () {
@@ -326,7 +326,7 @@ export function RunDelegationTests(): void {
             })
         )
           .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-          .withArgs("INVALID_VALIDATOR");
+          .withArgs(ERRORS.inactiveValidator);
       });
 
       it("should revert when delegation too low", async function () {
@@ -688,7 +688,7 @@ export function RunDelegationTests(): void {
           vestManager
             .connect(this.signers.accounts[10])
             .topUpVestedDelegatePosition(this.signers.accounts[10].address, { value: this.minDelegation })
-        ).to.be.revertedWith("Ownable: caller is not the owner");
+        ).to.be.revertedWith(ERRORS.ownable);
       });
 
       it("should revert when not manager", async function () {
