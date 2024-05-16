@@ -106,7 +106,7 @@ abstract contract Inspector is IInspector, Staking {
         _ban(validator);
     }
 
-    // _______________ Public functions _______________
+    // _______________ Private functions _______________
 
     function _ban(address validator) private {
         uint256 totalAmount = balanceOf(validator);

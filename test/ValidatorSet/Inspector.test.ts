@@ -1,5 +1,5 @@
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture, time, setBalance, mineUpTo } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
 import { expect } from "chai";
 import { DENOMINATOR, ERRORS, VALIDATOR_STATUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
@@ -176,12 +176,6 @@ export function RunInspectorTests(): void {
 
     it("should revert when the validator is active for long time and have not met the threshold", async function () {
       const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-      const banThreshold = await systemValidatorSet.banTreshold();
-      // mine more blocks than the threshold
-      await mineUpTo(banThreshold.mul(2));
-
-      // const validators = [this.signers.validators[0], this.signers.validators[1]];
 
       // Commit epochs so we will have some rewards to be distributed
       await commitEpochs(
