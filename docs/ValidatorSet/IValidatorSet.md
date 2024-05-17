@@ -32,6 +32,23 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
+### getCurrentValidatorsCount
+
+```solidity
+function getCurrentValidatorsCount() external view returns (uint256)
+```
+
+Gets the number of current validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Returns the count as uint256 |
+
 ### getEpochByBlock
 
 ```solidity
@@ -80,23 +97,6 @@ Gets validator by address.
 | commission | uint256 | commission |
 | withdrawableRewards | uint256 | withdrawable rewards |
 | active | bool | activity status |
-
-### getValidators
-
-```solidity
-function getValidators() external view returns (address[])
-```
-
-Gets all validators. Returns already unactive validators as well.
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address[] | Returns array of addresses |
 
 ### totalBlocks
 

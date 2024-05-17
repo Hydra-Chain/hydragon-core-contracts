@@ -217,4 +217,15 @@ error LowStake()
 
 
 
+### MaxValidatorsReached
+
+```solidity
+error MaxValidatorsReached()
+```
+
+
+
+
+
+
 

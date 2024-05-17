@@ -44,6 +44,23 @@ A constant for the maximum comission a validator can receive from the delegator&
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MAX_VALIDATORS
+
+```solidity
+function MAX_VALIDATORS() external view returns (uint256)
+```
+
+A constant for the maximum amount of validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_STAKE_LIMIT
 
 ```solidity
@@ -193,6 +210,23 @@ function currentEpochId() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### currentValidators
+
+```solidity
+function currentValidators() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### epochEndBlocks
 
 ```solidity
@@ -238,6 +272,23 @@ Epoch data linked with the epoch id
 | startBlock | uint256 | undefined |
 | endBlock | uint256 | undefined |
 | epochRoot | bytes32 | undefined |
+
+### getCurrentValidatorsCount
+
+```solidity
+function getCurrentValidatorsCount() external view returns (uint256)
+```
+
+Gets the number of current validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Returns the count as uint256 |
 
 ### getEpochByBlock
 
@@ -287,23 +338,6 @@ Gets validator by address.
 | commission | uint256 | commission |
 | withdrawableRewards | uint256 | withdrawable rewards |
 | active | bool | activity status |
-
-### getValidators
-
-```solidity
-function getValidators() external view returns (address[])
-```
-
-Gets all validators. Returns already unactive validators as well.
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address[] | Returns array of addresses |
 
 ### liquidToken
 
@@ -672,28 +706,6 @@ function validators(address) external view returns (uint256 liquidDebt, uint256 
 | commission | uint256 | undefined |
 | status | enum ValidatorStatus | undefined |
 
-### validatorsAddresses
-
-```solidity
-function validatorsAddresses(uint256) external view returns (address)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### withdraw
 
 ```solidity
@@ -1019,6 +1031,17 @@ error InvalidWaitPeriod()
 
 ```solidity
 error LowStake()
+```
+
+
+
+
+
+
+### MaxValidatorsReached
+
+```solidity
+error MaxValidatorsReached()
 ```
 
 

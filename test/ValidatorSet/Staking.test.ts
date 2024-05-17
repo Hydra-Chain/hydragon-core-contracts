@@ -86,17 +86,12 @@ export function RunStakingTests(): void {
       await expect(validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake })).to.not.be.reverted;
     });
 
-    it("should get all active validators", async function () {
+    it("should get the correct current validators count", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const validatorAddresses = await validatorSet.getValidators();
+      const validatorsCount = await validatorSet.getCurrentValidatorsCount();
 
-      expect(validatorAddresses).to.deep.equal([
-        this.signers.admin.address,
-        this.signers.validators[0].address,
-        this.signers.validators[1].address,
-        this.signers.validators[2].address,
-      ]);
+      expect(validatorsCount).to.deep.equal(4);
     });
   });
 
