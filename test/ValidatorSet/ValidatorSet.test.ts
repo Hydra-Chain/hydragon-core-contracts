@@ -307,6 +307,63 @@ describe("ValidatorSet", function () {
       expect(await validatorSet.getCurrentValidatorsCount()).to.deep.equal(1);
     });
 
+    it("should revert if we try register more than 150 Validators & banning should decrement count", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(4);
+
+      const keyPair = mcl.newKeyPair();
+      const provider = hre.ethers.provider;
+      const initialBalance = hre.ethers.utils.parseEther("100000");
+
+      // * Whitelist & Register total 150 validators
+      for (let i = 4; i < 150; i++) {
+        // create a new wallet
+        const wallet = hre.ethers.Wallet.createRandom();
+        const connectedWallet = wallet.connect(provider);
+        // send eth to wallet
+        await hre.network.provider.send("hardhat_setBalance", [
+          wallet.address,
+          initialBalance.toHexString().replace(/^0x0+/, "0x"),
+        ]);
+        // whitelist and register
+        await validatorSet.connect(this.signers.governance).addToWhitelist([wallet.address]);
+        const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
+        await validatorSet
+          .connect(connectedWallet)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+      }
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(150);
+
+      // * Try to register 151 validators
+      const validator151Wallet = hre.ethers.Wallet.createRandom();
+      const validator151 = validator151Wallet.connect(provider);
+      await hre.network.provider.send("hardhat_setBalance", [
+        validator151Wallet.address,
+        initialBalance.toHexString().replace(/^0x0+/, "0x"),
+      ]);
+      await validatorSet.connect(this.signers.governance).addToWhitelist([validator151Wallet.address]);
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        validator151Wallet.address,
+        keyPair.secret
+      ).signature;
+      await expect(
+        validatorSet
+          .connect(validator151)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION, { gasLimit: 1000000 })
+      ).to.be.revertedWithCustomError(validatorSet, "MaxValidatorsReached");
+
+      // * Ban a validator and check if the count is decremented
+      await validatorSet.connect(this.signers.governance).banValidatorByOwner(this.signers.validators[0].address);
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(149);
+      await expect(
+        validatorSet
+          .connect(validator151)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION)
+      ).to.not.be.reverted;
+    });
+
     it("should get epoch by block", async function () {
       const { systemValidatorSet } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
