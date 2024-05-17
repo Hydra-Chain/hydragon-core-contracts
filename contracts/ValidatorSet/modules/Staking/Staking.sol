@@ -15,6 +15,8 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
+    /// @notice A constant for the maximum amount of validators
+    uint256 public constant MAX_VALIDATORS = 150;
     /// @notice A state variable to keep the minimum amount of stake
     uint256 public minStake;
 
@@ -99,11 +101,14 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256[4] calldata pubkey,
         uint256 commission
     ) internal {
+        if (currentValidators == MAX_VALIDATORS) revert MaxValidatorsReached();
         _verifyValidatorRegistration(validator, signature, pubkey);
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
         _setCommission(validator, commission);
-        validatorsAddresses.push(validator);
+        unchecked {
+            currentValidators++;
+        }
         rewardPool.onNewValidator(validator);
     }
 

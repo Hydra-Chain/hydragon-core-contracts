@@ -8,6 +8,7 @@ interface IStaking {
     event Unstaked(address indexed validator, uint256 amount);
 
     error InvalidCommission(uint256 commission);
+    error MaxValidatorsReached();
     error InvalidMinStake();
     error LowStake();
 

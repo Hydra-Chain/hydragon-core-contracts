@@ -118,6 +118,7 @@ abstract contract Inspector is IInspector, Staking {
 
         validators[validator].status = ValidatorStatus.Banned;
         if (reward != 0) _withdraw(msg.sender, reward);
+        currentValidators--;
 
         emit ValidatorBanned(validator);
     }
