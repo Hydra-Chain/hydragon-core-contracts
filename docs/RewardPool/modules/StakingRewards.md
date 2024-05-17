@@ -1287,6 +1287,23 @@ The validator rewards mapped to a validator&#39;s address
 | taken | uint256 | undefined |
 | total | uint256 | undefined |
 
+### validatorSet
+
+```solidity
+function validatorSet() external view returns (contract IValidatorSet)
+```
+
+The address of the ValidatorSet contract
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IValidatorSet | undefined |
+
 ### vestingBonus
 
 ```solidity
@@ -1518,5 +1535,21 @@ error StakeRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
 
 

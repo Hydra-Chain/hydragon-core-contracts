@@ -11,6 +11,7 @@ import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
   RunVestedDelegationRewardsTests,
+  RunDelegateFunctionsByValidatorSet,
 } from "../RewardPool/RewardPool.test";
 
 export function RunDelegationTests(): void {
@@ -859,6 +860,10 @@ export function RunDelegationTests(): void {
 
     describe("Reward Pool - Vested delegate claim", async function () {
       RunVestedDelegateClaimTests();
+    });
+
+    describe("Reward Pool - ValidatorSet protected delegate functions", function () {
+      RunDelegateFunctionsByValidatorSet();
     });
   });
 }

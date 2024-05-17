@@ -15,6 +15,78 @@ import {
   retrieveRPSData,
 } from "../helper";
 
+export function RunStakeFunctionsByValidatorSet(): void {
+  describe("External functions that should be called only by Validator Set", function () {
+    it("should revert stake-protected functions if not called by ValidatorSet", async function () {
+      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+      await expect(rewardPool.connect(this.signers.accounts[0]).onStake(systemValidatorSet.address, 1, 1))
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(rewardPool.connect(this.signers.system).onUnstake(systemValidatorSet.address, 1, 1))
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(rewardPool.connect(this.signers.governance).onNewStakePosition(systemValidatorSet.address, 1))
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+    });
+  });
+}
+
+export function RunDelegateFunctionsByValidatorSet(): void {
+  describe("External functions that should be called only by Validator Set", function () {
+    it("should revert delegate-protected functions if not called by ValidatorSet", async function () {
+      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
+
+      await expect(rewardPool.connect(this.signers.accounts[1]).onNewValidator(systemValidatorSet.address))
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(
+        rewardPool
+          .connect(this.signers.delegator)
+          .onDelegate(this.signers.delegator.address, this.signers.validators[0].address, 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(
+        rewardPool
+          .connect(this.signers.validators[1])
+          .onUndelegate(this.signers.delegator.address, this.signers.validators[1].address, 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(
+        rewardPool
+          .connect(this.signers.accounts[2])
+          .onNewDelegatePosition(this.signers.delegator.address, this.signers.validators[2].address, 1, 1, 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(
+        rewardPool
+          .connect(this.signers.accounts[3])
+          .onTopUpDelegatePosition(this.signers.delegator.address, this.signers.validators[3].address, 1, 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+
+      await expect(
+        rewardPool
+          .connect(this.signers.accounts[3])
+          .onCutPosition(this.signers.delegator.address, this.signers.validators[3].address, 1, 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
+        .withArgs("VALIDATORSET");
+    });
+  });
+}
+
 export function RunStakingClaimTests(): void {
   describe("Claim position reward", function () {
     it("should not be able to claim when active", async function () {
@@ -42,6 +114,37 @@ export function RunStakingClaimTests(): void {
 
       const reward = await getValidatorReward(stakerValidatorSet, this.staker.address);
       expect(reward).to.be.gt(0);
+    });
+
+    it("should revert claimValidatorReward(epoch) when giving wrong index", async function () {
+      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.vestingRewardsFixture);
+
+      // add reward exactly before maturing (second to the last block)
+      const position = await rewardPool.positions(this.staker.address);
+      const penultimate = position.end.sub(1);
+      await time.setNextBlockTimestamp(penultimate.toNumber());
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], this.staker],
+        1, // number of epochs to commit
+        this.epochSize
+      );
+
+      // enter maturing state
+      const nextTimestampMaturing = position.end.add(position.duration.div(2));
+      await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+
+      // calculate up to which epoch rewards are matured
+      const valRewardsHistoryRecords = await rewardPool.getValRewardsHistoryValues(this.staker.address);
+      const valRewardHistoryRecordIndex = findProperRPSIndex(
+        valRewardsHistoryRecords,
+        position.end.sub(position.duration.div(2))
+      );
+
+      // revert claim reward when adding 1 to the index
+      await expect(rewardPool.connect(this.staker)["claimValidatorReward(uint256)"](valRewardHistoryRecordIndex + 1)).to
+        .be.reverted;
     });
 
     it("should be able to claim with claimValidatorReward(epoch) when maturing", async function () {

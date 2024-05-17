@@ -268,7 +268,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         address delegator,
         uint256 amount,
         uint256 currentEpochId
-    ) external returns (uint256 penalty, uint256 fullReward) {
+    ) external onlyValidatorSet returns (uint256 penalty, uint256 fullReward) {
         DelegationPool storage delegation = delegationPools[validator];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (amount > delegatedAmount) revert DelegateRequirement({src: "vesting", msg: "INSUFFICIENT_BALANCE"});
