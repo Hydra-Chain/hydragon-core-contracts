@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "./Vesting.sol";
 import "./RewardsWithdrawal.sol";
 
-import "./../IRewardPool.sol";
 import "./../RewardPoolBase.sol";
 import "./../libs/DelegationPoolLib.sol";
 import "./../libs/VestingPositionLib.sol";
@@ -16,7 +15,7 @@ struct ValReward {
     uint256 total;
 }
 
-abstract contract StakingRewards is IRewardPool, RewardPoolBase, Vesting, RewardsWithdrawal {
+abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
     using VestingPositionLib for VestingPosition;
     using DelegationPoolLib for DelegationPool;
 
