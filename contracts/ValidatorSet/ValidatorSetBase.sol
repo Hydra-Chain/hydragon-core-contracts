@@ -29,6 +29,14 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
 
     mapping(uint256 => uint256) internal _commitBlockNumbers;
 
+    /**
+     * @notice Mapping that keeps the last time when a validator has participated in the consensus
+     * @dev Keep in mind that the validator will initially be set active when stake,
+     * but it will be able to participate in the next epoch. So, the validator will have
+     * less blocks to be considered for ban.
+     */
+    mapping(address => uint256) public validatorParticipation;
+
     // _______________ Modifiers _______________
 
     modifier onlyRewardPool() {
@@ -42,10 +50,10 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     }
 
     /// @notice Modifier to check if the validator is registered or active
-    modifier onlyValidator() {
+    modifier onlyValidator(address validator) {
         if (
-            validators[msg.sender].status != ValidatorStatus.Registered &&
-            validators[msg.sender].status != ValidatorStatus.Active
+            validators[validator].status != ValidatorStatus.Registered &&
+            validators[validator].status != ValidatorStatus.Active
         ) revert Unauthorized("INVALID_VALIDATOR");
         _;
     }
@@ -78,6 +86,14 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     function _message(address signer) internal view returns (uint256[2] memory) {
         // slither-disable-next-line calls-loop
         return bls.hashToPoint(DOMAIN, abi.encodePacked(signer, block.chainid));
+    }
+
+    /**
+     * @notice Method used to update the participation
+     * @param validator address
+     */
+    function _updateParticipation(address validator) internal {
+        validatorParticipation[validator] = block.number;
     }
 
     // slither-disable-next-line unused-state,naming-convention

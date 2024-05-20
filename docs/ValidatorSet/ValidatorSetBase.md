@@ -257,7 +257,7 @@ Returns the total supply
 function updateValidatorParticipation(address validator) external nonpayable
 ```
 
-A function to update when the validator was lastly active
+Method to update when the validator was lastly active which can be executed only by the RewardPool
 
 
 
@@ -266,6 +266,28 @@ A function to update when the validator was lastly active
 | Name | Type | Description |
 |---|---|---|
 | validator | address | The validator to set the last participation for |
+
+### validatorParticipation
+
+```solidity
+function validatorParticipation(address) external view returns (uint256)
+```
+
+Mapping that keeps the last time when a validator has participated in the consensus
+
+*Keep in mind that the validator will initially be set active when stake, but it will be able to participate in the next epoch. So, the validator will have less blocks to be considered for ban.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### validators
 

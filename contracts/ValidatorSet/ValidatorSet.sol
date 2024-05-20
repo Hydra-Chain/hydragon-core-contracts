@@ -120,6 +120,13 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
         return epochs[epochIndex];
     }
 
+    /**
+     * @inheritdoc IValidatorSet
+     */
+    function updateValidatorParticipation(address validator) external onlyRewardPool {
+        _updateParticipation(validator);
+    }
+
     // _______________ Public functions _______________
 
     /**

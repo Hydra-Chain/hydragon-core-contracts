@@ -235,7 +235,7 @@ Returns the total balance of a given validator
 function banTreshold() external view returns (uint256)
 ```
 
-The block numbers threshold that needs to be passed to ban a validator
+Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
 
 
 
@@ -252,25 +252,9 @@ The block numbers threshold that needs to be passed to ban a validator
 function banValidator(address validator) external nonpayable
 ```
 
-Public method where anyone can execute to ban a validator
+Method used to ban a validator, if the ban threshold is reached
 
-*This function will ban only if the input validator has reached the ban treshold*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | Address of the validator |
-
-### banValidatorByOwner
-
-```solidity
-function banValidatorByOwner(address validator) external nonpayable
-```
-
-Manually ban a validator by the owner
-
-
+*This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator*
 
 #### Parameters
 
@@ -1084,7 +1068,7 @@ Set new pending exponent, to be activated in the next commit epoch
 function updateValidatorParticipation(address validator) external nonpayable
 ```
 
-A function to update when the validator was lastly active
+Method to update when the validator was lastly active which can be executed only by the RewardPool
 
 
 
@@ -1120,10 +1104,10 @@ Additional mapping to store all vesting managers per user address for fast off-c
 ### validatorParticipation
 
 ```solidity
-function validatorParticipation(address) external view returns (uint256 activeFrom, uint256 lastlyActive)
+function validatorParticipation(address) external view returns (uint256)
 ```
 
-A collection of the validators&#39; participation
+Mapping that keeps the last time when a validator has participated in the consensus
 
 
 
@@ -1137,8 +1121,7 @@ A collection of the validators&#39; participation
 
 | Name | Type | Description |
 |---|---|---|
-| activeFrom | uint256 | undefined |
-| lastlyActive | uint256 | undefined |
+| _0 | uint256 | undefined |
 
 ### validatorPenalty
 

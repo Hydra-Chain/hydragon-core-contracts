@@ -431,8 +431,11 @@ async function validatorToBanFixtureFunction(this: Mocha.Context) {
     this.epochSize
   );
 
+  // lower the reporter reward in order to be able to distribute it
+  const reporterReward = this.minStake.div(10);
+  await validatorSetGov.setReporterReward(reporterReward);
   // lower the penalty in order to be able to penalize
-  await validatorSetGov.setValidatorPenalty(this.minStake.div(10));
+  await validatorSetGov.setValidatorPenalty(reporterReward.mul(2));
 
   return {
     validatorSet,
@@ -448,7 +451,7 @@ async function bannedValidatorFixtureFunction(this: Mocha.Context) {
   const validator = this.signers.validators[0];
   const stakedAmount = await validatorSet.balanceOf(validator.address);
 
-  await validatorSet.connect(this.signers.governance).banValidatorByOwner(validator.address);
+  await validatorSet.connect(this.signers.governance).banValidator(validator.address);
 
   return {
     validatorSet,

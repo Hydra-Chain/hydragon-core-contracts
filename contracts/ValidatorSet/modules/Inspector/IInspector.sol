@@ -17,12 +17,6 @@ interface IInspector {
     error ThresholdNotReached();
 
     /**
-     * @notice Manually ban a validator by the owner
-     * @param validator Address of the validator
-     */
-    function banValidatorByOwner(address validator) external;
-
-    /**
      * @notice Set the penalty amount for the banned validators
      * @param newPenalty Amount of the penalty
      */
@@ -47,8 +41,8 @@ interface IInspector {
     function withdrawBannedFunds() external;
 
     /**
-     * @notice Public method where anyone can execute to ban a validator
-     * @dev This function will ban only if the input validator has reached the ban treshold
+     * @notice Method used to ban a validator, if the ban threshold is reached
+     * @dev This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator
      * @param validator Address of the validator
      */
     function banValidator(address validator) external;

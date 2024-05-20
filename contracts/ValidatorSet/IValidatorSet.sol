@@ -96,7 +96,7 @@ interface IValidatorSet {
     function getValidators() external view returns (address[] memory);
 
     /**
-     * @notice A function to update when the validator was lastly active
+     * @notice Method to update when the validator was lastly active which can be executed only by the RewardPool
      * @param validator The validator to set the last participation for
      */
     function updateValidatorParticipation(address validator) external;

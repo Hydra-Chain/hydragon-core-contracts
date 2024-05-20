@@ -61,64 +61,49 @@ export function RunInspectorTests(): void {
     });
   });
 
-  describe("Ban a validator by the governor", function () {
-    it("should revert when not owner", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+  describe("Ban a validator", function () {
+    it("should revert unauthorized when the validator is invalid (not register, nor active)", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-      await expect(
-        validatorSet.connect(this.signers.validators[1]).banValidatorByOwner(this.signers.validators[0].address)
-      ).to.be.revertedWith(ERRORS.ownable);
+      await expect(validatorSet.banValidator(this.signers.validators[0].address))
+        .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
+        .withArgs(ERRORS.invalidValidator);
     });
 
-    it("should ban the validator, even if already unstaked", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+    it("should revert when the validator is active from less than the threshold", async function () {
+      const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
+        this.fixtures.stakedValidatorsStateFixture
+      );
 
-      const validator = this.signers.validators[0];
-      const validatorStake = await validatorSet.balanceOf(validator.address);
+      // commit a couple of epochs in order to have a timestamp
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1]],
+        5, // number of epochs to commit
+        this.epochSize
+      );
 
-      // Unstake the funds right before banning a validator
-      await validatorSet.connect(validator).unstake(validatorStake);
-
-      const banTx = await validatorSet.connect(this.signers.governance).banValidatorByOwner(validator.address);
-
-      expect((await validatorSet.validators(validator.address)).status, "status").to.be.equal(VALIDATOR_STATUS.Banned);
-      await expect(banTx, "ValidatorBanned").to.emit(validatorSet, "ValidatorBanned").withArgs(validator.address);
+      await expect(validatorSet.banValidator(this.signers.validators[0].address))
+        .to.be.revertedWithCustomError(validatorSet, "ThresholdNotReached")
+        .withArgs();
     });
 
-    it("should penalize a validator even if the staked amount is less than the penalty", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+    it("should revert when the validator is active for long time and have not met the threshold", async function () {
+      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      const validator = this.signers.validators[0];
-      const validatorStake = await validatorSet.balanceOf(validator.address);
+      // commit a couple of epochs in order to have a timestamp
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1]],
+        5, // number of epochs to commit
+        this.epochSize
+      );
 
-      await validatorSet.connect(this.signers.governance).banValidatorByOwner(validator.address);
-
-      const withdrawalBalance = await validatorSet.withdrawalBalances(validator.address);
-      const validatorBanPenalty = await validatorSet.validatorPenalty();
-
-      expect(validatorBanPenalty, "validatorBanPenalty").to.be.gt(validatorStake);
-      expect(withdrawalBalance.liquidTokens, "liquidTokens").to.be.equal(validatorStake);
-      expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(0);
-    });
-
-    it("should ban and penalize a validator successfully", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-      await validatorSet.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
-
-      const penalizedValidator = this.signers.validators[0];
-      const stakedAmount = await validatorSet.balanceOf(penalizedValidator.address);
-
-      const banTx = await validatorSet.connect(this.signers.governance).banValidatorByOwner(penalizedValidator.address);
-
-      const validatorBanPenalty = await validatorSet.validatorPenalty();
-      const validatorData = await validatorSet.getValidator(penalizedValidator.address);
-      const withdrawalBalance = await validatorSet.withdrawalBalances(penalizedValidator.address);
-
-      expect(validatorData.active, "active").to.be.equal(false);
-      expect(await validatorSet.balanceOf(penalizedValidator.address), "balanceOf").to.be.equal(0);
-      expect(withdrawalBalance.liquidTokens, "withdrawable").to.be.equal(stakedAmount);
-      expect(withdrawalBalance.withdrawableAmount, "withdrawable").to.be.equal(stakedAmount.sub(validatorBanPenalty));
-      await expect(banTx, "StakeChanged").to.emit(validatorSet, "StakeChanged").withArgs(penalizedValidator.address, 0);
+      await expect(systemValidatorSet.banValidator(this.signers.validators[0].address))
+        .to.be.revertedWithCustomError(systemValidatorSet, "ThresholdNotReached")
+        .withArgs();
     });
 
     it("should ban a validator that has a vested staking position", async function () {
@@ -137,58 +122,12 @@ export function RunInspectorTests(): void {
       const stakedAmount = await stakerValidatorSet.balanceOf(staker.address);
       const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);
 
-      const banTx = await stakerValidatorSet.connect(this.signers.governance).banValidatorByOwner(staker.address);
+      const banTx = await stakerValidatorSet.connect(this.signers.governance).banValidator(staker.address);
       const withdrawalBalance = await stakerValidatorSet.withdrawalBalances(staker.address);
 
       await expect(banTx, "ValidatorBanned").to.emit(stakerValidatorSet, "ValidatorBanned").withArgs(staker.address);
       expect(withdrawalBalance.liquidTokens, "withdrawable").to.be.equal(stakedAmount);
       expect(withdrawalBalance.withdrawableAmount, "withdrawable").to.be.equal(stakedAmountAfterPenalty);
-    });
-  });
-
-  describe("Ban a validator by public users based on a threshold", function () {
-    it("should revert when the validator has never staked, still in the whitelist", async function () {
-      const { validatorSet } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
-
-      await expect(validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
-        .to.be.revertedWithCustomError(validatorSet, "ThresholdNotReached")
-        .withArgs();
-    });
-
-    it("should revert when the validator is active from less than the threshold", async function () {
-      const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-        this.fixtures.stakedValidatorsStateFixture
-      );
-
-      // Commit epochs so we will have some rewards to be distributed
-      await commitEpochs(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1]],
-        5, // number of epochs to commit
-        this.epochSize
-      );
-
-      await expect(validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
-        .to.be.revertedWithCustomError(validatorSet, "ThresholdNotReached")
-        .withArgs();
-    });
-
-    it("should revert when the validator is active for long time and have not met the threshold", async function () {
-      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-      // Commit epochs so we will have some rewards to be distributed
-      await commitEpochs(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1]],
-        5, // number of epochs to commit
-        this.epochSize
-      );
-
-      await expect(systemValidatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
-        .to.be.revertedWithCustomError(systemValidatorSet, "ThresholdNotReached")
-        .withArgs();
     });
 
     it("should ban the validator, even if he succeeded to unstake before that", async function () {
@@ -197,8 +136,11 @@ export function RunInspectorTests(): void {
       const stakedAmount = await validatorSet.balanceOf(validatorToBan.address);
       await validatorSet.connect(validatorToBan).unstake(stakedAmount);
 
-      const banTx = await validatorSet.connect(this.signers.governance).banValidator(validatorToBan.address);
+      const banTx = await validatorSet.banValidator(validatorToBan.address);
 
+      expect((await validatorSet.validators(validatorToBan.address)).status, "status").to.be.equal(
+        VALIDATOR_STATUS.Banned
+      );
       expect((await validatorSet.getValidator(validatorToBan.address)).active, "active").to.be.equal(false);
       expect(await validatorSet.balanceOf(validatorToBan.address), "balanceOf").to.be.equal(0);
       await expect(banTx, "ValidatorBanned").to.emit(validatorSet, "ValidatorBanned").withArgs(validatorToBan.address);
@@ -209,17 +151,75 @@ export function RunInspectorTests(): void {
 
       const stakedAmount = await validatorSet.balanceOf(validatorToBan.address);
 
-      const banTx = await validatorSet.connect(this.signers.governance).banValidator(validatorToBan.address);
+      const banTx = await validatorSet.banValidator(validatorToBan.address);
 
+      const reporterReward = await validatorSet.reporterReward();
       const validatorBanPenalty = await validatorSet.validatorPenalty();
-      const validatorData = await validatorSet.getValidator(validatorToBan.address);
       const withdrawalBalance = await validatorSet.withdrawalBalances(validatorToBan.address);
 
-      expect(validatorData.active, "active").to.be.equal(false);
       expect(await validatorSet.balanceOf(validatorToBan.address), "balanceOf").to.be.equal(0);
-      expect(withdrawalBalance.liquidTokens, "withdrawable").to.be.equal(stakedAmount);
-      expect(withdrawalBalance.withdrawableAmount, "withdrawable").to.be.equal(stakedAmount.sub(validatorBanPenalty));
+      expect(withdrawalBalance.liquidTokens, "liquidTokens").to.be.equal(stakedAmount);
+      expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(
+        stakedAmount.sub(reporterReward).sub(validatorBanPenalty)
+      );
       await expect(banTx, "StakeChanged").to.emit(validatorSet, "StakeChanged").withArgs(validatorToBan.address, 0);
+      await expect(banTx, "withdrawn reward").to.changeEtherBalances(
+        [validatorSet.address, await validatorSet.signer.getAddress()],
+        [reporterReward.mul(-1), reporterReward]
+      );
+    });
+
+    it("should get only reporter reward, because it is more than the stake", async function () {
+      const { validatorSet, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      const stakedAmount = await validatorSet.balanceOf(validatorToBan.address);
+
+      await validatorSet.connect(this.signers.governance).setReporterReward(stakedAmount.mul(2));
+
+      const banTx = await validatorSet.banValidator(validatorToBan.address);
+
+      const withdrawalBalance = await validatorSet.withdrawalBalances(validatorToBan.address);
+
+      expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(0);
+      await expect(banTx, "withdrawn reward").to.changeEtherBalances(
+        [validatorSet.address, await validatorSet.signer.getAddress()],
+        [stakedAmount.mul(-1), stakedAmount]
+      );
+    });
+
+    it("should get reporter reward, but to penalyze the whole stake when penalty is more than the stake", async function () {
+      const { validatorSet, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      const stakedAmount = await validatorSet.balanceOf(validatorToBan.address);
+
+      await validatorSet.connect(this.signers.governance).setValidatorPenalty(stakedAmount.mul(2));
+
+      const banTx = await validatorSet.banValidator(validatorToBan.address);
+
+      const reporterReward = await validatorSet.reporterReward();
+      const withdrawalBalance = await validatorSet.withdrawalBalances(validatorToBan.address);
+
+      expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(0);
+      await expect(banTx, "withdrawn reward").to.changeEtherBalances(
+        [validatorSet.address, await validatorSet.signer.getAddress()],
+        [reporterReward.mul(-1), reporterReward]
+      );
+    });
+
+    it("should ban the validator even if threhshold is not met, if called from the contract owner", async function () {
+      const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      // commit a couple of epochs in order to have a timestamp
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1]],
+        5, // number of epochs to commit
+        this.epochSize
+      );
+
+      await expect(systemValidatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
+        .to.not.be.reverted;
     });
   });
 

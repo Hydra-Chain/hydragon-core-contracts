@@ -616,7 +616,7 @@ Unstakes amount for sender. Claims rewards beforehand.
 function updateValidatorParticipation(address validator) external nonpayable
 ```
 
-A function to update when the validator was lastly active
+Method to update when the validator was lastly active which can be executed only by the RewardPool
 
 
 
@@ -629,10 +629,10 @@ A function to update when the validator was lastly active
 ### validatorParticipation
 
 ```solidity
-function validatorParticipation(address) external view returns (uint256 activeFrom, uint256 lastlyActive)
+function validatorParticipation(address) external view returns (uint256)
 ```
 
-A collection of the validators&#39; participation
+Mapping that keeps the last time when a validator has participated in the consensus
 
 
 
@@ -646,8 +646,7 @@ A collection of the validators&#39; participation
 
 | Name | Type | Description |
 |---|---|---|
-| activeFrom | uint256 | undefined |
-| lastlyActive | uint256 | undefined |
+| _0 | uint256 | undefined |
 
 ### validators
 

@@ -79,18 +79,16 @@ contract RewardPool is RewardPoolBase, System, StakingRewards, DelegationRewards
     ) private returns (uint256 reward) {
         require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
 
-        (, , uint256 totalStake, uint256 commission, , bool active) = validatorSet.getValidator(uptime.validator);
-        if (!active) {
-            return 0;
-        }
+        (, , uint256 totalStake, uint256 commission, , ) = validatorSet.getValidator(uptime.validator);
 
         DelegationPool storage delegationPool = delegationPools[uptime.validator];
+        uint256 delegation = delegationPool.supply;
         // slither-disable-next-line divide-before-multiply
-        uint256 validatorReward = (fullReward * (totalStake + delegationPool.supply) * uptime.signedBlocks) /
+        uint256 validatorReward = (fullReward * (totalStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 validatorShares, uint256 delegatorShares) = _calculateValidatorAndDelegatorShares(
             totalStake,
-            delegationPool.supply,
+            delegation,
             validatorReward,
             commission
         );

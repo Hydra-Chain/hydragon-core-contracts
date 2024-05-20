@@ -632,7 +632,7 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 function updateValidatorParticipation(address validator) external nonpayable
 ```
 
-A function to update when the validator was lastly active
+Method to update when the validator was lastly active which can be executed only by the RewardPool
 
 
 
@@ -664,6 +664,28 @@ Additional mapping to store all vesting managers per user address for fast off-c
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### validatorParticipation
+
+```solidity
+function validatorParticipation(address) external view returns (uint256)
+```
+
+Mapping that keeps the last time when a validator has participated in the consensus
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### validators
 

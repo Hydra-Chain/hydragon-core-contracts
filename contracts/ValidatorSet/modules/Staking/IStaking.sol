@@ -1,16 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-/**
- * @notice Structure for the participation of the validators
- * @dev activeFrom is the block number when the validator become active.
- * The lastlyActive is the block when the validator has been active lastly, updates each participation epoch
- */
-struct Participation {
-    uint256 activeFrom;
-    uint256 lastlyActive;
-}
-
 interface IStaking {
     event NewValidator(address indexed validator, uint256[4] blsKey);
     event CommissionUpdated(address indexed validator, uint256 newCommission);

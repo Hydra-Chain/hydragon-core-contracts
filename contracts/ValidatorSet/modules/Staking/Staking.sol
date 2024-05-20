@@ -17,8 +17,6 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     uint256 public constant MAX_COMMISSION = 100;
     /// @notice A state variable to keep the minimum amount of stake
     uint256 public minStake;
-    /// @notice A collection of the validators' participation
-    mapping(address => Participation) public validatorParticipation;
 
     // _______________ Initializer _______________
 
@@ -36,7 +34,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     /**
      * @inheritdoc IStaking
      */
-    function setCommission(uint256 newCommission) external onlyValidator {
+    function setCommission(uint256 newCommission) external onlyValidator(msg.sender) {
         _setCommission(msg.sender, newCommission);
     }
 
@@ -53,7 +51,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     /**
      * @inheritdoc IStaking
      */
-    function stake() external payable onlyValidator {
+    function stake() external payable onlyValidator(msg.sender) {
         uint256 currentBalance = balanceOf(msg.sender);
         _stake(msg.sender, msg.value);
         rewardPool.onStake(msg.sender, msg.value, currentBalance);
@@ -62,7 +60,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     /**
      * @inheritdoc IStaking
      */
-    function stakeWithVesting(uint256 durationWeeks) external payable onlyValidator {
+    function stakeWithVesting(uint256 durationWeeks) external payable onlyValidator(msg.sender) {
         _stake(msg.sender, msg.value);
         rewardPool.onNewStakePosition(msg.sender, durationWeeks);
     }
@@ -93,13 +91,6 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         _changeMinStake(newMinStake);
     }
 
-    /**
-     * @inheritdoc IValidatorSet
-     */
-    function updateValidatorParticipation(address validator) external onlyRewardPool {
-        validatorParticipation[validator].lastlyActive = block.number;
-    }
-
     // _______________ Internal functions _______________
 
     function _register(
@@ -126,7 +117,8 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
 
         if (currentBalance == 0) {
             validators[account].status = ValidatorStatus.Active;
-            validatorParticipation[account].activeFrom = block.number;
+            // validatorParticipation[account] = block.number;
+            _updateParticipation(account);
         }
 
         emit Staked(account, amount);
@@ -138,10 +130,11 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     ) internal returns (uint256 validatorStakeLeft, uint256 totalStakeLeft) {
         uint256 totalStake = balanceOf(validator);
         uint256 delegation = rewardPool.totalDelegationOf(validator);
-        if (amount > totalStake || amount + delegation > totalStake)
-            revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
-
         uint256 validatorStake = totalStake - delegation;
+        // if (amount > totalStake || amount + delegation > totalStake)
+        if (amount > validatorStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
+
+        // uint256 validatorStake = totalStake - delegation;
         totalStakeLeft = totalStake - amount;
         validatorStakeLeft = validatorStake - amount;
         if (validatorStakeLeft < minStake && validatorStakeLeft != 0)

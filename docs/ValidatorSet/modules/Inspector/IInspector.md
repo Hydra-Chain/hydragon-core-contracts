@@ -16,25 +16,9 @@
 function banValidator(address validator) external nonpayable
 ```
 
-Public method where anyone can execute to ban a validator
+Method used to ban a validator, if the ban threshold is reached
 
-*This function will ban only if the input validator has reached the ban treshold*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | Address of the validator |
-
-### banValidatorByOwner
-
-```solidity
-function banValidatorByOwner(address validator) external nonpayable
-```
-
-Manually ban a validator by the owner
-
-
+*This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator*
 
 #### Parameters
 
