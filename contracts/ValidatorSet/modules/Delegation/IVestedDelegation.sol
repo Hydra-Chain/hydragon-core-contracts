@@ -10,6 +10,7 @@ interface IVestedDelegation {
     );
     event PositionTopUp(address indexed manager, address indexed validator, uint256 amount);
     event PositionCut(address indexed manager, address indexed validator, uint256 amount);
+    event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount);
 
     /// @notice Gets the vesting managers per user address for fast off-chain lookup.
     function getUserVestManagers(address user) external view returns (address[] memory);

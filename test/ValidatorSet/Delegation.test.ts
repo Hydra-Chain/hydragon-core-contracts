@@ -10,6 +10,7 @@ import { calculatePenalty, claimPositionRewards, commitEpoch, commitEpochs, getU
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
+  RunVestedDelegationSwapTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
 } from "../RewardPool/RewardPool.test";
@@ -860,6 +861,10 @@ export function RunDelegationTests(): void {
 
     describe("Reward Pool - Vested delegate claim", async function () {
       RunVestedDelegateClaimTests();
+    });
+
+    describe("Reward Pool - Vested delegate swap", async function () {
+      RunVestedDelegationSwapTests();
     });
 
     describe("Reward Pool - ValidatorSet protected delegate functions", function () {

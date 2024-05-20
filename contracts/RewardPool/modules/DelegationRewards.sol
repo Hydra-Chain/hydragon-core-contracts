@@ -305,6 +305,66 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     /**
      * @inheritdoc IRewardPool
      */
+    function onSwapPosition(
+        address oldValidator,
+        address newValidator,
+        address delegator
+    ) external onlyValidatorSet returns (uint256 amount) {
+        DelegationPool storage delegation = delegationPools[newValidator];
+        uint256 balance = delegation.balanceOf(delegator);
+
+        VestingPosition memory position = delegationPositions[newValidator][delegator];
+        if (position.isMaturing()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
+        }
+
+        if (position.isActive()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
+        }
+
+        // ensure previous rewards are claimed
+        if (delegation.claimableRewards(delegator) > 0) {
+            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
+        }
+   
+        DelegationPool storage oldDelegation = delegationPools[oldValidator];
+        amount = oldDelegation.balanceOf(delegator);
+        oldDelegation.withdraw(delegator, amount);
+
+        uint256 newBalance = balance + amount;
+        VestingPosition memory oldPosition = delegationPositions[oldValidator][delegator];
+        // If is a position which is not active and not in maturing state,
+        // we can recreate/create the position
+        delegation.deposit(delegator, newBalance);
+        delete delegationPoolParamsHistory[newValidator][delegator];
+        delete beforeTopUpParams[newValidator][delegator];
+
+        // TODO: calculate end of period instead of write in in the cold storage. It is cheaper
+        delegationPositions[newValidator][delegator] = VestingPosition({
+            duration: oldPosition.duration,
+            start: oldPosition.start,
+            end: oldPosition.end,
+            base: oldPosition.base,
+            vestBonus: oldPosition.vestBonus,
+            rsiBonus: oldPosition.rsiBonus
+        });
+
+        // keep the change in the delegation pool params per account
+        _addNewDelegationPoolParam(
+            newValidator,
+            delegator,
+            DelegationPoolParams({
+                balance: newBalance,
+                correction: delegation.correctionOf(delegator),
+                epochNum: 1 // TODO: Check if this is correct
+            })
+        );
+
+    }
+
+    /**
+     * @inheritdoc IRewardPool
+     */
     function claimDelegatorReward(address validator) public {
         _claimDelegatorReward(validator, msg.sender);
     }

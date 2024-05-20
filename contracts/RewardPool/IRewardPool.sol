@@ -137,6 +137,19 @@ interface IRewardPool {
     ) external returns (uint256 penalty, uint256 fullReward);
 
     /**
+     * @notice Swap a vesting postion from one validator to another
+     * @param oldValidator The address of the validator to swap from
+     * @param newValidator The address of the delegator to swap to
+     * @param delegator The address of the delegator
+     * @return amount The swapped amount
+     */
+    function onSwapPosition(
+        address oldValidator,
+        address newValidator,
+        address delegator
+    ) external returns (uint256 amount);
+
+    /**
      * @notice Claims delegator rewards for sender.
      * @param validator Validator to claim from
      */

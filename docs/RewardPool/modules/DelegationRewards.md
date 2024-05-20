@@ -1064,6 +1064,30 @@ Update the reward params for the vested position
 | amount | uint256 | Amount to stake |
 | oldBalance | uint256 | Balance before stake |
 
+### onSwapPosition
+
+```solidity
+function onSwapPosition(address oldValidator, address newValidator, address delegator) external nonpayable returns (uint256 amount)
+```
+
+Swap a vesting postion from one validator to another
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| oldValidator | address | The address of the validator to swap from |
+| newValidator | address | The address of the delegator to swap to |
+| delegator | address | The address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| amount | uint256 | The swapped amount |
+
 ### onTopUpDelegatePosition
 
 ```solidity

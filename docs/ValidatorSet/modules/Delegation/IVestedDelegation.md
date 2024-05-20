@@ -89,6 +89,25 @@ event PositionOpened(address indexed manager, address indexed validator, uint256
 | weeksDuration `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
+### PositionSwapped
+
+```solidity
+event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| manager `indexed` | address | undefined |
+| oldValidator `indexed` | address | undefined |
+| newValidator  | address | undefined |
+| amount  | uint256 | undefined |
+
 ### PositionTopUp
 
 ```solidity

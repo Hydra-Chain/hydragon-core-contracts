@@ -79,6 +79,17 @@ abstract contract Delegation is
         emit PositionCut(msg.sender, validator, amountAfterPenalty);
     }
 
+    /**
+     * @inheritdoc IDelegation
+     */
+    function swapVestedValidator(address oldValidator, address newValidator) external onlyManager {
+        uint256 amount = rewardPool.onSwapPosition(oldValidator, newValidator, msg.sender);
+        _undelegate(oldValidator, msg.sender, amount);
+        _delegate(newValidator, msg.sender, amount);
+
+        emit PositionSwapped(msg.sender, oldValidator, newValidator, amount);
+    }
+
     // _______________ Private functions _______________
 
     function _delegate(address validator, address delegator, uint256 amount) private onlyActiveValidator(validator) {

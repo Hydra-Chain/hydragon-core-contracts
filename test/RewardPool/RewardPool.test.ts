@@ -1115,3 +1115,52 @@ export function RunVestedDelegateClaimTests(): void {
     });
   });
 }
+
+export function RunVestedDelegationSwapTests(): void {
+  describe.only("Delegate position rewards", async function () {
+    it("should swap vested delegation", async function () {
+      const { validatorSet, systemValidatorSet, rewardPool, vestManager, vestManagerOwner } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const validator = this.signers.validators[2];
+      const vestingDuration = 11; // 11 weeks
+      await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, {
+        value: this.minDelegation.mul(2),
+      });
+
+      // Commit epochs so rewards to be distributed
+      await commitEpochs(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        5, // number of epochs to commit
+        this.epochSize
+      );
+
+      // 5 weeks ahead
+      await time.increase(WEEK * 5);
+
+      // commit epoch, so more reward is added that must not be claimed now
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
+
+      const newValidator = this.signers.validators[3];
+      await validatorSet.connect(vestManagerOwner).swapVestedValidator(validator.address, newValidator.address);
+
+      // prepare params for call
+      const { epochNum, topUpIndex } = await retrieveRPSData(
+        validatorSet,
+        rewardPool,
+        validator.address,
+        vestManager.address
+      );
+
+      vestManager.connect(vestManagerOwner).claimVestedPositionReward(validator.address, epochNum, topUpIndex);
+    });
+  });
+}
