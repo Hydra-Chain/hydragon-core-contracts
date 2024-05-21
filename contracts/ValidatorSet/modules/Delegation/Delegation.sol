@@ -83,7 +83,7 @@ abstract contract Delegation is
      * @inheritdoc IDelegation
      */
     function swapVestedValidator(address oldValidator, address newValidator) external onlyManager {
-        uint256 amount = rewardPool.onSwapPosition(oldValidator, newValidator, msg.sender);
+        uint256 amount = rewardPool.onSwapPosition(oldValidator, newValidator, msg.sender, currentEpochId);
         _undelegate(oldValidator, msg.sender, amount);
         _delegate(newValidator, msg.sender, amount);
 

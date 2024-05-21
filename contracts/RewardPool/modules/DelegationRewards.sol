@@ -308,7 +308,8 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     function onSwapPosition(
         address oldValidator,
         address newValidator,
-        address delegator
+        address delegator,
+        uint256 currentEpochId
     ) external onlyValidatorSet returns (uint256 amount) {
         DelegationPool storage delegation = delegationPools[newValidator];
         uint256 balance = delegation.balanceOf(delegator);
@@ -356,17 +357,9 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             DelegationPoolParams({
                 balance: newBalance,
                 correction: delegation.correctionOf(delegator),
-                epochNum: 1 // TODO: Check if this is correct
+                epochNum: currentEpochId
             })
         );
-
-    }
-
-    /**
-     * @inheritdoc IRewardPool
-     */
-    function claimDelegatorReward(address validator) public {
-        _claimDelegatorReward(validator, msg.sender);
     }
 
     /**
@@ -439,6 +432,21 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     }
 
     // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IRewardPool
+     */
+    function getBalanceForVestedPosition(address validator, address delegator) public view returns (uint256 amount) {
+        DelegationPool storage oldDelegation = delegationPools[validator];
+        amount = oldDelegation.balanceOf(delegator);
+    }
+
+    /**
+     * @inheritdoc IRewardPool
+     */
+    function claimDelegatorReward(address validator) public {
+        _claimDelegatorReward(validator, msg.sender);
+    }
 
     /**
      * @inheritdoc IRewardPool

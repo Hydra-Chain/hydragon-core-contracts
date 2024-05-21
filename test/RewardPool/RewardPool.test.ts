@@ -1119,24 +1119,14 @@ export function RunVestedDelegateClaimTests(): void {
 export function RunVestedDelegationSwapTests(): void {
   describe.only("Delegate position rewards", async function () {
     it("should swap vested delegation", async function () {
-      const { validatorSet, systemValidatorSet, rewardPool, vestManager, vestManagerOwner } = await loadFixture(
-        this.fixtures.vestManagerFixture
-      );
+      const { validatorSet, systemValidatorSet, rewardPool, vestManager, vestManagerOwner, liquidToken } =
+        await loadFixture(this.fixtures.vestManagerFixture);
 
       const validator = this.signers.validators[2];
       const vestingDuration = 11; // 11 weeks
-      await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, {
+      await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
         value: this.minDelegation.mul(2),
       });
-
-      // Commit epochs so rewards to be distributed
-      await commitEpochs(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        5, // number of epochs to commit
-        this.epochSize
-      );
 
       // 5 weeks ahead
       await time.increase(WEEK * 5);
@@ -1149,8 +1139,51 @@ export function RunVestedDelegationSwapTests(): void {
         this.epochSize
       );
 
-      const newValidator = this.signers.validators[3];
-      await validatorSet.connect(vestManagerOwner).swapVestedValidator(validator.address, newValidator.address);
+      const newValidator = this.signers.validators[1];
+      const amount = await rewardPool
+        .connect(vestManagerOwner)
+        .getBalanceForVestedPosition(validator.address, vestManager.address);
+
+      // give allowance & swap
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+      await vestManager.connect(vestManagerOwner).swapVestedValidator(validator.address, newValidator.address);
+
+      // check rewards for new validator
+      const rewardsAfterSwap = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsAfterSwap).to.be.eq(0);
+
+      // expect the rewards to be more than 0 for 1st validator
+      const rewardsAfterSwapOldValidator = await rewardPool.getRawDelegatorReward(
+        validator.address,
+        vestManager.address
+      );
+      expect(rewardsAfterSwapOldValidator).to.be.not.eq(0);
+
+      // 6 weeks ahead for position to start maturing
+      await time.increase(WEEK * 6);
+
+      // commit epoch
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
+
+      // see if position is maturing
+      const position = await rewardPool.delegationPositions(validator.address, vestManager.address);
+      expect(position.end.lt(await time.latest()), "isMaturing").to.be.true;
+
+      // 5 weeks ahead for position to claim matured rewards for 1st validator
+      await time.increase(WEEK * 5);
+
+      // commit epoch
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
 
       // prepare params for call
       const { epochNum, topUpIndex } = await retrieveRPSData(
@@ -1160,7 +1193,80 @@ export function RunVestedDelegationSwapTests(): void {
         vestManager.address
       );
 
+      // expect the rewards to be more than 0 for 1st validator
+      const rewardsBeforeClaim = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
+      expect(rewardsBeforeClaim).to.be.not.eq(0);
+
       vestManager.connect(vestManagerOwner).claimVestedPositionReward(validator.address, epochNum, topUpIndex);
+
+      // commit epoch, to distribute rewards
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
+
+      // expect the rewards to be 0 for 1st validator
+      const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
+
+      // 6 weeks ahead for position to be fully matured
+      await time.increase(WEEK * 6);
+
+      // commit epoch
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
+      // see if position is matured
+      const newPosition = await rewardPool.delegationPositions(newValidator.address, vestManager.address);
+      expect(newPosition.end.add(newPosition.duration).lt(await time.latest()), "isMatured").to.be.true;
+
+      // expect new position to be like the old position
+      expect(position.duration).to.be.eq(newPosition.duration);
+      expect(position.start).to.be.eq(newPosition.start);
+      expect(position.end).to.be.eq(newPosition.end);
+      expect(position.base).to.be.eq(newPosition.base);
+      expect(position.vestBonus).to.be.eq(newPosition.vestBonus);
+      expect(position.rsiBonus).to.be.eq(newPosition.rsiBonus);
+
+      // expect the rewards to be still 0 for 1st validator
+      const rewardsAfterMatured = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
+      expect(rewardsAfterClaim).to.be.eq(rewardsAfterMatured).and.to.be.eq(0);
+
+      // expect the new rewards for new validator to be more than rewards for 1st validator before claim
+      const rewardsAfterMaturedNew = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsAfterMaturedNew).to.be.gt(rewardsBeforeClaim).and.to.be.gt(0);
+
+      // balance before claim
+      const balanceBefore = await vestManagerOwner.getBalance();
+
+      // prepare params for call
+      const { epochNum: epochNumNew, topUpIndex: topUpIndexNew } = await retrieveRPSData(
+        validatorSet,
+        rewardPool,
+        newValidator.address,
+        vestManager.address
+      );
+      vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNumNew, topUpIndexNew);
+
+      // commit epoch, so more reward is added that must not be claimed now
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], validator],
+        this.epochSize
+      );
+
+      // expect the rewards to be 0 for new validator after claim
+      const rewardsAfterClaimNew = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsAfterClaimNew).to.be.eq(0);
+
+      // check balance after claim
+      const balanceAfter = await vestManagerOwner.getBalance();
+      expect(balanceAfter).to.be.gt(balanceBefore);
     });
   });
 }

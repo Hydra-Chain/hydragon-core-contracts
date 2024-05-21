@@ -173,6 +173,29 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 | uptime | Uptime[] | undefined |
 | epochSize | uint256 | undefined |
 
+### getBalanceForVestedPosition
+
+```solidity
+function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256)
+```
+
+View function to see delegated vested amount
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The address of the validator |
+| delegator | address | The address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | reward Return the delegetared vested amount |
+
 ### getDelegationPoolParamsHistory
 
 ```solidity
@@ -407,7 +430,7 @@ Update the reward params for the vested position
 ### onSwapPosition
 
 ```solidity
-function onSwapPosition(address oldValidator, address newValidator, address delegator) external nonpayable returns (uint256 amount)
+function onSwapPosition(address oldValidator, address newValidator, address delegator, uint256 currentEpochId) external nonpayable returns (uint256 amount)
 ```
 
 Swap a vesting postion from one validator to another
@@ -421,6 +444,7 @@ Swap a vesting postion from one validator to another
 | oldValidator | address | The address of the validator to swap from |
 | newValidator | address | The address of the delegator to swap to |
 | delegator | address | The address of the delegator |
+| currentEpochId | uint256 | undefined |
 
 #### Returns
 
