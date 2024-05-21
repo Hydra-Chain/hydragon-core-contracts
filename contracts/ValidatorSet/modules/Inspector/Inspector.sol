@@ -128,30 +128,29 @@ abstract contract Inspector is IInspector, Staking {
      * @param validator The address of the validator
      * @param validatorStake The stake of the validator
      * @return amountLeftToWithdraw The amount that will be left to withdraw by the autor
-     * @return rewardToWithdraw The reward that will be send to the reporter
+     * @return currentReporterReward The reward that will be send to the reporter
      */
     function _calculateWithdrawals(
         address validator,
         uint256 validatorStake
-    ) private returns (uint256 amountLeftToWithdraw, uint256 rewardToWithdraw) {
+    ) private returns (uint256 amountLeftToWithdraw, uint256 currentReporterReward) {
         amountLeftToWithdraw = rewardPool.onUnstake(validator, validatorStake, 0);
         if (msg.sender != owner()) {
-            uint256 _reporterReward = reporterReward;
-            if (amountLeftToWithdraw < _reporterReward) {
-                rewardToWithdraw = amountLeftToWithdraw;
-                amountLeftToWithdraw = 0;
-            } else {
-                rewardToWithdraw = _reporterReward;
-                amountLeftToWithdraw -= rewardToWithdraw;
+            currentReporterReward = reporterReward;
+            if (amountLeftToWithdraw < currentReporterReward) {
+                // the full amount goes for reporter reward
+                return (0, amountLeftToWithdraw);
             }
+
+            amountLeftToWithdraw -= currentReporterReward;
         }
 
         uint256 penalty = validatorPenalty;
         if (amountLeftToWithdraw < penalty) {
-            amountLeftToWithdraw = 0;
-        } else if (amountLeftToWithdraw != 0) {
-            amountLeftToWithdraw -= penalty;
+            return (0, currentReporterReward);
         }
+
+        amountLeftToWithdraw -= penalty;
     }
 
     // slither-disable-next-line unused-state,naming-convention
