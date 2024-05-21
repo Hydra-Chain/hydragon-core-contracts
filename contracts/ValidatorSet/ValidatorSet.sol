@@ -10,7 +10,6 @@ import "./modules/Staking/Staking.sol";
 import "./modules/Delegation/Delegation.sol";
 import "./modules/Inspector/Inspector.sol";
 import "./../common/System/System.sol";
-
 import "./../common/libs/SafeMathInt.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards

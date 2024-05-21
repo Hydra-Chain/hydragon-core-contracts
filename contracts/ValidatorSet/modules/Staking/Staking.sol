@@ -111,13 +111,12 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256 currentBalance = balanceOf(account);
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
 
-        _mint(account, amount);
+        _increaseAccountBalance(account, amount);
         StateSyncer._syncStake(account, currentBalance + amount);
         LiquidStaking._distributeTokens(account, amount);
 
         if (currentBalance == 0) {
             validators[account].status = ValidatorStatus.Active;
-            // validatorParticipation[account] = block.number;
             _updateParticipation(account);
         }
 
@@ -131,16 +130,14 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256 totalStake = balanceOf(validator);
         uint256 delegation = rewardPool.totalDelegationOf(validator);
         uint256 validatorStake = totalStake - delegation;
-        // if (amount > totalStake || amount + delegation > totalStake)
         if (amount > validatorStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
-        // uint256 validatorStake = totalStake - delegation;
         totalStakeLeft = totalStake - amount;
         validatorStakeLeft = validatorStake - amount;
         if (validatorStakeLeft < minStake && validatorStakeLeft != 0)
             revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
-        _burn(validator, amount);
+        _decreaseAccountBalance(validator, amount);
     }
 
     // _______________ Private functions _______________

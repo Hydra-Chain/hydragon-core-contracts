@@ -229,10 +229,10 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
-### banTreshold
+### banThreshold
 
 ```solidity
-function banTreshold() external view returns (uint256)
+function banThreshold() external view returns (uint256)
 ```
 
 Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator

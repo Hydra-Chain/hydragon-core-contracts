@@ -33,7 +33,7 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
      * @notice Mapping that keeps the last time when a validator has participated in the consensus
      * @dev Keep in mind that the validator will initially be set active when stake,
      * but it will be able to participate in the next epoch. So, the validator will have
-     * less blocks to be considered for ban.
+     * less blocks to participate before getting eligible for ban.
      */
     mapping(address => uint256) public validatorParticipation;
 
@@ -94,6 +94,15 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
      */
     function _updateParticipation(address validator) internal {
         validatorParticipation[validator] = block.number;
+    }
+
+    /**
+     * @notice Method used to burn funds
+     * @param amount The amount to be burned
+     */
+    function _burnAmount(uint256 amount) internal {
+        (bool success, ) = address(0).call{value: amount}("");
+        require(success, "Failed to burn amount");
     }
 
     // slither-disable-next-line unused-state,naming-convention

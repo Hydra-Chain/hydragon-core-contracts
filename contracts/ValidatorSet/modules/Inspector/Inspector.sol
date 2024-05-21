@@ -13,7 +13,7 @@ abstract contract Inspector is IInspector, Staking {
     uint256 public reporterReward;
 
     /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
-    uint256 public banTreshold;
+    uint256 public banThreshold;
 
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
@@ -39,7 +39,7 @@ abstract contract Inspector is IInspector, Staking {
     function __Inspector_init_unchained() internal onlyInitializing {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
-        banTreshold = 123428; // the approximate number of blocks for 72 hours
+        banThreshold = 123428; // the approximate number of blocks for 72 hours
     }
 
     // _______________ Public functions _______________
@@ -62,7 +62,7 @@ abstract contract Inspector is IInspector, Staking {
      * @inheritdoc IInspector
      */
     function setBanThreshold(uint256 newThreshold) public onlyOwner {
-        banTreshold = newThreshold;
+        banThreshold = newThreshold;
     }
 
     /**
@@ -84,7 +84,7 @@ abstract contract Inspector is IInspector, Staking {
     function banValidator(address validator) public onlyValidator(validator) {
         uint256 lastCommittedEndBlock = epochs[currentEpochId - 1].endBlock;
         // check if the threshold is reached when the method is not executed by the owner (governance)
-        if (msg.sender != owner() && lastCommittedEndBlock - validatorParticipation[validator] < banTreshold) {
+        if (msg.sender != owner() && lastCommittedEndBlock - validatorParticipation[validator] < banThreshold) {
             revert ThresholdNotReached();
         }
 
@@ -104,11 +104,16 @@ abstract contract Inspector is IInspector, Staking {
         if (validatorStake != 0) {
             _burnAccountStake(validator, validatorStake);
 
-            (uint256 amountLeftToWithdraw, uint256 rewardToWithdraw) = _calculateWithdrawals(validator, validatorStake);
+            (uint256 amountLeftToWithdraw, uint256 currentReporterReward) = _calculateWithdrawals(
+                validator,
+                validatorStake
+            );
 
-            reward = rewardToWithdraw;
+            reward = currentReporterReward;
             withdrawalBalances[validator].liquidTokens = validatorStake;
             withdrawalBalances[validator].withdrawableAmount = amountLeftToWithdraw;
+
+            _burnAmount(validatorStake - amountLeftToWithdraw - currentReporterReward);
         }
 
         validators[validator].status = ValidatorStatus.Banned;
@@ -118,7 +123,7 @@ abstract contract Inspector is IInspector, Staking {
     }
 
     function _burnAccountStake(address account, uint256 stake) private {
-        _burn(account, stake);
+        _decreaseAccountBalance(account, stake);
         StateSyncer._syncStake(account, 0);
     }
 
@@ -147,6 +152,7 @@ abstract contract Inspector is IInspector, Staking {
 
         uint256 penalty = validatorPenalty;
         if (amountLeftToWithdraw < penalty) {
+            // the full amount will be burned as penalty, only the reporter will receive reward
             return (0, currentReporterReward);
         }
 

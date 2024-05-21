@@ -57,7 +57,7 @@ export function RunInspectorTests(): void {
 
       const newBanThreshold = 100;
       await validatorSet.connect(this.signers.governance).setBanThreshold(newBanThreshold);
-      expect(await validatorSet.banTreshold()).to.be.equal(newBanThreshold);
+      expect(await validatorSet.banThreshold()).to.be.equal(newBanThreshold);
     });
   });
 
@@ -155,6 +155,7 @@ export function RunInspectorTests(): void {
 
       const reporterReward = await validatorSet.reporterReward();
       const validatorBanPenalty = await validatorSet.validatorPenalty();
+      const balanceToWithdrawFromContract = reporterReward.add(validatorBanPenalty);
       const withdrawalBalance = await validatorSet.withdrawalBalances(validatorToBan.address);
 
       expect(await validatorSet.balanceOf(validatorToBan.address), "balanceOf").to.be.equal(0);
@@ -164,8 +165,8 @@ export function RunInspectorTests(): void {
       );
       await expect(banTx, "StakeChanged").to.emit(validatorSet, "StakeChanged").withArgs(validatorToBan.address, 0);
       await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [validatorSet.address, await validatorSet.signer.getAddress()],
-        [reporterReward.mul(-1), reporterReward]
+        [validatorSet.address, await validatorSet.signer.getAddress(), ethers.constants.AddressZero],
+        [balanceToWithdrawFromContract.mul(-1), reporterReward, validatorBanPenalty]
       );
     });
 
@@ -182,8 +183,8 @@ export function RunInspectorTests(): void {
 
       expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(0);
       await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [validatorSet.address, await validatorSet.signer.getAddress()],
-        [stakedAmount.mul(-1), stakedAmount]
+        [validatorSet.address, await validatorSet.signer.getAddress(), ethers.constants.AddressZero],
+        [stakedAmount.mul(-1), stakedAmount, 0]
       );
     });
 
@@ -201,8 +202,8 @@ export function RunInspectorTests(): void {
 
       expect(withdrawalBalance.withdrawableAmount, "withdrawableAmount").to.be.equal(0);
       await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [validatorSet.address, await validatorSet.signer.getAddress()],
-        [reporterReward.mul(-1), reporterReward]
+        [validatorSet.address, await validatorSet.signer.getAddress(), ethers.constants.AddressZero],
+        [stakedAmount.mul(-1), reporterReward, stakedAmount.sub(reporterReward)]
       );
     });
 
