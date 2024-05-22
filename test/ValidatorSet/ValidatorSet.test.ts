@@ -355,7 +355,7 @@ describe("ValidatorSet", function () {
       ).to.be.revertedWithCustomError(validatorSet, "MaxValidatorsReached");
 
       // * Ban a validator and check if the count is decremented
-      await validatorSet.connect(this.signers.governance).banValidatorByOwner(this.signers.validators[0].address);
+      await validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(149);
       await expect(
         validatorSet
