@@ -193,6 +193,52 @@ function currentEpochId() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### epochEndBlocks
+
+```solidity
+function epochEndBlocks(uint256) external view returns (uint256)
+```
+
+Array with epoch ending blocks
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### epochs
+
+```solidity
+function epochs(uint256) external view returns (uint256 startBlock, uint256 endBlock, bytes32 epochRoot)
+```
+
+Epoch data linked with the epoch id
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| startBlock | uint256 | undefined |
+| endBlock | uint256 | undefined |
+| epochRoot | bytes32 | undefined |
+
 ### getEpochByBlock
 
 ```solidity
@@ -563,6 +609,44 @@ Unstakes amount for sender. Claims rewards beforehand.
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | Amount to unstake |
+
+### updateValidatorParticipation
+
+```solidity
+function updateValidatorParticipation(address validator) external nonpayable
+```
+
+Method to update when the validator was lastly active which can be executed only by the RewardPool
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The validator to set the last participation for |
+
+### validatorParticipation
+
+```solidity
+function validatorParticipation(address) external view returns (uint256)
+```
+
+Mapping that keeps the last time when a validator has participated in the consensus
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### validators
 

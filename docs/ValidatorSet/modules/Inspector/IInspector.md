@@ -16,15 +16,31 @@
 function banValidator(address validator) external nonpayable
 ```
 
-Manual ban of a validator
+Method used to ban a validator, if the ban threshold is reached
 
-*Function can be executed only by the governor/owner*
+*This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Address of the validator |
+
+### setBanThreshold
+
+```solidity
+function setBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to ban a validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
 
 ### setReporterReward
 
@@ -88,6 +104,20 @@ event ValidatorBanned(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+
+
+## Errors
+
+### ThresholdNotReached
+
+```solidity
+error ThresholdNotReached()
+```
+
+
+
+
 
 
 

@@ -401,6 +401,48 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
   };
 }
 
+async function validatorToBanFixtureFunction(this: Mocha.Context) {
+  const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
+    this.fixtures.stakedValidatorsStateFixture
+  );
+
+  const validator = this.signers.validators[0];
+
+  // commit some epochs, including the selected validator
+  await commitEpochs(
+    systemValidatorSet,
+    rewardPool,
+    [validator, this.signers.validators[1], this.signers.validators[2]],
+    3, // number of epochs to commit
+    this.epochSize
+  );
+
+  // lower the threshold in order to easily reach it
+  const banThreshold = hre.ethers.BigNumber.from(100);
+  const validatorSetGov = validatorSet.connect(this.signers.governance);
+  await validatorSetGov.setBanThreshold(banThreshold);
+
+  // commit epochs, but without the validator that will be banned
+  await commitEpochs(
+    systemValidatorSet,
+    rewardPool,
+    [this.signers.validators[1], this.signers.validators[2]],
+    10, // number of epochs to commit
+    this.epochSize
+  );
+
+  // lower the reporter reward in order to be able to distribute it
+  const reporterReward = this.minStake.div(10);
+  await validatorSetGov.setReporterReward(reporterReward);
+  // lower the penalty in order to be able to penalize
+  await validatorSetGov.setValidatorPenalty(reporterReward.mul(2));
+
+  return {
+    validatorSet,
+    validatorToBan: validator,
+  };
+}
+
 async function bannedValidatorFixtureFunction(this: Mocha.Context) {
   const { validatorSet, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
@@ -455,5 +497,6 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.vestManagerFixture = vestManagerFixtureFunction.bind(context);
   context.fixtures.vestedDelegationFixture = vestedDelegationFixtureFunction.bind(context);
   context.fixtures.weeklyVestedDelegationFixture = weeklyVestedDelegationFixtureFunction.bind(context);
+  context.fixtures.validatorToBanFixture = validatorToBanFixtureFunction.bind(context);
   context.fixtures.bannedValidatorFixture = bannedValidatorFixtureFunction.bind(context);
 }

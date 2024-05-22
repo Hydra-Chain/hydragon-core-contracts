@@ -81,10 +81,8 @@ abstract contract Delegation is
 
     // _______________ Private functions _______________
 
-    function _delegate(address validator, address delegator, uint256 amount) private {
-        if (validators[validator].status != ValidatorStatus.Registered) revert Unauthorized("INVALID_VALIDATOR");
-
-        _mint(validator, amount); // increase validator power
+    function _delegate(address validator, address delegator, uint256 amount) private onlyActiveValidator(validator) {
+        _increaseAccountBalance(validator, amount); // increase validator power
         StateSyncer._syncStake(validator, balanceOf(validator));
         LiquidStaking._distributeTokens(delegator, amount);
 
@@ -92,15 +90,10 @@ abstract contract Delegation is
     }
 
     function _undelegate(address validator, address delegator, uint256 amount) private {
-        _burn(validator, amount); // decrease validator power
+        _decreaseAccountBalance(validator, amount); // decrease validator power
         StateSyncer._syncStake(validator, balanceOf(validator));
         LiquidStaking._collectDelegatorTokens(delegator, amount);
 
         emit Undelegated(validator, delegator, amount);
-    }
-
-    function _burnAmount(uint256 amount) private {
-        (bool success, ) = address(0).call{value: amount}("");
-        require(success, "Failed to burn amount");
     }
 }

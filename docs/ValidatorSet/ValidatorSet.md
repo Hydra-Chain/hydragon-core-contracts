@@ -229,15 +229,32 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
+### banThreshold
+
+```solidity
+function banThreshold() external view returns (uint256)
+```
+
+Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### banValidator
 
 ```solidity
 function banValidator(address validator) external nonpayable
 ```
 
-Manual ban of a validator
+Method used to ban a validator, if the ban threshold is reached
 
-*Function can be executed only by the governor/owner*
+*This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator*
 
 #### Parameters
 
@@ -476,7 +493,7 @@ Gets the vesting managers per user address for fast off-chain lookup.
 function getValidator(address validatorAddress) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, bool active)
 ```
 
-Get the validator by its address
+Gets validator by address.
 
 
 
@@ -484,18 +501,18 @@ Get the validator by its address
 
 | Name | Type | Description |
 |---|---|---|
-| validatorAddress | address | address |
+| validatorAddress | address | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| blsKey | uint256[4] | undefined |
-| stake | uint256 | undefined |
-| totalStake | uint256 | undefined |
-| commission | uint256 | undefined |
-| withdrawableRewards | uint256 | undefined |
-| active | bool | undefined |
+| blsKey | uint256[4] | BLS public key |
+| stake | uint256 | self-stake |
+| totalStake | uint256 | self-stake + delegation |
+| commission | uint256 | commission |
+| withdrawableRewards | uint256 | withdrawable rewards |
+| active | bool | activity status |
 
 ### getValidators
 
@@ -778,6 +795,22 @@ function rewardPool() external view returns (contract IRewardPool)
 |---|---|---|
 | _0 | contract IRewardPool | undefined |
 
+### setBanThreshold
+
+```solidity
+function setBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to ban a validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
 ### setCommission
 
 ```solidity
@@ -1029,6 +1062,22 @@ Set new pending exponent, to be activated in the next commit epoch
 |---|---|---|
 | newValue | uint256 | New Voting Power Exponent Numerator |
 
+### updateValidatorParticipation
+
+```solidity
+function updateValidatorParticipation(address validator) external nonpayable
+```
+
+Method to update when the validator was lastly active which can be executed only by the RewardPool
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The validator to set the last participation for |
+
 ### userVestManagers
 
 ```solidity
@@ -1051,6 +1100,28 @@ Additional mapping to store all vesting managers per user address for fast off-c
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### validatorParticipation
+
+```solidity
+function validatorParticipation(address) external view returns (uint256)
+```
+
+Mapping that keeps the last time when a validator has participated in the consensus
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### validatorPenalty
 
@@ -1704,6 +1775,17 @@ error StakeRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### ThresholdNotReached
+
+```solidity
+error ThresholdNotReached()
+```
+
+
+
+
+
 
 ### Unauthorized
 

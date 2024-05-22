@@ -137,6 +137,22 @@ Returns the total supply
 |---|---|---|
 | _0 | uint256 | Total supply |
 
+### updateValidatorParticipation
+
+```solidity
+function updateValidatorParticipation(address validator) external nonpayable
+```
+
+Method to update when the validator was lastly active which can be executed only by the RewardPool
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | The validator to set the last participation for |
+
 
 
 ## Events

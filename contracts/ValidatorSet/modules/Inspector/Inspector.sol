@@ -12,6 +12,9 @@ abstract contract Inspector is IInspector, Staking {
     /// @notice The reward for the person who reports a validator that have to be banned
     uint256 public reporterReward;
 
+    /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
+    uint256 public banThreshold;
+
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
      * @dev The withdrawal amount is calculated as the difference between
@@ -23,7 +26,7 @@ abstract contract Inspector is IInspector, Staking {
 
     // Only address that is banned
     modifier onlyBanned() {
-        if (validators[msg.sender].status != ValidatorStatus.Banned) revert Unauthorized("BANNED_VALIDATOR");
+        if (validators[msg.sender].status != ValidatorStatus.Banned) revert Unauthorized("UNBANNED_VALIDATOR");
         _;
     }
 
@@ -36,32 +39,7 @@ abstract contract Inspector is IInspector, Staking {
     function __Inspector_init_unchained() internal onlyInitializing {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
-    }
-
-    // _______________ External functions _______________
-
-    /**
-     * @inheritdoc IInspector
-     */
-    function banValidator(address validator) external onlyOwner {
-        if (validators[validator].status != ValidatorStatus.Registered) revert Unauthorized("UNREGISTERED_VALIDATOR");
-
-        uint256 stakedAmount = balanceOf(validator);
-        if (stakedAmount != 0) {
-            _burn(validator, stakedAmount);
-            StateSyncer._syncStake(validator, 0);
-            uint256 amountLeft = rewardPool.onUnstake(validator, stakedAmount, 0);
-
-            uint256 penalty = validatorPenalty;
-            if (amountLeft < penalty) penalty = amountLeft;
-
-            withdrawalBalances[validator].liquidTokens = stakedAmount;
-            withdrawalBalances[validator].withdrawableAmount = amountLeft - penalty;
-        }
-
-        validators[validator].status = ValidatorStatus.Banned;
-
-        emit ValidatorBanned(validator);
+        banThreshold = 123428; // the approximate number of blocks for 72 hours
     }
 
     // _______________ Public functions _______________
@@ -83,6 +61,13 @@ abstract contract Inspector is IInspector, Staking {
     /**
      * @inheritdoc IInspector
      */
+    function setBanThreshold(uint256 newThreshold) public onlyOwner {
+        banThreshold = newThreshold;
+    }
+
+    /**
+     * @inheritdoc IInspector
+     */
     function withdrawBannedFunds() public onlyBanned {
         WithdrawalInfo memory withdrawalBalance = withdrawalBalances[msg.sender];
 
@@ -91,6 +76,87 @@ abstract contract Inspector is IInspector, Staking {
         LiquidStaking._collectTokens(msg.sender, withdrawalBalance.liquidTokens);
 
         _withdraw(msg.sender, withdrawalBalance.withdrawableAmount);
+    }
+
+    /**
+     * @inheritdoc IInspector
+     */
+    function banValidator(address validator) public onlyValidator(validator) {
+        uint256 lastCommittedEndBlock = epochs[currentEpochId - 1].endBlock;
+        // check if the threshold is reached when the method is not executed by the owner (governance)
+        if (msg.sender != owner() && lastCommittedEndBlock - validatorParticipation[validator] < banThreshold) {
+            revert ThresholdNotReached();
+        }
+
+        _ban(validator);
+    }
+
+    // _______________ Private functions _______________
+
+    /**
+     * @dev A method that executes the actions for the actual ban
+     * @param validator The address of the validator
+     */
+    function _ban(address validator) private {
+        uint256 totalAmount = balanceOf(validator);
+        uint256 validatorStake = totalAmount - rewardPool.totalDelegationOf(validator);
+        uint256 reward = 0;
+        if (validatorStake != 0) {
+            _burnAccountStake(validator, validatorStake);
+
+            (uint256 amountLeftToWithdraw, uint256 currentReporterReward) = _calculateWithdrawals(
+                validator,
+                validatorStake
+            );
+
+            reward = currentReporterReward;
+            withdrawalBalances[validator].liquidTokens = validatorStake;
+            withdrawalBalances[validator].withdrawableAmount = amountLeftToWithdraw;
+
+            _burnAmount(validatorStake - amountLeftToWithdraw - currentReporterReward);
+        }
+
+        validators[validator].status = ValidatorStatus.Banned;
+        if (reward != 0) _withdraw(msg.sender, reward);
+
+        emit ValidatorBanned(validator);
+    }
+
+    function _burnAccountStake(address account, uint256 stake) private {
+        _decreaseAccountBalance(account, stake);
+        StateSyncer._syncStake(account, 0);
+    }
+
+    /**
+     * @dev This function is used to calculation amount that will be left to withdraw
+     * after applying validator penalty and the reward for the reporter
+     * @param validator The address of the validator
+     * @param validatorStake The stake of the validator
+     * @return amountLeftToWithdraw The amount that will be left to withdraw by the autor
+     * @return currentReporterReward The reward that will be send to the reporter
+     */
+    function _calculateWithdrawals(
+        address validator,
+        uint256 validatorStake
+    ) private returns (uint256 amountLeftToWithdraw, uint256 currentReporterReward) {
+        amountLeftToWithdraw = rewardPool.onUnstake(validator, validatorStake, 0);
+        if (msg.sender != owner()) {
+            currentReporterReward = reporterReward;
+            if (amountLeftToWithdraw < currentReporterReward) {
+                // the full amount goes for reporter reward
+                return (0, amountLeftToWithdraw);
+            }
+
+            amountLeftToWithdraw -= currentReporterReward;
+        }
+
+        uint256 penalty = validatorPenalty;
+        if (amountLeftToWithdraw < penalty) {
+            // the full amount will be burned as penalty, only the reporter will receive reward
+            return (0, currentReporterReward);
+        }
+
+        amountLeftToWithdraw -= penalty;
     }
 
     // slither-disable-next-line unused-state,naming-convention

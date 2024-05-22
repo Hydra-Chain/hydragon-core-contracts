@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR, ERRORS } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests, RunStakeFunctionsByValidatorSet } from "../RewardPool/RewardPool.test";
 
@@ -13,7 +13,7 @@ export function RunStakingTests(): void {
       const { validatorSet } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
       await expect(validatorSet.connect(this.signers.validators[0]).changeMinStake(this.minStake)).to.be.revertedWith(
-        "Ownable: caller is not the owner"
+        ERRORS.ownable
       );
     });
 
@@ -47,7 +47,7 @@ export function RunStakingTests(): void {
 
       await expect(validatorSet.connect(this.signers.validators[3]).stake({ value: this.minStake }))
         .to.be.revertedWithCustomError(validatorSet, "Unauthorized")
-        .withArgs("VALIDATOR");
+        .withArgs(ERRORS.invalidValidator);
     });
 
     it("should revert if min amount not reached", async function () {
@@ -124,6 +124,18 @@ export function RunStakingTests(): void {
       await expect(validatorSet.unstake(amountToUnstake))
         .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
         .withArgs("unstake", "STAKE_TOO_LOW");
+    });
+
+    it("should revert with insufficient balance when trying to unstake from the delegation pool", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const validator = this.signers.validators[0];
+      const totalStaked = await validatorSet.balanceOf(validator.address);
+      const unstakeAmount = totalStaked.sub(this.minStake);
+
+      await expect(validatorSet.unstake(unstakeAmount))
+        .to.be.revertedWithCustomError(validatorSet, "StakeRequirement")
+        .withArgs("unstake", "INSUFFICIENT_BALANCE");
     });
 
     it("should be able to partially unstake", async function () {

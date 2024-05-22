@@ -11,13 +11,54 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_VALIDATOR_SET");
 
     IBLS public bls;
+
     IRewardPool public rewardPool;
+
     uint256 public currentEpochId;
+
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
+
     address[] public validatorsAddresses;
 
+    /// @notice Epoch data linked with the epoch id
+    mapping(uint256 => Epoch) public epochs;
+
+    /// @notice Array with epoch ending blocks
+    uint256[] public epochEndBlocks;
+
     mapping(uint256 => uint256) internal _commitBlockNumbers;
+
+    /**
+     * @notice Mapping that keeps the last time when a validator has participated in the consensus
+     * @dev Keep in mind that the validator will initially be set active when stake,
+     * but it will be able to participate in the next epoch. So, the validator will have
+     * less blocks to participate before getting eligible for ban.
+     */
+    mapping(address => uint256) public validatorParticipation;
+
+    // _______________ Modifiers _______________
+
+    modifier onlyRewardPool() {
+        if (msg.sender != address(rewardPool)) revert Unauthorized("REWARD_POOL");
+        _;
+    }
+
+    modifier onlyActiveValidator(address validator) {
+        if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
+        _;
+    }
+
+    /// @notice Modifier to check if the validator is registered or active
+    modifier onlyValidator(address validator) {
+        if (
+            validators[validator].status != ValidatorStatus.Registered &&
+            validators[validator].status != ValidatorStatus.Active
+        ) revert Unauthorized("INVALID_VALIDATOR");
+        _;
+    }
+
+    // _______________ Initializer _______________
 
     function __ValidatorSetBase_init(IBLS newBls, IRewardPool newRewardPool) internal onlyInitializing {
         __ValidatorSetBase_init_unchained(newBls, newRewardPool);
@@ -28,6 +69,8 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
         rewardPool = newRewardPool;
         currentEpochId = 1;
     }
+
+    // _______________ Internal functions _______________
 
     function _verifyValidatorRegistration(
         address signer,
@@ -43,6 +86,23 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     function _message(address signer) internal view returns (uint256[2] memory) {
         // slither-disable-next-line calls-loop
         return bls.hashToPoint(DOMAIN, abi.encodePacked(signer, block.chainid));
+    }
+
+    /**
+     * @notice Method used to update the participation
+     * @param validator address
+     */
+    function _updateParticipation(address validator) internal {
+        validatorParticipation[validator] = block.number;
+    }
+
+    /**
+     * @notice Method used to burn funds
+     * @param amount The amount to be burned
+     */
+    function _burnAmount(uint256 amount) internal {
+        (bool success, ) = address(0).call{value: amount}("");
+        require(success, "Failed to burn amount");
     }
 
     // slither-disable-next-line unused-state,naming-convention
