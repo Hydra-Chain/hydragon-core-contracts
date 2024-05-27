@@ -101,14 +101,11 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256[4] calldata pubkey,
         uint256 commission
     ) internal {
-        if (currentValidators == MAX_VALIDATORS) revert MaxValidatorsReached();
         _verifyValidatorRegistration(validator, signature, pubkey);
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
         _setCommission(validator, commission);
-        unchecked {
-            currentValidators++;
-        }
+        validatorsAddresses.push(validator);
         rewardPool.onNewValidator(validator);
     }
 
@@ -121,6 +118,10 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         LiquidStaking._distributeTokens(account, amount);
 
         if (currentBalance == 0) {
+            if (activeValidatorsCount == MAX_VALIDATORS) revert MaxValidatorsReached();
+            unchecked {
+                activeValidatorsCount++;
+            }
             validators[account].status = ValidatorStatus.Active;
             _updateParticipation(account);
         }

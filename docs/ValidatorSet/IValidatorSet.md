@@ -98,6 +98,23 @@ Gets validator by address.
 | withdrawableRewards | uint256 | withdrawable rewards |
 | active | bool | activity status |
 
+### getValidators
+
+```solidity
+function getValidators() external view returns (address[])
+```
+
+Gets all validators. Returns already unactive validators as well.
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address[] | Returns array of addresses |
+
 ### totalBlocks
 
 ```solidity

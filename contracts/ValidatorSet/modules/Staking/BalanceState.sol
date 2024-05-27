@@ -2,13 +2,14 @@
 pragma solidity 0.8.17;
 
 import "./../../IValidatorSet.sol";
+import "./../../ValidatorSetBase.sol";
 
 /**
  * @title BalanceState
  * @notice Contracts that keeps the state of the staker's balance. It works like a very simple and minimalistic ERC20 token.
  * It is a temporary solution until a more complex governance mechanism is implemented.
  */
-abstract contract BalanceState is IValidatorSet {
+abstract contract BalanceState is ValidatorSetBase {
     uint256 public totalBalance;
     mapping(address => uint256) public stakeBalances;
 
@@ -39,5 +40,9 @@ abstract contract BalanceState is IValidatorSet {
 
         stakeBalances[account] -= value;
         totalBalance -= value;
+
+        if (stakeBalances[account] == 0) {
+            activeValidatorsCount--;
+        }
     }
 }

@@ -16,7 +16,9 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
 
     uint256 public currentEpochId;
 
-    uint256 public currentValidators;
+    uint256 public activeValidatorsCount;
+
+    address[] public validatorsAddresses;
 
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;

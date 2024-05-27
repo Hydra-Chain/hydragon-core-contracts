@@ -90,6 +90,11 @@ interface IValidatorSet {
     function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory);
 
     /**
+     * @notice Gets all validators. Returns already unactive validators as well.
+     * @return Returns array of addresses
+     */
+    function getValidators() external view returns (address[] memory);
+    /**
      * @notice Gets the number of current validators
      * @return Returns the count as uint256
      */

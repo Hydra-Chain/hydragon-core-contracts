@@ -131,8 +131,15 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
     /**
      * @inheritdoc IValidatorSet
      */
+    function getValidators() public view returns (address[] memory) {
+        return validatorsAddresses;
+    }
+
+    /**
+     * @inheritdoc IValidatorSet
+     */
     function getCurrentValidatorsCount() public view returns (uint256) {
-        return currentValidators;
+        return activeValidatorsCount;
     }
 
     // slither-disable-next-line unused-state,naming-convention
