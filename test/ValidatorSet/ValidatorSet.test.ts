@@ -407,7 +407,7 @@ describe("ValidatorSet", function () {
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
     });
 
-    it.only("should not decrement the count of validators on ban, if user already unstaked all", async function () {
+    it("should not decrement the count of validators on ban, if user already unstaked all", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(3);
