@@ -10,40 +10,6 @@ Contracts that keeps the state of the staker&#39;s balance. It works like a very
 
 ## Methods
 
-### DOMAIN
-
-```solidity
-function DOMAIN() external view returns (bytes32)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
-
-### activeValidatorsCount
-
-```solidity
-function activeValidatorsCount() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### balanceOf
 
 ```solidity
@@ -65,86 +31,6 @@ Returns the total balance of a given validator
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
-
-### bls
-
-```solidity
-function bls() external view returns (contract IBLS)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IBLS | undefined |
-
-### currentEpochId
-
-```solidity
-function currentEpochId() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### epochEndBlocks
-
-```solidity
-function epochEndBlocks(uint256) external view returns (uint256)
-```
-
-Array with epoch ending blocks
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### epochs
-
-```solidity
-function epochs(uint256) external view returns (uint256 startBlock, uint256 endBlock, bytes32 epochRoot)
-```
-
-Epoch data linked with the epoch id
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| startBlock | uint256 | undefined |
-| endBlock | uint256 | undefined |
-| epochRoot | bytes32 | undefined |
 
 ### getCurrentValidatorsCount
 
@@ -228,23 +114,6 @@ Gets all validators. Returns already unactive validators as well.
 | Name | Type | Description |
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
-
-### rewardPool
-
-```solidity
-function rewardPool() external view returns (contract IRewardPool)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IRewardPool | undefined |
 
 ### stakeBalances
 
@@ -340,93 +209,9 @@ Method to update when the validator was lastly active which can be executed only
 |---|---|---|
 | validator | address | The validator to set the last participation for |
 
-### validatorParticipation
-
-```solidity
-function validatorParticipation(address) external view returns (uint256)
-```
-
-Mapping that keeps the last time when a validator has participated in the consensus
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### validators
-
-```solidity
-function validators(address) external view returns (uint256 liquidDebt, uint256 commission, enum ValidatorStatus status)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| liquidDebt | uint256 | undefined |
-| commission | uint256 | undefined |
-| status | enum ValidatorStatus | undefined |
-
-### validatorsAddresses
-
-```solidity
-function validatorsAddresses(uint256) external view returns (address)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 
 
 ## Events
-
-### Initialized
-
-```solidity
-event Initialized(uint8 version)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| version  | uint8 | undefined |
 
 ### NewEpoch
 

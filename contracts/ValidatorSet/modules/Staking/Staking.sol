@@ -75,6 +75,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256 syncAmount = totalStakeLeft;
         if (validatorStakeLeft == 0) {
             validators[msg.sender].status = ValidatorStatus.Registered;
+            _decreaseActiveValidatorsCount();
             syncAmount = validatorStakeLeft;
         }
 

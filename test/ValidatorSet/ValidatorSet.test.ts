@@ -387,7 +387,7 @@ describe("ValidatorSet", function () {
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
     });
 
-    it("should decrement the count of validators if his balance is 0, when the last delegator undelegate", async function () {
+    it("should decrement the count of validators, when unstake all, even if we have delegation", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(3);
@@ -398,7 +398,7 @@ describe("ValidatorSet", function () {
 
       await validatorSet.connect(this.signers.validators[1]).unstake(this.minStake.mul(2));
 
-      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(3);
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
 
       await validatorSet
         .connect(this.signers.delegator)

@@ -107,6 +107,13 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
         require(success, "Failed to burn amount");
     }
 
+    /**
+     * @notice Decrement the active validators count
+     */
+    function _decreaseActiveValidatorsCount() internal {
+        activeValidatorsCount--;
+    }
+
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
 }
