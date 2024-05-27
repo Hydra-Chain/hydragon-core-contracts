@@ -407,6 +407,20 @@ describe("ValidatorSet", function () {
       expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
     });
 
+    it.only("should not decrement the count of validators on ban, if user already unstaked all", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(3);
+
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
+
+      await validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
+
+      expect(await validatorSet.getCurrentValidatorsCount()).to.be.equal(2);
+    });
+
     it("should get epoch by block", async function () {
       const { systemValidatorSet } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
