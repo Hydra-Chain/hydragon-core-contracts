@@ -98,7 +98,7 @@ interface IValidatorSet {
      * @notice Gets the number of current validators
      * @return Returns the count as uint256
      */
-    function getCurrentValidatorsCount() external view returns (uint256);
+    function getActiveValidatorsCount() external view returns (uint256);
 
     /**
      * @notice Method to update when the validator was lastly active which can be executed only by the RewardPool

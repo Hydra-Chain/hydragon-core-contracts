@@ -32,10 +32,10 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
-### getCurrentValidatorsCount
+### getActiveValidatorsCount
 
 ```solidity
-function getCurrentValidatorsCount() external view returns (uint256)
+function getActiveValidatorsCount() external view returns (uint256)
 ```
 
 Gets the number of current validators

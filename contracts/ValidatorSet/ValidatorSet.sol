@@ -138,7 +138,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
     /**
      * @inheritdoc IValidatorSet
      */
-    function getCurrentValidatorsCount() public view returns (uint256) {
+    function getActiveValidatorsCount() public view returns (uint256) {
         return activeValidatorsCount;
     }
 

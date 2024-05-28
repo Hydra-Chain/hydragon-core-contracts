@@ -146,10 +146,10 @@ Epoch data linked with the epoch id
 | endBlock | uint256 | undefined |
 | epochRoot | bytes32 | undefined |
 
-### getCurrentValidatorsCount
+### getActiveValidatorsCount
 
 ```solidity
-function getCurrentValidatorsCount() external view returns (uint256)
+function getActiveValidatorsCount() external view returns (uint256)
 ```
 
 Gets the number of current validators
