@@ -44,6 +44,23 @@ A constant for the maximum comission a validator can receive from the delegator&
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MAX_VALIDATORS
+
+```solidity
+function MAX_VALIDATORS() external view returns (uint256)
+```
+
+A constant for the maximum amount of validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_STAKE_LIMIT
 
 ```solidity
@@ -190,6 +207,23 @@ function acceptOwnership() external nonpayable
 
 *The new owner accepts the ownership transfer.*
 
+
+### activeValidatorsCount
+
+```solidity
+function activeValidatorsCount() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### addToWhitelist
 
@@ -424,6 +458,23 @@ Epoch data linked with the epoch id
 | startBlock | uint256 | undefined |
 | endBlock | uint256 | undefined |
 | epochRoot | bytes32 | undefined |
+
+### getActiveValidatorsCount
+
+```solidity
+function getActiveValidatorsCount() external view returns (uint256)
+```
+
+Gets the number of current validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Returns the count as uint256 |
 
 ### getEpochByBlock
 
@@ -1708,6 +1759,17 @@ error InvalidWaitPeriod()
 
 ```solidity
 error LowStake()
+```
+
+
+
+
+
+
+### MaxValidatorsReached
+
+```solidity
+error MaxValidatorsReached()
 ```
 
 

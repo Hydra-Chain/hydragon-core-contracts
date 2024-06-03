@@ -32,6 +32,23 @@ Returns the total balance of a given validator
 |---|---|---|
 | _0 | uint256 | Validator&#39;s balance |
 
+### getActiveValidatorsCount
+
+```solidity
+function getActiveValidatorsCount() external view returns (uint256)
+```
+
+Gets the number of current validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Returns the count as uint256 |
+
 ### getEpochByBlock
 
 ```solidity

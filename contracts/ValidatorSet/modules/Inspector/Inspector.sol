@@ -102,6 +102,7 @@ abstract contract Inspector is IInspector, Staking {
         uint256 validatorStake = totalAmount - rewardPool.totalDelegationOf(validator);
         uint256 reward = 0;
         if (validatorStake != 0) {
+            _decreaseActiveValidatorsCount();
             _burnAccountStake(validator, validatorStake);
 
             (uint256 amountLeftToWithdraw, uint256 currentReporterReward) = _calculateWithdrawals(

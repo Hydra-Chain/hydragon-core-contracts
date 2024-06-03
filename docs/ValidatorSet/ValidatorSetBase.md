@@ -27,6 +27,23 @@ function DOMAIN() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### activeValidatorsCount
+
+```solidity
+function activeValidatorsCount() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### balanceOf
 
 ```solidity
@@ -128,6 +145,23 @@ Epoch data linked with the epoch id
 | startBlock | uint256 | undefined |
 | endBlock | uint256 | undefined |
 | epochRoot | bytes32 | undefined |
+
+### getActiveValidatorsCount
+
+```solidity
+function getActiveValidatorsCount() external view returns (uint256)
+```
+
+Gets the number of current validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Returns the count as uint256 |
 
 ### getEpochByBlock
 

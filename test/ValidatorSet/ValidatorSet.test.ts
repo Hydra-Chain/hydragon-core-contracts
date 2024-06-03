@@ -301,10 +301,124 @@ describe("ValidatorSet", function () {
       expect(currentEpochId, "currentEpochId").to.equal(2);
     });
 
-    it("should get all active validators - admin", async function () {
+    it("should get all validators - admin", async function () {
       const { validatorSet } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
       expect(await validatorSet.getValidators()).to.deep.equal([this.signers.admin.address]);
+    });
+
+    it("should get active validators count - the admin", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.commitEpochTxFixture);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.deep.equal(1);
+    });
+
+    it("should revert if we try register more than 150 Validators", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      await validatorSet.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(4);
+
+      const keyPair = mcl.newKeyPair();
+      const provider = hre.ethers.provider;
+      const initialBalance = hre.ethers.utils.parseEther("100000");
+
+      // * Whitelist & Register total 150 validators
+      for (let i = 4; i < 150; i++) {
+        // create a new wallet
+        const wallet = hre.ethers.Wallet.createRandom();
+        const connectedWallet = wallet.connect(provider);
+        // send eth to wallet
+        await hre.network.provider.send("hardhat_setBalance", [
+          wallet.address,
+          initialBalance.toHexString().replace(/^0x0+/, "0x"),
+        ]);
+        // whitelist, register & stake
+        await validatorSet.connect(this.signers.governance).addToWhitelist([wallet.address]);
+        const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
+        await validatorSet
+          .connect(connectedWallet)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+
+        await validatorSet.connect(connectedWallet).stake({ value: this.minStake });
+      }
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(150);
+
+      // * Try to stake with 151 validators
+      const validator151Wallet = hre.ethers.Wallet.createRandom();
+      const validator151 = validator151Wallet.connect(provider);
+      await hre.network.provider.send("hardhat_setBalance", [
+        validator151Wallet.address,
+        initialBalance.toHexString().replace(/^0x0+/, "0x"),
+      ]);
+      await validatorSet.connect(this.signers.governance).addToWhitelist([validator151Wallet.address]);
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        validator151Wallet.address,
+        keyPair.secret
+      ).signature;
+      await expect(
+        validatorSet
+          .connect(validator151)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION, { gasLimit: 1000000 })
+      ).to.be.not.be.reverted;
+      await expect(
+        validatorSet.connect(validator151).stake({ value: this.minStake, gasLimit: 1000000 })
+      ).to.be.revertedWithCustomError(validatorSet, "MaxValidatorsReached");
+    });
+
+    it("should decrement the count of validators when a validator is banned", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(3);
+
+      await validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
+    });
+
+    it("should decrement the count of validators when a validator unstake all his stake", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(3);
+
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
+    });
+
+    it("should decrement the count of validators, when unstake all, even if we have delegation", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(3);
+
+      await validatorSet
+        .connect(this.signers.delegator)
+        .delegate(this.signers.validators[1].address, { value: this.minDelegation });
+
+      await validatorSet.connect(this.signers.validators[1]).unstake(this.minStake.mul(2));
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
+
+      await validatorSet
+        .connect(this.signers.delegator)
+        .undelegate(this.signers.validators[1].address, this.minDelegation);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
+    });
+
+    it("should not decrement the count of validators on ban, if user already unstaked all", async function () {
+      const { validatorSet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(3);
+
+      await validatorSet.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
+
+      await validatorSet.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
+
+      expect(await validatorSet.getActiveValidatorsCount()).to.be.equal(2);
     });
 
     it("should get epoch by block", async function () {

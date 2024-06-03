@@ -16,10 +16,12 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
 
     uint256 public currentEpochId;
 
-    // slither-disable-next-line naming-convention
-    mapping(address => Validator) public validators;
+    uint256 public activeValidatorsCount;
 
     address[] public validatorsAddresses;
+
+    // slither-disable-next-line naming-convention
+    mapping(address => Validator) public validators;
 
     /// @notice Epoch data linked with the epoch id
     mapping(uint256 => Epoch) public epochs;
@@ -103,6 +105,13 @@ abstract contract ValidatorSetBase is IValidatorSet, Initializable {
     function _burnAmount(uint256 amount) internal {
         (bool success, ) = address(0).call{value: amount}("");
         require(success, "Failed to burn amount");
+    }
+
+    /**
+     * @notice Decrement the active validators count
+     */
+    function _decreaseActiveValidatorsCount() internal {
+        activeValidatorsCount--;
     }
 
     // slither-disable-next-line unused-state,naming-convention

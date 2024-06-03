@@ -15,6 +15,8 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
+    /// @notice A constant for the maximum amount of validators
+    uint256 public constant MAX_VALIDATORS = 150;
     /// @notice A state variable to keep the minimum amount of stake
     uint256 public minStake;
 
@@ -73,6 +75,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         uint256 syncAmount = totalStakeLeft;
         if (validatorStakeLeft == 0) {
             validators[msg.sender].status = ValidatorStatus.Registered;
+            _decreaseActiveValidatorsCount();
             syncAmount = validatorStakeLeft;
         }
 
@@ -116,6 +119,10 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
         LiquidStaking._distributeTokens(account, amount);
 
         if (currentBalance == 0) {
+            if (activeValidatorsCount == MAX_VALIDATORS) revert MaxValidatorsReached();
+            unchecked {
+                activeValidatorsCount++;
+            }
             validators[account].status = ValidatorStatus.Active;
             _updateParticipation(account);
         }
