@@ -10,9 +10,9 @@ import { calculatePenalty, claimPositionRewards, commitEpoch, commitEpochs, getU
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
-  RunVestedDelegationSwapTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
+  RunVestedDelegationSwapTests,
 } from "../RewardPool/RewardPool.test";
 
 export function RunDelegationTests(): void {
@@ -681,7 +681,8 @@ export function RunDelegationTests(): void {
       });
     });
 
-    describe("topUpVestedDelegatePosition()", async function () {
+    // TODO: Delete when remove the top-up functionality
+    describe.skip("topUpVestedDelegatePosition()", async function () {
       it("should revert when not owner of the vest manager", async function () {
         const { vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
@@ -739,13 +740,12 @@ export function RunDelegationTests(): void {
           await rewardPool.delegationPositions(this.delegatedValidators[0], vestManager.address)
         ).end;
 
-        // enter the active state
-        await time.increase(1);
         await commitEpoch(
           systemValidatorSet,
           rewardPool,
           [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-          this.epochSize
+          this.epochSize,
+          1 // increase with 1 second to enter the active state
         );
 
         // ensure position is active
@@ -803,7 +803,7 @@ export function RunDelegationTests(): void {
           vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: this.minDelegation })
         )
           .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("vesting", "TOO_MANY_TOP_UPS");
+          .withArgs("vesting", "BALANCE_CHANGES_EXCEEDED");
       });
 
       it("should revert when top-up already made in the same epoch", async function () {

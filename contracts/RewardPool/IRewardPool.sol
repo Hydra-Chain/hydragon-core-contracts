@@ -151,14 +151,6 @@ interface IRewardPool {
     ) external returns (uint256 amount);
 
     /**
-     * @notice View function to see delegated vested amount
-     * @param validator The address of the validator
-     * @param delegator The address of the delegator
-     * @return reward Return the delegetared vested amount
-     */
-    function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256);
-
-    /**
      * @notice Claims delegator rewards for sender.
      * @param validator Validator to claim from
      */
@@ -274,9 +266,16 @@ interface IRewardPool {
     function totalDelegationOf(address validator) external view returns (uint256);
 
     /**
-     * @dev Should be called only by the Governance.
      * @notice Changes the minDelegationAmount
+     * @dev Should be called only by the Governance.
      * @param newMinDelegation New minimum delegation amount
      */
     function changeMinDelegation(uint256 newMinDelegation) external;
+
+    /**
+     * @notice Changes the threshold for the balance change
+     * @dev Should be called only by the Governance.
+     * @param newBalanceChangeThreshold The number of allowed changes of the balance
+     */
+    function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external;
 }

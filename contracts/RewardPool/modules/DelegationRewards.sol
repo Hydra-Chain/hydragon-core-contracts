@@ -7,7 +7,6 @@ import "./RewardsWithdrawal.sol";
 import "./../RewardPoolBase.sol";
 import "./../libs/DelegationPoolLib.sol";
 import "./../libs/VestingPositionLib.sol";
-
 import "./../../common/Errors.sol";
 
 abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
@@ -32,6 +31,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
 
     function __DelegationRewards_init_unchained(uint256 newMinDelegation) internal onlyInitializing {
         _changeMinDelegation(newMinDelegation);
+        balanceChangeThreshold = 32;
     }
 
     // _______________ External functions _______________
@@ -311,36 +311,34 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         address delegator,
         uint256 currentEpochId
     ) external onlyValidatorSet returns (uint256 amount) {
-        DelegationPool storage delegation = delegationPools[newValidator];
-        uint256 balance = delegation.balanceOf(delegator);
-
-        VestingPosition memory position = delegationPositions[newValidator][delegator];
-        if (position.isMaturing()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
+        VestingPosition memory oldPosition = delegationPositions[oldValidator][delegator];
+        // ensure that the old position is active in order to continue the swap
+        if (!oldPosition.isActive()) {
+            revert DelegateRequirement({src: "vesting", msg: "OLD_POSITION_INACTIVE"});
         }
 
-        if (position.isActive()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
+        VestingPosition memory newPosition = delegationPositions[newValidator][delegator];
+        if (newPosition.isMaturing()) {
+            revert DelegateRequirement({src: "vesting", msg: "NEW_POSITION_MATURING"});
         }
 
-        // ensure previous rewards are claimed
-        if (delegation.claimableRewards(delegator) > 0) {
-            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
+        DelegationPool storage newDelegation = delegationPools[newValidator];
+        uint256 balance = newDelegation.balanceOf(delegator);
+        if (balance != 0) {
+            revert DelegateRequirement({src: "vesting", msg: "INVALID_NEW_POSITION"});
         }
-   
+
+        // update the old delegation position
         DelegationPool storage oldDelegation = delegationPools[oldValidator];
         amount = oldDelegation.balanceOf(delegator);
         oldDelegation.withdraw(delegator, amount);
 
-        uint256 newBalance = balance + amount;
-        VestingPosition memory oldPosition = delegationPositions[oldValidator][delegator];
-        // If is a position which is not active and not in maturing state,
-        // we can recreate/create the position
-        delegation.deposit(delegator, newBalance);
-        delete delegationPoolParamsHistory[newValidator][delegator];
-        delete beforeTopUpParams[newValidator][delegator];
+        int256 correction = oldDelegation.correctionOf(delegator);
+        _onAccountParamsChange(oldValidator, delegator, 0, correction, currentEpochId);
 
-        // TODO: calculate end of period instead of write in in the cold storage. It is cheaper
+        // set the new delegation position using the old position parameters
+        newDelegation.deposit(delegator, amount);
+
         delegationPositions[newValidator][delegator] = VestingPosition({
             duration: oldPosition.duration,
             start: oldPosition.start,
@@ -350,13 +348,13 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             rsiBonus: oldPosition.rsiBonus
         });
 
-        // keep the change in the delegation pool params per account
+        // keep the change in the new delegation pool params
         _addNewDelegationPoolParam(
             newValidator,
             delegator,
             DelegationPoolParams({
-                balance: newBalance,
-                correction: delegation.correctionOf(delegator),
+                balance: amount,
+                correction: newDelegation.correctionOf(delegator),
                 epochNum: currentEpochId
             })
         );
@@ -431,16 +429,11 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         _changeMinDelegation(newMinDelegation);
     }
 
-    // _______________ Public functions _______________
-
-    /**
-     * @inheritdoc IRewardPool
-     */
-    function getBalanceForVestedPosition(address validator, address delegator) public view returns (uint256 amount) {
-        DelegationPool storage oldDelegation = delegationPools[validator];
-        amount = oldDelegation.balanceOf(delegator);
+    function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        balanceChangeThreshold = newBalanceChangeThreshold;
     }
 
+    // _______________ Public functions _______________
     /**
      * @inheritdoc IRewardPool
      */
@@ -460,6 +453,8 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     /**
      * @notice Checks if balance change was already made in the current epoch
      * @param validator Validator to delegate to
+     * @param delegator Delegator that has delegated
+     * @param currentEpochNum Current epoch number
      */
     function isBalanceChangeMade(
         address validator,
@@ -477,6 +472,15 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         }
 
         return false;
+    }
+
+    /**
+     * @notice Checks if the balance changes exceeds the threshold
+     * @param validator Validator to delegate to
+     * @param delegator Delegator that has delegated
+     */
+    function isBalanceChangeThresholdExceeded(address validator, address delegator) public view returns (bool) {
+        return delegationPoolParamsHistory[validator][delegator].length > balanceChangeThreshold;
     }
 
     // _______________ Private functions _______________
@@ -592,8 +596,13 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         DelegationPoolParams memory params
     ) private {
         if (isBalanceChangeMade(validator, delegator, params.epochNum)) {
-            // Top up can be made only once per epoch
-            revert StakeRequirement({src: "_addNewDelegationPoolParam", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+            // balance can be changed only once per epoch
+            revert DelegateRequirement({src: "_addNewDelegationPoolParam", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+        }
+
+        if (isBalanceChangeThresholdExceeded(validator, delegator)) {
+            // maximum amount of balance changes exceeded
+            revert DelegateRequirement({src: "_addNewDelegationPoolParam", msg: "BALANCE_CHANGES_EXCEEDED"});
         }
 
         delegationPoolParamsHistory[validator][delegator].push(params);
@@ -622,8 +631,13 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         uint256 currentEpochId
     ) private {
         if (isBalanceChangeMade(validator, delegator, currentEpochId)) {
-            // Top up can be made only once on epoch
+            // balance can be changed only once per epoch
             revert DelegateRequirement({src: "_onAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+        }
+
+        if (isBalanceChangeThresholdExceeded(validator, delegator)) {
+            // maximum amount of balance changes exceeded
+            revert DelegateRequirement({src: "_onAccountParamsChange", msg: "BALANCE_CHANGES_EXCEEDED"});
         }
 
         delegationPoolParamsHistory[validator][delegator].push(

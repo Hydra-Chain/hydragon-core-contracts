@@ -81,6 +81,22 @@ Returns the total reward that is generated for a position
 |---|---|---|
 | reward | uint256 | for the delegator |
 
+### changeBalanceChangeThreshold
+
+```solidity
+function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external nonpayable
+```
+
+Changes the threshold for the balance change
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newBalanceChangeThreshold | uint256 | The number of allowed changes of the balance |
+
 ### changeMinDelegation
 
 ```solidity
@@ -172,29 +188,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 | epochId | uint256 | undefined |
 | uptime | Uptime[] | undefined |
 | epochSize | uint256 | undefined |
-
-### getBalanceForVestedPosition
-
-```solidity
-function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256)
-```
-
-View function to see delegated vested amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | The address of the validator |
-| delegator | address | The address of the delegator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | reward Return the delegetared vested amount |
 
 ### getDelegationPoolParamsHistory
 

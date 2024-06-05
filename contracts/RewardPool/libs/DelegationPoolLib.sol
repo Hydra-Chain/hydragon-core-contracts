@@ -131,8 +131,11 @@ library DelegationPoolLib {
         uint256 balance,
         int256 correction
     ) internal view returns (uint256) {
-        if (pool.claimedRewards[account] >= rewardsEarned(rps, balance, correction)) return 0;
-        return rewardsEarned(rps, balance, correction) - pool.claimedRewards[account];
+        uint256 _rewardsEarned = rewardsEarned(rps, balance, correction);
+        uint256 claimedRewards = pool.claimedRewards[account];
+        if (claimedRewards >= _rewardsEarned) return 0;
+
+        return _rewardsEarned - claimedRewards;
     }
 
     function claimRewards(

@@ -185,6 +185,23 @@ function applyMaxReward(uint256 reward) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### balanceChangeThreshold
+
+```solidity
+function balanceChangeThreshold() external view returns (uint256)
+```
+
+The threshold for the maximum number of allowed balance changes
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### base
 
 ```solidity
@@ -297,6 +314,22 @@ Returns the total reward that is generated for a position
 | Name | Type | Description |
 |---|---|---|
 | reward | uint256 | for the delegator |
+
+### changeBalanceChangeThreshold
+
+```solidity
+function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external nonpayable
+```
+
+Changes the threshold for the balance change
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newBalanceChangeThreshold | uint256 | The number of allowed changes of the balance |
 
 ### changeMinDelegation
 
@@ -468,29 +501,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 | epochId | uint256 | undefined |
 | uptime | Uptime[] | undefined |
 | epochSize | uint256 | undefined |
-
-### getBalanceForVestedPosition
-
-```solidity
-function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256 amount)
-```
-
-View function to see delegated vested amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | The address of the validator |
-| delegator | address | The address of the delegator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| amount | uint256 | reward Return the delegetared vested amount |
 
 ### getDelegationPoolParamsHistory
 
@@ -862,8 +872,31 @@ Checks if balance change was already made in the current epoch
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Validator to delegate to |
-| delegator | address | undefined |
-| currentEpochNum | uint256 | undefined |
+| delegator | address | Delegator that has delegated |
+| currentEpochNum | uint256 | Current epoch number |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isBalanceChangeThresholdExceeded
+
+```solidity
+function isBalanceChangeThresholdExceeded(address validator, address delegator) external view returns (bool)
+```
+
+Checks if the balance changes exceeds the threshold
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator to delegate to |
+| delegator | address | Delegator that has delegated |
 
 #### Returns
 
@@ -1627,23 +1660,6 @@ error InvalidRSI()
 
 
 
-
-### StakeRequirement
-
-```solidity
-error StakeRequirement(string src, string msg)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| src | string | undefined |
-| msg | string | undefined |
 
 ### Unauthorized
 

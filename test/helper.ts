@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable node/no-extraneous-import */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { mine } from "@nomicfoundation/hardhat-network-helpers";
+import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { BigNumber, ContractTransaction } from "ethers";
 
@@ -11,7 +11,7 @@ import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
 import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
 import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
-import { CHAIN_ID, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
+import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -61,7 +61,8 @@ export async function commitEpoch(
   systemValidatorSet: ValidatorSet,
   rewardPool: RewardPool,
   validators: SignerWithAddress[],
-  epochSize: BigNumber
+  epochSize: BigNumber,
+  increaseTime?: number
 ): Promise<{ commitEpochTx: ContractTransaction; distributeRewardsTx: ContractTransaction }> {
   const currEpochId = await systemValidatorSet.currentEpochId();
   const prevEpochId = currEpochId.sub(1);
@@ -78,6 +79,8 @@ export async function commitEpoch(
   }
 
   await mine(epochSize, { interval: 2 });
+  increaseTime = increaseTime || DAY; // default 1 day
+  await time.increase(increaseTime);
 
   const commitEpochTx = await systemValidatorSet.commitEpoch(currEpochId, newEpoch, epochSize);
 
@@ -96,12 +99,13 @@ export async function commitEpochs(
   rewardPool: RewardPool,
   validators: SignerWithAddress[],
   numOfEpochsToCommit: number,
-  epochSize: BigNumber
+  epochSize: BigNumber,
+  increaseTime?: number
 ) {
   if (epochSize.isZero() || numOfEpochsToCommit === 0) return;
 
   for (let i = 0; i < numOfEpochsToCommit; i++) {
-    await commitEpoch(systemValidatorSet, rewardPool, validators, epochSize);
+    await commitEpoch(systemValidatorSet, rewardPool, validators, epochSize, increaseTime);
   }
 }
 
@@ -165,6 +169,39 @@ export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: 
 
   if (closestIndex === null) {
     throw new Error("Invalid timestamp");
+  }
+
+  return closestIndex;
+}
+
+export function findTopUpIndex(arr: any[], epochNum: BigNumber): number {
+  if (arr.length <= 1) return 0;
+
+  let left = 0;
+  let right = arr.length - 1;
+  let closestEpoch: null | BigNumber = null;
+  let closestIndex: null | number = null;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const midValue = arr[mid].epochNum;
+    if (midValue.eq(epochNum)) {
+      // Timestamp found
+      return mid;
+    } else if (midValue.lt(epochNum)) {
+      // Check if the timestamp is closer to the mid
+      if (closestEpoch === null || epochNum.sub(midValue).abs().lt(epochNum.sub(closestEpoch).abs())) {
+        closestEpoch = midValue;
+        closestIndex = mid;
+      }
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  if (closestIndex === null) {
+    throw new Error("findTopUpIndex: Invalid epoch number");
   }
 
   return closestIndex;
@@ -235,11 +272,12 @@ export async function retrieveRPSData(
   manager: string
 ) {
   const position = await rewardPool.delegationPositions(validator, manager);
-  const end = position.end;
+  const maturedIn = await getClosestMaturedTimestamp(position);
   const currentEpochId = await validatorSet.currentEpochId();
   const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
-  const epochNum = findProperRPSIndex(rpsValues, end);
-  const topUpIndex = 0;
+  const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
+  const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
+  const topUpIndex = findTopUpIndex(delegationPoolParamsHistory, hre.ethers.BigNumber.from(epochNum));
 
   return { position, epochNum, topUpIndex };
 }
@@ -330,4 +368,24 @@ export async function getDelegatorPositionReward(
   const { epochNum, topUpIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
 
   return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, topUpIndex);
+}
+
+export async function getClosestMaturedTimestamp(position: any) {
+  let alreadyMatureIn = 0;
+  if (await hasMatured(position.end, position.duration)) {
+    alreadyMatureIn = position.end;
+  } else {
+    const currChainTs = await time.latest();
+    const maturedPeriod = currChainTs - position.end;
+    alreadyMatureIn = position.start.add(maturedPeriod);
+  }
+
+  return alreadyMatureIn;
+}
+
+// function that returns whether a position is matured or not
+async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
+  const currChainTs = await time.latest();
+
+  return positionEnd && positionDuration && positionEnd.add(positionDuration).lte(currChainTs);
 }

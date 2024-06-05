@@ -54,7 +54,7 @@ contract VestManager is Initializable, OwnableUpgradeable {
     }
 
     function swapVestedValidator(address oldValidator, address newValidator) external onlyOwner {
-        uint256 amount = IRewardPool(rewardPool).getBalanceForVestedPosition(oldValidator, address(this));
+        uint256 amount = IRewardPool(rewardPool).delegationOf(oldValidator, address(this));
         _fulfillLiquidTokens(msg.sender, amount);
         IDelegation(delegation).swapVestedValidator(oldValidator, newValidator);
         _sendLiquidTokens(msg.sender, amount);
