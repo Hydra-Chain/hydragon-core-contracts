@@ -8,7 +8,7 @@ import {WithdrawalData, WithdrawalQueue} from "contracts/ValidatorSet/libs/IWith
 
 abstract contract EmptyState is Test {
     uint256 constant AMOUNT = 2 ether;
-    uint256 EPOCH = 1;
+    uint256 constant DURATION = 1 days;
 
     WithdrawalQueueLibUser withdrawalQueueLibUser;
 
@@ -24,41 +24,52 @@ contract WithdrawalQueueTest_EmptyState is EmptyState {
     }
 
     function testAppend() public {
-        withdrawalQueueLibUser.append(AMOUNT, EPOCH);
+        withdrawalQueueLibUser.append(AMOUNT, block.timestamp + DURATION);
 
         assertEq(withdrawalQueueLibUser.headGetter(), 0);
         assertEq(withdrawalQueueLibUser.tailGetter(), 1);
-        assertEq(withdrawalQueueLibUser.withdrawalsGetter(0), WithdrawalData({amount: AMOUNT, epoch: EPOCH}));
+        assertEq(
+            withdrawalQueueLibUser.withdrawalsGetter(0),
+            WithdrawalData({amount: AMOUNT, time: block.timestamp + DURATION})
+        );
     }
 }
 
 abstract contract SingleState is EmptyState {
     function setUp() public virtual override {
         super.setUp();
-        withdrawalQueueLibUser.append(AMOUNT, EPOCH);
+        withdrawalQueueLibUser.append(AMOUNT, block.timestamp + DURATION);
     }
 }
 
 contract WithdrawalQueueTest_SingleState is SingleState {
-    function testCannotAppend_OldEpoch() public {
+    function testCannotAppend_CurrentTime() public {
         vm.expectRevert(stdError.assertionError);
-        withdrawalQueueLibUser.append(AMOUNT, EPOCH - 1);
+        withdrawalQueueLibUser.append(AMOUNT, block.timestamp);
     }
 
-    function testAppend_SameEpoch() public {
-        withdrawalQueueLibUser.append(AMOUNT, EPOCH);
+    function testCannotAppend_OldTime() public {
+        vm.expectRevert(stdError.assertionError);
+        withdrawalQueueLibUser.append(AMOUNT, block.timestamp - 1);
+    }
+
+    function testAppend_SameTime() public {
+        withdrawalQueueLibUser.append(AMOUNT, block.timestamp + DURATION);
 
         assertEq(withdrawalQueueLibUser.headGetter(), 0);
         assertEq(withdrawalQueueLibUser.tailGetter(), 1);
-        assertEq(withdrawalQueueLibUser.withdrawalsGetter(0), WithdrawalData(AMOUNT * 2, EPOCH));
+        assertEq(withdrawalQueueLibUser.withdrawalsGetter(0), WithdrawalData(AMOUNT * 2, block.timestamp + DURATION));
     }
 
-    function testAppend_NextEpoch() public {
-        withdrawalQueueLibUser.append(AMOUNT / 2, EPOCH + 1);
+    function testAppend_LaterTime() public {
+        withdrawalQueueLibUser.append(AMOUNT / 2, block.timestamp + DURATION * 2);
 
         assertEq(withdrawalQueueLibUser.headGetter(), 0);
         assertEq(withdrawalQueueLibUser.tailGetter(), 2);
-        assertEq(withdrawalQueueLibUser.withdrawalsGetter(1), WithdrawalData(AMOUNT / 2, EPOCH + 1));
+        assertEq(
+            withdrawalQueueLibUser.withdrawalsGetter(1),
+            WithdrawalData(AMOUNT / 2, block.timestamp + DURATION * 2)
+        );
     }
 }
 
@@ -73,8 +84,7 @@ abstract contract MultipleState is SingleState {
     function _fillQueue(uint128[] memory amounts) internal {
         for (uint256 i; i < amounts.length; ) {
             uint256 amount = amounts[i];
-            if (amount > 0) withdrawalQueueLibUser.append(amount, i);
-
+            if (amount > 0) withdrawalQueueLibUser.append(amount, block.timestamp + DURATION + i);
             unchecked {
                 ++i;
             }
@@ -94,35 +104,35 @@ contract WithdrawalQueue_MultipleState is MultipleState {
         );
     }
 
-    function testWithdrawable(uint128[] memory amounts, uint256 currentEpoch) public {
+    function testWithdrawable(uint128[] memory amounts, uint256 currentTime) public {
         _fillQueue(amounts);
         uint256 expectedAmount;
         uint256 expectedNewHead;
-        currentEpoch = bound(
-            currentEpoch,
+        currentTime = bound(
+            currentTime,
             withdrawalQueueLibUser.headGetter(),
             withdrawalQueueLibUser.tailGetter() - 1
         );
         // calculate amount and newHead
         expectedNewHead = withdrawalQueueLibUser.headGetter();
         WithdrawalData memory withdrawal = withdrawalQueueLibUser.withdrawalsGetter(expectedNewHead);
-        while (expectedNewHead < withdrawalQueueLibUser.tailGetter() && withdrawal.epoch <= currentEpoch) {
+        while (expectedNewHead < withdrawalQueueLibUser.tailGetter() && withdrawal.time <= currentTime) {
             expectedAmount += withdrawal.amount;
             ++expectedNewHead;
 
             withdrawal = withdrawalQueueLibUser.withdrawalsGetter(expectedNewHead);
         }
 
-        (uint256 amount, uint256 newHead) = withdrawalQueueLibUser.withdrawable(currentEpoch);
+        (uint256 amount, uint256 newHead) = withdrawalQueueLibUser.withdrawable();
         assertEq(amount, expectedAmount, "Amount");
         assertEq(newHead, expectedNewHead, "New head");
     }
 
-    function testPending(uint128[] memory amounts, uint256 currentEpoch) public {
+    function testPending(uint128[] memory amounts, uint256 currentTime) public {
         _fillQueue(amounts);
         uint256 expectedAmount;
-        currentEpoch = bound(
-            currentEpoch,
+        currentTime = bound(
+            currentTime,
             withdrawalQueueLibUser.headGetter(),
             withdrawalQueueLibUser.tailGetter() - 1
         );
@@ -130,18 +140,18 @@ contract WithdrawalQueue_MultipleState is MultipleState {
         uint256 headCursor = withdrawalQueueLibUser.headGetter();
         WithdrawalData memory withdrawal = withdrawalQueueLibUser.withdrawalsGetter(headCursor);
         while (headCursor < withdrawalQueueLibUser.tailGetter()) {
-            if (withdrawal.epoch > currentEpoch) expectedAmount += withdrawal.amount;
+            if (withdrawal.time > currentTime) expectedAmount += withdrawal.amount;
             withdrawal = withdrawalQueueLibUser.withdrawalsGetter(++headCursor);
         }
 
-        assertEq(withdrawalQueueLibUser.pending(currentEpoch), expectedAmount);
+        assertEq(withdrawalQueueLibUser.pending(), expectedAmount);
     }
 
     function testPending_HeadZero() public {
-        withdrawalQueueLibUser.append(1 ether, 2);
+        withdrawalQueueLibUser.append(1 ether, block.timestamp + DURATION);
 
         // should break and not underflow
-        assertEq(withdrawalQueueLibUser.pending(1), 1 ether);
+        assertEq(withdrawalQueueLibUser.pending(), 1 ether);
     }
 }
 
@@ -152,8 +162,8 @@ contract WithdrawalQueue_MultipleState is MultipleState {
 contract WithdrawalQueueLibUser {
     WithdrawalQueue queue;
 
-    function append(uint256 amount, uint256 epoch) external {
-        WithdrawalQueueLib.append(queue, amount, epoch);
+    function append(uint256 amount, uint256 time) external {
+        WithdrawalQueueLib.append(queue, amount, time);
     }
 
     function length() external view returns (uint256) {
@@ -161,13 +171,13 @@ contract WithdrawalQueueLibUser {
         return r;
     }
 
-    function withdrawable(uint256 currentEpoch) external view returns (uint256, uint256) {
-        (uint256 a, uint256 b) = WithdrawalQueueLib.withdrawable(queue, currentEpoch);
+    function withdrawable() external view returns (uint256, uint256) {
+        (uint256 a, uint256 b) = WithdrawalQueueLib.withdrawable(queue);
         return (a, b);
     }
 
-    function pending(uint256 currentEpoch) external view returns (uint256 amount) {
-        uint256 r = WithdrawalQueueLib.pending(queue, currentEpoch);
+    function pending() external view returns (uint256 amount) {
+        uint256 r = WithdrawalQueueLib.pending(queue);
         return r;
     }
 
