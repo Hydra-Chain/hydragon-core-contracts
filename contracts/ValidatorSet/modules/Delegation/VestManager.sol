@@ -47,6 +47,18 @@ contract VestManager is Initializable, OwnableUpgradeable {
         IDelegation(delegation).undelegateWithVesting(validator, amount);
     }
 
+    function cutVestedDelegatePositionWithPermit(
+        address validator,
+        uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable onlyOwner {
+        _fulfillLiquidTokensWithPermit(msg.sender, amount, deadline, v, r, s);
+        IDelegation(delegation).undelegateWithVesting(validator, amount);
+    }
+
     function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
         IDelegation(delegation).swapVestedPositionValidator(oldValidator, newValidator);
     }
@@ -86,6 +98,29 @@ contract VestManager is Initializable, OwnableUpgradeable {
      */
     function _fulfillLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
         address liquidToken = ILiquidStaking(delegation).liquidToken();
+        IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
+    }
+
+
+    /**
+     * Fulfill position with the needed liquid tokens using permit and signature
+     * @param positionOwner Owner of the position (respectively of the position manager)
+     * @param amount Amount to be unstaked
+     * @param deadline Deadline for the permit
+     * @param v Signature v
+     * @param r Signature r
+     * @param s Signature s
+     */
+    function _fulfillLiquidTokensWithPermit(
+        address positionOwner,
+        uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) private onlyOwner {
+        address liquidToken = ILiquidStaking(delegation).liquidToken();
+        IERC20Permit(liquidToken).permit(positionOwner, address(this), amount, deadline, v, r, s);
         IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
     }
 }
