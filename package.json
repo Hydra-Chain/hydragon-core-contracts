@@ -21,7 +21,7 @@
   "homepage": "https://github.com/maticnetwork/v3-contracts#readme",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "TS_NODE_TRANSPILE_ONLY=1 npx hardhat test --parallel",
+    "test": "forge test ; TS_NODE_TRANSPILE_ONLY=1 npx hardhat test --parallel",
     "test:gas": "TS_NODE_TRANSPILE_ONLY=1 REPORT_GAS=true npx hardhat test",
     "test:types": "npx hardhat test --parallel",
     "lint:sol": "npx solhint --fix \"contracts/**/*.sol\" && npx prettier -w .",
