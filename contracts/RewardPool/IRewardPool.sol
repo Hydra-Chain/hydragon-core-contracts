@@ -151,14 +151,6 @@ interface IRewardPool {
     ) external returns (uint256 amount);
 
     /**
-     * @notice View function to see delegated vested amount
-     * @param validator The address of the validator
-     * @param delegator The address of the delegator
-     * @return reward Return the delegetared vested amount
-     */
-    function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256);
-
-    /**
      * @notice Claims delegator rewards for sender.
      * @param validator Validator to claim from
      */

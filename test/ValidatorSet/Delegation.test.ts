@@ -10,9 +10,9 @@ import { calculatePenalty, claimPositionRewards, commitEpochs, getUserManager } 
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
-  RunVestedDelegationSwapTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
+  RunVestedDelegationSwapTests,
 } from "../RewardPool/RewardPool.test";
 import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 

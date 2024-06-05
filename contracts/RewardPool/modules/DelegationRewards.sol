@@ -455,6 +455,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         amount = oldDelegation.balanceOf(delegator);
     }
 
+    // _______________ Public functions _______________
     /**
      * @inheritdoc IRewardPool
      */

@@ -631,29 +631,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 | uptime | Uptime[] | undefined |
 | epochSize | uint256 | undefined |
 
-### getBalanceForVestedPosition
-
-```solidity
-function getBalanceForVestedPosition(address validator, address delegator) external view returns (uint256 amount)
-```
-
-View function to see delegated vested amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | The address of the validator |
-| delegator | address | The address of the delegator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| amount | uint256 | reward Return the delegetared vested amount |
-
 ### getDelegationPoolParamsHistory
 
 ```solidity

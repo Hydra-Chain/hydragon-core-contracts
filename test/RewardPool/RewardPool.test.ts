@@ -642,156 +642,292 @@ export function RunVestedDelegateClaimTests(): void {
 }
 
 export function RunVestedDelegationSwapTests(): void {
-  describe.only("Delegate position rewards", async function () {
-    it("should swap vested delegation", async function () {
-      const { validatorSet, systemValidatorSet, rewardPool, vestManager, vestManagerOwner, liquidToken } =
-        await loadFixture(this.fixtures.vestManagerFixture);
+  describe("Delegate position rewards", async function () {
+    it("should revert when not the vest manager owner", async function () {
+      const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
-      const validator = this.signers.validators[2];
-      const vestingDuration = 11; // 11 weeks
+      await expect(
+        vestManager
+          .connect(this.signers.accounts[10])
+          .swapVestedValidator(delegatedValidator.address, delegatedValidator.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("should revert when the delegator has no active position for the old validator", async function () {
+      const { vestManager, vestManagerOwner, rewardPool } = await loadFixture(this.fixtures.vestManagerFixture);
+
+      await expect(
+        vestManager
+          .connect(vestManagerOwner)
+          .swapVestedValidator(this.signers.validators[0].address, this.signers.validators[1].address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", "OLD_POSITION_INACTIVE");
+    });
+
+    it("should revert that the position is inactive", async function () {
+      const { systemValidatorSet, vestManager, delegatedValidator, rewardPool, vestManagerOwner } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      await commitEpoch(
+        systemValidatorSet,
+        rewardPool,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize,
+        // increase time to make the position maturing
+        WEEK
+      );
+
+      // ensure is not active position
+      expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").be
+        .false;
+
+      await expect(
+        vestManager
+          .connect(vestManagerOwner)
+          .swapVestedValidator(this.signers.validators[0].address, this.signers.validators[1].address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", "OLD_POSITION_INACTIVE");
+    });
+
+    it("should revert when we try to swap to validator with maturing position", async function () {
+      const { systemValidatorSet, vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const oldValidator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(oldValidator.address, 2, { value: this.minDelegation });
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
+
+      // commit 8 epochs with 1 day increase before each, so, the first position gonna start maturing
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 8, this.epochSize, DAY);
+
+      const newPosition = await rewardPool.delegationPositions(newValidator.address, vestManager.address);
+      expect(newPosition.end.add(newPosition.duration).gt(await time.latest()), "Not matured").to.be.true;
+      expect(newPosition.end.lt(await time.latest()), "isMaturing").to.be.true;
+
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", "NEW_POSITION_MATURING");
+    });
+
+    it("should revert when we try to swap to active position (balance > 0)", async function () {
+      const { vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const oldValidator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(oldValidator.address, 1, { value: this.minDelegation });
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
+
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", "INVALID_NEW_POSITION");
+    });
+
+    it("should transfer old position parameters to the new one on successful swap", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, vestManagerOwner, liquidToken } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const validator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+
+      const vestingDuration = 2; // 2 weeks
       await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
         value: this.minDelegation.mul(2),
       });
 
-      // 5 weeks ahead
-      await time.increase(WEEK * 5);
+      await commitEpoch(systemValidatorSet, rewardPool, [validator, newValidator], this.epochSize);
 
-      // commit epoch, so more reward is added that must not be claimed now
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
-      );
-
-      const newValidator = this.signers.validators[1];
-      const amount = await rewardPool
-        .connect(vestManagerOwner)
-        .getBalanceForVestedPosition(validator.address, vestManager.address);
+      const amount = await rewardPool.delegationOf(validator.address, vestManager.address);
 
       // give allowance & swap
       await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
       await vestManager.connect(vestManagerOwner).swapVestedValidator(validator.address, newValidator.address);
 
-      // check rewards for new validator
+      const oldPosition = await rewardPool.delegationPositions(validator.address, vestManager.address);
+      const newPosition = await rewardPool.delegationPositions(newValidator.address, vestManager.address);
+
+      // expect new position to be like the old position
+      expect(oldPosition.duration, "oldPosition.duration").to.be.eq(newPosition.duration);
+      expect(oldPosition.start, "oldPosition.start").to.be.eq(newPosition.start);
+      expect(oldPosition.end, "oldPosition.end").to.be.eq(newPosition.end);
+      expect(oldPosition.base, "oldPosition.base").to.be.eq(newPosition.base);
+      expect(oldPosition.vestBonus, "oldPosition.vestBonus").to.be.eq(newPosition.vestBonus);
+      expect(oldPosition.rsiBonus, "oldPosition.rsiBonus").to.be.eq(newPosition.rsiBonus);
+    });
+
+    it("should start earning rewards on new position after swap", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, oldValidator, newValidator } = await loadFixture(
+        this.fixtures.swappedPositionFixture
+      );
+
+      await commitEpoch(systemValidatorSet, rewardPool, [oldValidator, newValidator], this.epochSize);
+
       const rewardsAfterSwap = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
-      expect(rewardsAfterSwap).to.be.eq(0);
+      expect(rewardsAfterSwap, "rewardsAfterSwap").to.be.gt(0);
+    });
 
-      // expect the rewards to be more than 0 for 1st validator
-      const rewardsAfterSwapOldValidator = await rewardPool.getRawDelegatorReward(
-        validator.address,
-        vestManager.address
-      );
-      expect(rewardsAfterSwapOldValidator).to.be.not.eq(0);
+    it("should stop earning rewards on old position after swap", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, oldValidator, newValidator, rewardsBeforeSwap } =
+        await loadFixture(this.fixtures.swappedPositionFixture);
 
-      // 6 weeks ahead for position to start maturing
-      await time.increase(WEEK * 6);
+      await commitEpoch(systemValidatorSet, rewardPool, [oldValidator, newValidator], this.epochSize);
 
-      // commit epoch
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
-      );
+      const rewardsAfterSwap = await rewardPool.getRawDelegatorReward(oldValidator.address, vestManager.address);
+      expect(rewardsAfterSwap, "rewardsAfterSwap").to.be.eq(rewardsBeforeSwap).and.to.be.gt(0);
+    });
 
-      // see if position is maturing
-      const position = await rewardPool.delegationPositions(validator.address, vestManager.address);
-      expect(position.end.lt(await time.latest()), "isMaturing").to.be.true;
+    it("should revert when pass incorrect swap index", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, vestManagerOwner, oldValidator, newValidator } =
+        await loadFixture(this.fixtures.swappedPositionFixture);
 
-      // 5 weeks ahead for position to claim matured rewards for 1st validator
-      await time.increase(WEEK * 5);
+      // commit epochs and increase time to make the position matured & commit epochs
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 4, this.epochSize, WEEK);
 
-      // commit epoch
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
-      );
+      const rewardsBeforeClaim = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsBeforeClaim).to.be.gt(0);
 
       // prepare params for call
       const { epochNum, topUpIndex } = await retrieveRPSData(
-        validatorSet,
-        rewardPool,
-        validator.address,
-        vestManager.address
-      );
-
-      // expect the rewards to be more than 0 for 1st validator
-      const rewardsBeforeClaim = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
-      expect(rewardsBeforeClaim).to.be.not.eq(0);
-
-      vestManager.connect(vestManagerOwner).claimVestedPositionReward(validator.address, epochNum, topUpIndex);
-
-      // commit epoch, to distribute rewards
-      await commitEpoch(
         systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
-      );
-
-      // expect the rewards to be 0 for 1st validator
-      const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
-
-      // 6 weeks ahead for position to be fully matured
-      await time.increase(WEEK * 6);
-
-      // commit epoch
-      await commitEpoch(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
-      );
-      // see if position is matured
-      const newPosition = await rewardPool.delegationPositions(newValidator.address, vestManager.address);
-      expect(newPosition.end.add(newPosition.duration).lt(await time.latest()), "isMatured").to.be.true;
-
-      // expect new position to be like the old position
-      expect(position.duration).to.be.eq(newPosition.duration);
-      expect(position.start).to.be.eq(newPosition.start);
-      expect(position.end).to.be.eq(newPosition.end);
-      expect(position.base).to.be.eq(newPosition.base);
-      expect(position.vestBonus).to.be.eq(newPosition.vestBonus);
-      expect(position.rsiBonus).to.be.eq(newPosition.rsiBonus);
-
-      // expect the rewards to be still 0 for 1st validator
-      const rewardsAfterMatured = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
-      expect(rewardsAfterClaim).to.be.eq(rewardsAfterMatured).and.to.be.eq(0);
-
-      // expect the new rewards for new validator to be more than rewards for 1st validator before claim
-      const rewardsAfterMaturedNew = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
-      expect(rewardsAfterMaturedNew).to.be.gt(rewardsBeforeClaim).and.to.be.gt(0);
-
-      // balance before claim
-      const balanceBefore = await vestManagerOwner.getBalance();
-
-      // prepare params for call
-      const { epochNum: epochNumNew, topUpIndex: topUpIndexNew } = await retrieveRPSData(
-        validatorSet,
         rewardPool,
         newValidator.address,
         vestManager.address
       );
-      vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNumNew, topUpIndexNew);
 
-      // commit epoch, so more reward is added that must not be claimed now
-      await commitEpoch(
+      await expect(
+        vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex + 1)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", "INVALID_TOP_UP_INDEX");
+    });
+
+    it("should claim all rewards from the new position after swap", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, vestManagerOwner, oldValidator, newValidator } =
+        await loadFixture(this.fixtures.swappedPositionFixture);
+
+      // commit epochs and increase time to make the position matured & commit epochs
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 4, this.epochSize, WEEK);
+
+      const rewardsBeforeClaim = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsBeforeClaim).to.be.gt(0);
+
+      // prepare params for call
+      const { epochNum, topUpIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], validator],
-        this.epochSize
+        newValidator.address,
+        vestManager.address
       );
 
-      // expect the rewards to be 0 for new validator after claim
-      const rewardsAfterClaimNew = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
-      expect(rewardsAfterClaimNew).to.be.eq(0);
+      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex);
 
-      // check balance after claim
-      const balanceAfter = await vestManagerOwner.getBalance();
-      expect(balanceAfter).to.be.gt(balanceBefore);
+      const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
+      expect(rewardsAfterClaim).to.be.eq(0);
+    });
+
+    it("should claim all rewards from the old position after swap when the reward is matured", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, vestManagerOwner, oldValidator, newValidator } =
+        await loadFixture(this.fixtures.swappedPositionFixture);
+
+      // commit epochs and increase time to make the position matured & commit epochs
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 3, this.epochSize, WEEK);
+
+      const rewardsBeforeClaim = await rewardPool.getRawDelegatorReward(oldValidator.address, vestManager.address);
+      expect(rewardsBeforeClaim, "rewardsBeforeClaim").to.be.gt(0);
+
+      // prepare params for call
+      const { epochNum, topUpIndex } = await retrieveRPSData(
+        systemValidatorSet,
+        rewardPool,
+        oldValidator.address,
+        vestManager.address
+      );
+
+      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(oldValidator.address, epochNum, topUpIndex);
+
+      const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(oldValidator.address, vestManager.address);
+      expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
+    });
+
+    it("should revert when try to swap again during the same epoch", async function () {
+      const {
+        rewardPool,
+        vestManager,
+        vestManagerOwner,
+        newValidator: oldValidator,
+        liquidToken,
+      } = await loadFixture(this.fixtures.swappedPositionFixture);
+
+      const newValidator = this.signers.validators[2];
+      const amount = await rewardPool.delegationOf(oldValidator.address, vestManager.address);
+
+      // give allowance
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+
+      // try to swap
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("_onAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
+    });
+
+    it("should revert when try to swap too many times", async function () {
+      const {
+        systemValidatorSet,
+        rewardPool,
+        vestManager,
+        vestManagerOwner,
+        newValidator: oldValidator,
+        liquidToken,
+      } = await loadFixture(this.fixtures.swappedPositionFixture);
+
+      const newValidator = this.signers.validators[2];
+
+      await commitEpoch(systemValidatorSet, rewardPool, [oldValidator, newValidator], this.epochSize, 60 * 60);
+
+      const amount = await rewardPool.delegationOf(oldValidator.address, vestManager.address);
+
+      const balanceChangesThreshold = (await rewardPool.balanceChangeThreshold()).toNumber();
+      for (let i = 0; i < balanceChangesThreshold; i++) {
+        const _oldValidator = i % 2 === 0 ? oldValidator : newValidator;
+        const _newValidator = i % 2 === 0 ? newValidator : oldValidator;
+
+        // give allowance
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+        await vestManager.connect(vestManagerOwner).swapVestedValidator(_oldValidator.address, _newValidator.address);
+        await commitEpoch(systemValidatorSet, rewardPool, [oldValidator, newValidator], this.epochSize, 60 * 60);
+      }
+
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+
+      // try to swap to exceed the number of the allowed balance changes
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("_onAccountParamsChange", "BALANCE_CHANGES_EXCEEDED");
     });
   });
 }
