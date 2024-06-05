@@ -220,8 +220,8 @@ export function RunStakingTests(): void {
       });
     });
 
-    describe("Top-up staking position with stake()", function () {
-      it("should top-up staking position", async function () {
+    describe("Increase staking position using stake()", function () {
+      it("should increase the staking position", async function () {
         const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
           this.fixtures.newVestingValidatorFixture
         );

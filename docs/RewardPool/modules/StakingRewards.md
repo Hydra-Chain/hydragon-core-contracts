@@ -202,31 +202,6 @@ function base() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### beforeTopUpParams
-
-```solidity
-function beforeTopUpParams(address, address) external view returns (uint256 rewardPerShare, uint256 balance, int256 correction)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| rewardPerShare | uint256 | undefined |
-| balance | uint256 | undefined |
-| correction | int256 | undefined |
-
 ### calculatePositionPenalty
 
 ```solidity
@@ -349,7 +324,7 @@ Claims delegator rewards for sender.
 ### claimPositionReward
 
 ```solidity
-function claimPositionReward(address validator, address to, uint256 epochNumber, uint256 topUpIndex) external nonpayable
+function claimPositionReward(address validator, address to, uint256 epochNumber, uint256 balanceChangeIndex) external nonpayable
 ```
 
 Claims reward for the vest manager (delegator).
@@ -363,7 +338,7 @@ Claims reward for the vest manager (delegator).
 | validator | address | Validator to claim from |
 | to | address | Address to transfer the reward to |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| topUpIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
 ### claimValidatorReward
 
@@ -413,7 +388,7 @@ Gets amount delegated by delegator to validator.
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Amount delegated (in MATIC wei) |
+| _0 | uint256 | Amount delegated (in HYDRA wei) |
 
 ### delegationPoolParamsHistory
 
@@ -513,7 +488,7 @@ Gets delegators&#39;s history of the delegated position
 ### getDelegatorPositionReward
 
 ```solidity
-function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 topUpIndex) external view returns (uint256)
+function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
 ```
 
 Gets delegators&#39;s unclaimed rewards including custom rewards for a position
@@ -527,13 +502,13 @@ Gets delegators&#39;s unclaimed rewards including custom rewards for a position
 | validator | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| topUpIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in HYDRA wei) |
 
 ### getDelegatorReward
 
@@ -556,7 +531,7 @@ Gets delegators&#39;s unclaimed rewards including custom rewards
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in HYDRA wei) |
 
 ### getEpochMaxReward
 
@@ -643,7 +618,7 @@ Gets delegator&#39;s unclaimed rewards without custom rewards
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in MATIC wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in HYDRA wei) |
 
 ### getRoleAdmin
 
@@ -1066,25 +1041,6 @@ Swap a vesting postion from one validator to another
 |---|---|---|
 | amount | uint256 | The swapped amount |
 
-### onTopUpDelegatePosition
-
-```solidity
-function onTopUpDelegatePosition(address validator, address delegator, uint256 currentEpochId, uint256 amount) external nonpayable
-```
-
-Top up to a delegate positions
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | The address of the validator |
-| delegator | address | The address of the delegator |
-| currentEpochId | uint256 | The currenct epoch number |
-| amount | uint256 | Delegate amount to top-up with |
-
 ### onUndelegate
 
 ```solidity
@@ -1295,7 +1251,7 @@ Gets the total amount delegated to a validator.
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Amount delegated (in MATIC wei) |
+| _0 | uint256 | Amount delegated (in HYDRA wei) |
 
 ### valRewardHistory
 

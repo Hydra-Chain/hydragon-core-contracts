@@ -202,31 +202,6 @@ function base() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### beforeTopUpParams
-
-```solidity
-function beforeTopUpParams(address, address) external view returns (uint256 rewardPerShare, uint256 balance, int256 correction)
-```
-
-
-
-*Keep the account parameters before the top-up, so we can separately calculate the rewards made before a top-up is made This is because we need to apply the RSI bonus to the rewards made before the top-up and not apply the RSI bonus to the rewards made after the top-up*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| rewardPerShare | uint256 | undefined |
-| balance | uint256 | undefined |
-| correction | int256 | undefined |
-
 ### delegationPoolParamsHistory
 
 ```solidity
@@ -235,7 +210,7 @@ function delegationPoolParamsHistory(address, address, uint256) external view re
 
 Historical Validator Delegation Pool&#39;s Params per delegator
 
-*Validator =&gt; Delegator =&gt; Top-up data*
+*Validator =&gt; Delegator =&gt; Pool params data*
 
 #### Parameters
 

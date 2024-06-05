@@ -43,31 +43,33 @@ abstract contract Vesting is APR {
      */
     uint256 private constant WEEK_MINUS_SECOND = 604799;
 
-    /// @notice The vesting positions for every validator
+    /**
+     * @notice The vesting positions for every validator
+     */
     mapping(address => VestingPosition) public positions;
+
     /**
      * @notice The vesting positions for every delegator
      * @dev Validator => Delegator => VestingPosition
      */
     mapping(address => mapping(address => VestingPosition)) public delegationPositions;
+
     /**
      * @notice Keeps the history of the RPS for the validators
      * @dev This is used to keep the history RPS in order to calculate properly the rewards
      */
     mapping(address => mapping(uint256 => RPS)) public historyRPS;
-    /// @notice Keeps the rewards history of the validators
+
+    /**
+     * @notice Keeps the rewards history of the validators
+     */
     mapping(address => ValRewardHistory[]) public valRewardHistory;
+
     /**
      * @notice Historical Validator Delegation Pool's Params per delegator
-     * @dev Validator => Delegator => Top-up data
+     * @dev Validator => Delegator => Pool params data
      */
     mapping(address => mapping(address => DelegationPoolParams[])) public delegationPoolParamsHistory;
-    /**
-     * @dev Keep the account parameters before the top-up, so we can separately calculate the rewards made before a top-up is made
-     * This is because we need to apply the RSI bonus to the rewards made before the top-up
-     * and not apply the RSI bonus to the rewards made after the top-up
-     */
-    mapping(address => mapping(address => RewardParams)) public beforeTopUpParams;
 
     /**
      * @notice The threshold for the maximum number of allowed balance changes

@@ -13,7 +13,7 @@
 ### claimVestedPositionReward
 
 ```solidity
-function claimVestedPositionReward(address validator, uint256 epochNumber, uint256 topUpIndex) external payable
+function claimVestedPositionReward(address validator, uint256 epochNumber, uint256 balanceChangeIndex) external payable
 ```
 
 
@@ -26,7 +26,7 @@ function claimVestedPositionReward(address validator, uint256 epochNumber, uint2
 |---|---|---|
 | validator | address | undefined |
 | epochNumber | uint256 | undefined |
-| topUpIndex | uint256 | undefined |
+| balanceChangeIndex | uint256 | undefined |
 
 ### cutVestedDelegatePosition
 
@@ -157,22 +157,6 @@ function swapVestedPositionValidator(address oldValidator, address newValidator)
 |---|---|---|
 | oldValidator | address | undefined |
 | newValidator | address | undefined |
-
-### topUpVestedDelegatePosition
-
-```solidity
-function topUpVestedDelegatePosition(address validator) external payable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | undefined |
 
 ### transferOwnership
 

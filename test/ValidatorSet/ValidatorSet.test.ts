@@ -712,7 +712,7 @@ describe("ValidatorSet", function () {
         expect(validatorData.totalStake, "totalStake").to.equal(this.minStake);
       });
 
-      it("should emit StakeChanged event on top-up vested position", async function () {
+      it("should emit StakeChanged event on increasing the vested position", async function () {
         const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
           this.fixtures.registeredValidatorsStateFixture
         );
@@ -824,35 +824,6 @@ describe("ValidatorSet", function () {
           .to.emit(validatorSet, "StakeChanged")
           .withArgs(validator.address, totalStake.add(this.minStake));
 
-        // to ensure that delegate is immediately applied on the validator stake
-        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
-          totalStake.add(this.minStake)
-        );
-      });
-
-      it("should emit StakeChanged event on top-up vested position", async function () {
-        const { validatorSet, systemValidatorSet, rewardPool, vestManager } = await loadFixture(
-          this.fixtures.vestManagerFixture
-        );
-
-        const validator = this.signers.validators[0];
-        const vestingDuration = 12; // weeks
-        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
-        // because balance change can be made only once per epoch when vested delegation position
-        await commitEpoch(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-          this.epochSize
-        );
-        const { totalStake } = await validatorSet.getValidator(validator.address);
-
-        await expect(
-          vestManager.topUpVestedDelegatePosition(validator.address, { value: this.minStake }),
-          "emit StakeChanged"
-        )
-          .to.emit(validatorSet, "StakeChanged")
-          .withArgs(validator.address, totalStake.add(this.minStake));
         // to ensure that delegate is immediately applied on the validator stake
         expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
           totalStake.add(this.minStake)
