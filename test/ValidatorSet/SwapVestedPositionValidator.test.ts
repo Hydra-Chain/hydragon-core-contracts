@@ -272,6 +272,34 @@ export function RunSwapVestedPositionValidatorTests(): void {
       expect(rewardsAfterSwap, "rewardsAfterSwap").to.be.gt(0);
     });
 
+    it("should change balances of the positions after swap", async function () {
+      const { systemValidatorSet, rewardPool, vestManager, vestManagerOwner } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const oldValidator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(oldValidator.address, 5, { value: this.minDelegation });
+
+      await commitEpoch(systemValidatorSet, rewardPool, [oldValidator, newValidator], this.epochSize);
+
+      const oldPositionAmount = await rewardPool.delegationOf(oldValidator.address, vestManager.address);
+
+      // swap validator
+      await vestManager
+        .connect(vestManagerOwner)
+        .swapVestedPositionValidator(oldValidator.address, newValidator.address);
+
+      const newPositionAmount = await rewardPool.delegationOf(newValidator.address, vestManager.address);
+      const oldPositionAmountAfterSwap = await rewardPool.delegationOf(oldValidator.address, vestManager.address);
+
+      // expect old position to be empty
+      expect(oldPositionAmountAfterSwap, "newPositionAmountAfterSwap").to.be.eq(0);
+      expect(newPositionAmount, "newPositionAmount").to.be.eq(oldPositionAmount);
+    });
+
     it("should stop earning rewards on old position after swap", async function () {
       const { systemValidatorSet, rewardPool, vestManager, oldValidator, newValidator, rewardsBeforeSwap } =
         await loadFixture(this.fixtures.swappedPositionFixture);
