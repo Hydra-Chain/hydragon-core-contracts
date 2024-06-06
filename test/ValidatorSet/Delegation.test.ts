@@ -12,7 +12,6 @@ import {
   RunVestedDelegateClaimTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
-  RunVestedDelegationSwapTests,
 } from "../RewardPool/RewardPool.test";
 import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 

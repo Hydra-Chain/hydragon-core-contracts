@@ -404,22 +404,6 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
     /**
      * @inheritdoc IRewardPool
      */
-    function getBalanceForVestedPosition(address validator, address delegator) public view returns (uint256 amount) {
-        DelegationPool storage oldDelegation = delegationPools[validator];
-        amount = oldDelegation.balanceOf(delegator);
-    }
-
-    // _______________ Public functions _______________
-    /**
-     * @inheritdoc IRewardPool
-     */
-    function claimDelegatorReward(address validator) public {
-        _claimDelegatorReward(validator, msg.sender);
-    }
-
-    /**
-     * @inheritdoc IRewardPool
-     */
     function getRawDelegatorReward(address validator, address delegator) public view returns (uint256) {
         DelegationPool storage delegation = delegationPools[validator];
         return delegation.claimableRewards(delegator);

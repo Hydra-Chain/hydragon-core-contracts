@@ -114,7 +114,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
 
       // prepare params for call
-      const { epochNum, topUpIndex } = await retrieveRPSData(
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
         newValidator.address,
@@ -122,7 +122,9 @@ export function RunSwapVestedPositionValidatorTests(): void {
       );
 
       // claim rewards only
-      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex);
+      await vestManager
+        .connect(vestManagerOwner)
+        .claimVestedPositionReward(newValidator.address, epochNum, balanceChangeIndex);
 
       // verify that there is delegated balance left
       expect(await rewardPool.delegationOf(newValidator.address, vestManager.address), "delegationOf").to.not.be.eq(0);
@@ -156,7 +158,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
 
       // verify that there are rewards left to claim
-      const { epochNum, topUpIndex } = await retrieveRPSData(
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
         newValidator.address,
@@ -164,7 +166,12 @@ export function RunSwapVestedPositionValidatorTests(): void {
       );
 
       expect(
-        await rewardPool.getDelegatorPositionReward(newValidator.address, vestManager.address, epochNum, topUpIndex),
+        await rewardPool.getDelegatorPositionReward(
+          newValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        ),
         "getDelegatorPositionReward"
       ).to.not.be.eq(0);
 
@@ -240,7 +247,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       expect(rewardsBeforeClaim).to.be.gt(0);
 
       // prepare params for call
-      const { epochNum, topUpIndex } = await retrieveRPSData(
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
         newValidator.address,
@@ -248,10 +255,12 @@ export function RunSwapVestedPositionValidatorTests(): void {
       );
 
       await expect(
-        vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex + 1)
+        vestManager
+          .connect(vestManagerOwner)
+          .claimVestedPositionReward(newValidator.address, epochNum, balanceChangeIndex + 1)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", "INVALID_TOP_UP_INDEX");
+        .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
     });
 
     it("should claim all rewards from the new position after swap", async function () {
@@ -265,14 +274,16 @@ export function RunSwapVestedPositionValidatorTests(): void {
       expect(rewardsBeforeClaim).to.be.gt(0);
 
       // prepare params for call
-      const { epochNum, topUpIndex } = await retrieveRPSData(
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
         newValidator.address,
         vestManager.address
       );
 
-      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex);
+      await vestManager
+        .connect(vestManagerOwner)
+        .claimVestedPositionReward(newValidator.address, epochNum, balanceChangeIndex);
 
       const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(newValidator.address, vestManager.address);
       expect(rewardsAfterClaim).to.be.eq(0);
@@ -289,14 +300,16 @@ export function RunSwapVestedPositionValidatorTests(): void {
       expect(rewardsBeforeClaim, "rewardsBeforeClaim").to.be.gt(0);
 
       // prepare params for call
-      const { epochNum, topUpIndex } = await retrieveRPSData(
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
         systemValidatorSet,
         rewardPool,
         oldValidator.address,
         vestManager.address
       );
 
-      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(oldValidator.address, epochNum, topUpIndex);
+      await vestManager
+        .connect(vestManagerOwner)
+        .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
 
       const rewardsAfterClaim = await rewardPool.getRawDelegatorReward(oldValidator.address, vestManager.address);
       expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
