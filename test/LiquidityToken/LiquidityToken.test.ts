@@ -87,7 +87,7 @@ describe("LiquidityToken", async function () {
     });
   });
 
-  describe("Permit()", async function () {
+  describe("permit()", async function () {
     it("Should be able to transfer to the user with a permit", async () => {
       const amount = 1000;
       const { token } = await loadFixture(initializeFixture);

@@ -5,8 +5,15 @@ import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
-import { ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
-import { calculatePenalty, claimPositionRewards, commitEpochs, getUserManager } from "../helper";
+import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE } from "../constants";
+import {
+  calculatePenalty,
+  claimPositionRewards,
+  commitEpoch,
+  commitEpochs,
+  getUserManager,
+  getPermitSignature,
+} from "../helper";
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
@@ -675,6 +682,324 @@ export function RunDelegationTests(): void {
         const delegatedAmount = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
         await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedAmount);
+        expect((await rewardPool.delegationPositions(delegatedValidator.address, vestManager.address)).start).to.be.eq(
+          0
+        );
+      });
+    });
+
+    describe("cutVestedDelegatePositionWithPermit()", async function () {
+      it("should revert on wrong deadline", async function () {
+        const { validatorSet, rewardPool, vestManager, liquidToken } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        const balance = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
+
+        // send one more token so liquid tokens balance is enough
+        const user2 = this.signers.accounts[7];
+        await validatorSet.connect(user2).newManager(rewardPool.address);
+        const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+        const manager2 = await getUserManager(validatorSet, user2, VestManagerFactory);
+        await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
+          value: this.minDelegation.mul(2),
+        });
+
+        await liquidToken.connect(user2).transfer(this.vestManagerOwners[0].address, 1);
+        const balanceToCut = balance.add(1);
+        const { v, r, s } = await getPermitSignature(
+          this.vestManagerOwners[0],
+          liquidToken,
+          vestManager.address,
+          balanceToCut,
+          DEADLINE
+        );
+
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(this.delegatedValidators[0], balanceToCut, "1242144", v, r, s)
+        ).to.be.revertedWith("ERC20Permit: expired deadline");
+      });
+      it("should revert on wrong signature", async function () {
+        const { validatorSet, rewardPool, vestManager, liquidToken } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        const balance = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
+
+        // send one more token so liquid tokens balance is enough
+        const user2 = this.signers.accounts[7];
+        await validatorSet.connect(user2).newManager(rewardPool.address);
+        const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+        const manager2 = await getUserManager(validatorSet, user2, VestManagerFactory);
+        await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
+          value: this.minDelegation.mul(2),
+        });
+
+        await liquidToken.connect(user2).transfer(this.vestManagerOwners[0].address, 1);
+        const balanceToCut = balance.add(1);
+        const { v, r, s } = await getPermitSignature(
+          this.vestManagerOwners[0],
+          liquidToken,
+          vestManager.address,
+          balanceToCut,
+          DEADLINE
+        );
+
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(
+            this.delegatedValidators[0],
+            balanceToCut.add(1),
+            DEADLINE,
+            v,
+            r,
+            s
+          )
+        ).to.be.revertedWith("ERC20Permit: invalid signature");
+      });
+      it("should revert when insufficient balance", async function () {
+        const { validatorSet, rewardPool, vestManager, liquidToken } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        const balance = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
+
+        // send one more token so liquid tokens balance is enough
+        const user2 = this.signers.accounts[7];
+        await validatorSet.connect(user2).newManager(rewardPool.address);
+        const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+        const manager2 = await getUserManager(validatorSet, user2, VestManagerFactory);
+        await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
+          value: this.minDelegation.mul(2),
+        });
+
+        await liquidToken.connect(user2).transfer(this.vestManagerOwners[0].address, 1);
+        const balanceToCut = balance.add(1);
+        const { v, r, s } = await getPermitSignature(
+          this.vestManagerOwners[0],
+          liquidToken,
+          vestManager.address,
+          balanceToCut,
+          DEADLINE
+        );
+
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(this.delegatedValidators[0], balanceToCut, DEADLINE, v, r, s)
+        )
+          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
+          .withArgs("vesting", "INSUFFICIENT_BALANCE");
+      });
+
+      it("should revert when delegation too low", async function () {
+        const { validatorSet, rewardPool, vestManager, liquidToken } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        const balance = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
+        const balanceToCut = balance.sub(1);
+        const { v, r, s } = await getPermitSignature(
+          this.vestManagerOwners[0],
+          liquidToken,
+          vestManager.address,
+          balanceToCut,
+          DEADLINE
+        );
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(this.delegatedValidators[0], balanceToCut, DEADLINE, v, r, s)
+        )
+          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
+          .withArgs("vesting", "DELEGATION_TOO_LOW");
+      });
+
+      it("should slash the amount when in active position", async function () {
+        const { rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        // ensure position is active
+        const isActive = await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address);
+        expect(isActive, "isActive").to.be.true;
+
+        // check is amount properly removed from delegation
+        const delegatedBalanceBefore = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+
+        const cutAmount = delegatedBalanceBefore.div(2);
+        const position = await rewardPool.delegationPositions(delegatedValidator.address, vestManager.address);
+        const { v, r, s } = await getPermitSignature(
+          vestManagerOwner,
+          liquidToken,
+          vestManager.address,
+          cutAmount,
+          DEADLINE
+        );
+
+        const latestTimestamp = hre.ethers.BigNumber.from(await time.latest());
+        const nextTimestamp = latestTimestamp.add(2);
+        await time.setNextBlockTimestamp(nextTimestamp);
+        await vestManager.cutVestedDelegatePositionWithPermit(delegatedValidator.address, cutAmount, DEADLINE, v, r, s);
+        const penalty = await calculatePenalty(position, nextTimestamp, cutAmount);
+
+        const delegatedBalanceAfter = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+        expect(delegatedBalanceAfter, "delegatedBalanceAfter").to.be.eq(delegatedBalanceBefore.sub(cutAmount));
+
+        // claimableRewards must be 0
+        const claimableRewards = await rewardPool.getRawDelegatorReward(
+          delegatedValidator.address,
+          vestManager.address
+        );
+        expect(claimableRewards, "claimableRewards").to.be.eq(0);
+
+        // check if amount is properly slashed
+        const balanceBefore = await vestManagerOwner.getBalance();
+
+        // increase time so reward is available to be withdrawn
+        await time.increase(WEEK);
+        await vestManager.withdraw(vestManagerOwner.address);
+
+        const balanceAfter = await vestManagerOwner.getBalance();
+
+        // should slash the delegator with the calculated penalty
+        // cut half of the requested amount because half of the vesting period is still not passed
+        expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(cutAmount.sub(penalty));
+        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
+      });
+
+      it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
+        const { rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        // ensure position is active
+        const isActive = await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address);
+        expect(isActive, "isActive").to.be.true;
+
+        // check is amount properly removed from delegation
+        const delegatedBalance = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+        const position = await rewardPool.delegationPositions(delegatedValidator.address, vestManager.address);
+
+        const { v, r, s } = await getPermitSignature(
+          vestManagerOwner,
+          liquidToken,
+          vestManager.address,
+          delegatedBalance,
+          DEADLINE
+        );
+
+        const nextTimestamp = position.start.add(WEEK);
+        await time.setNextBlockTimestamp(nextTimestamp);
+        await vestManager.cutVestedDelegatePositionWithPermit(
+          delegatedValidator.address,
+          delegatedBalance,
+          DEADLINE,
+          v,
+          r,
+          s
+        );
+
+        // hardcode the penalty percent by 0.3% a week (9 weeks should be left)
+        const bps = 9 * 30;
+        const penalty = delegatedBalance.mul(bps).div(10000);
+
+        const delegatedBalanceAfter = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+        expect(delegatedBalanceAfter, "delegatedBalanceAfter").to.be.eq(0);
+
+        // claimableRewards must be 0
+        const claimableRewards = await rewardPool.getRawDelegatorReward(
+          delegatedValidator.address,
+          vestManager.address
+        );
+        expect(claimableRewards, "claimableRewards").to.be.eq(0);
+
+        // check if amount is properly slashed
+        const balanceBefore = await vestManagerOwner.getBalance();
+
+        // increase time so reward is available to be withdrawn
+        await time.increase(WEEK);
+        await vestManager.withdraw(vestManagerOwner.address);
+
+        const balanceAfter = await vestManagerOwner.getBalance();
+
+        // should slash the delegator with the calculated penalty
+        expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(delegatedBalance.sub(penalty));
+        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
+      });
+
+      it("should properly cut position", async function () {
+        const { systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } =
+          await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        // commit Epoch so reward is made
+        await commitEpochs(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+          3,
+          this.epochSize
+        );
+
+        const reward = await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+        expect(reward, "reward").to.not.be.eq(0);
+
+        // Finish the vesting period
+        await time.increase(WEEK * 60);
+
+        const balanceBefore = await vestManagerOwner.getBalance();
+        const delegatedBalance = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+        expect(delegatedBalance, "delegatedBalance").to.not.be.eq(0);
+
+        const { v, r, s } = await getPermitSignature(
+          vestManagerOwner,
+          liquidToken,
+          vestManager.address,
+          delegatedBalance,
+          DEADLINE
+        );
+        await vestManager.cutVestedDelegatePositionWithPermit(
+          delegatedValidator.address,
+          delegatedBalance,
+          DEADLINE,
+          v,
+          r,
+          s
+        );
+
+        // increase time so reward is available to be withdrawn
+        await time.increase(WEEK);
+        await vestManager.withdraw(vestManagerOwner.address);
+
+        const balanceAfter = await vestManagerOwner.getBalance();
+
+        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
+
+        // check is amount properly removed from delegation
+        expect(await rewardPool.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
+
+        // ensure reward is still available for withdrawal
+        const rewardAfter = await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+        expect(rewardAfter).to.be.eq(reward);
+      });
+
+      it("should delete position when closing it", async function () {
+        const { rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        // cut the whole position
+        const delegatedAmount = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+        const { v, r, s } = await getPermitSignature(
+          vestManagerOwner,
+          liquidToken,
+          vestManager.address,
+          delegatedAmount,
+          DEADLINE
+        );
+        await vestManager.cutVestedDelegatePositionWithPermit(
+          delegatedValidator.address,
+          delegatedAmount,
+          DEADLINE,
+          v,
+          r,
+          s
+        );
         expect((await rewardPool.delegationPositions(delegatedValidator.address, vestManager.address)).start).to.be.eq(
           0
         );

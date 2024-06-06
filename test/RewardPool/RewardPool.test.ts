@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { DAY, EPOCHS_YEAR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { EPOCHS_YEAR, DAY, ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,
@@ -13,6 +13,7 @@ import {
   getDelegatorPositionReward,
   getValidatorReward,
   retrieveRPSData,
+  getPermitSignature,
 } from "../helper";
 
 export function RunStakeFunctionsByValidatorSet(): void {
@@ -691,6 +692,39 @@ export function RunVestedDelegateClaimTests(): void {
 
       await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
       await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedAmount);
+
+      // check reward
+      expect(
+        await rewardPool.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
+        "getRawDelegatorReward"
+      ).to.be.eq(0);
+      expect(await validatorSet.withdrawable(vestManager.address), "withdrawable").to.eq(0);
+    });
+
+    it("should return when unused position using permit", async function () {
+      const { validatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner, delegatedValidator } =
+        await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+      const delegatedAmount = await rewardPool.delegationOf(delegatedValidator.address, vestManager.address);
+      // ensure is active position
+      expect(await rewardPool.isActiveDelegatePosition(delegatedValidator.address, vestManager.address), "isActive").to
+        .be.true;
+
+      const { v, r, s } = await getPermitSignature(
+        vestManagerOwner,
+        liquidToken,
+        vestManager.address,
+        delegatedAmount,
+        DEADLINE
+      );
+      await vestManager.cutVestedDelegatePositionWithPermit(
+        delegatedValidator.address,
+        delegatedAmount,
+        DEADLINE,
+        v,
+        r,
+        s
+      );
 
       // check reward
       expect(
