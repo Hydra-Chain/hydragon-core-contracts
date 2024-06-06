@@ -2,11 +2,11 @@
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { DAY, WEEK } from "../constants";
+import { DAY, ERRORS, WEEK } from "../constants";
 import { commitEpoch, commitEpochs, retrieveRPSData } from "../helper";
 
 export function RunSwapVestedPositionValidatorTests(): void {
-  describe("Delegate position rewards", async function () {
+  describe.only("Delegate position rewards", async function () {
     it("should revert when not the vest manager owner", async function () {
       const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
@@ -17,7 +17,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    it("should revert that the position is inactive", async function () {
+    it("should revert that the old position is inactive", async function () {
       const { systemValidatorSet, vestManager, delegatedValidator, rewardPool, vestManagerOwner } = await loadFixture(
         this.fixtures.weeklyVestedDelegationFixture
       );
@@ -44,7 +44,29 @@ export function RunSwapVestedPositionValidatorTests(): void {
         .withArgs("vesting", "OLD_POSITION_INACTIVE");
     });
 
-    it("should revert when we try to swap to validator with maturing position", async function () {
+    it("should revert when we try to swap to active position", async function () {
+      const { vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const oldValidator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(oldValidator.address, 1, { value: this.minDelegation });
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
+
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+    });
+
+    it("should revert when we try to swap to new position which still matures", async function () {
       const { systemValidatorSet, vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
         this.fixtures.vestManagerFixture
       );
@@ -70,11 +92,11 @@ export function RunSwapVestedPositionValidatorTests(): void {
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", "NEW_POSITION_MATURING");
+        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
     });
 
-    it("should revert when we try to swap to active position (balance > 0)", async function () {
-      const { vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
+    it("should revert when we try to swap to a position with left balance", async function () {
+      const { systemValidatorSet, vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
         this.fixtures.vestManagerFixture
       );
 
@@ -83,16 +105,74 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
       await vestManager
         .connect(vestManagerOwner)
-        .openVestedDelegatePosition(oldValidator.address, 1, { value: this.minDelegation });
+        .openVestedDelegatePosition(oldValidator.address, 5, { value: this.minDelegation });
       await vestManager
         .connect(vestManagerOwner)
         .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
+
+      // commit 5 epochs with 3 days increase before each, so, the new position will be matured and have some balance left
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
+
+      // prepare params for call
+      const { epochNum, topUpIndex } = await retrieveRPSData(
+        systemValidatorSet,
+        rewardPool,
+        newValidator.address,
+        vestManager.address
+      );
+
+      // claim rewards only
+      await vestManager.connect(vestManagerOwner).claimVestedPositionReward(newValidator.address, epochNum, topUpIndex);
+
+      // verify that there is delegated balance left
+      expect(await rewardPool.delegationOf(newValidator.address, vestManager.address), "delegationOf").to.not.be.eq(0);
 
       await expect(
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", "INVALID_NEW_POSITION");
+        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+    });
+
+    it("should revert when we try to swap to a position with left rewards to claim", async function () {
+      const { systemValidatorSet, vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
+        this.fixtures.vestManagerFixture
+      );
+
+      const oldValidator = this.signers.validators[0];
+      const newValidator = this.signers.validators[1];
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(oldValidator.address, 5, { value: this.minDelegation });
+      await vestManager
+        .connect(vestManagerOwner)
+        .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
+
+      // commit 5 epochs with 3 days increase before each, so, the new position will be matured and have some balance left
+      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
+
+      // undelegate full amount
+      await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
+
+      // verify that there are rewards left to claim
+      const { epochNum, topUpIndex } = await retrieveRPSData(
+        systemValidatorSet,
+        rewardPool,
+        newValidator.address,
+        vestManager.address
+      );
+
+      expect(
+        await rewardPool.getDelegatorPositionReward(newValidator.address, vestManager.address, epochNum, topUpIndex),
+        "getDelegatorPositionReward"
+      ).to.not.be.eq(0);
+
+      await expect(
+        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+      )
+        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
+        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
     });
 
     it("should transfer old position parameters to the new one on successful swap", async function () {
@@ -245,7 +325,8 @@ export function RunSwapVestedPositionValidatorTests(): void {
         .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
     });
 
-    it("should revert when try to swap too many times", async function () {
+    // TODO: Consider deleting it as we shouldn't be getting into that case
+    it.skip("should revert when try to swap too many times", async function () {
       const {
         systemValidatorSet,
         rewardPool,

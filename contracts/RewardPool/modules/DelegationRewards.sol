@@ -323,15 +323,9 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             revert DelegateRequirement({src: "vesting", msg: "OLD_POSITION_INACTIVE"});
         }
 
-        VestingPosition memory newPosition = delegationPositions[newValidator][delegator];
-        if (newPosition.isMaturing()) {
-            revert DelegateRequirement({src: "vesting", msg: "NEW_POSITION_MATURING"});
-        }
-
-        DelegationPool storage newDelegation = delegationPools[newValidator];
-        uint256 balance = newDelegation.balanceOf(delegator);
-        if (balance != 0) {
-            revert DelegateRequirement({src: "vesting", msg: "INVALID_NEW_POSITION"});
+        // ensure that the new position is available
+        if (!isPositionAvailable(newValidator, delegator)) {
+            revert DelegateRequirement({src: "vesting", msg: "NEW_POSITION_UNAVAILABLE"});
         }
 
         // update the old delegation position
@@ -346,9 +340,11 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             DelegationPoolParams({balance: 0, correction: correction, epochNum: currentEpochId})
         );
 
-        // set the new delegation position using the old position parameters
+        DelegationPool storage newDelegation = delegationPools[newValidator];
+        // deposit the old amount to the new position
         newDelegation.deposit(delegator, amount);
 
+        // transfer the old position parameters to the new one
         delegationPositions[newValidator][delegator] = VestingPosition({
             duration: oldPosition.duration,
             start: oldPosition.start,
@@ -484,6 +480,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         return false;
     }
 
+    // TODO: Consider deleting it as we shouldn't be getting into that case
     /**
      * @notice Checks if the balance changes exceeds the threshold
      * @param validator Validator to delegate to
@@ -491,6 +488,27 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
      */
     function isBalanceChangeThresholdExceeded(address validator, address delegator) public view returns (bool) {
         return delegationPoolParamsHistory[validator][delegator].length > balanceChangeThreshold;
+    }
+
+    /**
+     * @notice Check if the new position that the user wants to swap to is available for the swap
+     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
+     * @param newValidator The address of the new validator
+     * @param delegator The address of the delegator
+     */
+    function isPositionAvailable(address newValidator, address delegator) public view returns (bool) {
+        VestingPosition memory newPosition = delegationPositions[newValidator][delegator];
+        if (newPosition.isActive() || newPosition.isMaturing()) {
+            return false;
+        }
+
+        DelegationPool storage newDelegation = delegationPools[newValidator];
+        uint256 balance = newDelegation.balanceOf(delegator);
+        if (balance != 0 || getRawDelegatorReward(newValidator, delegator) > 0) {
+            return false;
+        }
+
+        return true;
     }
 
     // _______________ Private functions _______________

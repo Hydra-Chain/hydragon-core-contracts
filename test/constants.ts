@@ -39,6 +39,9 @@ export const ERRORS = {
   ownable: "Ownable: caller is not the owner",
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
+  swap: {
+    newPositionUnavilable: "NEW_POSITION_UNAVAILABLE",
+  },
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account} is missing role ${role}`;
   },

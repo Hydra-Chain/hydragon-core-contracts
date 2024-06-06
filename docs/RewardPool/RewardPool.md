@@ -1097,6 +1097,29 @@ function isMaturingPosition(address staker) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### isPositionAvailable
+
+```solidity
+function isPositionAvailable(address newValidator, address delegator) external view returns (bool)
+```
+
+Check if the new position that the user wants to swap to is available for the swap
+
+*Available positions one that is not active, not maturing and doesn&#39;t have any left balance or rewards*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValidator | address | The address of the new validator |
+| delegator | address | The address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isStakerInVestingCycle
 
 ```solidity
