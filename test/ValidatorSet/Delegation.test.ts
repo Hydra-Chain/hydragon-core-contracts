@@ -6,14 +6,7 @@ import * as hre from "hardhat";
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
 import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE } from "../constants";
-import {
-  calculatePenalty,
-  claimPositionRewards,
-  commitEpoch,
-  commitEpochs,
-  getUserManager,
-  getPermitSignature,
-} from "../helper";
+import { calculatePenalty, claimPositionRewards, commitEpochs, getUserManager, getPermitSignature } from "../helper";
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
