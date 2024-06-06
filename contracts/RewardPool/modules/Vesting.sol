@@ -69,6 +69,12 @@ abstract contract Vesting is APR {
      */
     mapping(address => mapping(address => RewardParams)) public beforeTopUpParams;
 
+    /**
+     * @notice The threshold for the maximum number of allowed balance changes
+     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
+     */
+    uint256 public balanceChangeThreshold;
+
     // _______________ External functions _______________
 
     function isActivePosition(address staker) external view returns (bool) {

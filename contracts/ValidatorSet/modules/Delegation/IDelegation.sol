@@ -43,4 +43,12 @@ interface IDelegation {
      * @param amount Amount to be undelegated
      */
     function undelegateWithVesting(address validator, uint256 amount) external;
+
+    /**
+     * @notice Move a vested position to another validator.
+     * Can be called by vesting positions' managers only.
+     * @param oldValidator Validator to swap from
+     * @param newValidator Validator to swap to
+     */
+    function swapVestedPositionValidator(address oldValidator, address newValidator) external;
 }

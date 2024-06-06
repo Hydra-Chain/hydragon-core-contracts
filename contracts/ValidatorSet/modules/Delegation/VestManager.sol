@@ -53,6 +53,10 @@ contract VestManager is Initializable, OwnableUpgradeable {
         IDelegation(delegation).undelegateWithVesting(validator, amount);
     }
 
+    function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
+        IDelegation(delegation).swapVestedPositionValidator(oldValidator, newValidator);
+    }
+
     function claimVestedPositionReward(
         address validator,
         uint256 epochNumber,

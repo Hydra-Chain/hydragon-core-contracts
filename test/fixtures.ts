@@ -19,6 +19,7 @@ import {
   registerValidator,
   createNewVestManager,
   generateValidatorBls,
+  commitEpoch,
 } from "./helper";
 
 async function systemFixtureFunction(this: Mocha.Context) {
@@ -461,6 +462,41 @@ async function bannedValidatorFixtureFunction(this: Mocha.Context) {
   };
 }
 
+async function swappedPositionFixtureFunction(this: Mocha.Context) {
+  const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
+    await loadFixture(this.fixtures.vestManagerFixture);
+
+  const validator = this.signers.validators[0];
+  const newValidator = this.signers.validators[1];
+
+  const vestingDuration = 2; // 2 weeks
+  await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
+    value: this.minDelegation.mul(2),
+  });
+
+  await commitEpoch(systemValidatorSet, rewardPool, [validator, newValidator], this.epochSize);
+
+  const rewardsBeforeSwap = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
+
+  const amount = await rewardPool.delegationOf(validator.address, vestManager.address);
+
+  // give allowance & swap
+  await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+  await vestManager.connect(vestManagerOwner).swapVestedPositionValidator(validator.address, newValidator.address);
+
+  return {
+    validatorSet,
+    systemValidatorSet,
+    rewardPool,
+    liquidToken,
+    vestManager,
+    vestManagerOwner,
+    oldValidator: validator,
+    newValidator,
+    rewardsBeforeSwap,
+  };
+}
+
 async function blsFixtureFunction(this: Mocha.Context) {
   const BLSFactory = new BLS__factory(this.signers.admin);
   const BLS = await BLSFactory.deploy();
@@ -499,4 +535,5 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.weeklyVestedDelegationFixture = weeklyVestedDelegationFixtureFunction.bind(context);
   context.fixtures.validatorToBanFixture = validatorToBanFixtureFunction.bind(context);
   context.fixtures.bannedValidatorFixture = bannedValidatorFixtureFunction.bind(context);
+  context.fixtures.swappedPositionFixture = swappedPositionFixtureFunction.bind(context);
 }

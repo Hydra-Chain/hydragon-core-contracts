@@ -10,7 +10,8 @@ export const VALIDATOR_PKCHECK_PRECOMPILE_GAS = 150000;
 export const CHAIN_ID = 31337;
 export const INITIAL_COMMISSION = ethers.BigNumber.from(10);
 export const MAX_COMMISSION = ethers.BigNumber.from(100);
-export const WEEK = 60 * 60 * 24 * 7;
+export const DAY = 60 * 60 * 24;
+export const WEEK = DAY * 7;
 export const VESTING_DURATION_WEEKS = 10; // in weeks
 export const EPOCHS_YEAR = ethers.BigNumber.from(31500);
 export const INITIAL_BASE_APR = ethers.BigNumber.from(500);
@@ -38,6 +39,9 @@ export const ERRORS = {
   ownable: "Ownable: caller is not the owner",
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
+  swap: {
+    newPositionUnavilable: "NEW_POSITION_UNAVAILABLE",
+  },
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account} is missing role ${role}`;
   },

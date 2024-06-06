@@ -185,6 +185,23 @@ function applyMaxReward(uint256 reward) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### balanceChangeThreshold
+
+```solidity
+function balanceChangeThreshold() external view returns (uint256)
+```
+
+The threshold for the maximum number of allowed balance changes
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### base
 
 ```solidity
@@ -297,6 +314,22 @@ Returns the total reward that is generated for a position
 | Name | Type | Description |
 |---|---|---|
 | reward | uint256 | for the delegator |
+
+### changeBalanceChangeThreshold
+
+```solidity
+function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external nonpayable
+```
+
+Modifies the balance changes threshold for vested positions
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newBalanceChangeThreshold | uint256 | The number of allowed changes of the balance |
 
 ### changeMinDelegation
 
@@ -839,8 +872,31 @@ Checks if balance change was already made in the current epoch
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Validator to delegate to |
-| delegator | address | undefined |
-| currentEpochNum | uint256 | undefined |
+| delegator | address | Delegator that has delegated |
+| currentEpochNum | uint256 | Current epoch number |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isBalanceChangeThresholdExceeded
+
+```solidity
+function isBalanceChangeThresholdExceeded(address validator, address delegator) external view returns (bool)
+```
+
+Checks if the balance changes exceeds the threshold
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator to delegate to |
+| delegator | address | Delegator that has delegated |
 
 #### Returns
 
@@ -886,6 +942,29 @@ function isMaturingPosition(address staker) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | staker | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isPositionAvailable
+
+```solidity
+function isPositionAvailable(address newValidator, address delegator) external view returns (bool)
+```
+
+Check if the new position that the user wants to swap to is available for the swap
+
+*Available positions one that is not active, not maturing and doesn&#39;t have any left balance or rewards*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValidator | address | The address of the new validator |
+| delegator | address | The address of the delegator |
 
 #### Returns
 
@@ -1063,6 +1142,31 @@ Update the reward params for the vested position
 | staker | address | Address of the staker |
 | amount | uint256 | Amount to stake |
 | oldBalance | uint256 | Balance before stake |
+
+### onSwapPosition
+
+```solidity
+function onSwapPosition(address oldValidator, address newValidator, address delegator, uint256 currentEpochId) external nonpayable returns (uint256 amount)
+```
+
+Swap a vesting postion from one validator to another
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| oldValidator | address | The address of the validator to swap from |
+| newValidator | address | The address of the delegator to swap to |
+| delegator | address | The address of the delegator |
+| currentEpochId | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| amount | uint256 | The swapped amount |
 
 ### onTopUpDelegatePosition
 
@@ -1579,23 +1683,6 @@ error InvalidRSI()
 
 
 
-
-### StakeRequirement
-
-```solidity
-error StakeRequirement(string src, string msg)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| src | string | undefined |
-| msg | string | undefined |
 
 ### Unauthorized
 

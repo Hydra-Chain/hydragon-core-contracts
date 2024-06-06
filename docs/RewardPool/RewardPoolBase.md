@@ -81,6 +81,22 @@ Returns the total reward that is generated for a position
 |---|---|---|
 | reward | uint256 | for the delegator |
 
+### changeBalanceChangeThreshold
+
+```solidity
+function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external nonpayable
+```
+
+Modifies the balance changes threshold for vested positions
+
+*Should be called only by the Governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newBalanceChangeThreshold | uint256 | The number of allowed changes of the balance |
+
 ### changeMinDelegation
 
 ```solidity
@@ -403,6 +419,31 @@ Update the reward params for the vested position
 | staker | address | Address of the staker |
 | amount | uint256 | Amount to stake |
 | oldBalance | uint256 | Balance before stake |
+
+### onSwapPosition
+
+```solidity
+function onSwapPosition(address oldValidator, address newValidator, address delegator, uint256 currentEpochId) external nonpayable returns (uint256 amount)
+```
+
+Swap a vesting postion from one validator to another
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| oldValidator | address | The address of the validator to swap from |
+| newValidator | address | The address of the delegator to swap to |
+| delegator | address | The address of the delegator |
+| currentEpochId | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| amount | uint256 | The swapped amount |
 
 ### onTopUpDelegatePosition
 

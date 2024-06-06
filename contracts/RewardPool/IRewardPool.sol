@@ -137,6 +137,20 @@ interface IRewardPool {
     ) external returns (uint256 penalty, uint256 fullReward);
 
     /**
+     * @notice Swap a vesting postion from one validator to another
+     * @param oldValidator The address of the validator to swap from
+     * @param newValidator The address of the delegator to swap to
+     * @param delegator The address of the delegator
+     * @return amount The swapped amount
+     */
+    function onSwapPosition(
+        address oldValidator,
+        address newValidator,
+        address delegator,
+        uint256 currentEpochId
+    ) external returns (uint256 amount);
+
+    /**
      * @notice Claims delegator rewards for sender.
      * @param validator Validator to claim from
      */
@@ -252,9 +266,16 @@ interface IRewardPool {
     function totalDelegationOf(address validator) external view returns (uint256);
 
     /**
-     * @dev Should be called only by the Governance.
      * @notice Changes the minDelegationAmount
+     * @dev Should be called only by the Governance.
      * @param newMinDelegation New minimum delegation amount
      */
     function changeMinDelegation(uint256 newMinDelegation) external;
+
+    /**
+     * @notice Modifies the balance changes threshold for vested positions
+     * @dev Should be called only by the Governance.
+     * @param newBalanceChangeThreshold The number of allowed changes of the balance
+     */
+    function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external;
 }

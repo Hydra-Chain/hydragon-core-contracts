@@ -538,6 +538,23 @@ function stakeBalances(address) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### swapVestedPositionValidator
+
+```solidity
+function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
+```
+
+Move a vested position to another validator. Can be called by vesting positions&#39; managers only.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| oldValidator | address | Validator to swap from |
+| newValidator | address | Validator to swap to |
+
 ### topUpDelegatePosition
 
 ```solidity
@@ -986,6 +1003,25 @@ event PositionOpened(address indexed manager, address indexed validator, uint256
 | manager `indexed` | address | undefined |
 | validator `indexed` | address | undefined |
 | weeksDuration `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+
+### PositionSwapped
+
+```solidity
+event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| manager `indexed` | address | undefined |
+| oldValidator `indexed` | address | undefined |
+| newValidator  | address | undefined |
 | amount  | uint256 | undefined |
 
 ### PositionTopUp

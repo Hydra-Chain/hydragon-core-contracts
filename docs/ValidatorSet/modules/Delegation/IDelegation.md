@@ -43,6 +43,23 @@ Delegates sent amount to validator. Set vesting position data. Delete old top-up
 | validator | address | Validator to delegate to |
 | durationWeeks | uint256 | Duration of the vesting in weeks |
 
+### swapVestedPositionValidator
+
+```solidity
+function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
+```
+
+Move a vested position to another validator. Can be called by vesting positions&#39; managers only.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| oldValidator | address | Validator to swap from |
+| newValidator | address | Validator to swap to |
+
 ### topUpDelegatePosition
 
 ```solidity

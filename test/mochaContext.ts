@@ -169,6 +169,19 @@ export interface Fixtures {
       stakedAmount: BigNumber;
     }>;
   };
+  swappedPositionFixture: {
+    (): Promise<{
+      validatorSet: ValidatorSet;
+      systemValidatorSet: ValidatorSet;
+      rewardPool: RewardPool;
+      liquidToken: LiquidityToken;
+      vestManager: VestManager;
+      vestManagerOwner: SignerWithAddress;
+      oldValidator: SignerWithAddress;
+      newValidator: SignerWithAddress;
+      rewardsBeforeSwap: BigNumber;
+    }>;
+  };
 }
 
 declare module "mocha" {

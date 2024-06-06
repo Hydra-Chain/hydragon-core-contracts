@@ -6,13 +6,14 @@ import * as hre from "hardhat";
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
 import { ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
-import { calculatePenalty, claimPositionRewards, commitEpoch, commitEpochs, getUserManager } from "../helper";
+import { calculatePenalty, claimPositionRewards, commitEpochs, getUserManager } from "../helper";
 import {
   RunDelegateClaimTests,
   RunVestedDelegateClaimTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
 } from "../RewardPool/RewardPool.test";
+import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 
 export function RunDelegationTests(): void {
   describe("Change minDelegate", function () {
@@ -680,186 +681,16 @@ export function RunDelegationTests(): void {
       });
     });
 
-    describe("topUpVestedDelegatePosition()", async function () {
-      it("should revert when not owner of the vest manager", async function () {
-        const { vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
-
-        await expect(
-          vestManager
-            .connect(this.signers.accounts[10])
-            .topUpVestedDelegatePosition(this.signers.accounts[10].address, { value: this.minDelegation })
-        ).to.be.revertedWith(ERRORS.ownable);
-      });
-
-      it("should revert when not manager", async function () {
-        const { validatorSet } = await loadFixture(this.fixtures.vestedDelegationFixture);
-
-        await expect(
-          validatorSet
-            .connect(this.signers.accounts[10])
-            .topUpDelegatePosition(this.signers.accounts[10].address, { value: this.minDelegation })
-        ).to.be.revertedWithCustomError(validatorSet, "NotVestingManager");
-      });
-
-      it("should revert when delegation too low", async function () {
-        const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
-
-        await expect(
-          vestManager.topUpVestedDelegatePosition(this.signers.validators[0].address, {
-            value: this.minDelegation.sub(1),
-          })
-        )
-          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("vesting", "DELEGATION_TOO_LOW");
-      });
-
-      it("should revert when position is not active", async function () {
-        const { validatorSet, vestManager, delegatedValidator } = await loadFixture(
-          this.fixtures.vestedDelegationFixture
-        );
-
-        // enter the reward maturity phase in order to make the position inactive
-        await time.increase(WEEK * 55);
-        await expect(vestManager.topUpVestedDelegatePosition(delegatedValidator.address, { value: this.minDelegation }))
-          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("vesting", "POSITION_NOT_ACTIVE");
-      });
-
-      it("should properly top-up position", async function () {
-        const { systemValidatorSet, validatorSet, rewardPool, vestManager } = await loadFixture(
-          this.fixtures.vestManagerFixture
-        );
-
-        const duration = 1; // 1 week
-        await vestManager.openVestedDelegatePosition(this.delegatedValidators[0], duration, {
-          value: this.minDelegation,
-        });
-        const positionEndBefore = (
-          await rewardPool.delegationPositions(this.delegatedValidators[0], vestManager.address)
-        ).end;
-
-        // enter the active state
-        await time.increase(1);
-        await commitEpoch(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-          this.epochSize
-        );
-
-        // ensure position is active
-        const isActive = await rewardPool.isActiveDelegatePosition(this.delegatedValidators[0], vestManager.address);
-        expect(isActive, "isActive").to.be.true;
-
-        const delegatedAmount = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
-        const topUpAmount = this.minDelegation.div(2);
-        const totalAmount = delegatedAmount.add(topUpAmount);
-
-        await vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: topUpAmount });
-
-        // delegation is increased
-        expect(
-          await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address),
-          "delegationOf"
-        ).to.be.eq(totalAmount);
-
-        // balance change data is added
-        const balanceChange = await rewardPool.delegationPoolParamsHistory(
-          this.delegatedValidators[0],
-          vestManager.address,
-          1
-        );
-        expect(balanceChange.balance, "balanceChange.balance").to.be.eq(totalAmount);
-        expect(balanceChange.epochNum, "balanceChange.epochNum").to.be.eq(await validatorSet.currentEpochId());
-
-        // duration increase is proper
-        const positionEndAfter = (
-          await rewardPool.delegationPositions(this.delegatedValidators[0], vestManager.address)
-        ).end;
-        expect(positionEndAfter).to.be.eq(positionEndBefore.add((duration * WEEK) / 2));
-      });
-
-      it("should revert when too many top-ups are made", async function () {
-        const { systemValidatorSet, validatorSet, rewardPool, vestManager } = await loadFixture(
-          this.fixtures.vestedDelegationFixture
-        );
-
-        const maxTopUps = 52; // one cannot top-up more than 52 times
-        for (let i = 0; i < maxTopUps; i++) {
-          const delegatingAmount = this.minDelegation.mul(i + 1).div(5);
-          await vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: delegatingAmount });
-
-          // commit epoch cause only 1 top-up can be made per epoch
-          await commitEpoch(
-            systemValidatorSet,
-            rewardPool,
-            [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
-            this.epochSize
-          );
-        }
-
-        await expect(
-          vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: this.minDelegation })
-        )
-          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("vesting", "TOO_MANY_TOP_UPS");
-      });
-
-      it("should revert when top-up already made in the same epoch", async function () {
-        const { validatorSet, vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
-
-        await vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: this.minDelegation });
-
-        await expect(
-          vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: this.minDelegation })
-        )
-          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("_onAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
-      });
-
-      it("should increase duration no more than 100%", async function () {
-        const { rewardPool, vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
-
-        const positionBeforeTopUp = await rewardPool.delegationPositions(
-          this.delegatedValidators[0],
-          vestManager.address
-        );
-
-        const topUpAmount = (await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address)).mul(2);
-        await vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], {
-          value: topUpAmount.add(this.minDelegation),
-        });
-
-        const vestingEndAfter = (await rewardPool.delegationPositions(this.delegatedValidators[0], vestManager.address))
-          .end;
-        expect(vestingEndAfter, "vestingEndAfter").to.be.eq(positionBeforeTopUp.end.add(positionBeforeTopUp.duration));
-      });
-
-      it("should revert when top-up closed position", async function () {
-        const { validatorSet, rewardPool, liquidToken, vestManager } = await loadFixture(
-          this.fixtures.vestedDelegationFixture
-        );
-
-        // close position
-        const delegatedAmount = await rewardPool.delegationOf(this.delegatedValidators[0], vestManager.address);
-        await liquidToken.connect(this.vestManagerOwners[0]).approve(vestManager.address, delegatedAmount);
-        await vestManager.cutVestedDelegatePosition(this.delegatedValidators[0], delegatedAmount);
-
-        // top-up
-        await expect(
-          vestManager.topUpVestedDelegatePosition(this.delegatedValidators[0], { value: this.minDelegation })
-        )
-          .to.be.revertedWithCustomError(validatorSet, "DelegateRequirement")
-          .withArgs("vesting", "POSITION_NOT_ACTIVE");
-      });
-    });
-
     describe("Reward Pool - rewards", async function () {
       RunVestedDelegationRewardsTests();
     });
 
     describe("Reward Pool - Vested delegate claim", async function () {
       RunVestedDelegateClaimTests();
+    });
+
+    describe("Reward Pool - Vested delegate swap", async function () {
+      RunSwapVestedPositionValidatorTests();
     });
 
     describe("Reward Pool - ValidatorSet protected delegate functions", function () {
