@@ -538,13 +538,13 @@ function stakeBalances(address) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### swapVestedValidator
+### swapVestedPositionValidator
 
 ```solidity
-function swapVestedValidator(address oldValidator, address newValidator) external nonpayable
+function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
 ```
 
-Swaps the validator for a vesting position. Can be called by vesting positions&#39; managers only.
+Move a vested position to another validator. Can be called by vesting positions&#39; managers only.
 
 
 

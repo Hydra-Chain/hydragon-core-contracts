@@ -12,8 +12,8 @@ import {
   RunVestedDelegateClaimTests,
   RunVestedDelegationRewardsTests,
   RunDelegateFunctionsByValidatorSet,
-  RunVestedDelegationSwapTests,
 } from "../RewardPool/RewardPool.test";
+import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 
 export function RunDelegationTests(): void {
   describe("Change minDelegate", function () {
@@ -864,7 +864,7 @@ export function RunDelegationTests(): void {
     });
 
     describe("Reward Pool - Vested delegate swap", async function () {
-      RunVestedDelegationSwapTests();
+      RunSwapVestedPositionValidatorTests();
     });
 
     describe("Reward Pool - ValidatorSet protected delegate functions", function () {

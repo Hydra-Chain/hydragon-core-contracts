@@ -321,7 +321,7 @@ Returns the total reward that is generated for a position
 function changeBalanceChangeThreshold(uint256 newBalanceChangeThreshold) external nonpayable
 ```
 
-Changes the threshold for the balance change
+Modifies the balance changes threshold for vested positions
 
 *Should be called only by the Governance.*
 

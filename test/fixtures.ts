@@ -482,7 +482,7 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
 
   // give allowance & swap
   await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
-  await vestManager.connect(vestManagerOwner).swapVestedValidator(validator.address, newValidator.address);
+  await vestManager.connect(vestManagerOwner).swapVestedPositionValidator(validator.address, newValidator.address);
 
   return {
     validatorSet,

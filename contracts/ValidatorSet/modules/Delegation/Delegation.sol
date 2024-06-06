@@ -33,6 +33,7 @@ abstract contract Delegation is
     function delegate(address validator) public payable {
         if (msg.value == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
         _delegate(validator, msg.sender, msg.value);
+        LiquidStaking._distributeTokens(msg.sender, msg.value);
         rewardPool.onDelegate(validator, msg.sender, msg.value);
     }
 
@@ -42,6 +43,7 @@ abstract contract Delegation is
     function undelegate(address validator, uint256 amount) external {
         rewardPool.onUndelegate(validator, msg.sender, amount);
         _undelegate(validator, msg.sender, amount);
+        LiquidStaking._collectDelegatorTokens(msg.sender, amount);
         _registerWithdrawal(msg.sender, amount);
     }
 
@@ -50,6 +52,7 @@ abstract contract Delegation is
      */
     function delegateWithVesting(address validator, uint256 durationWeeks) external payable onlyManager {
         _delegate(validator, msg.sender, msg.value);
+        LiquidStaking._distributeTokens(msg.sender, msg.value);
         rewardPool.onNewDelegatePosition(validator, msg.sender, durationWeeks, currentEpochId, msg.value);
 
         emit PositionOpened(msg.sender, validator, durationWeeks, msg.value);
@@ -60,7 +63,7 @@ abstract contract Delegation is
      */
     function topUpDelegatePosition(address validator) external payable onlyManager {
         _delegate(validator, msg.sender, msg.value);
-
+        LiquidStaking._distributeTokens(msg.sender, msg.value);
         rewardPool.onTopUpDelegatePosition(validator, msg.sender, currentEpochId, msg.value);
 
         emit PositionTopUp(msg.sender, validator, msg.value);
@@ -72,6 +75,7 @@ abstract contract Delegation is
     function undelegateWithVesting(address validator, uint256 amount) external onlyManager {
         (uint256 penalty, ) = rewardPool.onCutPosition(validator, msg.sender, amount, currentEpochId);
         _undelegate(validator, msg.sender, amount);
+        LiquidStaking._collectDelegatorTokens(msg.sender, amount);
         uint256 amountAfterPenalty = amount - penalty;
         _burnAmount(penalty);
         _registerWithdrawal(msg.sender, amountAfterPenalty);
@@ -82,7 +86,7 @@ abstract contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function swapVestedValidator(address oldValidator, address newValidator) external onlyManager {
+    function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyManager {
         uint256 amount = rewardPool.onSwapPosition(oldValidator, newValidator, msg.sender, currentEpochId);
         _undelegate(oldValidator, msg.sender, amount);
         _delegate(newValidator, msg.sender, amount);
@@ -95,7 +99,6 @@ abstract contract Delegation is
     function _delegate(address validator, address delegator, uint256 amount) private onlyActiveValidator(validator) {
         _increaseAccountBalance(validator, amount); // increase validator power
         StateSyncer._syncStake(validator, balanceOf(validator));
-        LiquidStaking._distributeTokens(delegator, amount);
 
         emit Delegated(validator, delegator, amount);
     }
@@ -103,7 +106,6 @@ abstract contract Delegation is
     function _undelegate(address validator, address delegator, uint256 amount) private {
         _decreaseAccountBalance(validator, amount); // decrease validator power
         StateSyncer._syncStake(validator, balanceOf(validator));
-        LiquidStaking._collectDelegatorTokens(delegator, amount);
 
         emit Undelegated(validator, delegator, amount);
     }

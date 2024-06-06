@@ -226,7 +226,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         });
 
         // keep the change in the delegation pool params per account
-        _addNewDelegationPoolParam(
+        _saveAccountParamsChange(
             validator,
             delegator,
             DelegationPoolParams({
@@ -291,9 +291,15 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
                 delete delegationPoolParamsHistory[validator][delegator];
             } else {
                 // keep the change in the account pool params
-                uint256 balance = delegation.balanceOf(delegator);
-                int256 correction = delegation.correctionOf(delegator);
-                _onAccountParamsChange(validator, delegator, balance, correction, currentEpochId);
+                _saveAccountParamsChange(
+                    validator,
+                    delegator,
+                    DelegationPoolParams({
+                        balance: delegation.balanceOf(delegator),
+                        correction: delegation.correctionOf(delegator),
+                        epochNum: currentEpochId
+                    })
+                );
             }
         }
 
@@ -334,7 +340,11 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         oldDelegation.withdraw(delegator, amount);
 
         int256 correction = oldDelegation.correctionOf(delegator);
-        _onAccountParamsChange(oldValidator, delegator, 0, correction, currentEpochId);
+        _saveAccountParamsChange(
+            oldValidator,
+            delegator,
+            DelegationPoolParams({balance: 0, correction: correction, epochNum: currentEpochId})
+        );
 
         // set the new delegation position using the old position parameters
         newDelegation.deposit(delegator, amount);
@@ -349,7 +359,7 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         });
 
         // keep the change in the new delegation pool params
-        _addNewDelegationPoolParam(
+        _saveAccountParamsChange(
             newValidator,
             delegator,
             DelegationPoolParams({
@@ -559,9 +569,15 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
 
         // keep the change in the account pool params
         uint256 balance = delegation.balanceOf(delegator);
-        int256 correction = delegation.correctionOf(delegator);
-
-        _onAccountParamsChange(validator, delegator, balance, correction, currentEpochId);
+        _saveAccountParamsChange(
+            validator,
+            delegator,
+            DelegationPoolParams({
+                balance: balance,
+                correction: delegation.correctionOf(delegator),
+                epochNum: currentEpochId
+            })
+        );
         // Modify end period of position, decrease RSI bonus
         // balance / old balance = increase coefficient
         // apply increase coefficient to the vesting period to find the increase in the period
@@ -590,19 +606,19 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
         _withdrawRewards(delegator, reward);
     }
 
-    function _addNewDelegationPoolParam(
+    function _saveAccountParamsChange(
         address validator,
         address delegator,
         DelegationPoolParams memory params
     ) private {
         if (isBalanceChangeMade(validator, delegator, params.epochNum)) {
             // balance can be changed only once per epoch
-            revert DelegateRequirement({src: "_addNewDelegationPoolParam", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+            revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
         }
 
         if (isBalanceChangeThresholdExceeded(validator, delegator)) {
             // maximum amount of balance changes exceeded
-            revert DelegateRequirement({src: "_addNewDelegationPoolParam", msg: "BALANCE_CHANGES_EXCEEDED"});
+            revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGES_EXCEEDED"});
         }
 
         delegationPoolParamsHistory[validator][delegator].push(params);
@@ -621,28 +637,6 @@ abstract contract DelegationRewards is RewardPoolBase, Vesting, RewardsWithdrawa
             balance: balance,
             correction: correction
         });
-    }
-
-    function _onAccountParamsChange(
-        address validator,
-        address delegator,
-        uint256 balance,
-        int256 correction,
-        uint256 currentEpochId
-    ) private {
-        if (isBalanceChangeMade(validator, delegator, currentEpochId)) {
-            // balance can be changed only once per epoch
-            revert DelegateRequirement({src: "_onAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
-        }
-
-        if (isBalanceChangeThresholdExceeded(validator, delegator)) {
-            // maximum amount of balance changes exceeded
-            revert DelegateRequirement({src: "_onAccountParamsChange", msg: "BALANCE_CHANGES_EXCEEDED"});
-        }
-
-        delegationPoolParamsHistory[validator][delegator].push(
-            DelegationPoolParams({balance: balance, correction: correction, epochNum: currentEpochId})
-        );
     }
 
     function _getAccountParams(

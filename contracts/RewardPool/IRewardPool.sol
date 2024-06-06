@@ -273,7 +273,7 @@ interface IRewardPool {
     function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
-     * @notice Changes the threshold for the balance change
+     * @notice Modifies the balance changes threshold for vested positions
      * @dev Should be called only by the Governance.
      * @param newBalanceChangeThreshold The number of allowed changes of the balance
      */

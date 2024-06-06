@@ -141,10 +141,10 @@ The reward pool address
 |---|---|---|
 | _0 | address | undefined |
 
-### swapVestedValidator
+### swapVestedPositionValidator
 
 ```solidity
-function swapVestedValidator(address oldValidator, address newValidator) external nonpayable
+function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
 ```
 
 
