@@ -6,7 +6,7 @@ import { DAY, ERRORS, WEEK } from "../constants";
 import { commitEpoch, commitEpochs, retrieveRPSData } from "../helper";
 
 export function RunSwapVestedPositionValidatorTests(): void {
-  describe.only("Delegate position rewards", async function () {
+  describe("Delegate position rewards", async function () {
     it("should revert when not the vest manager owner", async function () {
       const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
