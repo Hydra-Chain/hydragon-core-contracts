@@ -402,24 +402,6 @@ Creates a pool
 |---|---|---|
 | validator | address | The address of the validator |
 
-### onStake
-
-```solidity
-function onStake(address staker, uint256 amount, uint256 oldBalance) external nonpayable
-```
-
-Update the reward params for the vested position
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Address of the staker |
-| amount | uint256 | Amount to stake |
-| oldBalance | uint256 | Balance before stake |
-
 ### onSwapPosition
 
 ```solidity

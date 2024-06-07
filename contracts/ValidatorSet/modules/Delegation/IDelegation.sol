@@ -20,7 +20,7 @@ interface IDelegation {
 
     /**
      * @notice Delegates sent amount to validator. Set vesting position data.
-     * Delete old pool params data, if exists. Can be called by vesting positions' managers only.
+     * Delete old pool params data, if exists.
      * Can be used by vesting positions' managers only.
      * @param validator Validator to delegate to
      * @param durationWeeks Duration of the vesting in weeks

@@ -54,9 +54,7 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
      * @inheritdoc IStaking
      */
     function stake() external payable onlyValidator(msg.sender) {
-        uint256 currentBalance = balanceOf(msg.sender);
         _stake(msg.sender, msg.value);
-        rewardPool.onStake(msg.sender, msg.value, currentBalance);
     }
 
     /**

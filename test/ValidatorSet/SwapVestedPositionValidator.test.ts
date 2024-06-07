@@ -197,10 +197,10 @@ export function RunSwapVestedPositionValidatorTests(): void {
 
       await commitEpoch(systemValidatorSet, rewardPool, [validator, newValidator], this.epochSize);
 
-      const amount = await rewardPool.delegationOf(validator.address, vestManager.address);
+      const delegatedAmount = await rewardPool.delegationOf(validator.address, vestManager.address);
 
       // give allowance & swap
-      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
       await vestManager.connect(vestManagerOwner).swapVestedPositionValidator(validator.address, newValidator.address);
 
       const oldPosition = await rewardPool.delegationPositions(validator.address, vestManager.address);

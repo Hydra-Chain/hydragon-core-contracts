@@ -36,14 +36,6 @@ interface IRewardPool {
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime, uint256 epochSize) external payable;
 
     /**
-     * @notice Update the reward params for the vested position
-     * @param staker Address of the staker
-     * @param amount Amount to stake
-     * @param oldBalance Balance before stake
-     */
-    function onStake(address staker, uint256 amount, uint256 oldBalance) external;
-
-    /**
      * @notice Unstakes and updates the reward params for the vested position
      * @dev If vested position is active, then it will calculate a penalty in the returned amount
      * @param staker Address of the staker

@@ -20,10 +20,6 @@ export function RunStakeFunctionsByValidatorSet(): void {
     it("should revert stake-protected functions if not called by ValidatorSet", async function () {
       const { systemValidatorSet, rewardPool } = await loadFixture(this.fixtures.initializedValidatorSetStateFixture);
 
-      await expect(rewardPool.connect(this.signers.accounts[0]).onStake(systemValidatorSet.address, 1, 1))
-        .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
-        .withArgs("VALIDATORSET");
-
       await expect(rewardPool.connect(this.signers.system).onUnstake(systemValidatorSet.address, 1, 1))
         .to.be.revertedWithCustomError(rewardPool, "Unauthorized")
         .withArgs("VALIDATORSET");
