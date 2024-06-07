@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR, ERRORS } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, DENOMINATOR, ERRORS } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests, RunStakeFunctionsByValidatorSet } from "../RewardPool/RewardPool.test";
 
