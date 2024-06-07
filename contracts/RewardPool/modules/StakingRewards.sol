@@ -67,25 +67,6 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
      * @inheritdoc IRewardPool
      */
     function onNewStakePosition(address staker, uint256 durationWeeks) external onlyValidatorSet {
-        // DelegationPool storage delegation = delegationPools[validator];
-        // uint256 balance = delegation.balanceOf(delegator);
-        // uint256 newBalance = balance + amount;
-        // if (newBalance < minDelegation) revert DelegateRequirement({src: "vesting", msg: "DELEGATION_TOO_LOW"});
-
-        // VestingPosition memory position = delegationPositions[validator][delegator];
-        // if (position.isMaturing()) {
-        //     revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
-        // }
-
-        // if (position.isActive()) {
-        //     revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
-        // }
-
-        // // ensure previous rewards are claimed
-        // if (delegation.claimableRewards(delegator) > 0) {
-        //     revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
-        // }
-
         if (positions[staker].isStakerInVestingCycle()) {
             revert StakeRequirement({src: "vesting", msg: "ALREADY_IN_VESTING"});
         }
