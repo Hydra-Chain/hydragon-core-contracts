@@ -1,31 +1,14 @@
-# LiquidityToken
+# ERC20PermitUpgradeable
 
 
 
-> LiquidityToken
 
 
 
-*This contract represents the liquid token for the Hydra staking mechanism.*
+
+*Implementation of the ERC20 Permit extension allowing approvals to be made via signatures, as defined in https://eips.ethereum.org/EIPS/eip-2612[EIP-2612]. Adds the {permit} method, which can be used to change an account&#39;s ERC20 allowance (see {IERC20-allowance}) by presenting a message signed by the account. By not relying on `{IERC20-approve}`, the token holder account doesn&#39;t need to send a transaction, and thus is not required to hold Ether at all. _Available since v3.4._*
 
 ## Methods
-
-### DEFAULT_ADMIN_ROLE
-
-```solidity
-function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
 
 ### DOMAIN_SEPARATOR
 
@@ -36,23 +19,6 @@ function DOMAIN_SEPARATOR() external view returns (bytes32)
 
 
 *Returns the domain separator used in the encoding of the signature for {permit}, as defined by {EIP712}.*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
-
-### SUPPLY_CONTROLLER_ROLE
-
-```solidity
-function SUPPLY_CONTROLLER_ROLE() external view returns (bytes32)
-```
-
-The role identifier for address(es) that have permission to mint and burn the token.
-
-
 
 
 #### Returns
@@ -129,23 +95,6 @@ function balanceOf(address account) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### burn
-
-```solidity
-function burn(address account, uint256 amount) external nonpayable
-```
-
-Burns the specified `amount` of tokens from the given account.
-
-*Can only be called by an address with the `SUPPLY_CONTROLLER_ROLE`.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| account | address | The address from which tokens will be burned. |
-| amount | uint256 | The amount of tokens to burn. |
-
 ### decimals
 
 ```solidity
@@ -209,68 +158,6 @@ function eip712Domain() external view returns (bytes1 fields, string name, strin
 | salt | bytes32 | undefined |
 | extensions | uint256[] | undefined |
 
-### getRoleAdmin
-
-```solidity
-function getRoleAdmin(bytes32 role) external view returns (bytes32)
-```
-
-
-
-*Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role&#39;s admin, use {_setRoleAdmin}.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role | bytes32 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
-
-### grantRole
-
-```solidity
-function grantRole(bytes32 role, address account) external nonpayable
-```
-
-
-
-*Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``&#39;s admin role. May emit a {RoleGranted} event.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role | bytes32 | undefined |
-| account | address | undefined |
-
-### hasRole
-
-```solidity
-function hasRole(bytes32 role, address account) external view returns (bool)
-```
-
-
-
-*Returns `true` if `account` has been granted `role`.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role | bytes32 | undefined |
-| account | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
 ### increaseAllowance
 
 ```solidity
@@ -293,42 +180,6 @@ function increaseAllowance(address spender, uint256 addedValue) external nonpaya
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
-
-### initialize
-
-```solidity
-function initialize(string name_, string symbol_, address governer, address supplyController) external nonpayable
-```
-
-
-
-*Initializes the token contract with the provided name, symbol, governed role, and supply controller.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| name_ | string | The name of the token. |
-| symbol_ | string | The symbol of the token. |
-| governer | address | The address that has rights to change the SUPPLY_CONTROLLERs. |
-| supplyController | address | The address assigned for controlling the supply (mint/burn) of the token. |
-
-### mint
-
-```solidity
-function mint(address to, uint256 amount) external nonpayable
-```
-
-Mints the specified `amount` of tokens to the given address.
-
-*Can only be called by an address with the `SUPPLY_CONTROLLER_ROLE`.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| to | address | The address to receive the minted tokens. |
-| amount | uint256 | The amount of tokens to mint. |
 
 ### name
 
@@ -390,62 +241,6 @@ function permit(address owner, address spender, uint256 value, uint256 deadline,
 | v | uint8 | undefined |
 | r | bytes32 | undefined |
 | s | bytes32 | undefined |
-
-### renounceRole
-
-```solidity
-function renounceRole(bytes32 role, address account) external nonpayable
-```
-
-
-
-*Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function&#39;s purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been revoked `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`. May emit a {RoleRevoked} event.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role | bytes32 | undefined |
-| account | address | undefined |
-
-### revokeRole
-
-```solidity
-function revokeRole(bytes32 role, address account) external nonpayable
-```
-
-
-
-*Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``&#39;s admin role. May emit a {RoleRevoked} event.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role | bytes32 | undefined |
-| account | address | undefined |
-
-### supportsInterface
-
-```solidity
-function supportsInterface(bytes4 interfaceId) external view returns (bool)
-```
-
-
-
-*See {IERC165-supportsInterface}.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| interfaceId | bytes4 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
 
 ### symbol
 
@@ -576,60 +371,6 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
-
-### RoleAdminChanged
-
-```solidity
-event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role `indexed` | bytes32 | undefined |
-| previousAdminRole `indexed` | bytes32 | undefined |
-| newAdminRole `indexed` | bytes32 | undefined |
-
-### RoleGranted
-
-```solidity
-event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role `indexed` | bytes32 | undefined |
-| account `indexed` | address | undefined |
-| sender `indexed` | address | undefined |
-
-### RoleRevoked
-
-```solidity
-event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| role `indexed` | bytes32 | undefined |
-| account `indexed` | address | undefined |
-| sender `indexed` | address | undefined |
 
 ### Transfer
 

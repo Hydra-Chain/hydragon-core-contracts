@@ -12,6 +12,7 @@ import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
 import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
+import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -391,4 +392,61 @@ async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
   const currChainTs = await time.latest();
 
   return positionEnd && positionDuration && positionEnd.add(positionDuration).lte(currChainTs);
+}
+
+export async function getPermitSignature(
+  wallet: any,
+  token: LiquidityToken,
+  spender: string,
+  value: any,
+  deadline: string
+) {
+  const [nonce, name, version, chainId] = await Promise.all([
+    token.nonces(wallet.address),
+    token.name(),
+    (await token.eip712Domain()).version,
+    wallet.getChainId(),
+  ]);
+
+  return hre.ethers.utils.splitSignature(
+    await wallet._signTypedData(
+      {
+        name,
+        version,
+        chainId,
+        verifyingContract: token.address,
+      },
+      {
+        Permit: [
+          {
+            name: "owner",
+            type: "address",
+          },
+          {
+            name: "spender",
+            type: "address",
+          },
+          {
+            name: "value",
+            type: "uint256",
+          },
+          {
+            name: "nonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+      {
+        owner: wallet.address,
+        spender,
+        value,
+        nonce,
+        deadline,
+      }
+    )
+  );
 }

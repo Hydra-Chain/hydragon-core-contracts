@@ -4,9 +4,18 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, ERRORS, INITIAL_COMMISSION, MAX_COMMISSION, VALIDATOR_STATUS, WEEK } from "../constants";
+import {
+  CHAIN_ID,
+  DOMAIN,
+  ERRORS,
+  INITIAL_COMMISSION,
+  MAX_COMMISSION,
+  VALIDATOR_STATUS,
+  WEEK,
+  DEADLINE,
+} from "../constants";
 import { generateFixtures } from "../fixtures";
-import { commitEpoch, generateValidatorBls, initializeContext } from "../helper";
+import { commitEpoch, generateValidatorBls, initializeContext, getPermitSignature } from "../helper";
 import { RunSystemTests } from "./System.test";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -874,6 +883,41 @@ describe("ValidatorSet", function () {
 
         await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minStake);
         await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minStake), "emit StakeChanged")
+          .to.emit(validatorSet, "StakeChanged")
+          .withArgs(validator.address, totalStake.sub(this.minStake));
+        // to ensure that undelegate is immediately applied on the validator stake
+        expect((await validatorSet.getValidator(validator.address)).totalStake, "totalStake").to.equal(
+          totalStake.sub(this.minStake)
+        );
+      });
+
+      it("should emit StakeChanged event on cut vested position using permit", async function () {
+        const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
+          await loadFixture(this.fixtures.vestManagerFixture);
+
+        const validator = this.signers.validators[0];
+        const vestingDuration = 12; // weeks
+        await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minStake });
+        // because balance change can be made only once per epoch when vested delegation position
+        await commitEpoch(
+          systemValidatorSet,
+          rewardPool,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          this.epochSize
+        );
+        const { totalStake } = await validatorSet.getValidator(validator.address);
+        const { v, r, s } = await getPermitSignature(
+          vestManagerOwner,
+          liquidToken,
+          vestManager.address,
+          this.minStake,
+          DEADLINE
+        );
+
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(validator.address, this.minStake, DEADLINE, v, r, s),
+          "emit StakeChanged"
+        )
           .to.emit(validatorSet, "StakeChanged")
           .withArgs(validator.address, totalStake.sub(this.minStake));
         // to ensure that undelegate is immediately applied on the validator stake

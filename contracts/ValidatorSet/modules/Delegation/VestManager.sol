@@ -43,8 +43,20 @@ contract VestManager is Initializable, OwnableUpgradeable {
     }
 
     function cutVestedDelegatePosition(address validator, uint256 amount) external payable onlyOwner {
-        _fulfillLiquidTokens(msg.sender, amount);
-        IDelegation(delegation).undelegateWithVesting(validator, amount);
+        _cutVestedPosition(validator, amount);
+    }
+
+    function cutVestedDelegatePositionWithPermit(
+        address validator,
+        uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable onlyOwner {
+        address liquidToken = ILiquidStaking(delegation).liquidToken();
+        IERC20Permit(liquidToken).permit(msg.sender, address(this), amount, deadline, v, r, s);
+        _cutVestedPosition(validator, amount);
     }
 
     function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
@@ -67,6 +79,11 @@ contract VestManager is Initializable, OwnableUpgradeable {
 
     // _______________ Internal functions _______________
 
+    function _cutVestedPosition(address validator, uint256 amount) internal {
+        _fulfillLiquidTokens(msg.sender, amount);
+        IDelegation(delegation).undelegateWithVesting(validator, amount);
+    }
+
     // _______________ Private functions _______________
 
     /**
@@ -88,4 +105,5 @@ contract VestManager is Initializable, OwnableUpgradeable {
         address liquidToken = ILiquidStaking(delegation).liquidToken();
         IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
     }
+
 }

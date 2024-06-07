@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import * as hre from "hardhat";
 import { expect } from "chai";
 
-import { DAY, EPOCHS_YEAR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { EPOCHS_YEAR, DAY, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 import {
   calculateExpectedReward,
   commitEpoch,

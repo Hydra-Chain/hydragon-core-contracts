@@ -2,6 +2,8 @@ import { ethers } from "hardhat";
 /* eslint-disable node/no-extraneous-import */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { getPermitSignature } from "../helper";
+import { DEADLINE } from "../constants";
 import { expect } from "chai";
 
 describe("LiquidityToken", async function () {
@@ -82,6 +84,21 @@ describe("LiquidityToken", async function () {
       await expect(token.burn(accounts[4].address, 100)).to.be.revertedWith(
         "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + supplyControllerRole
       );
+    });
+  });
+
+  describe("permit()", async function () {
+    it("Should be able to transfer to the user with a permit", async () => {
+      const amount = 1000;
+      const { token } = await loadFixture(initializeFixture);
+      const { v, r, s } = await getPermitSignature(supplyController, token, accounts[0].address, amount, DEADLINE);
+
+      await token.connect(supplyController).mint(supplyController.address, 10000);
+      await token.permit(supplyController.address, accounts[0].address, amount, DEADLINE, v, r, s);
+      await token.connect(accounts[0]).transferFrom(supplyController.address, accounts[0].address, amount);
+
+      expect(await token.balanceOf(accounts[0].address)).to.equal(ethers.BigNumber.from(amount));
+      expect(await token.balanceOf(supplyController.address)).to.equal(ethers.BigNumber.from(10000).sub(amount));
     });
   });
 

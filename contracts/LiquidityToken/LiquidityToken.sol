@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "./ILiquidityToken.sol";
@@ -11,7 +12,7 @@ import "./../common/Governed/Governed.sol";
  * @title LiquidityToken
  * @dev This contract represents the liquid token for the Hydra staking mechanism.
  */
-contract LiquidityToken is ILiquidityToken, ERC20Upgradeable, Governed {
+contract LiquidityToken is ILiquidityToken, ERC20Upgradeable, ERC20PermitUpgradeable, Governed {
     /// @notice The role identifier for address(es) that have permission to mint and burn the token.
     bytes32 public constant SUPPLY_CONTROLLER_ROLE = keccak256("SUPPLY_CONTROLLER_ROLE");
 
@@ -29,6 +30,7 @@ contract LiquidityToken is ILiquidityToken, ERC20Upgradeable, Governed {
         address supplyController
     ) public initializer {
         __ERC20_init(name_, symbol_);
+        __ERC20Permit_init(name_);
         __Governed_init(governer);
 
         _grantRole(SUPPLY_CONTROLLER_ROLE, supplyController);

@@ -45,6 +45,27 @@ function cutVestedDelegatePosition(address validator, uint256 amount) external p
 | validator | address | undefined |
 | amount | uint256 | undefined |
 
+### cutVestedDelegatePositionWithPermit
+
+```solidity
+function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external payable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | undefined |
+| amount | uint256 | undefined |
+| deadline | uint256 | undefined |
+| v | uint8 | undefined |
+| r | bytes32 | undefined |
+| s | bytes32 | undefined |
+
 ### delegation
 
 ```solidity
