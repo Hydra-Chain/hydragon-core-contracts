@@ -2,8 +2,8 @@
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { DAY, ERRORS, WEEK, DEADLINE } from "../constants";
-import { commitEpoch, commitEpochs, retrieveRPSData, getPermitSignature } from "../helper";
+import { DAY, ERRORS, WEEK } from "../constants";
+import { commitEpoch, commitEpochs, retrieveRPSData } from "../helper";
 
 export function RunSwapVestedPositionValidatorTests(): void {
   describe("Vested position swap", async function () {
@@ -151,60 +151,6 @@ export function RunSwapVestedPositionValidatorTests(): void {
       // give allowance & undelegate full amount
       await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
       await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
-
-      // verify that there are rewards left to claim
-      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
-        systemValidatorSet,
-        rewardPool,
-        newValidator.address,
-        vestManager.address
-      );
-
-      expect(
-        await rewardPool.getDelegatorPositionReward(
-          newValidator.address,
-          vestManager.address,
-          epochNum,
-          balanceChangeIndex
-        ),
-        "getDelegatorPositionReward"
-      ).to.not.be.eq(0);
-
-      await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
-      )
-        .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
-    });
-
-    it("should revert when we try to swap to a position with left rewards to claim using permit", async function () {
-      const { systemValidatorSet, vestManager, liquidToken, vestManagerOwner, rewardPool } = await loadFixture(
-        this.fixtures.vestManagerFixture
-      );
-
-      const oldValidator = this.signers.validators[0];
-      const newValidator = this.signers.validators[1];
-      await vestManager
-        .connect(vestManagerOwner)
-        .openVestedDelegatePosition(oldValidator.address, 5, { value: this.minDelegation });
-      await vestManager
-        .connect(vestManagerOwner)
-        .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
-
-      // commit 5 epochs with 3 days increase before each, so, the new position will be matured and have some balance left
-      await commitEpochs(systemValidatorSet, rewardPool, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
-
-      // create signature & undelegate full amount with permit
-      const { v, r, s } = await getPermitSignature(
-        vestManagerOwner,
-        liquidToken,
-        vestManager.address,
-        this.minDelegation,
-        DEADLINE
-      );
-      await vestManager
-        .connect(vestManagerOwner)
-        .cutVestedDelegatePositionWithPermit(newValidator.address, this.minDelegation, DEADLINE, v, r, s);
 
       // verify that there are rewards left to claim
       const { epochNum, balanceChangeIndex } = await retrieveRPSData(

@@ -43,8 +43,7 @@ contract VestManager is Initializable, OwnableUpgradeable {
     }
 
     function cutVestedDelegatePosition(address validator, uint256 amount) external payable onlyOwner {
-        _fulfillLiquidTokens(msg.sender, amount);
-        IDelegation(delegation).undelegateWithVesting(validator, amount);
+        _cutVestedPosition(validator, amount);
     }
 
     function cutVestedDelegatePositionWithPermit(
@@ -55,8 +54,9 @@ contract VestManager is Initializable, OwnableUpgradeable {
         bytes32 r,
         bytes32 s
     ) external payable onlyOwner {
-        _fulfillLiquidTokensWithPermit(msg.sender, amount, deadline, v, r, s);
-        IDelegation(delegation).undelegateWithVesting(validator, amount);
+        address liquidToken = ILiquidStaking(delegation).liquidToken();
+        IERC20Permit(liquidToken).permit(msg.sender, address(this), amount, deadline, v, r, s);
+        _cutVestedPosition(validator, amount);
     }
 
     function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
@@ -78,6 +78,11 @@ contract VestManager is Initializable, OwnableUpgradeable {
     // _______________ Public functions _______________
 
     // _______________ Internal functions _______________
+
+    function _cutVestedPosition(address validator, uint256 amount) internal {
+        _fulfillLiquidTokens(msg.sender, amount);
+        IDelegation(delegation).undelegateWithVesting(validator, amount);
+    }
 
     // _______________ Private functions _______________
 
@@ -101,26 +106,4 @@ contract VestManager is Initializable, OwnableUpgradeable {
         IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
     }
 
-
-    /**
-     * Fulfill position with the needed liquid tokens using permit and signature
-     * @param positionOwner Owner of the position (respectively of the position manager)
-     * @param amount Amount to be unstaked
-     * @param deadline Deadline for the permit
-     * @param v Signature v
-     * @param r Signature r
-     * @param s Signature s
-     */
-    function _fulfillLiquidTokensWithPermit(
-        address positionOwner,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) private onlyOwner {
-        address liquidToken = ILiquidStaking(delegation).liquidToken();
-        IERC20Permit(liquidToken).permit(positionOwner, address(this), amount, deadline, v, r, s);
-        IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
-    }
 }
