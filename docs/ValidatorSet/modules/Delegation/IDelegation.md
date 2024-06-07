@@ -32,7 +32,7 @@ Delegates sent amount to validator and claims rewards.
 function delegateWithVesting(address validator, uint256 durationWeeks) external payable
 ```
 
-Delegates sent amount to validator. Set vesting position data. Delete old top-ups data if exists. Can be called by vesting positions&#39; managers only. Can be used by vesting positions&#39; managers only.
+Delegates sent amount to validator. Set vesting position data. Delete old pool params data, if exists. Can be used by vesting positions&#39; managers only.
 
 
 
@@ -59,22 +59,6 @@ Move a vested position to another validator. Can be called by vesting positions&
 |---|---|---|
 | oldValidator | address | Validator to swap from |
 | newValidator | address | Validator to swap to |
-
-### topUpDelegatePosition
-
-```solidity
-function topUpDelegatePosition(address validator) external payable
-```
-
-Delegates sent amount to validator increasing an already created with `delegateWithVesting` vesting position. This modifies the vesting conditions. Can be called by vesting positions&#39; managers only.
-
-*Add top-up data.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | Validator to delegate to |
 
 ### undelegate
 

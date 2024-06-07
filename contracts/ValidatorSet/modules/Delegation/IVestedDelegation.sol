@@ -8,7 +8,6 @@ interface IVestedDelegation {
         uint256 indexed weeksDuration,
         uint256 amount
     );
-    event PositionTopUp(address indexed manager, address indexed validator, uint256 amount);
     event PositionCut(address indexed manager, address indexed validator, uint256 amount);
     event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount);
 

@@ -42,6 +42,9 @@ export const ERRORS = {
   swap: {
     newPositionUnavilable: "NEW_POSITION_UNAVAILABLE",
   },
+  vesting: {
+    invalidParamsIndex: "INVALID_PARAMS_INDEX",
+  },
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account} is missing role ${role}`;
   },

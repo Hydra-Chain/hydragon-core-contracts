@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { WEEK, VESTING_DURATION_WEEKS, MIN_RSI_BONUS, DENOMINATOR, ERRORS } from "../constants";
+import { WEEK, VESTING_DURATION_WEEKS, DENOMINATOR, ERRORS } from "../constants";
 import { calculatePenalty, commitEpochs, getValidatorReward, registerValidator } from "../helper";
 import { RunStakingClaimTests, RunStakeFunctionsByValidatorSet } from "../RewardPool/RewardPool.test";
 
@@ -217,34 +217,6 @@ export function RunStakingTests(): void {
         await expect(stakerValidatorSet.stakeWithVesting(vestingDuration))
           .to.be.revertedWithCustomError(stakerValidatorSet, "StakeRequirement")
           .withArgs("vesting", "ALREADY_IN_VESTING");
-      });
-    });
-
-    describe("Top-up staking position with stake()", function () {
-      it("should top-up staking position", async function () {
-        const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-          this.fixtures.newVestingValidatorFixture
-        );
-
-        await stakerValidatorSet.connect(this.staker).stake({ value: this.minStake });
-        const vestingData = await rewardPool.positions(this.staker.address);
-
-        expect(vestingData.duration, "duration").to.be.equal(vestingDuration * 2);
-        expect(vestingData.end, "end").to.be.equal(vestingData.start.add(vestingDuration * 2));
-        expect(vestingData.rsiBonus, "rsiBonus").to.be.equal(MIN_RSI_BONUS);
-
-        await commitEpochs(
-          systemValidatorSet,
-          rewardPool,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
-        );
-
-        const validator = await stakerValidatorSet.getValidator(this.staker.address);
-
-        // check is stake = min stake * 2 because we increased position
-        expect(validator.stake, "stake").to.be.equal(this.minStake.mul(2));
       });
     });
 

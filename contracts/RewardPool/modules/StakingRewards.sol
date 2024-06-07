@@ -23,15 +23,6 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
 
     // _______________ External functions _______________
 
-    /**
-     * @inheritdoc IRewardPool
-     */
-    function onStake(address staker, uint256 amount, uint256 oldBalance) external onlyValidatorSet {
-        if (positions[staker].isActive()) {
-            _handleStake(staker, amount, oldBalance);
-        }
-    }
-
     function claimValidatorReward() external {
         if (positions[msg.sender].isStakerInVestingCycle()) {
             return;
@@ -61,8 +52,7 @@ abstract contract StakingRewards is RewardPoolBase, Vesting, RewardsWithdrawal {
             // staker lose its reward
             valRewards[staker].taken = valRewards[staker].total;
             uint256 penalty = _calcSlashing(position, amountUnstaked);
-            // if position is closed when active, top-up must not be available as well as reward must not be available
-            // so we delete the vesting data
+            // if position is closed when active, we delete all the vesting data
             if (amountLeft == 0) {
                 delete positions[staker];
             }

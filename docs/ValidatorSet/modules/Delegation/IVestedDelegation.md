@@ -108,23 +108,5 @@ event PositionSwapped(address indexed manager, address indexed oldValidator, add
 | newValidator  | address | undefined |
 | amount  | uint256 | undefined |
 
-### PositionTopUp
-
-```solidity
-event PositionTopUp(address indexed manager, address indexed validator, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| manager `indexed` | address | undefined |
-| validator `indexed` | address | undefined |
-| amount  | uint256 | undefined |
-
 
 

@@ -44,8 +44,6 @@ library DelegationPoolLib {
         pool.magnifiedRewardCorrections[account] -= (pool.magnifiedRewardPerShare * share).toInt256Safe();
     }
 
-    // TODO: on cutPosition set top-up because balance and supply are changed
-
     /**
      * @notice decrements the balance of a specific pool member
      * @param pool the DelegationPool of the account to decrement the balance of

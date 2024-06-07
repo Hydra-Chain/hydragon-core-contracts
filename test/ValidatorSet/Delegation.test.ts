@@ -530,12 +530,12 @@ export function RunDelegationTests(): void {
         // const end = position.end;
         // const rpsValues = await childValidatorSet.getRPSValues(validator);
         // const epochNum = findProperRPSIndex(rpsValues, end);
-        // const topUpIndex = 0;
+        // const balanceChangeIndex = 0;
         // let reward = await childValidatorSet.getDelegatorPositionReward(
         //   validator,
         //   manager.address,
         //   epochNum,
-        //   topUpIndex
+        //   balanceChangeIndex
         // );
         // reward = await childValidatorSet.applyMaxReward(reward);
         // const decrease = reward.add(amountToBeBurned);

@@ -36,14 +36,6 @@ interface IRewardPool {
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime, uint256 epochSize) external payable;
 
     /**
-     * @notice Update the reward params for the vested position
-     * @param staker Address of the staker
-     * @param amount Amount to stake
-     * @param oldBalance Balance before stake
-     */
-    function onStake(address staker, uint256 amount, uint256 oldBalance) external;
-
-    /**
      * @notice Unstakes and updates the reward params for the vested position
      * @dev If vested position is active, then it will calculate a penalty in the returned amount
      * @param staker Address of the staker
@@ -106,20 +98,6 @@ interface IRewardPool {
     ) external;
 
     /**
-     * @notice Top up to a delegate positions
-     * @param validator The address of the validator
-     * @param delegator The address of the delegator
-     * @param currentEpochId The currenct epoch number
-     * @param amount Delegate amount to top-up with
-     */
-    function onTopUpDelegatePosition(
-        address validator,
-        address delegator,
-        uint256 currentEpochId,
-        uint256 amount
-    ) external;
-
-    /**
      * @notice Cuts a vesting position from the delegation pool
      * @dev Applies penalty (slashing) if the vesting period is active and returns the updated amount
      * @param validator The address of the validator
@@ -168,7 +146,7 @@ interface IRewardPool {
      * @notice Gets delegator's unclaimed rewards without custom rewards
      * @param validator Address of validator
      * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards with validator (in MATIC wei)
+     * @return Delegator's unclaimed rewards with validator (in HYDRA wei)
      */
     function getRawDelegatorReward(address validator, address delegator) external view returns (uint256);
 
@@ -176,7 +154,7 @@ interface IRewardPool {
      * @notice Gets delegators's unclaimed rewards including custom rewards
      * @param validator Address of validator
      * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards with validator (in MATIC wei)
+     * @return Delegator's unclaimed rewards with validator (in HYDRA wei)
      */
     function getDelegatorReward(address validator, address delegator) external view returns (uint256);
 
@@ -186,14 +164,14 @@ interface IRewardPool {
      * @param delegator Address of delegator
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param topUpIndex Whether to redelegate the claimed rewards
-     * @return Delegator's unclaimed rewards with validator (in MATIC wei)
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @return Delegator's unclaimed rewards with validator (in HYDRA wei)
      */
     function getDelegatorPositionReward(
         address validator,
         address delegator,
         uint256 epochNumber,
-        uint256 topUpIndex
+        uint256 balanceChangeIndex
     ) external view returns (uint256);
 
     /**
@@ -246,22 +224,27 @@ interface IRewardPool {
      * @param to Address to transfer the reward to
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param topUpIndex Whether to redelegate the claimed rewards
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards
      */
-    function claimPositionReward(address validator, address to, uint256 epochNumber, uint256 topUpIndex) external;
+    function claimPositionReward(
+        address validator,
+        address to,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external;
 
     /**
      * @notice Gets amount delegated by delegator to validator.
      * @param validator Address of validator
      * @param delegator Address of delegator
-     * @return Amount delegated (in MATIC wei)
+     * @return Amount delegated (in HYDRA wei)
      */
     function delegationOf(address validator, address delegator) external view returns (uint256);
 
     /**
      * @notice Gets the total amount delegated to a validator.
      * @param validator Address of validator
-     * @return Amount delegated (in MATIC wei)
+     * @return Amount delegated (in HYDRA wei)
      */
     function totalDelegationOf(address validator) external view returns (uint256);
 

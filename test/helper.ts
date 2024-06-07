@@ -174,7 +174,7 @@ export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: 
   return closestIndex;
 }
 
-export function findTopUpIndex(arr: any[], epochNum: BigNumber): number {
+export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): number {
   if (arr.length <= 1) return 0;
 
   let left = 0;
@@ -201,7 +201,7 @@ export function findTopUpIndex(arr: any[], epochNum: BigNumber): number {
   }
 
   if (closestIndex === null) {
-    throw new Error("findTopUpIndex: Invalid epoch number");
+    throw new Error("findLastPositionChangeIndex: Invalid epoch number");
   }
 
   return closestIndex;
@@ -277,9 +277,12 @@ export async function retrieveRPSData(
   const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
   const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
-  const topUpIndex = findTopUpIndex(delegationPoolParamsHistory, hre.ethers.BigNumber.from(epochNum));
+  const balanceChangeIndex = findProperBalanceChangeIndex(
+    delegationPoolParamsHistory,
+    hre.ethers.BigNumber.from(epochNum)
+  );
 
-  return { position, epochNum, topUpIndex };
+  return { position, epochNum, balanceChangeIndex };
 }
 
 export async function calculateExpectedReward(
@@ -365,9 +368,9 @@ export async function getDelegatorPositionReward(
   delegator: string
 ) {
   // prepare params for call
-  const { epochNum, topUpIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
 
-  return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, topUpIndex);
+  return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
 }
 
 export async function getClosestMaturedTimestamp(position: any) {

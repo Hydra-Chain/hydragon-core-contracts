@@ -61,17 +61,6 @@ abstract contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function topUpDelegatePosition(address validator) external payable onlyManager {
-        _delegate(validator, msg.sender, msg.value);
-        LiquidStaking._distributeTokens(msg.sender, msg.value);
-        rewardPool.onTopUpDelegatePosition(validator, msg.sender, currentEpochId, msg.value);
-
-        emit PositionTopUp(msg.sender, validator, msg.value);
-    }
-
-    /**
-     * @inheritdoc IDelegation
-     */
     function undelegateWithVesting(address validator, uint256 amount) external onlyManager {
         (uint256 penalty, ) = rewardPool.onCutPosition(validator, msg.sender, amount, currentEpochId);
         _undelegate(validator, msg.sender, amount);
