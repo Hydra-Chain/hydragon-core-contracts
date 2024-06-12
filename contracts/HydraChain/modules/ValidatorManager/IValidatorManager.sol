@@ -10,7 +10,6 @@ struct ValidatorInit {
 
 enum ValidatorStatus {
     None,
-    Whitelisted,
     Registered,
     Active,
     Banned
@@ -24,19 +23,24 @@ struct Validator {
 }
 
 interface IValidatorManager {
+    event NewValidator(address indexed validator, uint256[4] blsKey);
+    event CommissionUpdated(address indexed validator, uint256 newCommission);
+
+    error InvalidSignature(address signer);
+    error MaxValidatorsReached();
+    error InvalidCommission(uint256 commission);
 
     /**
-     * @notice Returns the total balance of a given validator
-     * @param account The address of the validator
-     * @return Validator's balance
+     * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
+     * @param signature Signature to validate message against
+     * @param pubkey BLS public key of validator
+     * @param commission The commission rate for the delegators
      */
-    function balanceOf(address account) external view returns (uint256);
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 commission) external;
 
-    /**
-     * @notice Returns the total supply
-     * @return Total supply
-     */
-    function totalSupply() external view returns (uint256);
+    function activateValidator(address account) external;
+
+    function deactivateValidator(address account) external;
 
     /**
      * @notice Gets validator by address.
@@ -67,6 +71,7 @@ interface IValidatorManager {
      * @return Returns array of addresses
      */
     function getValidators() external view returns (address[] memory);
+
     /**
      * @notice Gets the number of current validators
      * @return Returns the count as uint256
@@ -74,8 +79,8 @@ interface IValidatorManager {
     function getActiveValidatorsCount() external view returns (uint256);
 
     /**
-     * @notice Method to update when the validator was lastly active which can be executed only by the RewardPool
-     * @param validator The validator to set the last participation for
+     * @notice Sets commission for validator.
+     * @param newCommission New commission (100 = 100%)
      */
-    function updateValidatorParticipation(address validator) external;
+    function setCommission(uint256 newCommission) external;
 }

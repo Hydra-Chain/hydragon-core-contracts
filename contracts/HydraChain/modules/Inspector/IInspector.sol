@@ -1,20 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-/**
- * @notice Data type for the banned validators' withdrawals
- * @param liquidTokens The amount of liquid tokens to be taken on withdrawal from the penalized validator
- * @param withdrawableAmount The amount that is available for withdrawal after validator's penalty
- */
-struct WithdrawalInfo {
-    uint256 liquidTokens;
-    uint256 withdrawableAmount;
-}
-
 interface IInspector {
     event ValidatorBanned(address indexed validator);
 
-    error ThresholdNotReached();
+    error NoBanSubject();
 
     /**
      * @notice Set the penalty amount for the banned validators
@@ -33,12 +23,6 @@ interface IInspector {
      * @param newThreshold The new threshold in blocks
      */
     function setBanThreshold(uint256 newThreshold) external;
-
-    /**
-     * @notice Withdraw funds left for a banned validator
-     * @dev Function can be executed only by the banned validator
-     */
-    function withdrawBannedFunds() external;
 
     /**
      * @notice Method used to ban a validator, if the ban threshold is reached

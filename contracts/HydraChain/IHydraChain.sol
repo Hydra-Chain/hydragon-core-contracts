@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IInspector} from "./modules/Inspector/IInspector.sol";
+import {IPowerExponent} from "./modules/PowerExponent/IPowerExponent.sol";
+import {IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
+
 struct Epoch {
     uint256 startBlock;
     uint256 endBlock;
     bytes32 epochRoot;
 }
 
-interface IHydraChain {
+interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
 
     /**

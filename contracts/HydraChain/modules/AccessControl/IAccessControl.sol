@@ -5,6 +5,9 @@ interface IAccessControl {
     event AddedToWhitelist(address indexed validator);
     event RemovedFromWhitelist(address indexed validator);
 
+    error MustBeWhitelisted();
+    error PreviouslyWhitelisted();
+
     /**
      * @notice Adds addresses that are allowed to register as validators.
      * @param whitelistAddreses Array of address to whitelist

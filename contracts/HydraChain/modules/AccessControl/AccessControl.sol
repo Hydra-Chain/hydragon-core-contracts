@@ -2,12 +2,11 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import "./../ValidatorManager/ValidatorManager.sol";
+
 import "./IAccessControl.sol";
 
-abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable, ValidatorManager {
-    error MustBeWhitelisted();
-    error PreviouslyWhitelisted();
+abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
+    mapping(address => bool) public isWhitelisted;
 
     // TODO: We must be able to enable/disable this feature
     function __AccessControl_init(address governance) internal onlyInitializing {
@@ -37,14 +36,16 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable, Vali
     }
 
     function _addToWhitelist(address account) internal {
-        if (validators[account].status != ValidatorStatus.None) revert PreviouslyWhitelisted();
-        validators[account].status = ValidatorStatus.Whitelisted;
+        if (isWhitelisted[account]) revert PreviouslyWhitelisted();
+        isWhitelisted[account] = true;
+
         emit AddedToWhitelist(account);
     }
 
     function _removeFromWhitelist(address account) internal {
-        if (validators[account].status != ValidatorStatus.Whitelisted) revert MustBeWhitelisted();
-        validators[account].status = ValidatorStatus.None;
+        if (!isWhitelisted[account]) revert MustBeWhitelisted();
+        isWhitelisted[account] = false;
+
         emit RemovedFromWhitelist(account);
     }
 
