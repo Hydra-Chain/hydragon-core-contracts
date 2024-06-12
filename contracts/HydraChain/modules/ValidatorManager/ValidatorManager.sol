@@ -12,7 +12,6 @@ import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IV
 
 abstract contract ValidatorManager is IValidatorManager, System, AccessControl, StakingConnector {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
-
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
     /// @notice A constant for the maximum amount of validators
@@ -21,10 +20,8 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     IBLS public bls;
     address[] public validatorsAddresses;
     uint256 public activeValidatorsCount;
-
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
-
     /**
      * @notice Mapping that keeps the last time when a validator has participated in the consensus
      * @dev Keep in mind that the validator will initially be set active when stake,
@@ -51,13 +48,14 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
 
     // _______________ Initializer _______________
 
+    // TODO: Move commision to Delegation module
     function __ValidatorManager_init(
         ValidatorInit[] calldata newValidators,
         IBLS newBls,
         address governance,
         uint256 initialCommission
     ) internal onlyInitializing {
-        __AccessControl_init_unchained(governance);
+        __AccessControl_init(governance);
         __ValidatorManager_init_unchained(newValidators, newBls, initialCommission);
     }
 
@@ -78,7 +76,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     /**
      * @inheritdoc IValidatorManager
      */
-    function getValidators() public view returns (address[] memory) {
+    function getValidators() external view returns (address[] memory) {
         return validatorsAddresses;
     }
 
@@ -111,13 +109,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     /**
      * @inheritdoc IValidatorManager
      */
-    function getActiveValidatorsCount() public view returns (uint256) {
-        return activeValidatorsCount;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
     function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 commission) external {
         if (!AccessControl.isWhitelisted[msg.sender]) revert Unauthorized("WHITELIST");
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
@@ -128,7 +119,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     }
 
     function activateValidator(address account) external onlyStaking {
-        if (activeValidatorsCount == MAX_VALIDATORS) revert MaxValidatorsReached();
+        if (getActiveValidatorsCount() == MAX_VALIDATORS) revert MaxValidatorsReached();
         if (validators[account].status != ValidatorStatus.Registered) revert Unauthorized("MUST_BE_REGISTERED");
         unchecked {
             activeValidatorsCount++;
@@ -151,14 +142,33 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         _setCommission(msg.sender, newCommission);
     }
 
+    // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function getActiveValidatorsCount() public view returns (uint256) {
+        return activeValidatorsCount;
+    }
+
     // _______________ Internal functions _______________
+
+    /**
+     * @notice Method used to update the participation
+     * @param validator address
+     */
+    function _updateParticipation(address validator) internal {
+        validatorsParticipation[validator] = block.number;
+    }
+
+    // _______________ Private functions _______________
 
     function _register(
         address validator,
         uint256[2] calldata signature,
         uint256[4] calldata pubkey,
         uint256 commission
-    ) internal {
+    ) private {
         _verifyValidatorRegistration(validator, signature, pubkey);
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
@@ -171,7 +181,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         address signer,
         uint256[2] calldata signature,
         uint256[4] calldata pubkey
-    ) internal view {
+    ) private view {
         // slither-disable-next-line calls-loop
         (bool result, bool callSuccess) = bls.verifySingle(signature, pubkey, _message(signer));
         if (!callSuccess || !result) revert InvalidSignature(signer);
@@ -186,33 +196,9 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     }
 
     /// @notice Message to sign for registration
-    function _message(address signer) internal view returns (uint256[2] memory) {
+    function _message(address signer) private view returns (uint256[2] memory) {
         // slither-disable-next-line calls-loop
         return bls.hashToPoint(DOMAIN, abi.encodePacked(signer, block.chainid));
-    }
-
-    /**
-     * @notice Method used to update the participation
-     * @param validator address
-     */
-    function _updateParticipation(address validator) internal {
-        validatorsParticipation[validator] = block.number;
-    }
-
-    /**
-     * @notice Method used to burn funds
-     * @param amount The amount to be burned
-     */
-    function _burnAmount(uint256 amount) internal {
-        (bool success, ) = address(0).call{value: amount}("");
-        require(success, "Failed to burn amount");
-    }
-
-    /**
-     * @notice Decrement the active validators count
-     */
-    function _decreaseActiveValidatorsCount() internal {
-        activeValidatorsCount--;
     }
 
     // slither-disable-next-line unused-state,naming-convention

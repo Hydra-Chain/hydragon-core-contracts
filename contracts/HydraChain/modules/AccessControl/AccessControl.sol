@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
-import "./IAccessControl.sol";
+import {IAccessControl} from "./IAccessControl.sol";
 
 abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     mapping(address => bool) public isWhitelisted;
 
     // TODO: We must be able to enable/disable this feature
     function __AccessControl_init(address governance) internal onlyInitializing {
+        __Ownable2Step_init();
         __AccessControl_init_unchained(governance);
     }
 
