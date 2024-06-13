@@ -36,7 +36,7 @@ abstract contract LiquidStaking is ILiquidStaking, Staking {
         _distributeTokens(account, amount);
     }
 
-    function _unstake(address account, uint256 amount) internal override returns (uint256) {
+    function _unstake(address account, uint256 amount) internal override returns (uint256, uint256) {
         _collectTokens(account, amount);
 
         return super._unstake(account, amount);

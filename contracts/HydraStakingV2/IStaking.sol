@@ -10,8 +10,11 @@ interface IStaking {
     event Staked(address indexed account, uint256 amount);
     event Unstaked(address indexed account, uint256 amount);
     event StakingRewardsClaimed(address indexed account, uint256 amount);
+    event StakingRewardDistributed(address indexed account, uint256 amount);
 
+    error NoRewards();
     error InvalidMinStake();
+    error StakeRequirement(string src, string msg);
 
     /**
      * @notice Stakes sent amount.
