@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./modules/Withdrawal/Withdrawal.sol";
-import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
+import {APRCalculator} from "./modules/APRCalculator/APRCalculator.sol";
+import {Unauthorized} from "./../common/Errors.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
-contract Staking is IStaking, Initializable, Ownable2StepUpgradeable, Withdrawal {
+contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
 
@@ -46,20 +47,6 @@ contract Staking is IStaking, Initializable, Ownable2StepUpgradeable, Withdrawal
     function unstake(uint256 amount) external {
         _unstake(msg.sender, amount);
         _registerWithdrawal(msg.sender, amount);
-
-        emit Unstaked(msg.sender, amount);
-    }
-
-    function claimStakingRewards() external {
-        uint256 reward = unclaimedRewards(msg.sender);
-        if (reward == 0) {
-            return;
-        }
-
-        stakingRewards[msg.sender].taken += reward;
-        _withdraw(msg.sender, reward);
-
-        emit StakingRewardsClaimed(msg.sender, reward);
     }
 
     /**
@@ -70,6 +57,19 @@ contract Staking is IStaking, Initializable, Ownable2StepUpgradeable, Withdrawal
     }
 
     // _______________ Public functions _______________
+
+    function claimStakingRewards() public {
+        _withdraw(msg.sender, _claimStakingRewards(msg.sender));
+    }
+
+    function _claimStakingRewards(address staker) internal virtual returns (uint256 rewards) {
+        rewards = unclaimedRewards(staker);
+        if (rewards == 0) revert NoRewards();
+
+        stakingRewards[staker].taken += rewards;
+
+        emit StakingRewardsClaimed(staker, rewards);
+    }
 
     function stakeOf(address account) public view returns (uint256) {
         return stakes[account];
@@ -90,15 +90,33 @@ contract Staking is IStaking, Initializable, Ownable2StepUpgradeable, Withdrawal
         emit Staked(account, amount);
     }
 
-    function _unstake(address account, uint256 amount) internal virtual returns (uint256 validatorStakeLeft) {
+    function _unstake(
+        address account,
+        uint256 amount
+    ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
         uint256 validatorStake = stakeOf(account);
         if (amount > validatorStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
-        validatorStakeLeft = validatorStake - amount;
-        if (validatorStakeLeft < minStake && validatorStakeLeft != 0)
-            revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
+        stakeLeft = validatorStake - amount;
+        if (stakeLeft < minStake && stakeLeft != 0) revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
-        stakes[account] = validatorStakeLeft;
+        stakes[account] = stakeLeft;
+        withdrawAmount = amount;
+
+        emit Unstaked(msg.sender, amount);
+    }
+
+    /**
+     * @notice Function that calculates the end reward for a user (without vesting bonuses) based on the pool reward index.
+     * @dev Denominator is used because we should work with floating-point numbers
+     * @param rewardIndex index The reward index that we apply the base APR to
+     * @dev The reward with the applied APR
+     */
+    function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual {
+        uint256 reward = APRCalculator._applyBaseAPR(rewardIndex);
+        stakingRewards[account].total += reward;
+
+        emit StakingRewardDistributed(account, reward);
     }
 
     // _______________ Private functions _______________
