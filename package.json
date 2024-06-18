@@ -35,8 +35,9 @@
     "husky:pre-commit": ""
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.3",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@openzeppelin/contracts": "^4.9.3",
+    "@openzeppelin/contracts-upgradeable": "^4.9.3",
     "@primitivefi/hardhat-dodoc": "^0.2.3",
     "keccak256": "^1.0.6",
     "mcl-wasm": "^1.0.2",
