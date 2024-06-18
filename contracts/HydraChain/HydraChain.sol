@@ -9,7 +9,8 @@ import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {SafeMathInt} from "./../common/libs/SafeMathInt.sol";
 import {IBLS} from "../BLS/IBLS.sol";
-import {IHydraChain, Epoch} from "./IHydraChain.sol";
+import {IHydraChain} from "./IHydraChain.sol";
+import {IEpochManager, Epoch} from "./modules/EpochManager/IEpochManager.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
@@ -51,7 +52,12 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
     // _______________ External functions _______________
 
     /**
-     * @inheritdoc IHydraChain
+     * @inheritdoc IEpochManager
+     */
+    function getCurrentEpochId() external view returns (uint256) {}
+
+    /**
+     * @inheritdoc IEpochManager
      */
     function totalBlocks(uint256 epochId) external view returns (uint256 length) {
         uint256 endBlock = epochs[epochId].endBlock;
@@ -59,7 +65,7 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
     }
 
     /**
-     * @inheritdoc IHydraChain
+     * @inheritdoc IEpochManager
      */
     function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory) {
         uint256 epochIndex = epochEndBlocks.findUpperBound(blockNumber);

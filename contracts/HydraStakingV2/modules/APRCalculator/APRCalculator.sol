@@ -82,6 +82,10 @@ contract APRCalculator is Initializable, Governed {
         return (totalStaked * nominator) / denominator / EPOCHS_YEAR;
     }
 
+    function getVestingBonus(uint256 weeksCount) public view returns (uint256 nominator) {
+        return vestingBonus[weeksCount - 1];
+    }
+
     // TODO: Calculate per epoch - currently yearly reward is used
     function applyMacro(uint256 totalStaked) internal view returns (uint256 reward) {
         return (totalStaked * macroFactor) / DENOMINATOR;

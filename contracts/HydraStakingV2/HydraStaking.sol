@@ -6,20 +6,24 @@ import {Staking} from "./Staking.sol";
 import {System} from "./../common/System/System.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
+import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {ValidatorManagerConnector} from "./modules/ValidatorManagerConnector.sol";
+import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
 contract HydraStaking is
     IHydraStaking,
+    System,
+    ValidatorManagerConnector,
     Staking,
     LiquidStaking,
     StateSyncStaking,
     VestedStaking,
-    System,
-    ValidatorManagerConnector
+    PenalizeableStaking,
+    DelegatedStaking
 {
     // TODO: Properly set up initializers
 
@@ -30,8 +34,7 @@ contract HydraStaking is
     function initialize(
         StakerInit[] calldata initialStakers,
         uint256 newMinStake,
-        address newLiquidToken,
-        address newRewardPool
+        address newLiquidToken
     ) external initializer onlySystemCall {
         __Staking_init(newMinStake);
         __LiquidStaking_init(newLiquidToken);
@@ -43,6 +46,10 @@ contract HydraStaking is
         for (uint256 i = 0; i < initialStakers.length; i++) {
             _stake(initialStakers[i].addr, initialStakers[i].stake);
         }
+    }
+
+    function totalBalanceOf(address staker) public view returns (uint256) {
+        return stakeOf(staker) + totalDelegationOf(staker);
     }
 
     function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
@@ -67,11 +74,29 @@ contract HydraStaking is
         }
     }
 
+    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
+        super._delegate(staker, delegator, amount);
+        _syncState(staker);
+    }
+
+    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
+        super._undelegate(staker, delegator, amount);
+        _syncState(staker);
+    }
+
     function _claimStakingRewards(address staker) internal override(Staking, VestedStaking) returns (uint256 rewards) {
         return super._claimStakingRewards(staker);
     }
 
     function _distributeStakingReward(address account, uint256 rewardIndex) internal override(Staking, VestedStaking) {
         return super._distributeStakingReward(account, rewardIndex);
+    }
+
+    function _getBalanceToSync(address account) internal virtual override returns (uint256) {
+        if (stakeOf(account) == 0) {
+            return 0;
+        }
+
+        return totalBalanceOf(account);
     }
 }

@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IWithdrawal} from "./modules/Withdrawal/IWithdrawal.sol";
+
 struct StakingReward {
     uint256 taken;
     uint256 total;
 }
 
-interface IStaking {
+interface IStaking is IWithdrawal {
     event Staked(address indexed account, uint256 amount);
     event Unstaked(address indexed account, uint256 amount);
     event StakingRewardsClaimed(address indexed account, uint256 amount);

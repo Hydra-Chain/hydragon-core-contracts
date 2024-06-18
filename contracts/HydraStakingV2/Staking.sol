@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./modules/Withdrawal/Withdrawal.sol";
 import {APRCalculator} from "./modules/APRCalculator/APRCalculator.sol";
@@ -58,25 +56,16 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
 
     // _______________ Public functions _______________
 
-    function claimStakingRewards() public {
-        _withdraw(msg.sender, _claimStakingRewards(msg.sender));
-    }
-
-    function _claimStakingRewards(address staker) internal virtual returns (uint256 rewards) {
-        rewards = unclaimedRewards(staker);
-        if (rewards == 0) revert NoRewards();
-
-        stakingRewards[staker].taken += rewards;
-
-        emit StakingRewardsClaimed(staker, rewards);
-    }
-
     function stakeOf(address account) public view returns (uint256) {
         return stakes[account];
     }
 
     function unclaimedRewards(address account) public view returns (uint256) {
         return stakingRewards[account].total - stakingRewards[account].taken;
+    }
+
+    function claimStakingRewards() public {
+        _withdraw(msg.sender, _claimStakingRewards(msg.sender));
     }
 
     // _______________ Internal functions _______________
@@ -117,6 +106,15 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
         stakingRewards[account].total += reward;
 
         emit StakingRewardDistributed(account, reward);
+    }
+
+    function _claimStakingRewards(address staker) internal virtual returns (uint256 rewards) {
+        rewards = unclaimedRewards(staker);
+        if (rewards == 0) revert NoRewards();
+
+        stakingRewards[staker].taken += rewards;
+
+        emit StakingRewardsClaimed(staker, rewards);
     }
 
     // _______________ Private functions _______________

@@ -90,7 +90,7 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
     function _unstake(
         address account,
         uint256 amount
-    ) internal override returns (uint256 stakeLeft, uint256 withdrawAmount) {
+    ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
@@ -112,7 +112,7 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
         return (stakeLeft, withdrawAmount);
     }
 
-    function _claimStakingRewards(address staker) internal override returns (uint256 rewards) {
+    function _claimStakingRewards(address staker) internal virtual override returns (uint256 rewards) {
         if (vestedStakingPositions[staker].isInVestingCycle()) {
             revert NoRewards();
         }
@@ -120,7 +120,7 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
         return super._claimStakingRewards(staker);
     }
 
-    function _distributeStakingReward(address account, uint256 rewardIndex) internal override {
+    function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
             uint256 reward = _applyCustomAPR(position, rewardIndex, true);

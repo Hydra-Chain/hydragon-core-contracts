@@ -387,6 +387,23 @@ Gets the number of current validators
 |---|---|---|
 | _0 | uint256 | Returns the count as uint256 |
 
+### getCurrentEpochId
+
+```solidity
+function getCurrentEpochId() external view returns (uint256)
+```
+
+Get current epoch ID
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getEpochByBlock
 
 ```solidity

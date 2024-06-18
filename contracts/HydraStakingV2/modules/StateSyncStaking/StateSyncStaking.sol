@@ -8,30 +8,34 @@ import {Staking} from "./../../Staking.sol";
  * @notice This contract is used to emit a specific event when staked balance changes;
  * Child chain listen for this event to sync the state of the validators
  */
-contract StateSyncStaking is Staking {
-    event StakeChanged(address indexed validator, uint256 newStake);
+abstract contract StateSyncStaking is Staking {
+    event BalanceChanged(address indexed account, uint256 newBalance);
 
-    function _stake(address account, uint256 amount) internal override {
+    function _stake(address account, uint256 amount) internal virtual override {
         super._stake(account, amount);
-        _syncStake(account, stakeOf(account));
+        _syncState(account);
     }
 
     function _unstake(
         address account,
         uint256 amount
-    ) internal override returns (uint256 stakeLeft, uint256 withdrawAmount) {
+    ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
-        _syncStake(account, stakeOf(account));
+        _syncState(account);
     }
 
     /**
-     * @notice Emit a StakeChanged event on stake
-     * @param staker The address of the staker
-     * @param stakeBalance New stake amount
+     * @notice Emit a BalanceChanged event
+     * @param account The address of the account
      */
-    function _syncStake(address staker, uint256 stakeBalance) internal {
-        emit StakeChanged(staker, stakeBalance);
+    function _syncState(address account) internal {
+        emit BalanceChanged(account, _getBalanceToSync(account));
     }
+
+    /**
+     * @dev override to set how the balance must be fetched
+     */
+    function _getBalanceToSync(address account) internal virtual returns (uint256);
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
