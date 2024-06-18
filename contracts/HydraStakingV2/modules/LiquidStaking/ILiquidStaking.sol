@@ -2,10 +2,6 @@
 pragma solidity 0.8.17;
 
 import {IStaking} from "./../../IStaking.sol";
+import {ILiquid} from "./../common/Liquid/ILiquid.sol";
 
-interface ILiquidStaking is IStaking {
-    /**
-     * @notice Returns the address of the token that is distributed as a liquidity on stake
-     */
-    function liquidToken() external view returns (address);
-}
+interface ILiquidStaking is IStaking, ILiquid {}
