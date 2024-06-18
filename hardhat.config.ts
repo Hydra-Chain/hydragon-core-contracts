@@ -1,5 +1,5 @@
 import "@nomicfoundation/hardhat-toolbox";
-import "@openzeppelin/hardhat-upgrades";
+// import "@openzeppelin/hardhat-upgrades";
 import "@primitivefi/hardhat-dodoc";
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
@@ -9,6 +9,9 @@ import "./big-int-fix.ts";
 dotenv.config();
 
 const config: HardhatUserConfig = {
+  typechain: {
+    target: "ethers-v6",
+  },
   solidity: {
     compilers: [
       {
