@@ -35,7 +35,6 @@
     "husky:pre-commit": ""
   },
   "dependencies": {
-    "@defi-wonderland/smock": "^2.3.4",
     "@openzeppelin/contracts": "^4.9.3",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@primitivefi/hardhat-dodoc": "^0.2.3",
