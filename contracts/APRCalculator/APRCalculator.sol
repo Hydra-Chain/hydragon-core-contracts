@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-import {Governed} from "./../../../common/Governed/Governed.sol";
+import {Governed} from "./../common/Governed/Governed.sol";
 
 contract APRCalculator is Initializable, Governed {
     error InvalidRSI();
@@ -42,6 +42,22 @@ contract APRCalculator is Initializable, Governed {
 
     function setMacro(uint256 newMacroFactor) public onlyRole(MANAGER_ROLE) {
         macroFactor = newMacroFactor;
+    }
+
+    function getBaseAPR() public view returns (uint256) {
+        return base;
+    }
+
+    function getRSIBonus() public view returns (uint256) {
+        return rsi;
+    }
+
+    function getDENOMINATOR() public pure returns (uint256) {
+        return DENOMINATOR;
+    }
+
+    function getEpochsPerYear() public pure returns (uint256) {
+        return EPOCHS_YEAR;
     }
 
     function setRSI(uint256 newRSI) public onlyRole(MANAGER_ROLE) {
@@ -87,7 +103,7 @@ contract APRCalculator is Initializable, Governed {
     }
 
     // TODO: Calculate per epoch - currently yearly reward is used
-    function applyMacro(uint256 totalStaked) internal view returns (uint256 reward) {
+    function applyMacro(uint256 totalStaked) public view returns (uint256 reward) {
         return (totalStaked * macroFactor) / DENOMINATOR;
     }
 
@@ -95,7 +111,7 @@ contract APRCalculator is Initializable, Governed {
         return 1e18;
     }
 
-    function _applyBaseAPR(uint256 amount) internal view returns (uint256) {
+    function applyBaseAPR(uint256 amount) public view returns (uint256) {
         return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
     }
 

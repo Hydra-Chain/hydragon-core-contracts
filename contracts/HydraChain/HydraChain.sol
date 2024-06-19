@@ -11,6 +11,7 @@ import {SafeMathInt} from "./../common/libs/SafeMathInt.sol";
 import {IBLS} from "../BLS/IBLS.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {IEpochManager, Epoch} from "./modules/EpochManager/IEpochManager.sol";
+import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
@@ -72,7 +73,12 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
         return epochs[epochIndex];
     }
 
-    function commitEpoch(uint256 id, Epoch calldata epoch, uint256 epochSize) external onlySystemCall {
+    function commitEpoch(
+        uint256 id,
+        Epoch calldata epoch,
+        uint256 epochSize,
+        Uptime[] calldata uptime
+    ) external onlySystemCall {
         uint256 newEpochId = currentEpochId++;
         require(id == newEpochId, "UNEXPECTED_EPOCH_ID");
         require(epoch.endBlock > epoch.startBlock, "NO_BLOCKS_COMMITTED");
@@ -84,6 +90,12 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
         epochEndBlocks.push(epoch.endBlock);
 
         _applyPendingExp(); // Apply new exponent in case it was changed in the latest epoch
+
+        // Update participations
+        uint256 uptimesCount = uptime.length;
+        for (uint256 i = 0; i < uptimesCount; i++) {
+            _updateParticipation(uptime[i].validator);
+        }
 
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }

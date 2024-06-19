@@ -3,15 +3,17 @@ pragma solidity 0.8.17;
 
 import {Governed} from "./../../../common/Governed/Governed.sol";
 import {Withdrawal} from "./../Withdrawal/Withdrawal.sol";
-import {APRCalculator} from "./../APRCalculator/APRCalculator.sol";
+import {APRCalculatorConnector} from "./../APRCalculatorConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculator {
+contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector {
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
     uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
+
+    uint256 public totalDelegation;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     // @note maybe this must be part of the ValidatorSet
@@ -63,6 +65,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculator {
             revert DelegateRequirement({src: "delegate", msg: "DELEGATION_TOO_LOW"});
 
         delegation.deposit(delegator, amount);
+        totalDelegation += amount;
 
         emit Delegated(staker, delegator, amount);
     }
@@ -81,6 +84,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculator {
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
         delegation.withdraw(delegator, amount);
+        totalDelegation -= amount;
 
         emit Undelegated(validator, delegator, amount);
     }
@@ -88,11 +92,16 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculator {
     function _claimDelegatorReward(address validator, address delegator) private {
         DelegationPool storage delegation = delegationPools[validator];
         uint256 rewardIndex = delegation.claimRewards(delegator);
-        uint256 reward = APRCalculator._applyBaseAPR(rewardIndex);
+        uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
         emit DelegatorRewardClaimed(validator, delegator, reward);
 
         _withdraw(delegator, reward);
+    }
+
+    function _distributeDelegatorReward(address staker, uint256 reward) internal {
+        delegationPools[staker].distributeReward(reward);
+        emit DelegatorRewardDistributed(staker, reward);
     }
 }

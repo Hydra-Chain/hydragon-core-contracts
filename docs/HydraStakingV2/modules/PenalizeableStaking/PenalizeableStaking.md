@@ -1,10 +1,10 @@
-# LiquidStaking
+# PenalizeableStaking
 
 
 
-> LiquidStaking
 
-An extension of the Staking contract that enables the distribution of liquid tokens to stakers
+
+
 
 
 
@@ -211,32 +211,15 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### liquidToken
+### leftToWithdrawPerStaker
 
 ```solidity
-function liquidToken() external view returns (address)
+function leftToWithdrawPerStaker(address) external view returns (uint256)
 ```
 
-Returns the address of the token that is distributed as a liquidity on stake
+The withdrawal info that is required for a banned validator to withdraw the funds left
 
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### liquidityDebts
-
-```solidity
-function liquidityDebts(address) external view returns (uint256)
-```
-
-
-
-
+*The withdrawal amount is calculated as the difference between the validator&#39;s total stake and any penalties applied due to a ban*
 
 #### Parameters
 
@@ -283,6 +266,24 @@ function owner() external view returns (address)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### penalizeStaker
+
+```solidity
+function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | undefined |
+| unstakeAmount | uint256 | undefined |
+| stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingOwner
 
@@ -539,6 +540,23 @@ Unstakes amount for sender. Claims rewards beforehand.
 |---|---|---|
 | amount | uint256 | Amount to unstake |
 
+### validatorManagerContract
+
+```solidity
+function validatorManagerContract() external view returns (contract IValidatorManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IValidatorManager | undefined |
+
 ### withdraw
 
 ```solidity
@@ -554,6 +572,17 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
+
+### withdrawBannedFunds
+
+```solidity
+function withdrawBannedFunds() external nonpayable
+```
+
+
+
+
+
 
 ### withdrawable
 
@@ -852,5 +881,21 @@ error StakeRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
 
 

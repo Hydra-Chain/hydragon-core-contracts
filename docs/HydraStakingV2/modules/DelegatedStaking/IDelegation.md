@@ -167,7 +167,7 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 ### DelegatorRewardClaimed
 
 ```solidity
-event DelegatorRewardClaimed(address indexed validator, address indexed delegator, uint256 amount)
+event DelegatorRewardClaimed(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -178,8 +178,25 @@ event DelegatorRewardClaimed(address indexed validator, address indexed delegato
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### DelegatorRewardDistributed
+
+```solidity
+event DelegatorRewardDistributed(address indexed staker, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Undelegated

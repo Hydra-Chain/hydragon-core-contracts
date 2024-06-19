@@ -4,14 +4,14 @@ pragma solidity 0.8.17;
 import {Staking} from "./../../Staking.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 import {VestingPosition} from "./IVesting.sol";
-import {APRCalculator} from "./../APRCalculator/APRCalculator.sol";
+import {APRCalculatorConnector} from "./../APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./VestedPositionLib.sol";
 
 /**
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-contract VestedStaking is IVestedStaking, APRCalculator, Staking {
+contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
     using VestedPositionLib for VestingPosition;
 
     /**
@@ -62,9 +62,9 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
             duration: duration,
             start: block.timestamp,
             end: block.timestamp + duration,
-            base: base,
-            vestBonus: APRCalculator.calcVestingBonus(durationWeeks),
-            rsiBonus: uint248(rsi)
+            base: aprCalculatorContract.getBaseAPR(),
+            vestBonus: aprCalculatorContract.calcVestingBonus(durationWeeks),
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
         });
 
         _stake(msg.sender, msg.value);
@@ -174,7 +174,7 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
         uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
 
-        return (amount * bps) / DENOMINATOR;
+        return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }
 
     /**
@@ -187,14 +187,24 @@ contract VestedStaking is IVestedStaking, APRCalculator, Staking {
         VestingPosition memory position,
         uint256 reward,
         bool rsi
-    ) internal pure returns (uint256) {
+    ) internal view returns (uint256) {
         uint256 bonus = (position.base + position.vestBonus);
-        uint256 divider = DENOMINATOR;
+        uint256 divider = aprCalculatorContract.getDENOMINATOR();
         if (rsi && position.rsiBonus != 0) {
             bonus = bonus * position.rsiBonus;
             divider *= divider;
         }
 
-        return (reward * bonus) / divider / EPOCHS_YEAR;
+        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
+    }
+
+    function _saveStakerRewardData(address staker, uint256 epoch) internal {
+        StakingRewardsHistory memory rewardData = StakingRewardsHistory({
+            totalReward: stakingRewards[staker].total,
+            epoch: epoch,
+            timestamp: block.timestamp
+        });
+
+        stakingRewardsHistory[staker].push(rewardData);
     }
 }
