@@ -22,9 +22,13 @@ struct Validator {
     ValidatorStatus status;
 }
 
+struct Uptime {
+    address validator;
+    uint256 signedBlocks;
+}
+
 interface IValidatorManager {
     event NewValidator(address indexed validator, uint256[4] blsKey);
-    event CommissionUpdated(address indexed validator, uint256 newCommission);
 
     error InvalidSignature(address signer);
     error MaxValidatorsReached();
@@ -34,9 +38,8 @@ interface IValidatorManager {
      * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
      * @param signature Signature to validate message against
      * @param pubkey BLS public key of validator
-     * @param commission The commission rate for the delegators
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 commission) external;
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external;
 
     function activateValidator(address account) external;
 
@@ -77,10 +80,4 @@ interface IValidatorManager {
      * @return Returns the count as uint256
      */
     function getActiveValidatorsCount() external view returns (uint256);
-
-    /**
-     * @notice Sets commission for validator.
-     * @param newCommission New commission (100 = 100%)
-     */
-    function setCommission(uint256 newCommission) external;
 }

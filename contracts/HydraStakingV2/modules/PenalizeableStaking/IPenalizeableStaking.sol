@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {IStaking} from "./../../IStaking.sol";
 import {ILiquid} from "./../common/Liquid/ILiquid.sol";
 
-struct PenaltyReward {
+struct PenalizedStakeDistribution {
     address account;
     uint256 amount;
 }

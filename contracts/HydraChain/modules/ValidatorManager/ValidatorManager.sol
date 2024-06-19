@@ -12,8 +12,7 @@ import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IV
 
 abstract contract ValidatorManager is IValidatorManager, System, AccessControl, StakingConnector {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
-    /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
-    uint256 public constant MAX_COMMISSION = 100;
+
     /// @notice A constant for the maximum amount of validators
     uint256 public constant MAX_VALIDATORS = 150;
 
@@ -67,7 +66,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         bls = newBls;
         // set initial validators
         for (uint256 i = 0; i < newValidators.length; i++) {
-            _register(newValidators[i].addr, newValidators[i].signature, newValidators[i].pubkey, initialCommission);
+            _register(newValidators[i].addr, newValidators[i].signature, newValidators[i].pubkey);
         }
     }
 
@@ -109,11 +108,11 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     /**
      * @inheritdoc IValidatorManager
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 commission) external {
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external {
         if (!AccessControl.isWhitelisted[msg.sender]) revert Unauthorized("WHITELIST");
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
 
-        _register(msg.sender, signature, pubkey, commission);
+        _register(msg.sender, signature, pubkey);
 
         emit NewValidator(msg.sender, pubkey);
     }
@@ -133,13 +132,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     function deactivateValidator(address account) external onlyStaking {
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
-    function setCommission(uint256 newCommission) external onlyValidator(msg.sender) {
-        _setCommission(msg.sender, newCommission);
     }
 
     // _______________ Public functions _______________
@@ -163,16 +155,10 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
 
     // _______________ Private functions _______________
 
-    function _register(
-        address validator,
-        uint256[2] calldata signature,
-        uint256[4] calldata pubkey,
-        uint256 commission
-    ) private {
+    function _register(address validator, uint256[2] calldata signature, uint256[4] calldata pubkey) private {
         _verifyValidatorRegistration(validator, signature, pubkey);
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
-        _setCommission(validator, commission);
         validatorsAddresses.push(validator);
         // TODO: Create delegation pool if desired
     }
@@ -185,14 +171,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         // slither-disable-next-line calls-loop
         (bool result, bool callSuccess) = bls.verifySingle(signature, pubkey, _message(signer));
         if (!callSuccess || !result) revert InvalidSignature(signer);
-    }
-
-    function _setCommission(address validator, uint256 newCommission) private {
-        if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
-
-        validators[validator].commission = newCommission;
-
-        emit CommissionUpdated(validator, newCommission);
     }
 
     /// @notice Message to sign for registration

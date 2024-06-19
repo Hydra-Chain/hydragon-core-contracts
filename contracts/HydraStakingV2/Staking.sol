@@ -3,13 +3,14 @@ pragma solidity 0.8.17;
 
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./modules/Withdrawal/Withdrawal.sol";
-import {APRCalculator} from "./modules/APRCalculator/APRCalculator.sol";
+import {APRCalculatorConnector} from "./modules/APRCalculatorConnector.sol";
 import {Unauthorized} from "./../common/Errors.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
+import {EpochManagerConnector} from "./modules/EpochManagerConnector.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
-contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
+contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, EpochManagerConnector {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
 
@@ -75,6 +76,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
 
         stakes[account] += amount;
+        totalStake += amount;
 
         emit Staked(account, amount);
     }
@@ -83,13 +85,14 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
         address account,
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        uint256 validatorStake = stakeOf(account);
-        if (amount > validatorStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
+        uint256 accountStake = stakeOf(account);
+        if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
-        stakeLeft = validatorStake - amount;
+        stakeLeft = accountStake - amount;
         if (stakeLeft < minStake && stakeLeft != 0) revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
         stakes[account] = stakeLeft;
+        totalStake -= amount;
         withdrawAmount = amount;
 
         emit Unstaked(msg.sender, amount);
@@ -102,7 +105,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculator {
      * @dev The reward with the applied APR
      */
     function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual {
-        uint256 reward = APRCalculator._applyBaseAPR(rewardIndex);
+        uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         stakingRewards[account].total += reward;
 
         emit StakingRewardDistributed(account, reward);

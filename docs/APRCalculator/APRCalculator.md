@@ -146,6 +146,50 @@ function MIN_RSI_BONUS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### applyBaseAPR
+
+```solidity
+function applyBaseAPR(uint256 amount) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### applyMacro
+
+```solidity
+function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| totalStaked | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | undefined |
+
 ### applyMaxReward
 
 ```solidity
@@ -207,6 +251,40 @@ function calcVestingBonus(uint256 weeksCount) external view returns (uint256 nom
 |---|---|---|
 | nominator | uint256 | undefined |
 
+### getBaseAPR
+
+```solidity
+function getBaseAPR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### getDENOMINATOR
+
+```solidity
+function getDENOMINATOR() external pure returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getEpochMaxReward
 
 ```solidity
@@ -229,6 +307,23 @@ function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 r
 |---|---|---|
 | reward | uint256 | undefined |
 
+### getEpochsPerYear
+
+```solidity
+function getEpochsPerYear() external pure returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getMaxAPR
 
 ```solidity
@@ -246,6 +341,23 @@ function getMaxAPR() external view returns (uint256 nominator, uint256 denominat
 |---|---|---|
 | nominator | uint256 | undefined |
 | denominator | uint256 | undefined |
+
+### getRSIBonus
+
+```solidity
+function getRSIBonus() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### getRoleAdmin
 

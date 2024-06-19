@@ -10,15 +10,15 @@ import {Unauthorized} from "./../../common/Errors.sol";
 abstract contract ValidatorManagerConnector is Initializable {
     IValidatorManager public validatorManagerContract;
 
-    function __StakingConnector_init(address validatorManagerAddr) internal onlyInitializing {
-        __StakingConnector_init_unchained(validatorManagerAddr);
+    function __ValidatorManagerConnector_init(address validatorManagerAddr) internal onlyInitializing {
+        __ValidatorManagerConnector_init_unchained(validatorManagerAddr);
     }
 
-    function __StakingConnector_init_unchained(address validatorManagerAddr) internal onlyInitializing {
+    function __ValidatorManagerConnector_init_unchained(address validatorManagerAddr) internal onlyInitializing {
         validatorManagerContract = IValidatorManager(validatorManagerAddr);
     }
 
-    modifier onlyStaking() {
+    modifier onlyValidatorManager() {
         if (msg.sender != address(validatorManagerContract)) {
             revert Unauthorized("ONLY_VALIDATOR_MANAGER");
         }

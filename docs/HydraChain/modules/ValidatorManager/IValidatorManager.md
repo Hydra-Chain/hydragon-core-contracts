@@ -106,7 +106,7 @@ Gets all validators. Returns already unactive validators as well.
 ### register
 
 ```solidity
-function register(uint256[2] signature, uint256[4] pubkey, uint256 commission) external nonpayable
+function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
 ```
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
@@ -119,44 +119,10 @@ Validates BLS signature with the provided pubkey and registers validators into t
 |---|---|---|
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
-| commission | uint256 | The commission rate for the delegators |
-
-### setCommission
-
-```solidity
-function setCommission(uint256 newCommission) external nonpayable
-```
-
-Sets commission for validator.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newCommission | uint256 | New commission (100 = 100%) |
 
 
 
 ## Events
-
-### CommissionUpdated
-
-```solidity
-event CommissionUpdated(address indexed validator, uint256 newCommission)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator `indexed` | address | undefined |
-| newCommission  | uint256 | undefined |
 
 ### NewValidator
 

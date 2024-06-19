@@ -27,23 +27,6 @@ function DOMAIN() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### MAX_COMMISSION
-
-```solidity
-function MAX_COMMISSION() external view returns (uint256)
-```
-
-A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MAX_VALIDATORS
 
 ```solidity
@@ -276,7 +259,7 @@ function bls() external view returns (contract IBLS)
 ### commitEpoch
 
 ```solidity
-function commitEpoch(uint256 id, Epoch epoch, uint256 epochSize) external nonpayable
+function commitEpoch(uint256 id, Epoch epoch, uint256 epochSize, Uptime[] uptime) external nonpayable
 ```
 
 
@@ -290,6 +273,7 @@ function commitEpoch(uint256 id, Epoch epoch, uint256 epochSize) external nonpay
 | id | uint256 | undefined |
 | epoch | Epoch | undefined |
 | epochSize | uint256 | undefined |
+| uptime | Uptime[] | undefined |
 
 ### currentEpochId
 
@@ -606,7 +590,7 @@ function powerExponent() external view returns (uint128 value, uint128 pendingVa
 ### register
 
 ```solidity
-function register(uint256[2] signature, uint256[4] pubkey, uint256 commission) external nonpayable
+function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
 ```
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
@@ -619,7 +603,6 @@ Validates BLS signature with the provided pubkey and registers validators into t
 |---|---|---|
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
-| commission | uint256 | The commission rate for the delegators |
 
 ### removeFromWhitelist
 
@@ -680,22 +663,6 @@ Set the threshold that needs to be reached to ban a validator
 | Name | Type | Description |
 |---|---|---|
 | newThreshold | uint256 | The new threshold in blocks |
-
-### setCommission
-
-```solidity
-function setCommission(uint256 newCommission) external nonpayable
-```
-
-Sets commission for validator.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newCommission | uint256 | New commission (100 = 100%) |
 
 ### setReporterReward
 
@@ -904,23 +871,6 @@ event AddedToWhitelist(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
-
-### CommissionUpdated
-
-```solidity
-event CommissionUpdated(address indexed validator, uint256 newCommission)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator `indexed` | address | undefined |
-| newCommission  | uint256 | undefined |
 
 ### Initialized
 

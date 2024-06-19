@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {Delegation} from "./../../Delegation.sol";
-import {APRCalculator} from "./../../../APRCalculator/APRCalculator.sol";
+import {APRCalculatorConnector} from "./../../../APRCalculatorConnector.sol";
 import {EpochManagerConnector} from "./../../../EpochManagerConnector.sol";
 import {VestingManagerFactory} from "./../VestingManagerFactory/VestingManagerFactory.sol";
 import {DelegationPool} from "./../../IDelegation.sol";
@@ -17,7 +17,7 @@ contract VestedDelegation is
     IVestedDelegation,
     Governed,
     Withdrawal,
-    APRCalculator,
+    APRCalculatorConnector,
     Delegation,
     VestingManagerFactory,
     EpochManagerConnector
@@ -156,9 +156,9 @@ contract VestedDelegation is
             duration: duration,
             start: block.timestamp,
             end: block.timestamp + duration,
-            base: base,
-            vestBonus: APRCalculator.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(rsi)
+            base: aprCalculatorContract.getBaseAPR(),
+            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
         });
 
         // keep the change in the delegation pool params per account
@@ -250,7 +250,7 @@ contract VestedDelegation is
         if (position.isActive()) {
             penalty = _calcPenalty(position, amount);
             // apply the max Vesting bonus, because the full reward must be burned
-            fullReward = applyMaxReward(delegation.claimRewards(msg.sender));
+            fullReward = aprCalculatorContract.applyMaxReward(delegation.claimRewards(msg.sender));
 
             // if position is closed when active, we delete the vesting data
             if (delegatedAmountLeft == 0) {
@@ -317,7 +317,7 @@ contract VestedDelegation is
         );
 
         uint256 reward = delegationPool.claimRewards(msg.sender, epochRPS, balance, correction);
-        uint256 maxReward = applyMaxReward(reward);
+        uint256 maxReward = aprCalculatorContract.applyMaxReward(reward);
         reward = _applyVestingAPR(position, reward, true);
         sumReward += reward;
         sumMaxReward += maxReward;
@@ -325,8 +325,8 @@ contract VestedDelegation is
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp > position.end + position.duration) {
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            uint256 maxAdditionalReward = applyMaxReward(additionalReward);
-            additionalReward = APRCalculator._applyBaseAPR(additionalReward);
+            uint256 maxAdditionalReward = aprCalculatorContract.applyMaxReward(additionalReward);
+            additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
             sumReward += additionalReward;
             sumMaxReward += maxAdditionalReward;
         }
@@ -477,15 +477,15 @@ contract VestedDelegation is
         VestingPosition memory position,
         uint256 reward,
         bool rsi
-    ) internal pure returns (uint256) {
+    ) internal view returns (uint256) {
         uint256 bonus = (position.base + position.vestBonus);
-        uint256 divider = DENOMINATOR;
+        uint256 divider = aprCalculatorContract.getDENOMINATOR();
         if (rsi && position.rsiBonus != 0) {
             bonus = bonus * position.rsiBonus;
             divider *= divider;
         }
 
-        return (reward * bonus) / divider / EPOCHS_YEAR;
+        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
     }
 
     /**
@@ -498,12 +498,21 @@ contract VestedDelegation is
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
         uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
 
-        return (amount * bps) / DENOMINATOR;
+        return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }
 
     function _burnAmount(uint256 amount) private {
         (bool success, ) = address(0).call{value: amount}("");
         require(success, "Failed to burn amount");
+    }
+
+    function _saveEpochRPS(address validator, uint256 rewardPerShare, uint256 epochNumber) internal {
+        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
+
+        RPS memory validatorRPSes = historyRPS[validator][epochNumber];
+        require(validatorRPSes.value == 0, "RPS already saved");
+
+        historyRPS[validator][epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }
 
     function _noRewardConditions(VestingPosition memory position) private view returns (bool) {

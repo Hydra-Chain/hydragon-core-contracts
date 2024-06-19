@@ -94,6 +94,24 @@ Delegates sent amount to validator. Set vesting position data. Delete old pool p
 | validator | address | Validator to delegate to |
 | durationWeeks | uint256 | Duration of the vesting in weeks |
 
+### distributeRewardsFor
+
+```solidity
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epochId | uint256 | undefined |
+| uptime | Uptime[] | undefined |
+| epochSize | uint256 | undefined |
+
 ### getRawDelegatorReward
 
 ```solidity
@@ -193,6 +211,22 @@ Calculates how much is yet to become withdrawable for account.
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
+
+### setCommission
+
+```solidity
+function setCommission(uint256 newCommission) external nonpayable
+```
+
+Sets commission for validator.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
 
 ### stake
 
@@ -314,6 +348,23 @@ Calculates how much can be withdrawn for account at this time.
 
 ## Events
 
+### CommissionUpdated
+
+```solidity
+event CommissionUpdated(address indexed validator, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
+
 ### Delegated
 
 ```solidity
@@ -335,7 +386,7 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 ### DelegatorRewardClaimed
 
 ```solidity
-event DelegatorRewardClaimed(address indexed validator, address indexed delegator, uint256 amount)
+event DelegatorRewardClaimed(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -346,8 +397,25 @@ event DelegatorRewardClaimed(address indexed validator, address indexed delegato
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### DelegatorRewardDistributed
+
+```solidity
+event DelegatorRewardDistributed(address indexed staker, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### PositionCut
@@ -565,6 +633,22 @@ error DelegateRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### InvalidCommission
+
+```solidity
+error InvalidCommission(uint256 commission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| commission | uint256 | undefined |
 
 ### InvalidMinStake
 

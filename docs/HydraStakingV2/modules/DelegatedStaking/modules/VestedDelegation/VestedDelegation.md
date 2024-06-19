@@ -27,108 +27,6 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### DENOMINATOR
-
-```solidity
-function DENOMINATOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### EPOCHS_YEAR
-
-```solidity
-function EPOCHS_YEAR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### INITIAL_BASE_APR
-
-```solidity
-function INITIAL_BASE_APR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### INITIAL_MACRO_FACTOR
-
-```solidity
-function INITIAL_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### MANAGER_ROLE
-
-```solidity
-function MANAGER_ROLE() external view returns (bytes32)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
-
-### MAX_RSI_BONUS
-
-```solidity
-function MAX_RSI_BONUS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MIN_DELEGATION_LIMIT
 
 ```solidity
@@ -136,23 +34,6 @@ function MIN_DELEGATION_LIMIT() external view returns (uint256)
 ```
 
 A constant for the minimum delegation limit
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### MIN_RSI_BONUS
-
-```solidity
-function MIN_RSI_BONUS() external view returns (uint256)
-```
-
-
 
 
 
@@ -191,27 +72,22 @@ function acceptOwnership() external nonpayable
 *The new owner accepts the ownership transfer.*
 
 
-### applyMaxReward
+### aprCalculatorContract
 
 ```solidity
-function applyMaxReward(uint256 reward) external view returns (uint256)
+function aprCalculatorContract() external view returns (contract IAPRCalculator)
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | contract IAPRCalculator | undefined |
 
 ### balanceChangeThreshold
 
@@ -229,45 +105,6 @@ The threshold for the maximum number of allowed balance changes
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### base
-
-```solidity
-function base() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### calcVestingBonus
-
-```solidity
-function calcVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| weeksCount | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
 
 ### changeWithdrawalWaitPeriod
 
@@ -428,46 +265,6 @@ function epochManagerContract() external view returns (contract IEpochManager)
 |---|---|---|
 | _0 | contract IEpochManager | undefined |
 
-### getEpochMaxReward
-
-```solidity
-function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| totalStaked | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | undefined |
-
-### getMaxAPR
-
-```solidity
-function getMaxAPR() external view returns (uint256 nominator, uint256 denominator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
-| denominator | uint256 | undefined |
-
 ### getRawDelegatorReward
 
 ```solidity
@@ -534,28 +331,6 @@ Gets the vesting managers per user address for fast off-chain lookup.
 | Name | Type | Description |
 |---|---|---|
 | _0 | address[] | undefined |
-
-### getVestingBonus
-
-```solidity
-function getVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| weeksCount | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
 
 ### grantRole
 
@@ -730,23 +505,6 @@ Claims that a delegator is a vest manager or not.
 |---|---|---|
 | _0 | bool | undefined |
 
-### macroFactor
-
-```solidity
-function macroFactor() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### minDelegation
 
 ```solidity
@@ -881,71 +639,6 @@ function revokeRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
-### rsi
-
-```solidity
-function rsi() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### setBase
-
-```solidity
-function setBase(uint256 newBase) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newBase | uint256 | undefined |
-
-### setMacro
-
-```solidity
-function setMacro(uint256 newMacroFactor) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newMacroFactor | uint256 | undefined |
-
-### setRSI
-
-```solidity
-function setRSI(uint256 newRSI) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newRSI | uint256 | undefined |
-
 ### supportsInterface
 
 ```solidity
@@ -984,6 +677,23 @@ Move a vested position to another validator. Can be called by vesting positions&
 |---|---|---|
 | oldValidator | address | Validator to swap from |
 | newValidator | address | Validator to swap to |
+
+### totalDelegation
+
+```solidity
+function totalDelegation() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### totalDelegationOf
 
@@ -1108,28 +818,6 @@ The vesting positions for every delegator
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
 
-### vestingBonus
-
-```solidity
-function vestingBonus(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### vestingManagers
 
 ```solidity
@@ -1215,7 +903,7 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 ### DelegatorRewardClaimed
 
 ```solidity
-event DelegatorRewardClaimed(address indexed validator, address indexed delegator, uint256 amount)
+event DelegatorRewardClaimed(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -1226,8 +914,25 @@ event DelegatorRewardClaimed(address indexed validator, address indexed delegato
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### DelegatorRewardDistributed
+
+```solidity
+event DelegatorRewardDistributed(address indexed staker, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Initialized
@@ -1498,17 +1203,6 @@ error DelegateRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
-
-### InvalidRSI
-
-```solidity
-error InvalidRSI()
-```
-
-
-
-
-
 
 ### InvalidWaitPeriod
 
