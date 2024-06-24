@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "./../../../common/Governed/Governed.sol";
-import {Withdrawal} from "./../Withdrawal/Withdrawal.sol";
-import {APRCalculatorConnector} from "./../APRCalculatorConnector.sol";
+import {Governed} from "./../common/Governed/Governed.sol";
+import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
+import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
@@ -13,12 +13,13 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     /// @notice A constant for the minimum delegation limit
     uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
 
-    uint256 public totalDelegation;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     // @note maybe this must be part of the ValidatorSet
     /// @notice The minimum delegation amount to be delegated
     uint256 public minDelegation;
+
+    uint256 internal _totalDelegation;
 
     function delegationOf(address staker, address delegator) public view returns (uint256) {
         return delegationPools[staker].balanceOf(delegator);
@@ -26,6 +27,10 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     function totalDelegationOf(address staker) public view returns (uint256) {
         return delegationPools[staker].supply;
+    }
+
+    function totalDelegation() external view returns (uint256) {
+        return _totalDelegation;
     }
 
     /**
@@ -65,7 +70,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
             revert DelegateRequirement({src: "delegate", msg: "DELEGATION_TOO_LOW"});
 
         delegation.deposit(delegator, amount);
-        totalDelegation += amount;
+        _totalDelegation += amount;
 
         emit Delegated(staker, delegator, amount);
     }
@@ -84,7 +89,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
         delegation.withdraw(delegator, amount);
-        totalDelegation -= amount;
+        _totalDelegation -= amount;
 
         emit Undelegated(validator, delegator, amount);
     }
@@ -100,7 +105,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         _withdraw(delegator, reward);
     }
 
-    function _distributeDelegatorReward(address staker, uint256 reward) internal {
+    function _distributeDelegationRewards(address staker, uint256 reward) internal virtual {
         delegationPools[staker].distributeReward(reward);
         emit DelegatorRewardDistributed(staker, reward);
     }

@@ -475,7 +475,7 @@ Gets all validators. Returns already unactive validators as well.
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, contract IBLS newBls, uint256 initialCommission) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -489,7 +489,6 @@ function initialize(ValidatorInit[] newValidators, address governance, contract 
 | newValidators | ValidatorInit[] | undefined |
 | governance | address | undefined |
 | newBls | contract IBLS | undefined |
-| initialCommission | uint256 | undefined |
 
 ### isSubjectToBan
 

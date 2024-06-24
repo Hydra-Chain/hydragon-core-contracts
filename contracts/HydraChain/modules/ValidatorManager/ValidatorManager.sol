@@ -51,17 +51,15 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     function __ValidatorManager_init(
         ValidatorInit[] calldata newValidators,
         IBLS newBls,
-        address governance,
-        uint256 initialCommission
+        address governance
     ) internal onlyInitializing {
         __AccessControl_init(governance);
-        __ValidatorManager_init_unchained(newValidators, newBls, initialCommission);
+        __ValidatorManager_init_unchained(newValidators, newBls);
     }
 
     function __ValidatorManager_init_unchained(
         ValidatorInit[] calldata newValidators,
-        IBLS newBls,
-        uint256 initialCommission
+        IBLS newBls
     ) internal onlyInitializing {
         bls = newBls;
         // set initial validators

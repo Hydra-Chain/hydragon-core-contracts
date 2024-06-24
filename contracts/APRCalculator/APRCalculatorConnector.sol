@@ -3,9 +3,8 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {IAPRCalculator} from "./../../APRCalculator/IAPRCalculator.sol";
-
-import {Unauthorized} from "./../../common/Errors.sol";
+import {Unauthorized} from "./../common/Errors.sol";
+import {IAPRCalculator} from "./IAPRCalculator.sol";
 
 abstract contract APRCalculatorConnector is Initializable {
     IAPRCalculator public aprCalculatorContract;

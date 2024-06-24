@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
+import {Liquid} from "./../../../common/Liquid/Liquid.sol";
 import {ILiquidityToken} from "./../../../LiquidityToken/ILiquidityToken.sol";
-import {Liquid} from "./../common/Liquid/Liquid.sol";
 
 /**
  * @title LiquidStaking

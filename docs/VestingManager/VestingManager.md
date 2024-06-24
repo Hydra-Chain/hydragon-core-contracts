@@ -72,7 +72,7 @@ function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, 
 function delegation() external view returns (address)
 ```
 
-The staking address
+The delegation address
 
 
 

@@ -13,9 +13,9 @@ import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableSta
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {EpochManagerConnector} from "./modules/EpochManagerConnector.sol";
+import {EpochManagerConnector} from "./../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
-import {DelegationPool} from "./modules/DelegatedStaking/IDelegation.sol";
+import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -88,11 +88,11 @@ contract HydraStaking is
     // _______________ Public functions _______________
 
     function totalBalanceOf(address staker) public view returns (uint256) {
-        return stakeOf(staker) + totalDelegationOf(staker);
+        return stakeOf(staker) + _getStakerDelegatedBalance(staker);
     }
 
     function totalBalance() public view returns (uint256) {
-        return totalStake + totalDelegation;
+        return totalStake + _totalDelegation();
     }
 
     // _______________ Internal functions _______________
@@ -119,13 +119,11 @@ contract HydraStaking is
         }
     }
 
-    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._delegate(staker, delegator, amount);
+    function _onDelegate(address staker) internal virtual override {
         _syncState(staker);
     }
 
-    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._undelegate(staker, delegator, amount);
+    function _onUndelegate(address staker) internal virtual override {
         _syncState(staker);
     }
 
@@ -169,10 +167,8 @@ contract HydraStaking is
         require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
 
         uint256 totalStake = stakeOf(uptime.validator);
-        uint256 commission = delegationCommissionPerStaker[uptime.validator];
-
-        DelegationPool storage delegationPool = delegationPools[uptime.validator];
-        uint256 delegation = delegationPool.supply;
+        uint256 commission = _getstakerDelegationCommission(uptime.validator);
+        uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
         // slither-disable-next-line divide-before-multiply
         uint256 validatorReward = (fullReward * (totalStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
@@ -184,12 +180,7 @@ contract HydraStaking is
         );
 
         _distributeStakingReward(uptime.validator, validatorShares);
-        _distributeDelegatorReward(uptime.validator, delegatorShares);
-
-        // Keep history record of the rewardPerShare to be used on reward claim
-        if (delegatorShares > 0) {
-            _saveEpochRPS(uptime.validator, delegationPool.magnifiedRewardPerShare, epochId);
-        }
+        distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
         // Keep history record of the validator rewards to be used on maturing vesting reward claim
         if (validatorShares > 0) {

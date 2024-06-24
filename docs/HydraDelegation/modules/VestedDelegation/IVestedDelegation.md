@@ -178,6 +178,45 @@ Move a vested position to another validator. Can be called by vesting positions&
 | oldValidator | address | Validator to swap from |
 | newValidator | address | Validator to swap to |
 
+### totalDelegation
+
+```solidity
+function totalDelegation() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### totalDelegationOf
+
+```solidity
+function totalDelegationOf(address staker) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### undelegate
 
 ```solidity

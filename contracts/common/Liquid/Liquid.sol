@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {ILiquid} from "./ILiquid.sol";
-import {ILiquidityToken} from "./../../../../LiquidityToken/ILiquidityToken.sol";
+import {ILiquidityToken} from "./../../LiquidityToken/ILiquidityToken.sol";
 
 /**
  * @title Liquid

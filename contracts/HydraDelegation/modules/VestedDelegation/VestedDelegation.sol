@@ -2,16 +2,16 @@
 pragma solidity 0.8.17;
 
 import {Delegation} from "./../../Delegation.sol";
-import {APRCalculatorConnector} from "./../../../APRCalculatorConnector.sol";
-import {EpochManagerConnector} from "./../../../EpochManagerConnector.sol";
+import {Governed} from "./../../../common/Governed/Governed.sol";
+import {Withdrawal} from "./../../../common/Withdrawal/Withdrawal.sol";
+import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
+import {EpochManagerConnector} from "./../../../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
 import {VestingManagerFactory} from "./../VestingManagerFactory/VestingManagerFactory.sol";
-import {DelegationPool} from "./../../IDelegation.sol";
-import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.sol";
-import {VestingPosition} from "./../../../VestedStaking/IVesting.sol";
-import {Withdrawal} from "./../../../../modules/Withdrawal/Withdrawal.sol";
-import {Governed} from "./../../../../../common/Governed/Governed.sol";
-import {VestedPositionLib} from "./../../../VestedStaking/VestedPositionLib.sol";
 import {DelegationPoolLib} from "./../../DelegationPoolLib.sol";
+import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
+import {DelegationPool} from "./../../IDelegation.sol";
+import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
+import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.sol";
 
 contract VestedDelegation is
     IVestedDelegation,
@@ -288,6 +288,15 @@ contract VestedDelegation is
 
     function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
         super._undelegate(staker, delegator, amount);
+    }
+
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
+        _distributeDelegationRewards(staker, reward);
+
+        // Keep history record of the rewardPerShare to be used on reward claim
+        if (reward > 0) {
+            _saveEpochRPS(staker, delegationPools[staker].magnifiedRewardPerShare, epochId);
+        }
     }
 
     /**

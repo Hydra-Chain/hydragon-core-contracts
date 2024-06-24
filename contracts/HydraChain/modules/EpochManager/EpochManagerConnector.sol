@@ -3,9 +3,8 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {IEpochManager} from "./../../HydraChain/modules/EpochManager/IEpochManager.sol";
-
-import {Unauthorized} from "./../../common/Errors.sol";
+import {Unauthorized} from "./../../../common/Errors.sol";
+import {IEpochManager} from "./IEpochManager.sol";
 
 abstract contract EpochManagerConnector is Initializable {
     IEpochManager public epochManagerContract;

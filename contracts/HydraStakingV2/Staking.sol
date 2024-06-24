@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 import {Governed} from "./../common/Governed/Governed.sol";
-import {Withdrawal} from "./modules/Withdrawal/Withdrawal.sol";
-import {APRCalculatorConnector} from "./modules/APRCalculatorConnector.sol";
+import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
+import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
+import {EpochManagerConnector} from "./../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
 import {Unauthorized} from "./../common/Errors.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
-import {EpochManagerConnector} from "./modules/EpochManagerConnector.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -29,6 +29,14 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
 
     function __Staking_init_unchained(uint256 newMinStake) internal onlyInitializing {
         _changeMinStake(newMinStake);
+    }
+
+    modifier onlyActiveStaker(address staker) {
+        if (stakeOf(staker) < minStake) {
+            revert Unauthorized("INACTIVE_STAKER");
+        }
+
+        _;
     }
 
     // _______________ External functions _______________

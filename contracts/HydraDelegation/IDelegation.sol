@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IWithdrawal} from "./../Withdrawal/IWithdrawal.sol";
+import {IWithdrawal} from "./../common/Withdrawal/IWithdrawal.sol";
 
 struct DelegationPool {
     uint256 supply;
@@ -20,6 +20,10 @@ interface IDelegation is IWithdrawal {
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
 
     error DelegateRequirement(string src, string msg);
+
+    function totalDelegation() external view returns (uint256);
+
+    function totalDelegationOf(address staker) external view returns (uint256);
 
     /**
      * @notice Gets delegator's unclaimed rewards index (without custom APR params applied)

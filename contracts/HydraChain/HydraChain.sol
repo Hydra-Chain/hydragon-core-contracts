@@ -35,11 +35,10 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
     function initialize(
         ValidatorInit[] calldata newValidators,
         address governance,
-        IBLS newBls,
-        uint256 initialCommission
+        IBLS newBls
     ) external initializer onlySystemCall {
         __PowerExponent_init();
-        __ValidatorManager_init(newValidators, newBls, governance, initialCommission);
+        __ValidatorManager_init(newValidators, newBls, governance);
         __Inspector_init();
 
         _initialize();
