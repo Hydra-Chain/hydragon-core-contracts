@@ -1,3 +1,4 @@
+// Run: npx hardhat run scripts/PermitSign.ts
 import { ethers } from "hardhat";
 
 // Inputs
