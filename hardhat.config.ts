@@ -36,6 +36,10 @@ const config: HardhatUserConfig = {
       url: process.env.HYDRA_TESTNET_RPC || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    devTest: {
+      url: process.env.DEV_TEST_RPC || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
     hardhat: {
       // allow impersonation of smart contracts without modifying balance
       gasPrice: 0,
