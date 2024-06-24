@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/FunctionSign.ts --network childTest
+// Run: npx hardhat run scripts/FunctionSign.ts
 import { ethers } from "hardhat";
 
 async function main() {
