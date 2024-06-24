@@ -2,10 +2,10 @@
 pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
+import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
+import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
-import {VestingPosition} from "./IVesting.sol";
-import {APRCalculatorConnector} from "./../APRCalculatorConnector.sol";
-import {VestedPositionLib} from "./VestedPositionLib.sol";
+import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
 
 /**
  * @title VestedStaking

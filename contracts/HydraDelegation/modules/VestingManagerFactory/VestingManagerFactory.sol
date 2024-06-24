@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import {VestingManager} from "./../../../../../VestingManager/VestingManager.sol";
+import {VestingManager} from "./../../../VestingManager/VestingManager.sol";
 
 // TODO: use different proxy design pattern, so implementation for all proxies can be changed at once
 abstract contract VestingManagerFactory is Initializable {
