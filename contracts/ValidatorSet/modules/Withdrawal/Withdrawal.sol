@@ -18,8 +18,10 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
 
     // _______________ Initializer _______________
 
-    function __Withdrawal_init() internal onlyInitializing {
+    function __Withdrawal_init(address governance) internal onlyInitializing {
         __Withdrawal_init_unchained();
+        __ReentrancyGuard_init_unchained();
+        __AccessControl_init_unchained(governance);
     }
 
     function __Withdrawal_init_unchained() internal onlyInitializing {

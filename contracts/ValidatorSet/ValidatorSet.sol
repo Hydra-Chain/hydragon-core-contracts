@@ -42,7 +42,7 @@ contract ValidatorSet is ValidatorSetBase, System, AccessControl, PowerExponent,
     ) external initializer onlySystemCall {
         __ValidatorSetBase_init(newBls, newRewardPool);
         __PowerExponent_init();
-        __AccessControl_init(governance);
+        __Withdrawal_init(governance);
         __Staking_init(init.minStake, liquidToken);
         __Delegation_init();
         __Inspector_init();
