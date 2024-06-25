@@ -25,7 +25,6 @@ abstract contract Staking is IStaking, ValidatorSetBase, BalanceState, Withdrawa
     function __Staking_init(uint256 newMinStake, address newLiquidToken) internal onlyInitializing {
         __LiquidStaking_init(newLiquidToken);
         __Staking_init_unchained(newMinStake);
-        __Withdrawal_init_unchained();
     }
 
     function __Staking_init_unchained(uint256 newMinStake) internal onlyInitializing {
