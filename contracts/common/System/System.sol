@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "./../../common/Errors.sol";
 
-contract System {
+abstract contract System {
     // pre-compiled contracts
     // slither-disable-next-line too-many-digits
     address public constant NATIVE_TRANSFER_PRECOMPILE = 0x0000000000000000000000000000000000002020;
