@@ -178,6 +178,7 @@ describe("ValidatorSet", function () {
       expect(await rewardPool.minDelegation(), "minDelegation").to.equal(this.minDelegation);
       expect(await systemValidatorSet.currentEpochId(), "currentEpochId").to.equal(1);
       expect(await systemValidatorSet.owner(), "owner").to.equal(this.signers.governance.address);
+      expect(await systemValidatorSet.withdrawWaitPeriod(), "withdrawWaitPeriod").to.equal(WEEK);
 
       const adminAddress = this.signers.admin.address;
       const validator = await systemValidatorSet.getValidator(adminAddress);
@@ -1018,7 +1019,7 @@ describe("ValidatorSet", function () {
       const { validatorSet } = await loadFixture(this.fixtures.withdrawableFixture);
 
       await validatorSet.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
-      const waitPeriod = await validatorSet.WITHDRAWAL_WAIT_PERIOD();
+      const waitPeriod = await validatorSet.withdrawWaitPeriod();
       expect(waitPeriod).to.be.equal(WEEK * 2);
     });
   });

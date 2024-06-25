@@ -12,8 +12,21 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
     using WithdrawalQueueLib for WithdrawalQueue;
 
     // TODO: This should be a parameter of the contract. Add NetworkParams based on the Polygon implementation
-    uint256 public WITHDRAWAL_WAIT_PERIOD = 7 days;
+    uint256 public withdrawWaitPeriod;
     mapping(address => WithdrawalQueue) private _withdrawals;
+
+
+    // _______________ Initializer _______________
+
+    function __Withdrawal_init(address governance) internal onlyInitializing {
+        __Withdrawal_init_unchained();
+        __ReentrancyGuard_init();
+        __AccessControl_init(governance);
+    }
+
+    function __Withdrawal_init_unchained() internal onlyInitializing {
+        _changeWithdrawalWaitPeriod(1 weeks);
+    }
 
     // _______________ External functions _______________
 
@@ -47,12 +60,11 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
      * @inheritdoc IWithdrawal
      */
     function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
-        if (newWaitPeriod == 0) revert InvalidWaitPeriod();
-        WITHDRAWAL_WAIT_PERIOD = newWaitPeriod;
+        _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
 
     function _registerWithdrawal(address account, uint256 amount) internal {
-        _withdrawals[account].append(amount, block.timestamp + WITHDRAWAL_WAIT_PERIOD);
+        _withdrawals[account].append(amount, block.timestamp + withdrawWaitPeriod);
         emit WithdrawalRegistered(account, amount);
     }
 
@@ -64,4 +76,11 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Validat
 
         emit WithdrawalFinished(address(this), to, amount);
     }
+
+    // _______________ Private functions _______________
+
+    function _changeWithdrawalWaitPeriod(uint256 _newWaitPeriod) private {
+        if (_newWaitPeriod == 0) revert InvalidWaitPeriod();
+        withdrawWaitPeriod = _newWaitPeriod;
+    } 
 }
