@@ -35,7 +35,6 @@ abstract contract BalanceState is IHydraStaking {
      */
     function _decreaseAccountBalance(address account, uint256 value) internal {
         require(account != address(0), "ZERO_ADDRESS");
-        require(stakeBalances[account] - value >= 0, "LOW_BALANCE");
 
         stakeBalances[account] -= value;
         totalBalance -= value;

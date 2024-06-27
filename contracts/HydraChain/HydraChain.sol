@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ArraysUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ArraysUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import {System} from "./../common/System/System.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
@@ -12,10 +13,11 @@ import {IBLS} from "../BLS/IBLS.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {IEpochManager, Epoch} from "./modules/EpochManager/IEpochManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {EpochManagerConnector} from "./modules/EpochManager/EpochManagerConnector.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
-contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
+contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, Inspector, PowerExponent, EpochManagerConnector {
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
@@ -35,11 +37,15 @@ contract HydraChain is IHydraChain, ValidatorManager, Inspector, PowerExponent {
     function initialize(
         ValidatorInit[] calldata newValidators,
         address governance,
+        address epochManagerAddr,
+        address stakingAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
+        __Ownable2Step_init();
         __PowerExponent_init();
         __ValidatorManager_init(newValidators, newBls, governance);
-        __Inspector_init();
+        __EpochManagerConnector_init(epochManagerAddr); // could be (this.address), or unnecessary
+        __Inspector_init(stakingAddr);
 
         _initialize();
     }
