@@ -35,4 +35,21 @@ interface IStaking is IWithdrawal {
      * @param newMinStake New minimum stake
      */
     function changeMinStake(uint256 newMinStake) external;
+
+    /**
+     * @notice Returns staked amount for the given account.
+     * @param account Validator address
+     */
+    function stakeOf(address account) external view returns (uint256);
+
+    /**
+     * @notice Returns unclaimed rewards for the given account.
+     * @param account Validator address
+     */
+    function unclaimedRewards(address account) external view returns (uint256);
+
+    /**
+     * @notice Claims staking rewards for the sender.
+     */
+    function claimStakingRewards() external;
 }

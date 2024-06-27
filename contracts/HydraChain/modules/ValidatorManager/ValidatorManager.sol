@@ -96,10 +96,10 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     {
         Validator memory v = validators[validatorAddress];
         blsKey = v.blsKey;
-        totalStake = stakingContract.balanceOf(validatorAddress);
-        // stake = totalStake - rewardPool.totalDelegationOf(validatorAddress);
+        totalStake = stakingContract.totalBalanceOf(validatorAddress);
+        stake = stakingContract.stakeOf(validatorAddress);
         commission = v.commission;
-        // withdrawableRewards = rewardPool.getValidatorReward(validatorAddress);
+        withdrawableRewards = stakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;
     }
 

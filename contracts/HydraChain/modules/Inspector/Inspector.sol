@@ -5,7 +5,7 @@ import {StakingConnector} from "./../StakingConnector/StakingConnector.sol";
 import {ValidatorManager, ValidatorStatus} from "./../ValidatorManager/ValidatorManager.sol";
 import {Unauthorized} from "./../../../common/Errors.sol";
 import {IInspector} from "./IInspector.sol";
-import {PenaltyReward} from "./../../../HydraStaking/IHydraStaking.sol";
+import {PenalizedStakeDistribution} from "./../../../HydraStaking/modules/PenalizeableStaking/IPenalizeableStaking.sol";
 
 abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
     /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
@@ -82,21 +82,19 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
      * @param validator The address of the validator
      */
     function _ban(address validator) private {
-        uint256 totalAmount = stakingContract.balanceOf(validator);
-        uint256 validatorStake = totalAmount - stakingContract.totalDelegationOf(validator);
+        uint256 validatorStake = stakingContract.stakeOf(validator);
         if (validators[validator].status == ValidatorStatus.Active) {
-            PenaltyReward[] memory rewards;
+            PenalizedStakeDistribution[] memory rewards;
             if (msg.sender != owner()) {
-                rewards = new PenaltyReward[](2);
-                rewards[0] = PenaltyReward({account: msg.sender, amount: reporterReward});
-                rewards[1] = PenaltyReward({account: address(0), amount: validatorPenalty});
+                rewards = new PenalizedStakeDistribution[](2);
+                rewards[0] = PenalizedStakeDistribution({account: msg.sender, amount: reporterReward});
+                rewards[1] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             } else {
-                rewards = new PenaltyReward[](1);
-                rewards[0] = PenaltyReward({account: address(0), amount: validatorPenalty});
+                rewards = new PenalizedStakeDistribution[](1);
+                rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             }
 
-            stakingContract.penalizeValidator(validator, validatorStake, rewards);
-            activeValidatorsCount--;
+            stakingContract.penalizeStaker(validator, validatorStake, rewards);
         }
 
         validators[validator].status = ValidatorStatus.Banned;

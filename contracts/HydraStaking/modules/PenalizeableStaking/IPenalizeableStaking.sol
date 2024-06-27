@@ -18,4 +18,18 @@ struct WithdrawalInfo {
     uint256 withdrawableAmount;
 }
 
-interface IPenalizeableStaking is IStaking {}
+interface IPenalizeableStaking is IStaking {
+
+    /**
+     * @notice Penalizes a staker by reducing their stake and distributing the penalty
+     * @dev Only the validator manager can call this function
+     * @param staker The address of the staker to penalize
+     * @param unstakeAmount The amount to unstake
+     * @param stakeDistributions The distribution of the penalty
+     */
+    function penalizeStaker(
+        address staker,
+        uint256 unstakeAmount,
+        PenalizedStakeDistribution[] calldata stakeDistributions
+    ) external;
+}
