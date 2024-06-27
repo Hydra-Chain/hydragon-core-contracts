@@ -87,10 +87,16 @@ contract HydraStaking is
 
     // _______________ Public functions _______________
 
+    /**
+     * @inheritdoc IHydraStaking
+     */
     function totalBalanceOf(address staker) public view returns (uint256) {
         return stakeOf(staker) + _getStakerDelegatedBalance(staker);
     }
 
+    /**
+     * @inheritdoc IHydraStaking
+     */
     function totalBalance() public view returns (uint256) {
         return totalStake + _totalDelegation();
     }

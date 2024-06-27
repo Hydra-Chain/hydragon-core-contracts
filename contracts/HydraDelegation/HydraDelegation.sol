@@ -7,7 +7,7 @@ import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol"
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
-import {HydraStakingConnector} from "./../HydraStakingV2/HydraStakingConnector.sol";
+import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
 
 contract HydraDelegation is
     IHydraDelegation,

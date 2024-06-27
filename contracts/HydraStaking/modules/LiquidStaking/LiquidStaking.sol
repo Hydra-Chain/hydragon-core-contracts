@@ -10,6 +10,7 @@ import {ILiquidityToken} from "./../../../LiquidityToken/ILiquidityToken.sol";
  * @notice An extension of the Staking contract that enables the distribution of liquid tokens to stakers
  */
 contract LiquidStaking is Staking, Liquid {
+
     // _______________ Internal functions _______________
 
     function _stake(address account, uint256 amount) internal virtual override {
