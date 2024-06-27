@@ -10,7 +10,6 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
 
     // TODO: We must be able to enable/disable this feature
     function __AccessControl_init(address governance) internal onlyInitializing {
-        __Ownable2Step_init();
         __AccessControl_init_unchained(governance);
     }
 

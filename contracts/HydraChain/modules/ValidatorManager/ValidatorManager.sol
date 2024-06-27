@@ -29,22 +29,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
      */
     mapping(address => uint256) public validatorsParticipation;
 
-    // _______________ Modifiers _______________
-
-    modifier onlyActiveValidator(address validator) {
-        if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
-        _;
-    }
-
-    /// @notice Modifier to check if the validator is registered or active
-    modifier onlyValidator(address validator) {
-        if (
-            validators[validator].status != ValidatorStatus.Registered &&
-            validators[validator].status != ValidatorStatus.Active
-        ) revert Unauthorized("INVALID_VALIDATOR");
-        _;
-    }
-
     // _______________ Initializer _______________
 
     // TODO: Move commision to Delegation module
@@ -66,6 +50,22 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         for (uint256 i = 0; i < newValidators.length; i++) {
             _register(newValidators[i].addr, newValidators[i].signature, newValidators[i].pubkey);
         }
+    }
+
+    // _______________ Modifiers _______________
+
+    modifier onlyActiveValidator(address validator) {
+        if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
+        _;
+    }
+
+    /// @notice Modifier to check if the validator is registered or active
+    modifier onlyValidator(address validator) {
+        if (
+            validators[validator].status != ValidatorStatus.Registered &&
+            validators[validator].status != ValidatorStatus.Active
+        ) revert Unauthorized("INVALID_VALIDATOR");
+        _;
     }
 
     // _______________ External functions _______________

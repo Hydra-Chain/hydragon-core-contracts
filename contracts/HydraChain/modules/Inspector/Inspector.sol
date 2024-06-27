@@ -25,8 +25,9 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
 
     // _______________ Initializer _______________
 
-    function __Inspector_init() internal onlyInitializing {
+    function __Inspector_init(address stakingAddr) internal onlyInitializing {
         __Inspector_init_unchained();
+        __StakingConnector_init(stakingAddr);
     }
 
     function __Inspector_init_unchained() internal onlyInitializing {
@@ -95,6 +96,7 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
             }
 
             stakingContract.penalizeValidator(validator, validatorStake, rewards);
+            activeValidatorsCount--;
         }
 
         validators[validator].status = ValidatorStatus.Banned;

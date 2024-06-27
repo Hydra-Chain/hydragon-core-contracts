@@ -330,6 +330,23 @@ Array with epoch ending blocks
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### epochManagerContract
+
+```solidity
+function epochManagerContract() external view returns (contract IEpochManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IEpochManager | undefined |
+
 ### epochs
 
 ```solidity
@@ -475,7 +492,7 @@ Gets all validators. Returns already unactive validators as well.
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address epochManagerAddr, address stakingAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -488,6 +505,8 @@ function initialize(ValidatorInit[] newValidators, address governance, contract 
 |---|---|---|
 | newValidators | ValidatorInit[] | undefined |
 | governance | address | undefined |
+| epochManagerAddr | address | undefined |
+| stakingAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan
