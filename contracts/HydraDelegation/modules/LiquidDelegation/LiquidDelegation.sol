@@ -6,6 +6,12 @@ import {Liquid} from "./../../../common/Liquid/Liquid.sol";
 
 contract LiquidDelegation is Delegation, Liquid {
 
+    // _______________ Initializer _______________
+
+    function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
+        __LiquidStaking_init(_liquidToken);
+    }
+
     // _______________ Internal functions _______________
 
     /**
