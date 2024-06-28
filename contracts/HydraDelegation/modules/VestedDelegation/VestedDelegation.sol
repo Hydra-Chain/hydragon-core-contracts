@@ -59,9 +59,9 @@ contract VestedDelegation is
 
     // _______________ Initializer _______________
 
-    function __VestedDelegation_init(address _epochManager) internal onlyInitializing {
+    function __VestedDelegation_init(address _epochManagerAddr) internal onlyInitializing {
         __VestFactory_init();
-        __EpochManagerConnector_init(_epochManager);
+        __EpochManagerConnector_init(_epochManagerAddr);
         __VestedDelegation_init_unchained();
     }
 

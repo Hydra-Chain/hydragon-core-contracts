@@ -33,15 +33,14 @@ contract HydraDelegation is
         address liquidToken,
         address governance,
         address aprCalculatorAddr,
-        address hydraStaking,
-        address epochManager
+        address hydraStakingAddr,
+        address epochManagerAddr
     ) external initializer onlySystemCall {
-        __VestFactory_init();
         __APRCalculatorConnector_init(aprCalculatorAddr);
-        __HydraStakingConnector_init(hydraStaking);
+        __HydraStakingConnector_init(hydraStakingAddr);
         __Delegation_init(MIN_DELEGATION_LIMIT, governance);
         __LiquidDelegation_init(liquidToken);
-        __VestedDelegation_init(epochManager);
+        __VestedDelegation_init(epochManagerAddr);
 
         _initialize(initialStakers, initialCommission);
     }

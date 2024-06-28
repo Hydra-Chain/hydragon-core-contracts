@@ -28,10 +28,32 @@ interface IDelegation is IWithdrawal {
     function totalDelegation() external view returns (uint256);
 
     /**
+     * @notice Undelegates amount from validator for sender and claims rewards.
+     * @param validator Validator to undelegate from
+     * @param amount The amount to undelegate
+     */
+    function undelegate(address validator, uint256 amount) external;
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Delegates sent amount to validator and claims rewards.
+     * @param validator Validator to delegate to
+     */
+    function delegate(address validator) external payable;
+
+    /**
      * @notice Returns the total amount of delegation for a staker
      * @param staker Address of the validator
      */
     function totalDelegationOf(address staker) external view returns (uint256);
+
+    /**
+     * @notice Return the amount of delegation for a delegator to a validator
+     * @param staker Address of the validator
+     * @param delegator Address of the delegator
+     */
+    function delegationOf(address staker, address delegator) external view returns (uint256);
 
     /**
      * @notice Gets delegator's unclaimed rewards index (without custom APR params applied)
@@ -41,23 +63,4 @@ interface IDelegation is IWithdrawal {
      */
     function getRawDelegatorReward(address validator, address delegator) external view returns (uint256);
 
-    /**
-     * @notice Delegates sent amount to validator and claims rewards.
-     * @param validator Validator to delegate to
-     */
-    function delegate(address validator) external payable;
-
-    /**
-     * @notice Undelegates amount from validator for sender and claims rewards.
-     * @param validator Validator to undelegate from
-     * @param amount The amount to undelegate
-     */
-    function undelegate(address validator, uint256 amount) external;
-
-    /**
-     * @notice Return the amount of delegation for a delegator to a validator
-     * @param staker Address of the validator
-     * @param delegator Address of the delegator
-     */
-    function delegationOf(address staker, address delegator) external view returns (uint256);
 }
