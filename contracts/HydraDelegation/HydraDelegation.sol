@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {Delegation} from "./Delegation.sol";
+import {System} from "./../common/System/System.sol";
 import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
@@ -11,6 +12,7 @@ import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol
 
 contract HydraDelegation is
     IHydraDelegation,
+    System,
     APRCalculatorConnector,
     HydraStakingConnector,
     Delegation,
@@ -25,17 +27,26 @@ contract HydraDelegation is
     // _______________ Initializer _______________
 
     // TODO: Move commision to Delegation module
-    function __DelegatedStaking_init(
+    function initialize(
         StakerInit[] calldata initialStakers,
-        uint256 initialCommission
-    ) internal onlyInitializing {
-        __DelegatedStaking_init_unchained(initialStakers, initialCommission);
+        uint256 initialCommission,
+        address liquidToken,
+        address governance,
+        address aprCalculatorAddr,
+        address hydraStaking,
+        address epochManager
+    ) external initializer onlySystemCall {
+        __VestFactory_init();
+        __APRCalculatorConnector_init(aprCalculatorAddr);
+        __HydraStakingConnector_init(hydraStaking);
+        __Delegation_init(MIN_DELEGATION_LIMIT, governance);
+        __LiquidDelegation_init(liquidToken);
+        __VestedDelegation_init(epochManager);
+
+        _initialize(initialStakers, initialCommission);
     }
 
-    function __DelegatedStaking_init_unchained(
-        StakerInit[] calldata initialStakers,
-        uint256 initialCommission
-    ) internal onlyInitializing {
+    function _initialize(StakerInit[] calldata initialStakers, uint256 initialCommission) private {
         for (uint256 i = 0; i < initialStakers.length; i++) {
             _setCommission(initialStakers[i].addr, initialCommission);
         }

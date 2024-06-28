@@ -14,6 +14,13 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     uint256 public WITHDRAWAL_WAIT_PERIOD = 7 days;
     mapping(address => WithdrawalQueue) private _withdrawals;
 
+    // _______________ Initializer _______________
+
+    function __Withdrawal_init() internal {
+        __ReentrancyGuard_init();
+        __Ownable2Step_init();
+    }
+
     // _______________ External functions _______________
 
     function withdraw(address to) external nonReentrant {

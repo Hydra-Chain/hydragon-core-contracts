@@ -57,6 +57,18 @@ contract VestedDelegation is
 
     error NotVestingManager();
 
+    // _______________ Initializer _______________
+
+    function __VestedDelegation_init(address _epochManager) internal onlyInitializing {
+        __VestFactory_init();
+        __EpochManagerConnector_init(_epochManager);
+        __VestedDelegation_init_unchained();
+    }
+
+    function __VestedDelegation_init_unchained() internal onlyInitializing {
+        balanceChangeThreshold = 32;
+    }
+
     // _______________ Modifiers _______________
 
     modifier onlyManager() {
