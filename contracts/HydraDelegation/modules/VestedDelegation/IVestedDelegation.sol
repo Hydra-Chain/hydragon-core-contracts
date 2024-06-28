@@ -26,7 +26,11 @@ interface IVestedDelegation is IDelegation {
     event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount);
     event PositionRewardClaimed(address indexed manager, address indexed validator, uint256 amount);
 
-    /// @notice Gets the vesting managers per user address for fast off-chain lookup.
+    /**
+     * @notice Gets user vesting managers.
+     * @dev Gets the vesting managers per user address for fast off-chain lookup.
+     * @param user User address
+     */
     function getUserVestingManagers(address user) external view returns (address[] memory);
 
     /**

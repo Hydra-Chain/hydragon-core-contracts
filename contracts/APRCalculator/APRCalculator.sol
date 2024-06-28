@@ -22,7 +22,10 @@ contract APRCalculator is Initializable, Governed {
     uint256 public rsi;
     uint256[52] public vestingBonus;
 
+    // _______________ Initializer _______________
+
     function __APR_init(address manager) internal onlyInitializing {
+        __Governed_init(manager);
         base = INITIAL_BASE_APR;
         macroFactor = INITIAL_MACRO_FACTOR;
 
@@ -31,6 +34,9 @@ contract APRCalculator is Initializable, Governed {
         _grantRole(DEFAULT_ADMIN_ROLE, manager);
         _grantRole(MANAGER_ROLE, manager);
     }
+
+    // _______________ Public functions _______________
+
 
     function setBase(uint256 newBase) public onlyRole(MANAGER_ROLE) {
         base = newBase;
@@ -107,13 +113,16 @@ contract APRCalculator is Initializable, Governed {
         return (totalStaked * macroFactor) / DENOMINATOR;
     }
 
+    function applyBaseAPR(uint256 amount) public view returns (uint256) {
+        return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
+    }
+    // _______________ Internal functions _______________
+
     function magnitude() internal pure returns (uint256) {
         return 1e18;
     }
 
-    function applyBaseAPR(uint256 amount) public view returns (uint256) {
-        return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
-    }
+    // _______________ Private functions _______________
 
     function initializeVestingBonus() private {
         vestingBonus[0] = 6;

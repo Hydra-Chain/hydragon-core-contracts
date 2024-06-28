@@ -11,12 +11,12 @@ abstract contract HydraStakingConnector is Initializable {
 
     // _______________ Initializer _______________
 
-    function __HydraStakingConnector_init(address hydraStakingAddr) internal onlyInitializing {
-        __HydraStakingConnector_init_unchained(hydraStakingAddr);
+    function __HydraStakingConnector_init(address _hydraStakingAddr) internal onlyInitializing {
+        __HydraStakingConnector_init_unchained(_hydraStakingAddr);
     }
 
-    function __HydraStakingConnector_init_unchained(address hydraStakingAddr) internal onlyInitializing {
-        hydraStakingContract = IHydraStaking(hydraStakingAddr);
+    function __HydraStakingConnector_init_unchained(address _hydraStakingAddr) internal onlyInitializing {
+        hydraStakingContract = IHydraStaking(_hydraStakingAddr);
     }
 
     // _______________ Modifiers _______________
