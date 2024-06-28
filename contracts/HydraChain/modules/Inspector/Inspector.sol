@@ -15,14 +15,6 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
     /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
     uint256 public banThreshold;
 
-    // _______________ Modifiers _______________
-
-    // Only address that is banned
-    modifier onlyBanned(address account) {
-        if (validators[account].status == ValidatorStatus.Banned) revert Unauthorized("UNBANNED_VALIDATOR");
-        _;
-    }
-
     // _______________ Initializer _______________
 
     function __Inspector_init(address stakingAddr) internal onlyInitializing {
@@ -34,6 +26,14 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
         banThreshold = 123428; // the approximate number of blocks for 72 hours
+    }
+
+    // _______________ Modifiers _______________
+
+    // Only address that is banned
+    modifier onlyBanned(address account) {
+        if (validators[account].status == ValidatorStatus.Banned) revert Unauthorized("UNBANNED_VALIDATOR");
+        _;
     }
 
     // _______________ External functions _______________

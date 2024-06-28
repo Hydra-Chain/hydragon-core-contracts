@@ -57,7 +57,9 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
     /**
      * @inheritdoc IEpochManager
      */
-    function getCurrentEpochId() external view returns (uint256) {}
+    function getCurrentEpochId() external view returns (uint256) {
+        return currentEpochId;
+    }
 
     /**
      * @inheritdoc IEpochManager

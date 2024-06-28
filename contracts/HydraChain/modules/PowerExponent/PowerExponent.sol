@@ -8,6 +8,8 @@ import {IPowerExponent, PowerExponentStore} from "./IPowerExponent.sol";
 abstract contract PowerExponent is IPowerExponent, Ownable2StepUpgradeable {
     PowerExponentStore public powerExponent;
 
+    // _______________ Initializer _______________
+
     function __PowerExponent_init() internal onlyInitializing {
         __PowerExponent_init_unchained();
     }
@@ -15,6 +17,8 @@ abstract contract PowerExponent is IPowerExponent, Ownable2StepUpgradeable {
     function __PowerExponent_init_unchained() internal onlyInitializing {
         powerExponent = PowerExponentStore({value: 5000, pendingValue: 0});
     }
+
+    // _______________ External functions _______________
 
     /**
      * @inheritdoc IPowerExponent
@@ -31,6 +35,8 @@ abstract contract PowerExponent is IPowerExponent, Ownable2StepUpgradeable {
 
         powerExponent.pendingValue = uint128(newValue);
     }
+
+    // _______________ Internal functions _______________
 
     /**
      * @notice Apply pending value if any

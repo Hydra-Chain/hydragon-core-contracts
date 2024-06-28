@@ -10,6 +10,8 @@ import {Unauthorized} from "./../../../common/Errors.sol";
 abstract contract StakingConnector is Initializable {
     IHydraStaking public stakingContract;
 
+    // _______________ Initializer _______________
+
     function __StakingConnector_init(address stakingAddr) internal onlyInitializing {
         __StakingConnector_init_unchained(stakingAddr);
     }
@@ -17,6 +19,8 @@ abstract contract StakingConnector is Initializable {
     function __StakingConnector_init_unchained(address stakingAddr) internal onlyInitializing {
         stakingContract = IHydraStaking(stakingAddr);
     }
+
+    // _______________ Modifiers _______________
 
     modifier onlyStaking() {
         if (msg.sender != address(stakingContract)) {
