@@ -10,6 +10,11 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
 
     error InvalidCommission(uint256 commission);
 
+    /**
+     * @notice Returns commission for validator.
+     * @param staker Address of the validator
+     * @return commission Commission for validator
+     */
     function stakerDelegationCommission(address staker) external view returns (uint256);
 
     /**
@@ -18,5 +23,11 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
      */
     function setCommission(uint256 newCommission) external;
 
+    /**
+     * @notice Distributes rewards to delegators.
+     * @param staker Address of the validator
+     * @param reward Amount of rewards to distribute
+     * @param epochId Epoch ID
+     */
     function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external;
 }

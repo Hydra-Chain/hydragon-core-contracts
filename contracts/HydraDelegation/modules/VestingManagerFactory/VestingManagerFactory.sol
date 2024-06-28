@@ -11,6 +11,10 @@ abstract contract VestingManagerFactory is Initializable {
     // base implemetantion to be used by VestManager proxies
     address public implementation;
 
+    event NewClone(address indexed owner, address newClone);
+
+    // _______________ Initializer _______________
+
     function __VestFactory_init() internal onlyInitializing {
         __VestFactory_init_unchained();
     }
@@ -19,7 +23,7 @@ abstract contract VestingManagerFactory is Initializable {
         implementation = address(new VestingManager());
     }
 
-    event NewClone(address indexed owner, address newClone);
+    // _______________ Internal functions _______________
 
     function _clone(address owner, address rewardPool) internal returns (address) {
         address child = Clones.clone(implementation);

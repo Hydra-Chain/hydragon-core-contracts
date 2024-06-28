@@ -81,6 +81,12 @@ library DelegationPoolLib {
         return (pool.balances[account] * pool.supply) / pool.virtualSupply;
     }
 
+    /**
+     * @notice returns the correction of rewards for an account in a specific pool
+     * @param pool the DelegationPool to query the correction from
+     * @param account the address to query the correction of
+     * @return int256 the correction of the account
+     */
     function correctionOf(DelegationPool storage pool, address account) internal view returns (int256) {
         return pool.magnifiedRewardCorrections[account];
     }
@@ -116,12 +122,28 @@ library DelegationPoolLib {
         return 1e18;
     }
 
+    /**
+     * @notice returns the amount of rewards earned by an account in a pool
+     * @param rps the reward per share
+     * @param balance the balance of the account
+     * @param correction the correction of the account
+     * @return uint256 the amount of rewards earned by the account
+     */
     function rewardsEarned(uint256 rps, uint256 balance, int256 correction) internal pure returns (uint256) {
         int256 magnifiedRewards = (rps * balance).toInt256Safe();
         uint256 correctedRewards = (magnifiedRewards + correction).toUint256Safe();
         return correctedRewards / magnitude();
     }
 
+    /**
+     * @notice returns the amount of claimable rewards for an address in a pool
+     * @param pool the DelegationPool to query the claimable rewards from
+     * @param account the address for which query the amount of claimable rewards
+     * @param rps the reward per share
+     * @param balance the balance of the account
+     * @param correction the correction of the account
+     * @return uint256 the amount of claimable rewards for the address
+     */
     function claimableRewards(
         DelegationPool storage pool,
         address account,
@@ -136,6 +158,15 @@ library DelegationPoolLib {
         return _rewardsEarned - claimedRewards;
     }
 
+    /**
+     * @notice claims the rewards for an address in a pool
+     * @param pool the DelegationPool to claim the rewards from
+     * @param account the address for which to claim the rewards
+     * @param rps the reward per share
+     * @param balance the balance of the account
+     * @param correction the correction of the account
+     * @return reward the amount of rewards claimed
+     */
     function claimRewards(
         DelegationPool storage pool,
         address account,
