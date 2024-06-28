@@ -61,6 +61,108 @@ A constant for the minimum delegation limit
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### NATIVE_TOKEN_CONTRACT
+
+```solidity
+function NATIVE_TOKEN_CONTRACT() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE_GAS
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### SYSTEM
+
+```solidity
+function SYSTEM() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE_GAS
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### WITHDRAWAL_WAIT_PERIOD
 
 ```solidity
@@ -219,7 +321,7 @@ function delegationCommissionPerStaker(address) external view returns (uint256)
 function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-
+Return the amount of delegation for a delegator to a validator
 
 
 
@@ -227,8 +329,8 @@ function delegationOf(address staker, address delegator) external view returns (
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| delegator | address | undefined |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
 
 #### Returns
 
@@ -293,7 +395,7 @@ Keeps the delegation pools
 function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external nonpayable
 ```
 
-
+Distributes rewards to delegators.
 
 
 
@@ -301,9 +403,9 @@ function distributeDelegationRewards(address staker, uint256 reward, uint256 epo
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| reward | uint256 | undefined |
-| epochId | uint256 | undefined |
+| staker | address | Address of the validator |
+| reward | uint256 | Amount of rewards to distribute |
+| epochId | uint256 | Epoch ID |
 
 ### epochManagerContract
 
@@ -373,15 +475,15 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 function getUserVestingManagers(address user) external view returns (address[])
 ```
 
-Gets the vesting managers per user address for fast off-chain lookup.
+Gets user vesting managers.
 
-
+*Gets the vesting managers per user address for fast off-chain lookup.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| user | address | undefined |
+| user | address | User address |
 
 #### Returns
 
@@ -486,6 +588,28 @@ function implementation() external view returns (address)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### initialize
+
+```solidity
+function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address epochManagerAddr) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| initialStakers | StakerInit[] | undefined |
+| initialCommission | uint256 | undefined |
+| liquidToken | address | undefined |
+| governance | address | undefined |
+| aprCalculatorAddr | address | undefined |
+| hydraStakingAddr | address | undefined |
+| epochManagerAddr | address | undefined |
 
 ### isBalanceChangeMade
 
@@ -774,7 +898,7 @@ Sets commission for validator.
 function stakerDelegationCommission(address staker) external view returns (uint256)
 ```
 
-
+Returns commission for validator.
 
 
 
@@ -782,13 +906,13 @@ function stakerDelegationCommission(address staker) external view returns (uint2
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | commission Commission for validator |
 
 ### supportsInterface
 
@@ -835,7 +959,7 @@ Move a vested position to another validator. Can be called by vesting positions&
 function totalDelegation() external view returns (uint256)
 ```
 
-
+Returns the total delegation amount
 
 
 
@@ -852,7 +976,7 @@ function totalDelegation() external view returns (uint256)
 function totalDelegationOf(address staker) external view returns (uint256)
 ```
 
-
+Returns the total amount of delegation for a staker
 
 
 
@@ -860,7 +984,7 @@ function totalDelegationOf(address staker) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 

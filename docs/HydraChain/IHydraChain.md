@@ -16,15 +16,15 @@
 function activateValidator(address account) external nonpayable
 ```
 
+Activates validator.
 
-
-
+*Can be called only by the staking contract.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Address of the validator |
 
 ### banValidator
 
@@ -42,10 +42,10 @@ Method used to ban a validator, if the ban threshold is reached
 |---|---|---|
 | validator | address | Address of the validator |
 
-### deactivateValidator
+### commitEpoch
 
 ```solidity
-function deactivateValidator(address account) external nonpayable
+function commitEpoch(uint256 id, Epoch epoch, uint256 epochSize, Uptime[] uptime) external nonpayable
 ```
 
 
@@ -56,7 +56,26 @@ function deactivateValidator(address account) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| id | uint256 | undefined |
+| epoch | Epoch | undefined |
+| epochSize | uint256 | undefined |
+| uptime | Uptime[] | undefined |
+
+### deactivateValidator
+
+```solidity
+function deactivateValidator(address account) external nonpayable
+```
+
+Deactivates validator.
+
+*Can be called only by the staking contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Address of the validator |
 
 ### getActiveValidatorsCount
 
@@ -129,8 +148,8 @@ Return the Voting Power Exponent Numerator and Denominator
 
 | Name | Type | Description |
 |---|---|---|
-| numerator | uint256 | undefined |
-| denominator | uint256 | undefined |
+| numerator | uint256 | Voting Power Exponent Numerator |
+| denominator | uint256 | Voting Power Exponent Denominator |
 
 ### getValidator
 
@@ -184,7 +203,7 @@ function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
 
-
+*Validator must be whitelisted.*
 
 #### Parameters
 

@@ -1,4 +1,4 @@
-# IStaking
+# ILiquidStaking
 
 
 
@@ -42,6 +42,34 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards() external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+
+### liquidToken
+
+```solidity
+function liquidToken() external view returns (address)
+```
+
+Returns the address of the token that is distributed as a liquidity on stake
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -74,6 +102,50 @@ Stakes sent amount.
 
 
 
+
+### stakeOf
+
+```solidity
+function stakeOf(address account) external view returns (uint256)
+```
+
+Returns staked amount for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### unclaimedRewards
+
+```solidity
+function unclaimedRewards(address account) external view returns (uint256)
+```
+
+Returns unclaimed rewards for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### unstake
 

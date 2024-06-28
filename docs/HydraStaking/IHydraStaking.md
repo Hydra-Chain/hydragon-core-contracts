@@ -10,28 +10,6 @@
 
 ## Methods
 
-### balanceOf
-
-```solidity
-function balanceOf(address account) external view returns (uint256)
-```
-
-Returns the total balance of a given validator
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| account | address | The address of the validator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | Validator&#39;s balance |
-
 ### changeMinStake
 
 ```solidity
@@ -48,10 +26,37 @@ Changes minimum stake required for validators.
 |---|---|---|
 | newMinStake | uint256 | New minimum stake |
 
-### penalizeValidator
+### changeWithdrawalWaitPeriod
 
 ```solidity
-function penalizeValidator(address validator, uint256 unstakeAmount, PenaltyReward[] penaltyRewards) external nonpayable
+function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external nonpayable
+```
+
+Changes the withdrawal wait period.
+
+*This function should be called only by the Governed contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards() external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+
+### distributeRewardsFor
+
+```solidity
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
 ```
 
 
@@ -62,9 +67,66 @@ function penalizeValidator(address validator, uint256 unstakeAmount, PenaltyRewa
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| epochId | uint256 | undefined |
+| uptime | Uptime[] | undefined |
+| epochSize | uint256 | undefined |
+
+### liquidToken
+
+```solidity
+function liquidToken() external view returns (address)
+```
+
+Returns the address of the token that is distributed as a liquidity on stake
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### penalizeStaker
+
+```solidity
+function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | undefined |
 | unstakeAmount | uint256 | undefined |
-| penaltyRewards | PenaltyReward[] | undefined |
+| stakeDistributions | PenalizedStakeDistribution[] | undefined |
+
+### pendingWithdrawals
+
+```solidity
+function pendingWithdrawals(address account) external view returns (uint256)
+```
+
+Calculates how much is yet to become withdrawable for account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The account to calculate amount for |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Amount not yet withdrawable (in wei) |
 
 ### stake
 
@@ -77,13 +139,13 @@ Stakes sent amount.
 
 
 
-### stakeWithVesting
+### stakeOf
 
 ```solidity
-function stakeWithVesting(uint256 durationWeeks) external payable
+function stakeOf(address account) external view returns (uint256)
 ```
 
-Stakes sent amount with vesting period.
+Returns staked amount for the given account.
 
 
 
@@ -91,37 +153,21 @@ Stakes sent amount with vesting period.
 
 | Name | Type | Description |
 |---|---|---|
-| durationWeeks | uint256 | Duration of the vesting in weeks. Must be between 1 and 52. |
-
-### totalDelegationOf
-
-```solidity
-function totalDelegationOf(address validator) external view returns (uint256)
-```
-
-Gets the total amount delegated to a validator.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | Address of validator |
+| account | address | Validator address |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Amount delegated (in HYDRA wei) |
+| _0 | uint256 | undefined |
 
-### totalSupply
+### totalBalance
 
 ```solidity
-function totalSupply() external view returns (uint256)
+function totalBalance() external view returns (uint256)
 ```
 
-Returns the total supply
+Returns total staked balance for all stakers and delegators
 
 
 
@@ -130,7 +176,51 @@ Returns the total supply
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Total supply |
+| _0 | uint256 | undefined |
+
+### totalBalanceOf
+
+```solidity
+function totalBalanceOf(address staker) external view returns (uint256)
+```
+
+Returns total balance staked + delegated
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### unclaimedRewards
+
+```solidity
+function unclaimedRewards(address account) external view returns (uint256)
+```
+
+Returns unclaimed rewards for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### unstake
 
@@ -148,6 +238,55 @@ Unstakes amount for sender. Claims rewards beforehand.
 |---|---|---|
 | amount | uint256 | Amount to unstake |
 
+### withdraw
+
+```solidity
+function withdraw(address to) external nonpayable
+```
+
+Withdraws sender&#39;s withdrawable amount to specified address.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| to | address | Address to withdraw to |
+
+### withdrawBannedFunds
+
+```solidity
+function withdrawBannedFunds() external nonpayable
+```
+
+Withdraws the funds of a banned validator
+
+
+
+
+### withdrawable
+
+```solidity
+function withdrawable(address account) external view returns (uint256)
+```
+
+Calculates how much can be withdrawn for account at this time.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The account to calculate amount for |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Amount withdrawable (in wei) |
+
 
 
 ## Events
@@ -155,7 +294,7 @@ Unstakes amount for sender. Claims rewards beforehand.
 ### Staked
 
 ```solidity
-event Staked(address indexed validator, uint256 amount)
+event Staked(address indexed account, uint256 amount)
 ```
 
 
@@ -166,13 +305,47 @@ event Staked(address indexed validator, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| account `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### StakingRewardDistributed
+
+```solidity
+event StakingRewardDistributed(address indexed account, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### StakingRewardsClaimed
+
+```solidity
+event StakingRewardsClaimed(address indexed account, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Unstaked
 
 ```solidity
-event Unstaked(address indexed validator, uint256 amount)
+event Unstaked(address indexed account, uint256 amount)
 ```
 
 
@@ -183,7 +356,42 @@ event Unstaked(address indexed validator, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| account `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### WithdrawalFinished
+
+```solidity
+event WithdrawalFinished(address indexed account, address indexed to, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
+| to `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### WithdrawalRegistered
+
+```solidity
+event WithdrawalRegistered(address indexed account, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 
@@ -201,15 +409,54 @@ error InvalidMinStake()
 
 
 
-### LowStake
+### InvalidWaitPeriod
 
 ```solidity
-error LowStake()
+error InvalidWaitPeriod()
 ```
 
 
 
 
 
+
+### NoRewards
+
+```solidity
+error NoRewards()
+```
+
+
+
+
+
+
+### NoWithdrawalAvailable
+
+```solidity
+error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+### StakeRequirement
+
+```solidity
+error StakeRequirement(string src, string msg)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| src | string | undefined |
+| msg | string | undefined |
 
 

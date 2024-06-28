@@ -25,8 +25,8 @@ Return the Voting Power Exponent Numerator and Denominator
 
 | Name | Type | Description |
 |---|---|---|
-| numerator | uint256 | undefined |
-| denominator | uint256 | undefined |
+| numerator | uint256 | Voting Power Exponent Numerator |
+| denominator | uint256 | Voting Power Exponent Denominator |
 
 ### updateExponent
 

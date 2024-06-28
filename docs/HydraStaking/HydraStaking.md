@@ -10,6 +10,23 @@
 
 ## Methods
 
+### DEFAULT_ADMIN_ROLE
+
+```solidity
+function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bytes32 | undefined |
+
 ### MIN_STAKE_LIMIT
 
 ```solidity
@@ -157,13 +174,30 @@ function acceptOwnership() external nonpayable
 *The new owner accepts the ownership transfer.*
 
 
-### balanceOf
+### aprCalculatorContract
 
 ```solidity
-function balanceOf(address account) external view returns (uint256)
+function aprCalculatorContract() external view returns (contract IAPRCalculator)
 ```
 
-Returns the total balance of a given validator
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IAPRCalculator | undefined |
+
+### calcVestedStakingPositionPenalty
+
+```solidity
+function calcVestedStakingPositionPenalty(address staker, uint256 amount) external view returns (uint256 penalty, uint256 reward)
+```
+
+Returns the penalty and reward that will be burned, if vested stake position is active
 
 
 
@@ -171,13 +205,15 @@ Returns the total balance of a given validator
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | The address of the validator |
+| staker | address | The address of the staker |
+| amount | uint256 | The amount that is going to be unstaked |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Validator&#39;s balance |
+| penalty | uint256 | for the staker |
+| reward | uint256 | of the staker |
 
 ### changeMinStake
 
@@ -209,12 +245,175 @@ Changes the withdrawal wait period.
 
 | Name | Type | Description |
 |---|---|---|
-| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single  epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+| newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards() external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards(uint256 rewardHistoryIndex) external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardHistoryIndex | uint256 | The index of the reward history to claim rewards from |
+
+### delegationContract
+
+```solidity
+function delegationContract() external view returns (contract IHydraDelegation)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraDelegation | undefined |
+
+### distributeRewardsFor
+
+```solidity
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epochId | uint256 | undefined |
+| uptime | Uptime[] | undefined |
+| epochSize | uint256 | undefined |
+
+### distributedRewardPerEpoch
+
+```solidity
+function distributedRewardPerEpoch(uint256) external view returns (uint256)
+```
+
+Mapping used to keep the paid rewards per epoch
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### epochManagerContract
+
+```solidity
+function epochManagerContract() external view returns (contract IEpochManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IEpochManager | undefined |
+
+### getRoleAdmin
+
+```solidity
+function getRoleAdmin(bytes32 role) external view returns (bytes32)
+```
+
+
+
+*Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role&#39;s admin, use {_setRoleAdmin}.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role | bytes32 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bytes32 | undefined |
+
+### grantRole
+
+```solidity
+function grantRole(bytes32 role, address account) external nonpayable
+```
+
+
+
+*Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``&#39;s admin role. May emit a {RoleGranted} event.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role | bytes32 | undefined |
+| account | address | undefined |
+
+### hasRole
+
+```solidity
+function hasRole(bytes32 role, address account) external view returns (bool)
+```
+
+
+
+*Returns `true` if `account` has been granted `role`.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role | bytes32 | undefined |
+| account | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
 
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, uint256 newMinStake, address newLiquidToken, address newRewardPool) external nonpayable
+function initialize(StakerInit[] initialStakers, uint256 newMinStake, address newLiquidToken, address validatorManagerAddr, address aprCalculatorAddr, address governance, address epochManagerAddr, address delegationContractAddr) external nonpayable
 ```
 
 
@@ -228,7 +427,33 @@ function initialize(StakerInit[] initialStakers, uint256 newMinStake, address ne
 | initialStakers | StakerInit[] | undefined |
 | newMinStake | uint256 | undefined |
 | newLiquidToken | address | undefined |
-| newRewardPool | address | undefined |
+| validatorManagerAddr | address | undefined |
+| aprCalculatorAddr | address | undefined |
+| governance | address | undefined |
+| epochManagerAddr | address | undefined |
+| delegationContractAddr | address | undefined |
+
+### leftToWithdrawPerStaker
+
+```solidity
+function leftToWithdrawPerStaker(address) external view returns (uint256)
+```
+
+The withdrawal info that is required for a banned validator to withdraw the funds left
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### liquidToken
 
@@ -236,7 +461,7 @@ function initialize(StakerInit[] initialStakers, uint256 newMinStake, address ne
 function liquidToken() external view returns (address)
 ```
 
-
+Returns the address of the token that is distributed as a liquidity on stake
 
 
 
@@ -246,6 +471,28 @@ function liquidToken() external view returns (address)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### liquidityDebts
+
+```solidity
+function liquidityDebts(address) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### minStake
 
@@ -264,6 +511,38 @@ A state variable to keep the minimum amount of stake
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### onDelegate
+
+```solidity
+function onDelegate(address staker) external nonpayable
+```
+
+Called by the delegation contract when a user delegates to a staker
+
+*This function should be called by the delegation contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+### onUndelegate
+
+```solidity
+function onUndelegate(address staker) external nonpayable
+```
+
+Called by the delegation contract when a user undelegates from a staker
+
+*This function should be called by the delegation contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
 ### owner
 
 ```solidity
@@ -281,10 +560,10 @@ function owner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
-### penalizeValidator
+### penalizeStaker
 
 ```solidity
-function penalizeValidator(address validator, uint256 unstakeAmount, PenaltyReward[] penaltyRewards) external nonpayable
+function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
 ```
 
 
@@ -295,9 +574,9 @@ function penalizeValidator(address validator, uint256 unstakeAmount, PenaltyRewa
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| staker | address | undefined |
 | unstakeAmount | uint256 | undefined |
-| penaltyRewards | PenaltyReward[] | undefined |
+| stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingOwner
 
@@ -349,22 +628,39 @@ function renounceOwnership() external nonpayable
 *Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
 
 
-### rewardPool
+### renounceRole
 
 ```solidity
-function rewardPool() external view returns (contract IRewardPool)
+function renounceRole(bytes32 role, address account) external nonpayable
 ```
 
 
 
+*Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function&#39;s purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been revoked `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`. May emit a {RoleRevoked} event.*
 
-
-
-#### Returns
+#### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | contract IRewardPool | undefined |
+| role | bytes32 | undefined |
+| account | address | undefined |
+
+### revokeRole
+
+```solidity
+function revokeRole(bytes32 role, address account) external nonpayable
+```
+
+
+
+*Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``&#39;s admin role. May emit a {RoleRevoked} event.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role | bytes32 | undefined |
+| account | address | undefined |
 
 ### stake
 
@@ -377,13 +673,13 @@ Stakes sent amount.
 
 
 
-### stakeBalances
+### stakeOf
 
 ```solidity
-function stakeBalances(address) external view returns (uint256)
+function stakeOf(address account) external view returns (uint256)
 ```
 
-
+Returns staked amount for the given account.
 
 
 
@@ -391,7 +687,7 @@ function stakeBalances(address) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -415,10 +711,141 @@ Stakes sent amount with vesting period.
 |---|---|---|
 | durationWeeks | uint256 | Duration of the vesting in weeks. Must be between 1 and 52. |
 
+### stakes
+
+```solidity
+function stakes(address) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### stakingRewards
+
+```solidity
+function stakingRewards(address) external view returns (uint256 taken, uint256 total)
+```
+
+The staking rewards mapped to a staker&#39;s address
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| taken | uint256 | undefined |
+| total | uint256 | undefined |
+
+### stakingRewardsHistory
+
+```solidity
+function stakingRewardsHistory(address, uint256) external view returns (uint256 totalReward, uint256 epoch, uint256 timestamp)
+```
+
+Keeps the rewards history of the validators
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+| _1 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| totalReward | uint256 | undefined |
+| epoch | uint256 | undefined |
+| timestamp | uint256 | undefined |
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external view returns (bool)
+```
+
+
+
+*See {IERC165-supportsInterface}.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| interfaceId | bytes4 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### totalBalance
 
 ```solidity
 function totalBalance() external view returns (uint256)
+```
+
+Returns total staked balance for all stakers and delegators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### totalBalanceOf
+
+```solidity
+function totalBalanceOf(address staker) external view returns (uint256)
+```
+
+Returns total balance staked + delegated
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### totalStake
+
+```solidity
+function totalStake() external view returns (uint256)
 ```
 
 
@@ -431,45 +858,6 @@ function totalBalance() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### totalDelegationOf
-
-```solidity
-function totalDelegationOf(address validator) external view returns (uint256)
-```
-
-Gets the total amount delegated to a validator.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | Address of validator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | Amount delegated (in HYDRA wei) |
-
-### totalSupply
-
-```solidity
-function totalSupply() external view returns (uint256)
-```
-
-Returns the total supply
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | Total supply |
 
 ### transferOwnership
 
@@ -486,6 +874,28 @@ function transferOwnership(address newOwner) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | newOwner | address | undefined |
+
+### unclaimedRewards
+
+```solidity
+function unclaimedRewards(address account) external view returns (uint256)
+```
+
+Returns unclaimed rewards for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### unstake
 
@@ -520,6 +930,33 @@ function validatorManagerContract() external view returns (contract IValidatorMa
 |---|---|---|
 | _0 | contract IValidatorManager | undefined |
 
+### vestedStakingPositions
+
+```solidity
+function vestedStakingPositions(address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus)
+```
+
+The stakers&#39; vesting positions
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| duration | uint256 | undefined |
+| start | uint256 | undefined |
+| end | uint256 | undefined |
+| base | uint256 | undefined |
+| vestBonus | uint256 | undefined |
+| rsiBonus | uint256 | undefined |
+
 ### withdraw
 
 ```solidity
@@ -542,7 +979,7 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 function withdrawBannedFunds() external nonpayable
 ```
 
-
+Withdraws the funds of a banned validator
 
 
 
@@ -569,32 +1006,26 @@ Calculates how much can be withdrawn for account at this time.
 |---|---|---|
 | amount | uint256 | Amount withdrawable (in wei) |
 
-### withdrawalBalances
+
+
+## Events
+
+### BalanceChanged
 
 ```solidity
-function withdrawalBalances(address) external view returns (uint256 liquidTokens, uint256 withdrawableAmount)
+event BalanceChanged(address indexed account, uint256 newBalance)
 ```
 
-The withdrawal info that is required for a banned validator to withdraw the funds left
 
-*The withdrawal amount is calculated as the difference between the validator&#39;s total stake and any penalties applied due to a ban*
+
+
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| liquidTokens | uint256 | undefined |
-| withdrawableAmount | uint256 | undefined |
-
-
-
-## Events
+| account `indexed` | address | undefined |
+| newBalance  | uint256 | undefined |
 
 ### Initialized
 
@@ -646,10 +1077,10 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 | previousOwner `indexed` | address | undefined |
 | newOwner `indexed` | address | undefined |
 
-### StakeChanged
+### RoleAdminChanged
 
 ```solidity
-event StakeChanged(address indexed validator, uint256 newStake)
+event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 ```
 
 
@@ -660,13 +1091,50 @@ event StakeChanged(address indexed validator, uint256 newStake)
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
-| newStake  | uint256 | undefined |
+| role `indexed` | bytes32 | undefined |
+| previousAdminRole `indexed` | bytes32 | undefined |
+| newAdminRole `indexed` | bytes32 | undefined |
+
+### RoleGranted
+
+```solidity
+event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role `indexed` | bytes32 | undefined |
+| account `indexed` | address | undefined |
+| sender `indexed` | address | undefined |
+
+### RoleRevoked
+
+```solidity
+event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| role `indexed` | bytes32 | undefined |
+| account `indexed` | address | undefined |
+| sender `indexed` | address | undefined |
 
 ### Staked
 
 ```solidity
-event Staked(address indexed validator, uint256 amount)
+event Staked(address indexed account, uint256 amount)
 ```
 
 
@@ -677,13 +1145,47 @@ event Staked(address indexed validator, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| account `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### StakingRewardDistributed
+
+```solidity
+event StakingRewardDistributed(address indexed account, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### StakingRewardsClaimed
+
+```solidity
+event StakingRewardsClaimed(address indexed account, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Unstaked
 
 ```solidity
-event Unstaked(address indexed validator, uint256 amount)
+event Unstaked(address indexed account, uint256 amount)
 ```
 
 
@@ -694,7 +1196,7 @@ event Unstaked(address indexed validator, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| account `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### WithdrawalFinished
@@ -758,10 +1260,10 @@ error InvalidWaitPeriod()
 
 
 
-### LowStake
+### NoRewards
 
 ```solidity
-error LowStake()
+error NoRewards()
 ```
 
 

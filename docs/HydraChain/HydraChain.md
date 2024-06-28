@@ -163,15 +163,15 @@ function acceptOwnership() external nonpayable
 function activateValidator(address account) external nonpayable
 ```
 
+Activates validator.
 
-
-
+*Can be called only by the staking contract.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Address of the validator |
 
 ### activeValidatorsCount
 
@@ -298,15 +298,15 @@ function currentEpochId() external view returns (uint256)
 function deactivateValidator(address account) external nonpayable
 ```
 
+Deactivates validator.
 
-
-
+*Can be called only by the staking contract.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Address of the validator |
 
 ### epochEndBlocks
 
@@ -329,23 +329,6 @@ Array with epoch ending blocks
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
 
 ### epochs
 
@@ -442,8 +425,8 @@ Return the Voting Power Exponent Numerator and Denominator
 
 | Name | Type | Description |
 |---|---|---|
-| numerator | uint256 | undefined |
-| denominator | uint256 | undefined |
+| numerator | uint256 | Voting Power Exponent Numerator |
+| denominator | uint256 | Voting Power Exponent Denominator |
 
 ### getValidator
 
@@ -492,7 +475,7 @@ Gets all validators. Returns already unactive validators as well.
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address epochManagerAddr, address stakingAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address stakingContractAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -505,8 +488,7 @@ function initialize(ValidatorInit[] newValidators, address governance, address e
 |---|---|---|
 | newValidators | ValidatorInit[] | undefined |
 | governance | address | undefined |
-| epochManagerAddr | address | undefined |
-| stakingAddr | address | undefined |
+| stakingContractAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan
@@ -515,21 +497,21 @@ function initialize(ValidatorInit[] newValidators, address governance, address e
 function isSubjectToBan(address validator) external view returns (bool)
 ```
 
+Returns if a given validator is subject to a ban
 
-
-
+*Apply custom rules for ban eligibility*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| validator | address | The address of the validator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | bool | undefined |
+| _0 | bool | Returns true if the validator is subject to a ban |
 
 ### isWhitelisted
 
@@ -613,7 +595,7 @@ function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
 
-
+*Validator must be whitelisted.*
 
 #### Parameters
 

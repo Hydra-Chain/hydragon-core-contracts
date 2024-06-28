@@ -1,4 +1,4 @@
-# PenalizeableStaking
+# DelegatedStaking
 
 
 
@@ -127,10 +127,27 @@ Changes the withdrawal wait period.
 function claimStakingRewards() external nonpayable
 ```
 
+Claims staking rewards for the sender.
 
 
 
 
+### delegationContract
+
+```solidity
+function delegationContract() external view returns (contract IHydraDelegation)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraDelegation | undefined |
 
 ### epochManagerContract
 
@@ -211,28 +228,6 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### leftToWithdrawPerStaker
-
-```solidity
-function leftToWithdrawPerStaker(address) external view returns (uint256)
-```
-
-The withdrawal info that is required for a banned validator to withdraw the funds left
-
-*The withdrawal amount is calculated as the difference between the validator&#39;s total stake and any penalties applied due to a ban*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### minStake
 
 ```solidity
@@ -250,6 +245,38 @@ A state variable to keep the minimum amount of stake
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### onDelegate
+
+```solidity
+function onDelegate(address staker) external nonpayable
+```
+
+Called by the delegation contract when a user delegates to a staker
+
+*This function should be called by the delegation contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+### onUndelegate
+
+```solidity
+function onUndelegate(address staker) external nonpayable
+```
+
+Called by the delegation contract when a user undelegates from a staker
+
+*This function should be called by the delegation contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
 ### owner
 
 ```solidity
@@ -266,24 +293,6 @@ function owner() external view returns (address)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
-
-### penalizeStaker
-
-```solidity
-function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
-| unstakeAmount | uint256 | undefined |
-| stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingOwner
 
@@ -386,7 +395,7 @@ Stakes sent amount.
 function stakeOf(address account) external view returns (uint256)
 ```
 
-
+Returns staked amount for the given account.
 
 
 
@@ -394,7 +403,7 @@ function stakeOf(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -508,7 +517,7 @@ function transferOwnership(address newOwner) external nonpayable
 function unclaimedRewards(address account) external view returns (uint256)
 ```
 
-
+Returns unclaimed rewards for the given account.
 
 
 
@@ -516,7 +525,7 @@ function unclaimedRewards(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -540,23 +549,6 @@ Unstakes amount for sender. Claims rewards beforehand.
 |---|---|---|
 | amount | uint256 | Amount to unstake |
 
-### validatorManagerContract
-
-```solidity
-function validatorManagerContract() external view returns (contract IValidatorManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IValidatorManager | undefined |
-
 ### withdraw
 
 ```solidity
@@ -572,17 +564,6 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
-
-### withdrawBannedFunds
-
-```solidity
-function withdrawBannedFunds() external nonpayable
-```
-
-
-
-
-
 
 ### withdrawable
 

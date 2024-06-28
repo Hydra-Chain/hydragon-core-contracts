@@ -42,6 +42,29 @@ Delegates sent amount to validator and claims rewards.
 |---|---|---|
 | validator | address | Validator to delegate to |
 
+### delegationOf
+
+```solidity
+function delegationOf(address staker, address delegator) external view returns (uint256)
+```
+
+Return the amount of delegation for a delegator to a validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getRawDelegatorReward
 
 ```solidity
@@ -93,7 +116,7 @@ Calculates how much is yet to become withdrawable for account.
 function totalDelegation() external view returns (uint256)
 ```
 
-
+Returns the total delegation amount
 
 
 
@@ -110,7 +133,7 @@ function totalDelegation() external view returns (uint256)
 function totalDelegationOf(address staker) external view returns (uint256)
 ```
 
-
+Returns the total amount of delegation for a staker
 
 
 
@@ -118,7 +141,7 @@ function totalDelegationOf(address staker) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 

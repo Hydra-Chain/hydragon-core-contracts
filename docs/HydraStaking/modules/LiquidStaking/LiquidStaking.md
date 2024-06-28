@@ -1,10 +1,10 @@
-# VestedStaking
+# LiquidStaking
 
 
 
-> VestedStaking
+> LiquidStaking
 
-An extension of the Staking contract that enables vesting the stake for a higher APY
+An extension of the Staking contract that enables the distribution of liquid tokens to stakers
 
 
 
@@ -89,30 +89,6 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
-### calcVestedStakingPositionPenalty
-
-```solidity
-function calcVestedStakingPositionPenalty(address staker, uint256 amount) external view returns (uint256 penalty, uint256 reward)
-```
-
-Returns the penalty and reward that will be burned, if vested stake position is active
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | The address of the staker |
-| amount | uint256 | The amount that is going to be unstaked |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| penalty | uint256 | for the staker |
-| reward | uint256 | of the staker |
-
 ### changeMinStake
 
 ```solidity
@@ -151,26 +127,10 @@ Changes the withdrawal wait period.
 function claimStakingRewards() external nonpayable
 ```
 
+Claims staking rewards for the sender.
 
 
 
-
-
-### claimStakingRewards
-
-```solidity
-function claimStakingRewards(uint256 rewardHistoryIndex) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| rewardHistoryIndex | uint256 | undefined |
 
 ### epochManagerContract
 
@@ -250,6 +210,45 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### liquidToken
+
+```solidity
+function liquidToken() external view returns (address)
+```
+
+Returns the address of the token that is distributed as a liquidity on stake
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### liquidityDebts
+
+```solidity
+function liquidityDebts(address) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### minStake
 
@@ -386,7 +385,7 @@ Stakes sent amount.
 function stakeOf(address account) external view returns (uint256)
 ```
 
-
+Returns staked amount for the given account.
 
 
 
@@ -394,29 +393,13 @@ function stakeOf(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### stakeWithVesting
-
-```solidity
-function stakeWithVesting(uint256 durationWeeks) external payable
-```
-
-Stakes sent amount with vesting period.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| durationWeeks | uint256 | Duration of the vesting in weeks. Must be between 1 and 52. |
 
 ### stakes
 
@@ -462,31 +445,6 @@ The staking rewards mapped to a staker&#39;s address
 |---|---|---|
 | taken | uint256 | undefined |
 | total | uint256 | undefined |
-
-### stakingRewardsHistory
-
-```solidity
-function stakingRewardsHistory(address, uint256) external view returns (uint256 totalReward, uint256 epoch, uint256 timestamp)
-```
-
-Keeps the rewards history of the validators
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| totalReward | uint256 | undefined |
-| epoch | uint256 | undefined |
-| timestamp | uint256 | undefined |
 
 ### supportsInterface
 
@@ -549,7 +507,7 @@ function transferOwnership(address newOwner) external nonpayable
 function unclaimedRewards(address account) external view returns (uint256)
 ```
 
-
+Returns unclaimed rewards for the given account.
 
 
 
@@ -557,7 +515,7 @@ function unclaimedRewards(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -580,33 +538,6 @@ Unstakes amount for sender. Claims rewards beforehand.
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | Amount to unstake |
-
-### vestedStakingPositions
-
-```solidity
-function vestedStakingPositions(address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus)
-```
-
-The stakers&#39; vesting positions
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| duration | uint256 | undefined |
-| start | uint256 | undefined |
-| end | uint256 | undefined |
-| base | uint256 | undefined |
-| vestBonus | uint256 | undefined |
-| rsiBonus | uint256 | undefined |
 
 ### withdraw
 

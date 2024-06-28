@@ -180,7 +180,7 @@ Delegates sent amount to validator. Set vesting position data. Delete old pool p
 function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-
+Return the amount of delegation for a delegator to a validator
 
 
 
@@ -188,8 +188,8 @@ function delegationOf(address staker, address delegator) external view returns (
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| delegator | address | undefined |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
 
 #### Returns
 
@@ -316,15 +316,15 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 function getUserVestingManagers(address user) external view returns (address[])
 ```
 
-Gets the vesting managers per user address for fast off-chain lookup.
+Gets user vesting managers.
 
-
+*Gets the vesting managers per user address for fast off-chain lookup.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| user | address | undefined |
+| user | address | User address |
 
 #### Returns
 
@@ -684,7 +684,7 @@ Move a vested position to another validator. Can be called by vesting positions&
 function totalDelegation() external view returns (uint256)
 ```
 
-
+Returns the total delegation amount
 
 
 
@@ -701,7 +701,7 @@ function totalDelegation() external view returns (uint256)
 function totalDelegationOf(address staker) external view returns (uint256)
 ```
 
-
+Returns the total amount of delegation for a staker
 
 
 
@@ -709,7 +709,7 @@ function totalDelegationOf(address staker) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 
