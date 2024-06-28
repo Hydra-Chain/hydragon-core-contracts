@@ -23,6 +23,8 @@ interface IHydraStaking is IStaking, ILiquidStaking, IDelegatedStaking, IPenaliz
      */
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime, uint256 epochSize) external payable;
 
+    // _______________ Public functions _______________
+
     /**
      * @notice Returns total balance staked + delegated
      * @param staker The address of the staker

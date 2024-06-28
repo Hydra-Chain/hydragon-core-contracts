@@ -9,6 +9,8 @@ import {IHydraStaking} from "./IHydraStaking.sol";
 abstract contract HydraStakingConnector is Initializable {
     IHydraStaking public hydraStakingContract;
 
+    // _______________ Initializer _______________
+
     function __HydraStakingConnector_init(address hydraStakingAddr) internal onlyInitializing {
         __HydraStakingConnector_init_unchained(hydraStakingAddr);
     }
@@ -16,6 +18,8 @@ abstract contract HydraStakingConnector is Initializable {
     function __HydraStakingConnector_init_unchained(address hydraStakingAddr) internal onlyInitializing {
         hydraStakingContract = IHydraStaking(hydraStakingAddr);
     }
+
+    // _______________ Modifiers _______________
 
     modifier onlyHydraStaking() {
         if (msg.sender != address(hydraStakingContract)) {

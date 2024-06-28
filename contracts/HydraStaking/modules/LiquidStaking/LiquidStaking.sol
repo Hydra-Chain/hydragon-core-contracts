@@ -13,11 +13,17 @@ contract LiquidStaking is Staking, Liquid {
 
     // _______________ Internal functions _______________
 
+    /*
+     * @inheritdoc Staking
+     */
     function _stake(address account, uint256 amount) internal virtual override {
         super._stake(account, amount);
         _distributeTokens(account, amount);
     }
 
+    /*
+     * @inheritdoc Staking
+     */
     function _unstake(address account, uint256 amount) internal virtual override returns (uint256, uint256) {
         _collectTokens(account, amount);
 

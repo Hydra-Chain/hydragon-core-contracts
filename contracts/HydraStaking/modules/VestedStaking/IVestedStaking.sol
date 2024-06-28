@@ -25,4 +25,10 @@ interface IVestedStaking {
      * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.
      */
     function stakeWithVesting(uint256 durationWeeks) external payable;
+
+    /**
+     * @notice Claims staking rewards for the sender.
+     * @param rewardHistoryIndex The index of the reward history to claim rewards from
+     */
+    function claimStakingRewards(uint256 rewardHistoryIndex) external;
 }
