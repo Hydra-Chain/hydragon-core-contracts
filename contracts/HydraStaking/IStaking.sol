@@ -36,6 +36,8 @@ interface IStaking is IWithdrawal {
      */
     function changeMinStake(uint256 newMinStake) external;
 
+    // _______________ Public functions _______________
+
     /**
      * @notice Returns staked amount for the given account.
      * @param account Validator address

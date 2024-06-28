@@ -13,6 +13,11 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
 
+    // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IPenalizeableStaking
+     */
     function penalizeStaker(
         address staker,
         uint256 unstakeAmount,
@@ -33,6 +38,9 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
         _afterPenalizeStakerHook(staker, unstakeAmount, leftForStaker);
     }
 
+    /**
+     * @inheritdoc IPenalizeableStaking
+     */
     function withdrawBannedFunds() external {
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         delete leftToWithdrawPerStaker[msg.sender];
@@ -40,6 +48,13 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
         _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @notice Distributes penelized stake to the stakers
+     * @param withdrawAmount The amount to withdraw
+     * @param stakeDistributions The distribution of the penalty
+     */
     function _distributePenalizedStake(
         uint256 withdrawAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
@@ -58,10 +73,30 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
         return withdrawAmount;
     }
 
+
+    /**
+     * @notice Performs the necessary actions after a staker is penalized.
+     * @dev Virtual function to be overridden by the child contract
+     * @param staker The staker to penalize
+     * @param unstakeAmount The amount to unstake
+     * @param leftForStaker The amount left for the staker
+     */
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal virtual {}
 
+    /**
+     * @notice Performs the necessary actions after a staker withdraws banned funds.
+     * @dev Virtual function to be overridden by the child contract
+     * @param staker The staker to withdraw banned funds
+     * @param withdrawnAmount The amount to withdraw
+     */
     function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual {}
 
+
+    /**
+     * @notice Handles the withdrawal of the given amount for the given account
+     * @param account The address of the account
+     * @param amount The amount to withdraw
+     */
     function _handleWithdrawal(address account, uint256 amount) private {
         if (account == address(0)) {
             _withdraw(account, amount);

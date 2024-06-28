@@ -11,11 +11,19 @@ import {Staking} from "./../../Staking.sol";
 abstract contract StateSyncStaking is Staking {
     event BalanceChanged(address indexed account, uint256 newBalance);
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @inheritdoc Staking
+     */
     function _stake(address account, uint256 amount) internal virtual override {
         super._stake(account, amount);
         _syncState(account);
     }
 
+    /**
+     * @inheritdoc Staking
+     */
     function _unstake(
         address account,
         uint256 amount

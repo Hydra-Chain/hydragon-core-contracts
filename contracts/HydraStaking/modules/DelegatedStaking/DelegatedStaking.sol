@@ -8,6 +8,8 @@ import {Unauthorized} from "./../../../common/Errors.sol";
 abstract contract DelegatedStaking is Staking {
     IHydraDelegation public delegationContract;
 
+    // _______________ Initializer _______________
+
     function __DelegatedStaking_init(address delegationContractAddr) internal onlyInitializing {
         __DelegatedStaking_init_unchained(delegationContractAddr);
     }
@@ -15,6 +17,8 @@ abstract contract DelegatedStaking is Staking {
     function __DelegatedStaking_init_unchained(address delegationContractAddr) internal onlyInitializing {
         delegationContract = IHydraDelegation(delegationContractAddr);
     }
+
+    // _______________ Modifiers _______________
 
     modifier onlyDelegationContract() {
         if (msg.sender != address(aprCalculatorContract)) {
@@ -24,30 +28,73 @@ abstract contract DelegatedStaking is Staking {
         _;
     }
 
+    // _______________ External functions _______________
+
+    /**
+     * @notice Called by the delegation contract when a user delegates to a staker
+     * @dev This function should be called by the delegation contract
+     * @param staker The address of the staker
+     */
     function onDelegate(address staker) external onlyDelegationContract onlyActiveStaker(staker) {
         _onDelegate(staker);
     }
 
+    /**
+     * @notice Called by the delegation contract when a user undelegates from a staker
+     * @dev This function should be called by the delegation contract
+     * @param staker The address of the staker
+     */
     function onUndelegate(address staker) external onlyDelegationContract {
         _onUndelegate(staker);
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @notice Called when a delegator delegates
+     * @param staker The staker address
+     */
     function _onDelegate(address staker) internal virtual;
 
+    /**
+     * @notice Called when a delegator undelegates
+     * @param staker The staker address
+     */
     function _onUndelegate(address staker) internal virtual;
 
+
+    /**
+     * @notice Returns the total amount of delegation
+     * @return The total amount of delegation
+     */
     function _totalDelegation() internal view returns (uint256) {
         return delegationContract.totalDelegation();
     }
 
+    /**
+     * @notice Returns the total amount of delegation for a staker
+     * @param staker The staker address
+     * @return The total amount of delegation for the staker
+     */
     function _getStakerDelegatedBalance(address staker) internal view returns (uint256) {
         return delegationContract.totalDelegationOf(staker);
     }
 
+    /**
+     * @notice Returns the commission for a staker
+     * @param staker The staker address
+     * @return The commission for the staker
+     */
     function _getstakerDelegationCommission(address staker) internal view returns (uint256) {
         return delegationContract.stakerDelegationCommission(staker);
     }
 
+    /**
+     * @notice Distributes the delegation rewards
+     * @param staker The staker address
+     * @param reward The reward amount
+     * @param epochId The epoch id
+     */
     function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
         delegationContract.distributeDelegationRewards(staker, reward, epochId);
     }

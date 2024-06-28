@@ -65,20 +65,35 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
 
     // _______________ Public functions _______________
 
+    /**
+     * @inheritdoc IStaking
+     */
     function stakeOf(address account) public view returns (uint256) {
         return stakes[account];
     }
 
+    /**
+     * @inheritdoc IStaking
+     */
     function unclaimedRewards(address account) public view returns (uint256) {
         return stakingRewards[account].total - stakingRewards[account].taken;
     }
 
+    /**
+     * @inheritdoc IStaking
+     */
     function claimStakingRewards() public {
         _withdraw(msg.sender, _claimStakingRewards(msg.sender));
     }
 
     // _______________ Internal functions _______________
 
+    /**
+     * @notice Function that stakes the given amount for the given account.
+     * @dev This is virtual to allow the inheriting contracts to override the stake function.
+     * @param account The account to stake for
+     * @param amount The amount to stake
+     */
     function _stake(address account, uint256 amount) internal virtual {
         uint256 currentBalance = stakeOf(account);
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
@@ -89,6 +104,12 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
         emit Staked(account, amount);
     }
 
+    /**
+     * @notice Function that unstakes the given amount for the given account.
+     * @dev This is virtual to allow the inheriting contracts to override the unstake function.
+     * @param account The account to unstake for
+     * @param amount The amount to unstake
+     */
     function _unstake(
         address account,
         uint256 amount
@@ -119,6 +140,12 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
         emit StakingRewardDistributed(account, reward);
     }
 
+    /**
+     * @notice Function that claims the staking rewards for the given account.
+     * @dev This is virtual to allow the inheriting contracts to override the claimStakingRewards function.
+     * @param staker The account to claim the rewards for
+     * @return rewards The amount of rewards claimed
+     */
     function _claimStakingRewards(address staker) internal virtual returns (uint256 rewards) {
         rewards = unclaimedRewards(staker);
         if (rewards == 0) revert NoRewards();
@@ -130,6 +157,10 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
 
     // _______________ Private functions _______________
 
+    /**
+     * @notice Function that changes the minimum stake required for validators.
+     * @param newMinStake The new minimum stake
+     */
     function _changeMinStake(uint256 newMinStake) private {
         if (newMinStake < MIN_STAKE_LIMIT) revert InvalidMinStake();
         minStake = newMinStake;

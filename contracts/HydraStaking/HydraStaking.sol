@@ -103,6 +103,9 @@ contract HydraStaking is
 
     // _______________ Internal functions _______________
 
+    /**
+     * @inheritdoc Staking
+     */
     function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
         if (stakeOf(account) == 0) {
             validatorManagerContract.activateValidator(account);
@@ -111,6 +114,9 @@ contract HydraStaking is
         super._stake(account, amount);
     }
 
+    /**
+     * @inheritdoc Staking
+     */
     function _unstake(
         address account,
         uint256 amount
@@ -125,14 +131,23 @@ contract HydraStaking is
         }
     }
 
+    /**
+     * @inheritdoc DelegatedStaking
+     */
     function _onDelegate(address staker) internal virtual override {
         _syncState(staker);
     }
 
+    /**
+     * @inheritdoc DelegatedStaking
+     */
     function _onUndelegate(address staker) internal virtual override {
         _syncState(staker);
     }
 
+    /**
+     * @inheritdoc PenalizeableStaking
+     */
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
         // the unstake amount of liquid tokens must be paid at the time of withdrawal
         // but only the leftForStaker will be automatically requested,
@@ -141,18 +156,35 @@ contract HydraStaking is
         _syncState(staker);
     }
 
+    /**
+     * @inheritdoc PenalizeableStaking
+     */
     function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual override {
         _collectTokens(staker, withdrawnAmount);
     }
 
+    /**
+     * @notice Claims the staking rewards for the staker.
+     * @param staker The staker to claim the rewards for
+     */
     function _claimStakingRewards(address staker) internal override(Staking, VestedStaking) returns (uint256 rewards) {
         return super._claimStakingRewards(staker);
     }
 
+    /**
+     * @notice Distributes the staking rewards for the staker.
+     * @param account The account to distribute the rewards for
+     * @param rewardIndex The reward index to distribute
+     */
     function _distributeStakingReward(address account, uint256 rewardIndex) internal override(Staking, VestedStaking) {
         return super._distributeStakingReward(account, rewardIndex);
     }
 
+    /**
+     * @notice Syncs the state of the staker.
+     * @dev Checks if the staker has no stake
+     * @param account The staker to sync the state for
+     */
     function _getBalanceToSync(address account) internal virtual override returns (uint256) {
         if (stakeOf(account) == 0) {
             return 0;
@@ -163,6 +195,14 @@ contract HydraStaking is
 
     // _______________ Private functions _______________
 
+    /**
+     * @notice Distributes the reward for the given validator.
+     * @param epochId The epoch id
+     * @param uptime The uptime data for the validator 
+     * @param fullReward The full reward for the epoch
+     * @param totalSupply The total supply for the epoch
+     * @param totalBlocks The total blocks for the epoch
+     */
     function _distributeReward(
         uint256 epochId,
         Uptime calldata uptime,
@@ -196,6 +236,13 @@ contract HydraStaking is
         return validatorReward;
     }
 
+    /**
+     * @notice Calculates the validator and delegator shares.
+     * @param stakedBalance The staked balance
+     * @param delegatedBalance The delegated balance
+     * @param totalReward The total reward
+     * @param commission The commission of the validator
+     */
     function _calculateValidatorAndDelegatorShares(
         uint256 stakedBalance,
         uint256 delegatedBalance,

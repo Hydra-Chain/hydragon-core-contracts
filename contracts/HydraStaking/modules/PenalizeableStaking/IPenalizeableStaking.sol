@@ -32,4 +32,9 @@ interface IPenalizeableStaking is IStaking {
         uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
     ) external;
+
+    /**
+     * @notice Withdraws the funds of a banned validator
+     */
+    function withdrawBannedFunds() external;
 }

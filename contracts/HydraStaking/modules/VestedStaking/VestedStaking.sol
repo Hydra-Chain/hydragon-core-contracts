@@ -70,6 +70,9 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         _stake(msg.sender, msg.value);
     }
 
+    /**
+     * @inheritdoc IVestedStaking
+     */
     function claimStakingRewards(uint256 rewardHistoryIndex) external {
         if (!vestedStakingPositions[msg.sender].isMaturing()) {
             revert StakeRequirement({src: "vesting", msg: "NOT_MATURING"});
@@ -112,6 +115,11 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         return (stakeLeft, withdrawAmount);
     }
 
+    /**
+     * @notice Function that claims the staking rewards for the given account
+     * @param staker The account to claim the rewards for
+     * @return rewards The amount of rewards claimed
+     */
     function _claimStakingRewards(address staker) internal virtual override returns (uint256 rewards) {
         if (vestedStakingPositions[staker].isInVestingCycle()) {
             revert NoRewards();
@@ -120,6 +128,11 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         return super._claimStakingRewards(staker);
     }
 
+    /**
+     * @notice Distributes the staking rewards for the given account
+     * @param account The account to distribute the rewards for
+     * @param rewardIndex The index of the reward to distribute
+     */
     function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
@@ -134,18 +147,12 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         return super._distributeStakingReward(account, rewardIndex);
     }
 
-    function _saveStakingRewardsData(address account, uint256 epoch) internal {
-        StakingRewardsHistory memory rewardData = StakingRewardsHistory({
-            totalReward: stakingRewards[account].total,
-            epoch: epoch,
-            timestamp: block.timestamp
-        });
-
-        stakingRewardsHistory[account].push(rewardData);
-    }
-
     /**
+     * @notice Calculates the staking rewards for the given account
      * @dev Ensure the function is executed for maturing positions only
+     * @param account The account to calculate the rewards for
+     * @param rewardHistoryIndex The index of the reward history
+     * @return The amount of rewards
      */
     function _calcStakingRewards(address account, uint256 rewardHistoryIndex) internal view returns (uint256) {
         VestingPosition memory position = vestedStakingPositions[account];
@@ -166,8 +173,10 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
 
     /**
      * @notice Calculates what part of the provided amount of tokens to be slashed
-     * @param amount Amount of tokens to be slashed
      * @dev Invoke only when position is active, otherwise - underflow
+     * @param position The vesting position of the staker
+     * @param amount Amount of tokens to be slashed
+     * @return The amount of tokens to be slashed
      */
     function _calcSlashing(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
         uint256 leftPeriod = position.end - block.timestamp;
@@ -180,8 +189,10 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
     /**
      * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
      * @dev Denominator is used because we should work with floating-point numbers
+     * @param position The vesting position of the staker
      * @param reward index The reward to which we gonna apply the custom APR
-     * @dev The reward with the applied APR
+     * @param rsi If the RSI bonus should be applied
+     * @return The reward with the applied APR
      */
     function _applyCustomAPR(
         VestingPosition memory position,
@@ -198,6 +209,11 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
     }
 
+    /**
+     * @notice Saves the staker reward data
+     * @param staker The staker to save the data for
+     * @param epoch The epoch to save the data for
+     */
     function _saveStakerRewardData(address staker, uint256 epoch) internal {
         StakingRewardsHistory memory rewardData = StakingRewardsHistory({
             totalReward: stakingRewards[staker].total,
