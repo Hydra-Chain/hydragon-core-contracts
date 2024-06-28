@@ -34,6 +34,22 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
 
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards(uint256 rewardHistoryIndex) external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardHistoryIndex | uint256 | The index of the reward history to claim rewards from |
+
 ### stakeWithVesting
 
 ```solidity

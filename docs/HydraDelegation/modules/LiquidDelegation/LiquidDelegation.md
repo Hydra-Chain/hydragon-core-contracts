@@ -127,7 +127,7 @@ Delegates sent amount to validator and claims rewards.
 function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-
+Return the amount of delegation for a delegator to a validator
 
 
 
@@ -135,8 +135,8 @@ function delegationOf(address staker, address delegator) external view returns (
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| delegator | address | undefined |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
 
 #### Returns
 
@@ -439,7 +439,7 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 function totalDelegation() external view returns (uint256)
 ```
 
-
+Returns the total delegation amount
 
 
 
@@ -456,7 +456,7 @@ function totalDelegation() external view returns (uint256)
 function totalDelegationOf(address staker) external view returns (uint256)
 ```
 
-
+Returns the total amount of delegation for a staker
 
 
 
@@ -464,7 +464,7 @@ function totalDelegationOf(address staker) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 

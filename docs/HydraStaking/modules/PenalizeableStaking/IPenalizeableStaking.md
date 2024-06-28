@@ -1,4 +1,4 @@
-# IHydraStaking
+# IPenalizeableStaking
 
 
 
@@ -42,10 +42,21 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
-### distributeRewardsFor
+### claimStakingRewards
 
 ```solidity
-function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
+function claimStakingRewards() external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+
+### penalizeStaker
+
+```solidity
+function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
 ```
 
 
@@ -56,26 +67,9 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 
 | Name | Type | Description |
 |---|---|---|
-| epochId | uint256 | undefined |
-| uptime | Uptime[] | undefined |
-| epochSize | uint256 | undefined |
-
-### liquidToken
-
-```solidity
-function liquidToken() external view returns (address)
-```
-
-Returns the address of the token that is distributed as a liquidity on stake
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
+| staker | address | undefined |
+| unstakeAmount | uint256 | undefined |
+| stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingWithdrawals
 
@@ -110,6 +104,50 @@ Stakes sent amount.
 
 
 
+### stakeOf
+
+```solidity
+function stakeOf(address account) external view returns (uint256)
+```
+
+Returns staked amount for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### unclaimedRewards
+
+```solidity
+function unclaimedRewards(address account) external view returns (uint256)
+```
+
+Returns unclaimed rewards for the given account.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | Validator address |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### unstake
 
 ```solidity
@@ -141,6 +179,17 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
+
+### withdrawBannedFunds
+
+```solidity
+function withdrawBannedFunds() external nonpayable
+```
+
+Withdraws the funds of a banned validator
+
+
+
 
 ### withdrawable
 

@@ -78,13 +78,13 @@ Delegates sent amount to validator. Set vesting position data. Delete old pool p
 | validator | address | Validator to delegate to |
 | durationWeeks | uint256 | Duration of the vesting in weeks |
 
-### distributeDelegationRewards
+### delegationOf
 
 ```solidity
-function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external nonpayable
+function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-
+Return the amount of delegation for a delegator to a validator
 
 
 
@@ -92,9 +92,32 @@ function distributeDelegationRewards(address staker, uint256 reward, uint256 epo
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| reward | uint256 | undefined |
-| epochId | uint256 | undefined |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### distributeDelegationRewards
+
+```solidity
+function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external nonpayable
+```
+
+Distributes rewards to delegators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+| reward | uint256 | Amount of rewards to distribute |
+| epochId | uint256 | Epoch ID |
 
 ### getRawDelegatorReward
 
@@ -125,15 +148,15 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 function getUserVestingManagers(address user) external view returns (address[])
 ```
 
-Gets the vesting managers per user address for fast off-chain lookup.
+Gets user vesting managers.
 
-
+*Gets the vesting managers per user address for fast off-chain lookup.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| user | address | undefined |
+| user | address | User address |
 
 #### Returns
 
@@ -218,7 +241,7 @@ Sets commission for validator.
 function stakerDelegationCommission(address staker) external view returns (uint256)
 ```
 
-
+Returns commission for validator.
 
 
 
@@ -226,13 +249,13 @@ function stakerDelegationCommission(address staker) external view returns (uint2
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | commission Commission for validator |
 
 ### swapVestedPositionValidator
 
@@ -257,7 +280,7 @@ Move a vested position to another validator. Can be called by vesting positions&
 function totalDelegation() external view returns (uint256)
 ```
 
-
+Returns the total delegation amount
 
 
 
@@ -274,7 +297,7 @@ function totalDelegation() external view returns (uint256)
 function totalDelegationOf(address staker) external view returns (uint256)
 ```
 
-
+Returns the total amount of delegation for a staker
 
 
 
@@ -282,7 +305,7 @@ function totalDelegationOf(address staker) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of the validator |
 
 #### Returns
 

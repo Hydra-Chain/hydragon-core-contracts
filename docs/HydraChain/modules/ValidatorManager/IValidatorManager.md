@@ -16,15 +16,15 @@
 function activateValidator(address account) external nonpayable
 ```
 
+Activates validator.
 
-
-
+*Can be called only by the staking contract.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Address of the validator |
 
 ### deactivateValidator
 
@@ -32,15 +32,15 @@ function activateValidator(address account) external nonpayable
 function deactivateValidator(address account) external nonpayable
 ```
 
+Deactivates validator.
 
-
-
+*Can be called only by the staking contract.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Address of the validator |
 
 ### getActiveValidatorsCount
 
@@ -111,7 +111,7 @@ function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
 
-
+*Validator must be whitelisted.*
 
 #### Parameters
 

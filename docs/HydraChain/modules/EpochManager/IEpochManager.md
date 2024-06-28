@@ -10,6 +10,25 @@
 
 ## Methods
 
+### commitEpoch
+
+```solidity
+function commitEpoch(uint256 id, Epoch epoch, uint256 epochSize, Uptime[] uptime) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| id | uint256 | undefined |
+| epoch | Epoch | undefined |
+| epochSize | uint256 | undefined |
+| uptime | Uptime[] | undefined |
+
 ### getCurrentEpochId
 
 ```solidity

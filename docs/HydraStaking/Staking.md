@@ -1,10 +1,10 @@
-# StateSyncStaking
+# Staking
 
 
 
-> StateSyncStaking
 
-This contract is used to emit a specific event when staked balance changes; Child chain listen for this event to sync the state of the validators
+
+
 
 
 
@@ -127,7 +127,7 @@ Changes the withdrawal wait period.
 function claimStakingRewards() external nonpayable
 ```
 
-
+Claims staking rewards for the sender.
 
 
 
@@ -346,7 +346,7 @@ Stakes sent amount.
 function stakeOf(address account) external view returns (uint256)
 ```
 
-
+Returns staked amount for the given account.
 
 
 
@@ -354,7 +354,7 @@ function stakeOf(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -468,7 +468,7 @@ function transferOwnership(address newOwner) external nonpayable
 function unclaimedRewards(address account) external view returns (uint256)
 ```
 
-
+Returns unclaimed rewards for the given account.
 
 
 
@@ -476,7 +476,7 @@ function unclaimedRewards(address account) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | Validator address |
 
 #### Returns
 
@@ -541,23 +541,6 @@ Calculates how much can be withdrawn for account at this time.
 
 
 ## Events
-
-### BalanceChanged
-
-```solidity
-event BalanceChanged(address indexed account, uint256 newBalance)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| account `indexed` | address | undefined |
-| newBalance  | uint256 | undefined |
 
 ### Initialized
 
