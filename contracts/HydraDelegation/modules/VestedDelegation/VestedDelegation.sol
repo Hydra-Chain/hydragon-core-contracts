@@ -66,6 +66,8 @@ contract VestedDelegation is
         _;
     }
 
+    // _______________ External functions _______________
+
     /**
      * @inheritdoc IVestedDelegation
      */
@@ -73,7 +75,7 @@ contract VestedDelegation is
         require(msg.sender != address(0), "INVALID_OWNER");
 
         address managerAddr = _clone(msg.sender, rewardPool);
-        storeVestManagerData(managerAddr, msg.sender);
+        _storeVestManagerData(managerAddr, msg.sender);
     }
 
     /**
@@ -83,98 +85,7 @@ contract VestedDelegation is
         return userVestManagers[user];
     }
 
-    // _______________ Public functions _______________
-
-    /**
-     * @notice Claims that a delegator is a vest manager or not.
-     * @param delegator Delegator's address
-     */
-    function isVestingManager(address delegator) public view returns (bool) {
-        return vestingManagers[delegator] != address(0);
-    }
-
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
-    /**
-     * @notice Checks if balance change was already made in the current epoch
-     * @param validator Validator to delegate to
-     * @param delegator Delegator that has delegated
-     * @param currentEpochNum Current epoch number
-     */
-    function isBalanceChangeMade(
-        address validator,
-        address delegator,
-        uint256 currentEpochNum
-    ) public view returns (bool) {
-        uint256 length = delegationPoolParamsHistory[validator][delegator].length;
-        if (length == 0) {
-            return false;
-        }
-
-        DelegationPoolParams memory data = delegationPoolParamsHistory[validator][delegator][length - 1];
-        if (data.epochNum == currentEpochNum) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // TODO: Consider deleting it as we shouldn't be getting into that case
-    /**
-     * @notice Checks if the balance changes exceeds the threshold
-     * @param validator Validator to delegate to
-     * @param delegator Delegator that has delegated
-     */
-    function isBalanceChangeThresholdExceeded(address validator, address delegator) public view returns (bool) {
-        return delegationPoolParamsHistory[validator][delegator].length > balanceChangeThreshold;
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function delegateWithVesting(address validator, uint256 durationWeeks) external payable onlyManager {
-        _delegate(validator, msg.sender, msg.value);
-
-        VestingPosition memory position = vestedDelegationPositions[validator][msg.sender];
-        if (position.isMaturing()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
-        }
-
-        if (position.isActive()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
-        }
-
-        // ensure previous rewards are claimed
-        DelegationPool storage delegation = delegationPools[validator];
-        if (delegation.claimableRewards(msg.sender) > 0) {
-            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
-        }
-
-        uint256 duration = durationWeeks * 1 weeks;
-        delete delegationPoolParamsHistory[validator][msg.sender];
-        // TODO: calculate end of period instead of write in in the cold storage. It is cheaper
-        vestedDelegationPositions[validator][msg.sender] = VestingPosition({
-            duration: duration,
-            start: block.timestamp,
-            end: block.timestamp + duration,
-            base: aprCalculatorContract.getBaseAPR(),
-            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
-        });
-
-        // keep the change in the delegation pool params per account
-        _saveAccountParamsChange(
-            validator,
-            msg.sender,
-            DelegationPoolParams({
-                balance: delegationOf(validator, msg.sender),
-                correction: delegation.correctionOf(msg.sender),
-                epochNum: epochManagerContract.getCurrentEpochId()
-            })
-        );
-
-        emit PositionOpened(msg.sender, validator, durationWeeks, msg.value);
-    }
-
+    
     /**
      * @inheritdoc IVestedDelegation
      */
@@ -282,23 +193,6 @@ contract VestedDelegation is
         emit PositionCut(msg.sender, validator, amountAfterPenalty);
     }
 
-    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._delegate(staker, delegator, amount);
-    }
-
-    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._undelegate(staker, delegator, amount);
-    }
-
-    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
-        _distributeDelegationRewards(staker, reward);
-
-        // Keep history record of the rewardPerShare to be used on reward claim
-        if (reward > 0) {
-            _saveEpochRPS(staker, delegationPools[staker].magnifiedRewardPerShare, epochId);
-        }
-    }
-
     /**
      * @inheritdoc IVestedDelegation
      */
@@ -352,13 +246,247 @@ contract VestedDelegation is
         emit PositionRewardClaimed(msg.sender, validator, sumReward);
     }
 
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function delegateWithVesting(address validator, uint256 durationWeeks) external payable onlyManager {
+        _delegate(validator, msg.sender, msg.value);
+
+        VestingPosition memory position = vestedDelegationPositions[validator][msg.sender];
+        if (position.isMaturing()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
+        }
+
+        if (position.isActive()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
+        }
+
+        // ensure previous rewards are claimed
+        DelegationPool storage delegation = delegationPools[validator];
+        if (delegation.claimableRewards(msg.sender) > 0) {
+            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
+        }
+
+        uint256 duration = durationWeeks * 1 weeks;
+        delete delegationPoolParamsHistory[validator][msg.sender];
+        // TODO: calculate end of period instead of write in in the cold storage. It is cheaper
+        vestedDelegationPositions[validator][msg.sender] = VestingPosition({
+            duration: duration,
+            start: block.timestamp,
+            end: block.timestamp + duration,
+            base: aprCalculatorContract.getBaseAPR(),
+            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
+        });
+
+        // keep the change in the delegation pool params per account
+        _saveAccountParamsChange(
+            validator,
+            msg.sender,
+            DelegationPoolParams({
+                balance: delegationOf(validator, msg.sender),
+                correction: delegation.correctionOf(msg.sender),
+                epochNum: epochManagerContract.getCurrentEpochId()
+            })
+        );
+
+        emit PositionOpened(msg.sender, validator, durationWeeks, msg.value);
+    }
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Claims that a delegator is a vest manager or not.
+     * @param delegator Delegator's address
+     */
+    function isVestingManager(address delegator) public view returns (bool) {
+        return vestingManagers[delegator] != address(0);
+    }
+
+    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
+    /**
+     * @notice Checks if balance change was already made in the current epoch
+     * @param validator Validator to delegate to
+     * @param delegator Delegator that has delegated
+     * @param currentEpochNum Current epoch number
+     */
+    function isBalanceChangeMade(
+        address validator,
+        address delegator,
+        uint256 currentEpochNum
+    ) public view returns (bool) {
+        uint256 length = delegationPoolParamsHistory[validator][delegator].length;
+        if (length == 0) {
+            return false;
+        }
+
+        DelegationPoolParams memory data = delegationPoolParamsHistory[validator][delegator][length - 1];
+        if (data.epochNum == currentEpochNum) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // TODO: Consider deleting it as we shouldn't be getting into that case
+    /**
+     * @notice Checks if the balance changes exceeds the threshold
+     * @param validator Validator to delegate to
+     * @param delegator Delegator that has delegated
+     */
+    function isBalanceChangeThresholdExceeded(address validator, address delegator) public view returns (bool) {
+        return delegationPoolParamsHistory[validator][delegator].length > balanceChangeThreshold;
+    }
+
+    /**
+     * @notice Check if the new position that the user wants to swap to is available for the swap
+     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
+     * @param newValidator The address of the new validator
+     * @param delegator The address of the delegator
+     */
+    function isPositionAvailableForSwap(address newValidator, address delegator) public view returns (bool) {
+        VestingPosition memory newPosition = vestedDelegationPositions[newValidator][delegator];
+        if (newPosition.isActive() || newPosition.isMaturing()) {
+            return false;
+        }
+
+        DelegationPool storage newDelegation = delegationPools[newValidator];
+        uint256 balance = newDelegation.balanceOf(delegator);
+        if (balance != 0 || getRawDelegatorReward(newValidator, delegator) > 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    // _______________ Internal functions _______________
+
+    /**
+     * @inheritdoc Delegation
+     */
+    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
+        super._delegate(staker, delegator, amount);
+    }
+
+    /**
+     * @inheritdoc Delegation
+     */
+    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
+        super._undelegate(staker, delegator, amount);
+    }
+
+    /**
+     * @notice Distributes the tokens to the delegator
+     * @param staker The address of the validator
+     * @param reward The reward to be distributed
+     * @param epochId The epoch number
+     */
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
+        _distributeDelegationRewards(staker, reward);
+
+        // Keep history record of the rewardPerShare to be used on reward claim
+        if (reward > 0) {
+            _saveEpochRPS(staker, delegationPools[staker].magnifiedRewardPerShare, epochId);
+        }
+    }
+
+
+    /**
+     * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
+     * @dev Denominator is used because we should work with floating-point numbers
+     * @param reward index The reward to which we gonna apply the custom APR
+     * @dev The reward with the applied APR
+     */
+    function _applyVestingAPR(
+        VestingPosition memory position,
+        uint256 reward,
+        bool rsi
+    ) internal view returns (uint256) {
+        uint256 bonus = (position.base + position.vestBonus);
+        uint256 divider = aprCalculatorContract.getDENOMINATOR();
+        if (rsi && position.rsiBonus != 0) {
+            bonus = bonus * position.rsiBonus;
+            divider *= divider;
+        }
+
+        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
+    }
+
+    /**
+     * @notice Calculates what part of the provided amount of tokens to be slashed
+     * @param amount Amount of tokens to be slashed
+     * @dev Invoke only when position is active, otherwise - underflow
+     */
+    function _calcPenalty(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
+        uint256 leftPeriod = position.end - block.timestamp;
+        uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
+        uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
+
+        return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
+    }
+
+    /**
+     * @notice Burns the provided amount of tokens
+     * @param amount Amount of tokens to be burned
+     */
+    function _burnAmount(uint256 amount) private {
+        (bool success, ) = address(0).call{value: amount}("");
+        require(success, "Failed to burn amount");
+    }
+
+    /**
+     * @notice Saves the RPS for the given validator for the epoch
+     * @param validator Address of the validator
+     * @param rewardPerShare Amount of tokens to be withdrawn
+     * @param epochNumber Epoch number
+     */
+    function _saveEpochRPS(address validator, uint256 rewardPerShare, uint256 epochNumber) internal {
+        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
+
+        RPS memory validatorRPSes = historyRPS[validator][epochNumber];
+        require(validatorRPSes.value == 0, "RPS already saved");
+
+        historyRPS[validator][epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
+    }
+
+    /**
+     * @notice Checks if the position has no reward conditions
+     * @param position The vesting position
+     * @dev If the position is still unused or active, there is no reward
+     */
+    function _noRewardConditions(VestingPosition memory position) private view returns (bool) {
+        // If still unused position, there is no reward
+        if (position.start == 0) {
+            return true;
+        }
+
+        // if the position is still active, there is no matured reward
+        if (position.isActive()) {
+            return true;
+        }
+
+        return false;
+    }
+
     // _______________ Private functions _______________
 
-    function storeVestManagerData(address vestManager, address owner) private {
+    /**
+     * @notice Stores the vesting manager data
+     * @param vestManager Address of the vesting manager
+     * @param owner Address of the vest manager owner
+     */
+    function _storeVestManagerData(address vestManager, address owner) private {
         vestingManagers[vestManager] = owner;
         userVestManagers[owner].push(vestManager);
     }
 
+    /**
+     * @notice Saves the account specific pool params change
+     * @param validator Address of the validator
+     * @param delegator Address of the delegator
+     * @param params Delegation pool params
+     */
     function _saveAccountParamsChange(
         address validator,
         address delegator,
@@ -377,6 +505,14 @@ contract VestedDelegation is
         delegationPoolParamsHistory[validator][delegator].push(params);
     }
 
+
+    /**
+     * @notice Gets the account specific pool params for the given epoch
+     * @param validator Address of the validator
+     * @param manager Address of the vest manager
+     * @param epochNumber Epoch number
+     * @param paramsIndex Index of the params
+     */
     function _getAccountParams(
         address validator,
         address manager,
@@ -417,26 +553,12 @@ contract VestedDelegation is
     }
 
     /**
-     * @notice Check if the new position that the user wants to swap to is available for the swap
-     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
-     * @param newValidator The address of the new validator
-     * @param delegator The address of the delegator
+     * @notice Gets the reward parameters for the given validator and manager
+     * @param validator Address of the validator
+     * @param manager Address of the vest manager
+     * @param epochNumber Epoch number
+     * @param balanceChangeIndex Index of the balance change
      */
-    function isPositionAvailableForSwap(address newValidator, address delegator) public view returns (bool) {
-        VestingPosition memory newPosition = vestedDelegationPositions[newValidator][delegator];
-        if (newPosition.isActive() || newPosition.isMaturing()) {
-            return false;
-        }
-
-        DelegationPool storage newDelegation = delegationPools[newValidator];
-        uint256 balance = newDelegation.balanceOf(delegator);
-        if (balance != 0 || getRawDelegatorReward(newValidator, delegator) > 0) {
-            return false;
-        }
-
-        return true;
-    }
-
     function _rewardParams(
         address validator,
         address manager,
@@ -476,65 +598,4 @@ contract VestedDelegation is
         return (rewardPerShare, balanceData, correctionData);
     }
 
-    /**
-     * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
-     * @dev Denominator is used because we should work with floating-point numbers
-     * @param reward index The reward to which we gonna apply the custom APR
-     * @dev The reward with the applied APR
-     */
-    function _applyVestingAPR(
-        VestingPosition memory position,
-        uint256 reward,
-        bool rsi
-    ) internal view returns (uint256) {
-        uint256 bonus = (position.base + position.vestBonus);
-        uint256 divider = aprCalculatorContract.getDENOMINATOR();
-        if (rsi && position.rsiBonus != 0) {
-            bonus = bonus * position.rsiBonus;
-            divider *= divider;
-        }
-
-        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
-    }
-
-    /**
-     * @notice Calculates what part of the provided amount of tokens to be slashed
-     * @param amount Amount of tokens to be slashed
-     * @dev Invoke only when position is active, otherwise - underflow
-     */
-    function _calcPenalty(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
-        uint256 leftPeriod = position.end - block.timestamp;
-        uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
-
-        return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
-    }
-
-    function _burnAmount(uint256 amount) private {
-        (bool success, ) = address(0).call{value: amount}("");
-        require(success, "Failed to burn amount");
-    }
-
-    function _saveEpochRPS(address validator, uint256 rewardPerShare, uint256 epochNumber) internal {
-        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
-
-        RPS memory validatorRPSes = historyRPS[validator][epochNumber];
-        require(validatorRPSes.value == 0, "RPS already saved");
-
-        historyRPS[validator][epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
-    }
-
-    function _noRewardConditions(VestingPosition memory position) private view returns (bool) {
-        // If still unused position, there is no reward
-        if (position.start == 0) {
-            return true;
-        }
-
-        // if the position is still active, there is no matured reward
-        if (position.isActive()) {
-            return true;
-        }
-
-        return false;
-    }
 }

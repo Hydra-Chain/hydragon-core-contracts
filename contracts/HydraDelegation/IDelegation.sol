@@ -21,8 +21,16 @@ interface IDelegation is IWithdrawal {
 
     error DelegateRequirement(string src, string msg);
 
+
+    /**
+     * @notice Returns the total delegation amount
+     */
     function totalDelegation() external view returns (uint256);
 
+    /**
+     * @notice Returns the total amount of delegation for a staker
+     * @param staker Address of the validator
+     */
     function totalDelegationOf(address staker) external view returns (uint256);
 
     /**
@@ -45,4 +53,11 @@ interface IDelegation is IWithdrawal {
      * @param amount The amount to undelegate
      */
     function undelegate(address validator, uint256 amount) external;
+
+    /**
+     * @notice Return the amount of delegation for a delegator to a validator
+     * @param staker Address of the validator
+     * @param delegator Address of the delegator
+     */
+    function delegationOf(address staker, address delegator) external view returns (uint256);
 }

@@ -41,6 +41,8 @@ contract HydraDelegation is
         }
     }
 
+    // _______________ External functions _______________
+
     function stakerDelegationCommission(address staker) external view returns (uint256) {
         return delegationCommissionPerStaker[staker];
     }
@@ -56,6 +58,11 @@ contract HydraDelegation is
         _setCommission(msg.sender, newCommission);
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @inheritdoc Delegation
+     */
     function _delegate(
         address staker,
         address delegator,
@@ -64,6 +71,9 @@ contract HydraDelegation is
         super._delegate(staker, delegator, amount);
     }
 
+    /**
+     * @inheritdoc Delegation
+     */
     function _undelegate(
         address validator,
         address delegator,
@@ -72,6 +82,11 @@ contract HydraDelegation is
         super._undelegate(validator, delegator, amount);
     }
 
+    /**
+     * @notice Set commission for validator
+     * @param staker Address of the validator
+     * @param newCommission New commission (100 = 10%)
+     */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
 
