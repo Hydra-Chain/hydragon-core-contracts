@@ -11,6 +11,12 @@ import {ILiquidityToken} from "./../../../LiquidityToken/ILiquidityToken.sol";
  */
 contract LiquidStaking is Staking, Liquid {
 
+    // _______________ Initializer _______________
+
+    function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
+        __LiquidStaking_init(_liquidToken);
+    }
+
     // _______________ Internal functions _______________
 
     /*
