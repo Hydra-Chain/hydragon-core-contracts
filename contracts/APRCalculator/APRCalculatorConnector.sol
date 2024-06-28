@@ -9,6 +9,8 @@ import {IAPRCalculator} from "./IAPRCalculator.sol";
 abstract contract APRCalculatorConnector is Initializable {
     IAPRCalculator public aprCalculatorContract;
 
+    // _______________ Initializer _______________
+
     function __APRCalculatorConnector_init(address aprCalculatorAddr) internal onlyInitializing {
         __APRCalculatorConnector_init_unchained(aprCalculatorAddr);
     }
@@ -16,6 +18,8 @@ abstract contract APRCalculatorConnector is Initializable {
     function __APRCalculatorConnector_init_unchained(address aprCalculatorAddr) internal onlyInitializing {
         aprCalculatorContract = IAPRCalculator(aprCalculatorAddr);
     }
+
+    // _______________ Modifiers _______________
 
     modifier onlyAPRCalculator() {
         if (msg.sender != address(aprCalculatorContract)) {

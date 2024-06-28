@@ -34,8 +34,6 @@ contract HydraStaking is
     /// @notice Mapping used to keep the paid rewards per epoch
     mapping(uint256 => uint256) public distributedRewardPerEpoch;
 
-    // TODO: Properly set up initializers
-
     // _______________ Initializer _______________
 
     /**
