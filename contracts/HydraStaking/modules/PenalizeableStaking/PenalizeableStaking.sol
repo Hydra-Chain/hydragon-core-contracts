@@ -13,6 +13,10 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
 
+    // _______________ Initializer _______________
+
+    function __PenalizeableStaking_init() internal onlyInitializing {}
+
     // _______________ External functions _______________
 
     /**

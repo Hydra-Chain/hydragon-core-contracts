@@ -23,12 +23,19 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
 
     // _______________ Initializer _______________
 
-    function __Staking_init(uint256 newMinStake) internal onlyInitializing {
-        __Staking_init_unchained(newMinStake);
+    function __Staking_init(
+        uint256 _newMinStake,
+        address _aprCalculatorAddr,
+        address _governance
+    ) internal onlyInitializing {
+        __Governed_init(_governance);
+        __Withdrawal_init();
+        __APRCalculatorConnector_init(_aprCalculatorAddr);
+        __Staking_init_unchained(_newMinStake);
     }
 
-    function __Staking_init_unchained(uint256 newMinStake) internal onlyInitializing {
-        _changeMinStake(newMinStake);
+    function __Staking_init_unchained(uint256 _newMinStake) internal onlyInitializing {
+        _changeMinStake(_newMinStake);
     }
 
     modifier onlyActiveStaker(address staker) {

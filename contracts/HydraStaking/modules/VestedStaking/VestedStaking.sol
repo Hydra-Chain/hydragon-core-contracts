@@ -31,6 +31,8 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
 
     // _______________ Initializer _______________
 
+    function __VestedStaking_init() internal {}
+
     // _______________ External functions _______________
 
     /**
