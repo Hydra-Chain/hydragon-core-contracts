@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import{Uptime} from "../ValidatorManager/IValidatorManager.sol";
+
 struct Epoch {
     uint256 startBlock;
     uint256 endBlock;
@@ -28,4 +30,19 @@ interface IEpochManager {
      * @return Epoch Returns epoch if found, or else, the last epoch
      */
     function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory);
+
+    /**
+     * @notice Commits an epoch
+     * @dev Only callable by the system
+     * @param id The number of the epoch
+     * @param epoch The epoch to be committed
+     * @param epochSize Number of blocks per epoch
+     * @param uptime uptime data for every validator
+     */
+    function commitEpoch(
+        uint256 id,
+        Epoch calldata epoch,
+        uint256 epochSize,
+        Uptime[] calldata uptime
+    ) external;
 }

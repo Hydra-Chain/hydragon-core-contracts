@@ -8,6 +8,8 @@ import {IAccessControl} from "./IAccessControl.sol";
 abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     mapping(address => bool) public isWhitelisted;
 
+    // _______________ Initializer _______________
+
     // TODO: We must be able to enable/disable this feature
     function __AccessControl_init(address governance) internal onlyInitializing {
         __AccessControl_init_unchained(governance);
@@ -16,6 +18,8 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     function __AccessControl_init_unchained(address governance) internal onlyInitializing {
         _transferOwnership(governance);
     }
+
+    // _______________ External functions _______________
 
     /**
      * @inheritdoc IAccessControl
@@ -34,6 +38,8 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
             _removeFromWhitelist(whitelistAddreses[i]);
         }
     }
+
+    // _______________ Internal functions _______________
 
     function _addToWhitelist(address account) internal {
         if (isWhitelisted[account]) revert PreviouslyWhitelisted();

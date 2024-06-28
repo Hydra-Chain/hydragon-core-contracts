@@ -36,13 +36,25 @@ interface IValidatorManager {
 
     /**
      * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
+     * @dev Validator must be whitelisted.
      * @param signature Signature to validate message against
      * @param pubkey BLS public key of validator
      */
     function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external;
 
+    /**
+     * @notice Activates validator.
+     * @dev Can be called only by the staking contract.
+     * @param account Address of the validator
+     */
     function activateValidator(address account) external;
 
+
+    /**
+     * @notice Deactivates validator.
+     * @dev Can be called only by the staking contract.
+     * @param account Address of the validator
+     */
     function deactivateValidator(address account) external;
 
     /**
