@@ -11,12 +11,12 @@ abstract contract EpochManagerConnector is Initializable {
 
     // _______________ Initializer _______________
 
-    function __EpochManagerConnector_init(address epochManagerAddr) internal onlyInitializing {
-        __EpochManagerConnector_init_unchained(epochManagerAddr);
+    function __EpochManagerConnector_init(address _epochManagerAddr) internal onlyInitializing {
+        __EpochManagerConnector_init_unchained(_epochManagerAddr);
     }
 
-    function __EpochManagerConnector_init_unchained(address epochManagerAddr) internal onlyInitializing {
-        epochManagerContract = IEpochManager(epochManagerAddr);
+    function __EpochManagerConnector_init_unchained(address _epochManagerAddr) internal onlyInitializing {
+        epochManagerContract = IEpochManager(_epochManagerAddr);
     }
 
     // _______________ Modifiers _______________

@@ -33,12 +33,14 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
 
     // TODO: Move commision to Delegation module
     function __ValidatorManager_init(
-        ValidatorInit[] calldata newValidators,
-        IBLS newBls,
-        address governance
+        ValidatorInit[] calldata _newValidators,
+        IBLS _newBls,
+        address _stakingContractAddr,
+        address _governance
     ) internal onlyInitializing {
-        __AccessControl_init(governance);
-        __ValidatorManager_init_unchained(newValidators, newBls);
+        __AccessControl_init(_governance);
+        __StakingConnector_init(_stakingContractAddr);
+        __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
     function __ValidatorManager_init_unchained(

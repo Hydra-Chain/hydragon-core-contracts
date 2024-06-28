@@ -36,13 +36,13 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
     function initialize(
         ValidatorInit[] calldata newValidators,
         address governance,
-        address stakingAddr,
+        address stakingContractAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
+        __ValidatorManager_init(newValidators, newBls, stakingContractAddr, governance);
+        __Inspector_init();
         __PowerExponent_init();
-        __ValidatorManager_init(newValidators, newBls, governance);
-        __Inspector_init(stakingAddr);
 
         _initialize();
     }
@@ -106,7 +106,12 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
 
     // _______________ Public functions _______________
 
-    // Apply custom rules for ban eligibility
+    /**
+     * @notice Returns if a given validator is subject to a ban
+     * @dev Apply custom rules for ban eligibility
+     * @param validator The address of the validator
+     * @return Returns true if the validator is subject to a ban
+     */
     function isSubjectToBan(address validator) public view override returns (bool) {
         uint256 lastCommittedEndBlock = epochs[currentEpochId - 1].endBlock;
         // check if the threshold is reached when the method is not executed by the owner (governance)

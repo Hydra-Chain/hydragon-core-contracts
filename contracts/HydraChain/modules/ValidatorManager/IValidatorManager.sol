@@ -87,6 +87,8 @@ interface IValidatorManager {
      */
     function getValidators() external view returns (address[] memory);
 
+    // _______________ Public functions _______________
+
     /**
      * @notice Gets the number of current validators
      * @return Returns the count as uint256

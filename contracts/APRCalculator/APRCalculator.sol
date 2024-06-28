@@ -31,7 +31,6 @@ contract APRCalculator is Initializable, Governed {
 
         initializeVestingBonus();
 
-        _grantRole(DEFAULT_ADMIN_ROLE, manager);
         _grantRole(MANAGER_ROLE, manager);
     }
 
