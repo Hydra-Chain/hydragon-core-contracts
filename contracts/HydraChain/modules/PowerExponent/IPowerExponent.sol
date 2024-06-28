@@ -20,13 +20,14 @@ struct PowerExponentStore {
 interface IPowerExponent {
     /**
      * @notice Set new pending exponent, to be activated in the next commit epoch
-     *
      * @param newValue New Voting Power Exponent Numerator
      */
     function updateExponent(uint256 newValue) external;
 
     /**
      * @notice Return the Voting Power Exponent Numerator and Denominator
+     * @return numerator Voting Power Exponent Numerator
+     * @return denominator Voting Power Exponent Denominator
      */
     function getExponent() external view returns (uint256 numerator, uint256 denominator);
 }

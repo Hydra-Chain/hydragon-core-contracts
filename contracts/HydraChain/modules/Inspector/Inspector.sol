@@ -17,9 +17,8 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
 
     // _______________ Initializer _______________
 
-    function __Inspector_init(address stakingAddr) internal onlyInitializing {
+    function __Inspector_init() internal onlyInitializing {
         __Inspector_init_unchained();
-        __StakingConnector_init(stakingAddr);
     }
 
     function __Inspector_init_unchained() internal onlyInitializing {
@@ -38,6 +37,9 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
 
     // _______________ External functions _______________
 
+    /**
+     * @inheritdoc IInspector
+     */
     function banValidator(address validator) external {
         if (!isSubjectToBan(validator)) {
             revert NoBanSubject();
@@ -70,7 +72,7 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
     // _______________ Public functions _______________
 
     /**
-     * Returns if a given validator is subject to a ban
+     * @notice Returns if a given validator is subject to a ban
      * @dev override this function to apply your custom rules
      */
     function isSubjectToBan(address account) public virtual returns (bool);
