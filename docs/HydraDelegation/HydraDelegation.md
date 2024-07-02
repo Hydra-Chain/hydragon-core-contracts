@@ -558,7 +558,7 @@ Keeps the history of the RPS for the validators
 ### hydraStakingContract
 
 ```solidity
-function hydraStakingContract() external view returns (address)
+function hydraStakingContract() external view returns (contract IHydraStaking)
 ```
 
 
@@ -570,7 +570,7 @@ function hydraStakingContract() external view returns (address)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| _0 | contract IHydraStaking | undefined |
 
 ### implementation
 
