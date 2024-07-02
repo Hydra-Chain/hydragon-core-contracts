@@ -66,7 +66,7 @@ contract VestingManager is Initializable, OwnableUpgradeable {
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) external payable onlyOwner {
-        IHydraDelegation(rewardPool).claimPositionReward(validator, msg.sender, epochNumber, balanceChangeIndex);
+        IHydraDelegation(delegation).claimPositionReward(validator, msg.sender, epochNumber, balanceChangeIndex);
     }
 
     function withdraw(address to) external {

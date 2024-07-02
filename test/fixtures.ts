@@ -12,8 +12,6 @@ import {
   HydraDelegation__factory,
   HydraStaking__factory,
   LiquidityToken__factory,
-  RewardPool__factory,
-  ValidatorSet__factory,
 } from "../typechain-types";
 import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS, WEEK } from "./constants";
 import {
@@ -122,7 +120,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
   const systemHydraDelegation = hydraDelegation.connect(this.signers.system);
   await systemHydraDelegation.initialize(
     [validatorInit],
-    100,
+    INITIAL_COMMISSION,
     liquidToken.address,
     this.signers.governance.address,
     aprCalculator.address,
@@ -151,87 +149,11 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
   return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }
 
-// ______________________________ OLD FIXTURES ______________________________
-
-async function presetValidatorSetStateFixtureFunction(this: Mocha.Context) {
-  const ValidatorSetFactory = new ValidatorSet__factory(this.signers.admin);
-  const validatorSet = await ValidatorSetFactory.deploy();
-
-  await hre.network.provider.send("hardhat_setBalance", [SYSTEM, "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"]);
-
-  // TODO: remove this once we have a better way to set balance from Polygon
-  // Need otherwise burn mechanism doesn't work
-  await hre.network.provider.send("hardhat_setBalance", [
-    validatorSet.address,
-    "0x2CD76FE086B93CE2F768A00B22A00000000000",
-  ]);
-
-  await hre.network.provider.send("hardhat_setBalance", [
-    "0x0000000000000000000000000000000000001001",
-    "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-  ]);
-
-  await hre.network.provider.request({
-    method: "hardhat_impersonateAccount",
-    params: [SYSTEM],
-  });
-
-  await hre.network.provider.request({
-    method: "hardhat_impersonateAccount",
-    params: ["0x0000000000000000000000000000000000001001"],
-  });
-
-  const systemValidatorSet = validatorSet.connect(this.signers.system);
-  const bls = await blsFixtureFunction.bind(this)();
-  const rewardPool = await rewardPoolFixtureFunction.bind(this)();
-  const liquidToken = await liquidityTokenFixtureFunction.bind(this)();
-
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
-}
-
-async function initializedValidatorSetStateFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.presetValidatorSetStateFixture
-  );
-
-  await mcl.init();
-  const validatorBls = generateValidatorBls(this.signers.admin);
-  const validatorInit = {
-    addr: this.signers.admin.address,
-    pubkey: validatorBls.pubkey,
-    signature: validatorBls.signature,
-    stake: this.minStake.mul(2),
-  };
-
-  const systemRewardPool = rewardPool.connect(this.signers.system);
-  await systemRewardPool.initialize(
-    validatorSet.address,
-    this.signers.rewardWallet.address,
-    this.minDelegation,
-    this.signers.governance.address
-  );
-  await liquidToken.initialize("Liquidity Token", "LQT", this.signers.governance.address, systemValidatorSet.address);
-  await systemValidatorSet.initialize(
-    {
-      epochReward: this.epochReward,
-      minStake: this.minStake,
-      epochSize: this.epochSize,
-    },
-    [validatorInit],
-    bls.address,
-    rewardPool.address,
-    this.signers.governance.address,
-    liquidToken.address,
-    INITIAL_COMMISSION
-  );
-
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
-}
+// --------------- Epoch Fixtures ---------------
 
 async function commitEpochTxFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.initializedValidatorSetStateFixture
-  );
+  const { hydraChain, systemHydraChain, bls, hydraDelegation, hydraStaking, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
   const epochId = hre.ethers.BigNumber.from(1);
   const epoch = {
@@ -239,27 +161,37 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     endBlock: hre.ethers.BigNumber.from(64),
     epochRoot: this.epoch.epochRoot,
   };
-  const commitEpochTx = await systemValidatorSet.commitEpoch(epochId, epoch, this.epochSize);
   const uptime = [
     {
       validator: this.signers.validators[0].address,
       signedBlocks: hre.ethers.BigNumber.from(10),
     },
   ];
-  const maxReward = await getMaxEpochReward(systemValidatorSet);
-  await rewardPool.connect(this.signers.system).distributeRewardsFor(epochId, uptime, this.epochSize, {
+  const commitEpochTx = await systemHydraChain.commitEpoch(epochId, epoch, this.epochSize, uptime);
+  const maxReward = await getMaxEpochReward(hydraStaking);
+  await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime, this.epochSize, {
     value: maxReward,
   });
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken, commitEpochTx };
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    commitEpochTx,
+  };
 }
 
-async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.commitEpochTxFixture
-  );
+// --------------- Validators Fixtures ---------------
 
-  await validatorSet
+async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, bls, hydraDelegation, hydraStaking, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.commitEpochTxFixture);
+
+  await hydraChain
     .connect(this.signers.governance)
     .addToWhitelist([
       this.signers.validators[0].address,
@@ -268,13 +200,12 @@ async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
       this.signers.validators[3].address,
     ]);
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }
 
 async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.whitelistedValidatorsStateFixture
-  );
+  const { hydraChain, systemHydraChain, bls, hydraDelegation, hydraStaking, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
   const keyPair = mcl.newKeyPair();
   const validator1signature = mcl.signValidatorMessage(
@@ -298,148 +229,215 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     keyPair.secret
   ).signature;
 
-  await validatorSet
+  await hydraChain
     .connect(this.signers.validators[0])
-    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
-  await validatorSet
+    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
+  await hydraChain
     .connect(this.signers.validators[1])
-    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
-  await validatorSet
+    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
+  await hydraChain
     .connect(this.signers.validators[2])
-    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }
 
-async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.registeredValidatorsStateFixture
+async function validatorToBanFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+  const validator = this.signers.validators[0];
+
+  // commit some epochs, including the selected validator
+  await commitEpochs(
+    systemHydraChain,
+    hydraStaking,
+    [validator, this.signers.validators[1], this.signers.validators[2]],
+    3, // number of epochs to commit
+    this.epochSize
   );
 
-  // set the rsi to the minimum value
-  await rewardPool.connect(this.signers.governance).setRSI(MIN_RSI_BONUS);
-  await validatorSet.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
-  await validatorSet.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
+  // lower the threshold in order to easily reach it
+  const banThreshold = hre.ethers.BigNumber.from(100);
+  const hydraChainGov = hydraChain.connect(this.signers.governance);
+  await hydraChainGov.setBanThreshold(banThreshold);
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  // commit epochs, but without the validator that will be banned
+  await commitEpochs(
+    systemHydraChain,
+    hydraStaking,
+    [this.signers.validators[1], this.signers.validators[2]],
+    10, // number of epochs to commit
+    this.epochSize
+  );
+
+  // lower the reporter reward in order to be able to distribute it
+  const reporterReward = this.minStake.div(10);
+  await hydraChainGov.setReporterReward(reporterReward);
+  // lower the penalty in order to be able to penalize
+  await hydraChainGov.setValidatorPenalty(reporterReward.mul(2));
+
+  return {
+    hydraChain,
+    validatorToBan: validator,
+  };
+}
+
+async function bannedValidatorFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+  await hydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
+
+  const validator = this.signers.validators[0];
+  const stakedAmount = await hydraStaking.stakeOf(validator.address);
+
+  await hydraChain.connect(this.signers.governance).banValidator(validator.address);
+
+  return {
+    hydraChain,
+    hydraStaking,
+    liquidToken,
+    bannedValidator: validator,
+    stakedAmount,
+  };
+}
+
+// --------------- Staking Fixtures ---------------
+
+async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, bls, hydraDelegation, hydraStaking, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+  // set the rsi to the minimum value
+  await aprCalculator.connect(this.signers.governance).setRSI(MIN_RSI_BONUS);
+  await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
+  await hydraStaking.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
+
+  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }
 
 async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.stakedValidatorsStateFixture
-  );
+  const { hydraChain, systemHydraChain, bls, hydraDelegation, hydraStaking, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
   const staker = this.signers.accounts[9];
-  await validatorSet.connect(this.signers.governance).addToWhitelist([staker.address]);
-  await registerValidator(validatorSet, staker);
+  await hydraChain.connect(this.signers.governance).addToWhitelist([staker.address]);
+  await registerValidator(hydraChain, staker);
 
-  const stakerValidatorSet = validatorSet.connect(staker);
-  await stakerValidatorSet.stakeWithVesting(VESTING_DURATION_WEEKS, {
+  const stakerHydraStake = hydraStaking.connect(staker);
+  await stakerHydraStake.stakeWithVesting(VESTING_DURATION_WEEKS, {
     value: this.minStake,
   });
 
   // commit epoch so the balance is increased
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], staker],
     1, // number of epochs to commit
     this.epochSize
   );
 
-  return { stakerValidatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { stakerHydraStake, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }
 
 async function vestingRewardsFixtureFunction(this: Mocha.Context) {
-  const { stakerValidatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
-    this.fixtures.newVestingValidatorFixture
-  );
+  const { stakerHydraStake, systemHydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, liquidToken } =
+    await loadFixture(this.fixtures.newVestingValidatorFixture);
 
   const staker = this.signers.accounts[9];
 
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], staker],
     1, // number of epochs to commit
     this.epochSize
   );
 
-  await stakerValidatorSet.stake({ value: this.minStake });
+  await stakerHydraStake.stake({ value: this.minStake });
 
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], staker],
     1, // number of epochs to commit
     this.epochSize
   );
 
-  return { stakerValidatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { stakerHydraStake, systemHydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, liquidToken };
 }
 
+// --------------- Withdrawable Fixtures ---------------
+
 async function withdrawableFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken } = await loadFixture(
     this.fixtures.stakedValidatorsStateFixture
   );
 
   const unstakedValidator = this.signers.validators[0];
   const unstakedAmount = this.minStake.div(2);
-  await validatorSet.connect(unstakedValidator).unstake(unstakedAmount);
+  await hydraStaking.connect(unstakedValidator).unstake(unstakedAmount);
 
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [unstakedValidator, this.signers.validators[1], this.signers.validators[2]],
     3, // number of epochs to commit
     this.epochSize
   );
-
   // * stake for the third validator after a week
   await time.increase(WEEK);
-  await validatorSet.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
+  await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken, unstakedValidator, unstakedAmount };
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    unstakedValidator,
+    unstakedAmount,
+  };
 }
 
+// --------------- Delegated Fixtures ---------------
+
 async function delegatedFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken } = await loadFixture(
     this.fixtures.withdrawableFixture
   );
 
   const delegateAmount = this.minDelegation.mul(2);
 
-  await validatorSet.connect(this.signers.delegator).delegate(this.signers.validators[0].address, {
+  await hydraDelegation.connect(this.signers.delegator).delegate(this.signers.validators[0].address, {
     value: delegateAmount,
   });
 
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
     3, // number of epochs to commit
     this.epochSize
   );
 
-  return { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken };
+  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken };
 }
 
 async function vestManagerFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, bls, rewardPool, liquidToken } = await loadFixture(
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken } = await loadFixture(
     this.fixtures.delegatedFixture
   );
 
-  const { newManagerFactory, newManager } = await createNewVestManager(
-    validatorSet,
-    rewardPool,
-    this.signers.accounts[4]
-  );
+  const { newManagerFactory, newManager } = await createNewVestManager(hydraDelegation, this.signers.accounts[4]);
 
   return {
-    validatorSet,
-    systemValidatorSet,
+    hydraChain,
+    systemHydraChain,
     bls,
-    rewardPool,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
     VestManagerFactory: newManagerFactory,
     vestManager: newManager,
@@ -449,10 +447,11 @@ async function vestManagerFixtureFunction(this: Mocha.Context) {
 
 async function vestedDelegationFixtureFunction(this: Mocha.Context) {
   const {
-    validatorSet,
-    systemValidatorSet,
+    hydraChain,
+    systemHydraChain,
     bls,
-    rewardPool,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
     VestManagerFactory,
     vestManager,
@@ -466,18 +465,19 @@ async function vestedDelegationFixtureFunction(this: Mocha.Context) {
 
   // Commit epochs so rewards to be distributed
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], validator],
     3, // number of epochs to commit
     this.epochSize
   );
 
   return {
-    validatorSet,
-    systemValidatorSet,
+    hydraChain,
+    systemHydraChain,
     bls,
-    rewardPool,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
     VestManagerFactory,
     vestManager,
@@ -488,10 +488,11 @@ async function vestedDelegationFixtureFunction(this: Mocha.Context) {
 
 async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
   const {
-    validatorSet,
-    systemValidatorSet,
+    hydraChain,
+    systemHydraChain,
     bls,
-    rewardPool,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
     VestManagerFactory,
     vestManager,
@@ -506,18 +507,19 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
 
   // Commit epochs so rewards to be distributed
   await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
+    systemHydraChain,
+    hydraStaking,
     [this.signers.validators[0], this.signers.validators[1], validator],
     5, // number of epochs to commit
     this.epochSize
   );
 
   return {
-    validatorSet,
-    systemValidatorSet,
+    hydraChain,
+    systemHydraChain,
     bls,
-    rewardPool,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
     VestManagerFactory,
     vestManager,
@@ -526,69 +528,18 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
   };
 }
 
-async function validatorToBanFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-    this.fixtures.stakedValidatorsStateFixture
-  );
-
-  const validator = this.signers.validators[0];
-
-  // commit some epochs, including the selected validator
-  await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
-    [validator, this.signers.validators[1], this.signers.validators[2]],
-    3, // number of epochs to commit
-    this.epochSize
-  );
-
-  // lower the threshold in order to easily reach it
-  const banThreshold = hre.ethers.BigNumber.from(100);
-  const validatorSetGov = validatorSet.connect(this.signers.governance);
-  await validatorSetGov.setBanThreshold(banThreshold);
-
-  // commit epochs, but without the validator that will be banned
-  await commitEpochs(
-    systemValidatorSet,
-    rewardPool,
-    [this.signers.validators[1], this.signers.validators[2]],
-    10, // number of epochs to commit
-    this.epochSize
-  );
-
-  // lower the reporter reward in order to be able to distribute it
-  const reporterReward = this.minStake.div(10);
-  await validatorSetGov.setReporterReward(reporterReward);
-  // lower the penalty in order to be able to penalize
-  await validatorSetGov.setValidatorPenalty(reporterReward.mul(2));
-
-  return {
-    validatorSet,
-    validatorToBan: validator,
-  };
-}
-
-async function bannedValidatorFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-  await validatorSet.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
-
-  const validator = this.signers.validators[0];
-  const stakedAmount = await validatorSet.balanceOf(validator.address);
-
-  await validatorSet.connect(this.signers.governance).banValidator(validator.address);
-
-  return {
-    validatorSet,
-    liquidToken,
-    bannedValidator: validator,
-    stakedAmount,
-  };
-}
-
 async function swappedPositionFixtureFunction(this: Mocha.Context) {
-  const { validatorSet, systemValidatorSet, rewardPool, liquidToken, vestManager, vestManagerOwner } =
-    await loadFixture(this.fixtures.vestManagerFixture);
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    VestManagerFactory,
+    vestManager,
+    vestManagerOwner,
+  } = await loadFixture(this.fixtures.vestManagerFixture);
 
   const validator = this.signers.validators[0];
   const newValidator = this.signers.validators[1];
@@ -598,21 +549,24 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
     value: this.minDelegation.mul(2),
   });
 
-  await commitEpoch(systemValidatorSet, rewardPool, [validator, newValidator], this.epochSize);
+  await commitEpoch(systemHydraChain, hydraStaking, [validator, newValidator], this.epochSize);
 
-  const rewardsBeforeSwap = await rewardPool.getRawDelegatorReward(validator.address, vestManager.address);
+  const rewardsBeforeSwap = await hydraDelegation.getRawDelegatorReward(validator.address, vestManager.address);
 
-  const amount = await rewardPool.delegationOf(validator.address, vestManager.address);
+  const amount = await hydraDelegation.delegationOf(validator.address, vestManager.address);
 
   // give allowance & swap
   await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
   await vestManager.connect(vestManagerOwner).swapVestedPositionValidator(validator.address, newValidator.address);
 
   return {
-    validatorSet,
-    systemValidatorSet,
-    rewardPool,
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
     liquidToken,
+    VestManagerFactory,
     vestManager,
     vestManagerOwner,
     oldValidator: validator,
@@ -621,20 +575,9 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
   };
 }
 
-async function rewardPoolFixtureFunction(this: Mocha.Context) {
-  const RewardPoolFactory = new RewardPool__factory(this.signers.admin);
-  const rewardPool = await RewardPoolFactory.deploy();
-
-  return rewardPool;
-}
-
 export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.presetHydraChainStateFixture = presetHydraChainStateFixtureFunction.bind(context);
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
-
-  // ---- OLD FIXTURES ----
-  context.fixtures.presetValidatorSetStateFixture = presetValidatorSetStateFixtureFunction.bind(context);
-  context.fixtures.initializedValidatorSetStateFixture = initializedValidatorSetStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);

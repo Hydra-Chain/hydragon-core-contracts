@@ -11,8 +11,9 @@ import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
 import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
 import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
-import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
+import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
+import { HydraChain, HydraDelegation, HydraStaking } from "../typechain-types";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -53,21 +54,21 @@ export async function initializeContext(context: any) {
   context.chainId = network.chainId;
 }
 
-export async function getMaxEpochReward(validatorSet: ValidatorSet) {
-  const totalStake = await validatorSet.totalSupply();
-  return totalStake;
+export async function getMaxEpochReward(hydraStaking: HydraStaking) {
+  const totalSupply = await hydraStaking.totalBalance();
+  return totalSupply;
 }
 
 export async function commitEpoch(
-  systemValidatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  systemHydraChain: HydraChain,
+  hydraStaking: HydraStaking,
   validators: SignerWithAddress[],
   epochSize: BigNumber,
   increaseTime?: number
 ): Promise<{ commitEpochTx: ContractTransaction; distributeRewardsTx: ContractTransaction }> {
-  const currEpochId = await systemValidatorSet.currentEpochId();
+  const currEpochId = await systemHydraChain.currentEpochId();
   const prevEpochId = currEpochId.sub(1);
-  const previousEpoch = await systemValidatorSet.epochs(prevEpochId);
+  const previousEpoch = await systemHydraChain.epochs(prevEpochId);
   const newEpoch = {
     startBlock: previousEpoch.endBlock.add(1),
     endBlock: previousEpoch.endBlock.add(epochSize),
@@ -83,11 +84,11 @@ export async function commitEpoch(
   increaseTime = increaseTime || DAY; // default 1 day
   await time.increase(increaseTime);
 
-  const commitEpochTx = await systemValidatorSet.commitEpoch(currEpochId, newEpoch, epochSize);
+  const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
 
-  const maxReward = await getMaxEpochReward(systemValidatorSet);
-  const distributeRewardsTx = await rewardPool
-    .connect(systemValidatorSet.signer)
+  const maxReward = await getMaxEpochReward(hydraStaking);
+  const distributeRewardsTx = await hydraStaking
+    .connect(systemHydraChain.signer)
     .distributeRewardsFor(currEpochId, validatorsUptime, epochSize, {
       value: maxReward,
     });
@@ -96,8 +97,8 @@ export async function commitEpoch(
 }
 
 export async function commitEpochs(
-  systemValidatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  systemHydraChain: HydraChain,
+  hydraStaking: HydraStaking,
   validators: SignerWithAddress[],
   numOfEpochsToCommit: number,
   epochSize: BigNumber,
@@ -106,7 +107,7 @@ export async function commitEpochs(
   if (epochSize.isZero() || numOfEpochsToCommit === 0) return;
 
   for (let i = 0; i < numOfEpochsToCommit; i++) {
-    await commitEpoch(systemValidatorSet, rewardPool, validators, epochSize, increaseTime);
+    await commitEpoch(systemHydraChain, hydraStaking, validators, epochSize, increaseTime);
   }
 }
 
@@ -123,13 +124,11 @@ export function initValidators(accounts: SignerWithAddress[], from: number = 0, 
   return validators;
 }
 
-export async function registerValidator(validatorSet: ValidatorSet, account: any) {
+export async function registerValidator(hydraChain: HydraChain, account: any) {
   const keyPair = mcl.newKeyPair();
   const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
 
-  const tx = await validatorSet
-    .connect(account)
-    .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+  const tx = await hydraChain.connect(account).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
   const txReceipt = await tx.wait();
 
   if (txReceipt.status !== 1) {
@@ -224,6 +223,7 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   return amount.mul(bps).div(DENOMINATOR);
 }
 
+// sami: TODO: apply for new contracts
 export async function getUserManager(
   validatorSet: ValidatorSet,
   account: any,
@@ -237,6 +237,7 @@ export async function getUserManager(
   return manager.connect(account);
 }
 
+// sami: TODO: apply for new contracts
 export async function claimPositionRewards(
   validatorSet: ValidatorSet,
   rewardPool: RewardPool,
@@ -250,12 +251,8 @@ export async function claimPositionRewards(
   await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
 }
 
-export async function createNewVestManager(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  owner: SignerWithAddress
-) {
-  const tx = await validatorSet.connect(owner).newManager(rewardPool.address);
+export async function createNewVestManager(hydraDelegation: HydraDelegation, owner: SignerWithAddress) {
+  const tx = await hydraDelegation.connect(owner).newManager(hydraDelegation.address);
   const receipt = await tx.wait();
   const event = receipt.events?.find((e) => e.event === "NewClone");
   const address = event?.args?.newClone;
@@ -266,6 +263,7 @@ export async function createNewVestManager(
   return { newManagerFactory: VestManagerFactory, newManager: vestManager };
 }
 
+// sami: TODO: apply for new contracts
 export async function retrieveRPSData(
   validatorSet: ValidatorSet,
   rewardPool: RewardPool,
@@ -305,6 +303,7 @@ export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) 
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
+// sami: TODO: apply for new contracts
 export async function applyCustomReward(
   rewardPool: RewardPool,
   validator: string,
@@ -346,14 +345,13 @@ export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair
 }
 
 export async function createManagerAndVest(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  hydraDelegation: HydraDelegation,
   account: SignerWithAddress,
   validator: string,
   duration: number,
   amount: BigNumber
 ) {
-  const { newManager } = await createNewVestManager(validatorSet, rewardPool, account);
+  const { newManager } = await createNewVestManager(hydraDelegation, account);
 
   await newManager.openVestedDelegatePosition(validator, duration, {
     value: amount,
@@ -362,6 +360,7 @@ export async function createManagerAndVest(
   return newManager;
 }
 
+// sami: TODO: apply for new contracts
 export async function getDelegatorPositionReward(
   validatorSet: ValidatorSet,
   rewardPool: RewardPool,
