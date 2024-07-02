@@ -4,9 +4,9 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import {System} from "./../common/System/System.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
-
-contract APRCalculator is Initializable, Governed {
+contract APRCalculator is Initializable, System, Governed {
     error InvalidRSI();
 
     uint256 public constant INITIAL_BASE_APR = 500;
@@ -24,7 +24,7 @@ contract APRCalculator is Initializable, Governed {
 
     // _______________ Initializer _______________
 
-    function __APR_init(address manager) internal onlyInitializing {
+    function initialize(address manager) external initializer onlySystemCall {
         __Governed_init(manager);
         base = INITIAL_BASE_APR;
         macroFactor = INITIAL_MACRO_FACTOR;

@@ -413,7 +413,7 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, uint256 newMinStake, address newLiquidToken, address validatorManagerAddr, address aprCalculatorAddr, address governance, address epochManagerAddr, address delegationContractAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, uint256 newMinStake, address newLiquidToken, address hydraChainAddr, address aprCalculatorAddr, address governance, address delegationContractAddr) external nonpayable
 ```
 
 
@@ -427,10 +427,9 @@ function initialize(StakerInit[] initialStakers, uint256 newMinStake, address ne
 | initialStakers | StakerInit[] | undefined |
 | newMinStake | uint256 | undefined |
 | newLiquidToken | address | undefined |
-| validatorManagerAddr | address | undefined |
+| hydraChainAddr | address | undefined |
 | aprCalculatorAddr | address | undefined |
 | governance | address | undefined |
-| epochManagerAddr | address | undefined |
 | delegationContractAddr | address | undefined |
 
 ### leftToWithdrawPerStaker

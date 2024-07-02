@@ -44,14 +44,13 @@ contract HydraStaking is
         StakerInit[] calldata initialStakers,
         uint256 newMinStake,
         address newLiquidToken,
-        address validatorManagerAddr,
+        address hydraChainAddr,
         address aprCalculatorAddr,
         address governance,
-        address epochManagerAddr,
         address delegationContractAddr
     ) external initializer onlySystemCall {
-        __ValidatorManagerConnector_init(validatorManagerAddr);
-        __EpochManagerConnector_init(epochManagerAddr);
+        __ValidatorManagerConnector_init(hydraChainAddr);
+        __EpochManagerConnector_init(hydraChainAddr);
         __Staking_init(newMinStake, aprCalculatorAddr, governance);
         __LiquidStaking_init(newLiquidToken);
         __DelegatedStaking_init(delegationContractAddr);
