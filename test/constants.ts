@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-export const DOMAIN = ethers.utils.arrayify(ethers.utils.solidityKeccak256(["string"], ["DOMAIN_VALIDATOR_SET"]));
+export const DOMAIN = ethers.utils.arrayify(ethers.utils.solidityKeccak256(["string"], ["DOMAIN_HYDRA_CHAIN"]));
 export const SYSTEM = "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE";
 export const NATIVE_TOKEN_CONTRACT = "0x0000000000000000000000000000000000001010";
 export const NATIVE_TRANSFER_PRECOMPILE = "0x0000000000000000000000000000000000002020";

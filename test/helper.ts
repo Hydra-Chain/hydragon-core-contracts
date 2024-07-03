@@ -13,7 +13,7 @@ import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/D
 import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
-import { HydraChain, HydraDelegation, HydraStaking } from "../typechain-types";
+import { APRCalculator, HydraChain, HydraDelegation, HydraStaking } from "../typechain-types";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -336,10 +336,10 @@ export async function calculateExpectedReward(
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
-export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) {
-  const base = await rewardPool.base();
-  const rsi = await rewardPool.rsi();
-  const vestBonus = await rewardPool.getVestingBonus(52);
+export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNumber) {
+  const base = await aprCalculator.base();
+  const rsi = await aprCalculator.rsi();
+  const vestBonus = await aprCalculator.getVestingBonus(52);
 
   // calculate expected reward
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);

@@ -5,7 +5,6 @@ import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
 import {
   BLS,
   LiquidityToken,
-  System,
   VestManager,
   VestManager__factory,
   HydraChain,
@@ -25,7 +24,6 @@ export interface Signers {
 }
 
 export interface Fixtures {
-  systemFixture: { (): Promise<System> };
   presetHydraChainStateFixture: {
     (): Promise<{
       hydraChain: HydraChain;

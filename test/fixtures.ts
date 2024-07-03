@@ -113,38 +113,42 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     stake: this.minStake.mul(2),
   };
 
-  await liquidToken.initialize("Liquidity Token", "LQT", this.signers.governance.address, systemHydraChain.address);
+  await liquidToken
+    .connect(this.signers.system)
+    .initialize("Liquidity Token", "LQT", this.signers.governance.address, hydraStaking.address);
 
-  await aprCalculator.initialize(this.signers.governance.address);
-
-  const systemHydraDelegation = hydraDelegation.connect(this.signers.system);
-  await systemHydraDelegation.initialize(
-    [validatorInit],
-    INITIAL_COMMISSION,
-    liquidToken.address,
-    this.signers.governance.address,
-    aprCalculator.address,
-    hydraStaking.address,
-    systemHydraChain.address
-  );
-
-  const systemHydraStaking = hydraStaking.connect(this.signers.system);
-  await systemHydraStaking.initialize(
-    [validatorInit],
-    this.minStake,
-    liquidToken.address,
-    systemHydraChain.address,
-    aprCalculator.address,
-    this.signers.governance.address,
-    systemHydraDelegation.address
-  );
+  await aprCalculator.connect(this.signers.system).initialize(this.signers.governance.address);
 
   await systemHydraChain.initialize(
     [validatorInit],
     this.signers.governance.address,
-    systemHydraStaking.address,
+    hydraStaking.address,
     bls.address
   );
+
+  await hydraStaking
+    .connect(this.signers.system)
+    .initialize(
+      [validatorInit],
+      this.minStake,
+      liquidToken.address,
+      hydraChain.address,
+      aprCalculator.address,
+      this.signers.governance.address,
+      hydraDelegation.address
+    );
+
+  await hydraDelegation
+    .connect(this.signers.system)
+    .initialize(
+      [validatorInit],
+      INITIAL_COMMISSION,
+      liquidToken.address,
+      this.signers.governance.address,
+      aprCalculator.address,
+      hydraStaking.address,
+      hydraChain.address
+    );
 
   return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
 }

@@ -3,23 +3,23 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { getPermitSignature } from "../helper";
-import { DEADLINE } from "../constants";
+import { DEADLINE, SYSTEM } from "../constants";
 import { expect } from "chai";
 
-describe("LiquidityToken", async function () {
+describe.only("LiquidityToken", async function () {
   const tokenName = "Lydra";
   const tokenSymbol = "LDR";
   let accounts: SignerWithAddress[],
-    governerRole: string,
+    governorRole: string,
     supplyControllerRole: string,
-    governer: SignerWithAddress,
+    governor: SignerWithAddress,
     supplyController: SignerWithAddress;
 
   this.beforeAll(async () => {
     accounts = await ethers.getSigners();
-    governerRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    governorRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
     supplyControllerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("SUPPLY_CONTROLLER_ROLE"));
-    governer = accounts[1];
+    governor = accounts[1];
     supplyController = accounts[2];
   });
 
@@ -33,14 +33,16 @@ describe("LiquidityToken", async function () {
 
   async function initializeFixture() {
     const { token } = await loadFixture(deployFixture);
-    await token.initialize(tokenName, tokenSymbol, governer.address, supplyController.address);
+    // sami : make sure to use the system account to initialize the token
+    const system = await ethers.getSigner(SYSTEM);
+    await token.connect(system).initialize(tokenName, tokenSymbol, governor.address, supplyController.address);
 
     return { token };
   }
 
   it("should have default admin role set", async () => {
     const { token } = await loadFixture(deployFixture);
-    expect(await token.DEFAULT_ADMIN_ROLE()).equal(governerRole);
+    expect(await token.DEFAULT_ADMIN_ROLE()).equal(governorRole);
   });
 
   it("should have supply controller role set", async () => {
@@ -54,7 +56,7 @@ describe("LiquidityToken", async function () {
 
       expect(await token.name()).to.be.equal(tokenName);
       expect(await token.symbol()).to.be.equal(tokenSymbol);
-      expect(await token.hasRole(governerRole, governer.address)).to.be.equal(true);
+      expect(await token.hasRole(governorRole, governor.address)).to.be.equal(true);
       expect(await token.hasRole(supplyControllerRole, supplyController.address)).to.be.equal(true);
     });
 
@@ -62,7 +64,7 @@ describe("LiquidityToken", async function () {
       const { token } = await loadFixture(initializeFixture);
 
       await expect(
-        token.initialize(tokenName, tokenSymbol, governer.address, supplyController.address)
+        token.initialize(tokenName, tokenSymbol, governor.address, supplyController.address)
       ).to.be.revertedWith("Initializable: contract is already initialized");
     });
   });
@@ -107,19 +109,19 @@ describe("LiquidityToken", async function () {
       const { token } = await loadFixture(initializeFixture);
 
       await expect(token.revokeRole(supplyControllerRole, supplyController.address)).to.be.revertedWith(
-        "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governerRole
+        "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governorRole
       );
 
       await expect(token.grantRole(supplyControllerRole, accounts[5].address)).to.be.revertedWith(
-        "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governerRole
+        "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governorRole
       );
     });
 
     it("Should properly update the role", async () => {
       const { token } = await loadFixture(initializeFixture);
 
-      await token.connect(governer).revokeRole(supplyControllerRole, supplyController.address);
-      await token.connect(governer).grantRole(supplyControllerRole, accounts[5].address);
+      await token.connect(governor).revokeRole(supplyControllerRole, supplyController.address);
+      await token.connect(governor).grantRole(supplyControllerRole, accounts[5].address);
 
       expect(await token.hasRole(supplyControllerRole, supplyController.address)).to.be.equal(false);
       expect(await token.hasRole(supplyControllerRole, accounts[5].address)).to.be.equal(true);
