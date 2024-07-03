@@ -6,16 +6,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// import {IHydraStaking} from "./../HydraStakingV2/IHydraStaking.sol";
 import {IHydraDelegation} from "./../HydraDelegation/IHydraDelegation.sol";
 
 contract VestingManager is Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
-    /// @notice The delegation address
+    /// @notice The hydra delegation contract address
     address public delegation;
-    /// @notice The reward pool address
-    address public rewardPool;
 
     // _______________ Events _______________
 
@@ -27,10 +24,9 @@ contract VestingManager is Initializable, OwnableUpgradeable {
 
     // _______________ Initializer _______________
 
-    function initialize(address owner, address _rewardPool) public initializer {
+    function initialize(address owner) public initializer {
         _transferOwnership(owner);
         delegation = msg.sender;
-        rewardPool = _rewardPool;
     }
 
     // _______________ External functions _______________
@@ -72,8 +68,6 @@ contract VestingManager is Initializable, OwnableUpgradeable {
     function withdraw(address to) external {
         IHydraDelegation(delegation).withdraw(to);
     }
-
-    // _______________ Public functions _______________
 
     // _______________ Internal functions _______________
 

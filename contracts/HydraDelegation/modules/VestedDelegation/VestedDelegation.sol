@@ -83,10 +83,10 @@ contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function newManager(address rewardPool) external {
+    function newManager() external {
         require(msg.sender != address(0), "INVALID_OWNER");
 
-        address managerAddr = _clone(msg.sender, rewardPool);
+        address managerAddr = _clone(msg.sender);
         _storeVestManagerData(managerAddr, msg.sender);
     }
 

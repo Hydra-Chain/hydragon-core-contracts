@@ -184,18 +184,13 @@ Returns the address of the token that is distributed as a liquidity on stake
 ### newManager
 
 ```solidity
-function newManager(address rewardPool) external nonpayable
+function newManager() external nonpayable
 ```
 
 Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, so users need to create a manager first to be able to vest.
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| rewardPool | address | undefined |
 
 ### pendingWithdrawals
 

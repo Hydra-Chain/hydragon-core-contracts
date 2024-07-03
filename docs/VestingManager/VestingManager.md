@@ -72,7 +72,7 @@ function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, 
 function delegation() external view returns (address)
 ```
 
-The delegation address
+The hydra delegation contract address
 
 
 
@@ -86,7 +86,7 @@ The delegation address
 ### initialize
 
 ```solidity
-function initialize(address owner, address _rewardPool) external nonpayable
+function initialize(address owner) external nonpayable
 ```
 
 
@@ -98,7 +98,6 @@ function initialize(address owner, address _rewardPool) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | owner | address | undefined |
-| _rewardPool | address | undefined |
 
 ### openVestedDelegatePosition
 
@@ -144,23 +143,6 @@ function renounceOwnership() external nonpayable
 
 *Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
 
-
-### rewardPool
-
-```solidity
-function rewardPool() external view returns (address)
-```
-
-The reward pool address
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
 
 ### swapVestedPositionValidator
 

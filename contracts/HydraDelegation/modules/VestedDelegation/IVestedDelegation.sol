@@ -39,7 +39,7 @@ interface IVestedDelegation is IDelegation {
      * Only Vesting manager can use the vesting functionality,
      * so users need to create a manager first to be able to vest.
      */
-    function newManager(address rewardPool) external;
+    function newManager() external;
 
     /**
      * @notice Delegates sent amount to validator. Set vesting position data.

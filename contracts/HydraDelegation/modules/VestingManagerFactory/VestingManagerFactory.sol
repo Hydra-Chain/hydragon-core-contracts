@@ -25,10 +25,10 @@ abstract contract VestingManagerFactory is Initializable {
 
     // _______________ Internal functions _______________
 
-    function _clone(address owner, address rewardPool) internal returns (address) {
+    function _clone(address owner) internal returns (address) {
         address child = Clones.clone(implementation);
 
-        VestingManager(child).initialize(owner, rewardPool);
+        VestingManager(child).initialize(owner);
 
         emit NewClone(owner, child);
 
