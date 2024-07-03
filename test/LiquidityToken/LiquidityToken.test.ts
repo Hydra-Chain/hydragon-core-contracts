@@ -6,7 +6,7 @@ import { getPermitSignature } from "../helper";
 import { DEADLINE, SYSTEM } from "../constants";
 import { expect } from "chai";
 
-describe.only("LiquidityToken", async function () {
+describe("LiquidityToken", async function () {
   const tokenName = "Lydra";
   const tokenSymbol = "LDR";
   let accounts: SignerWithAddress[],
