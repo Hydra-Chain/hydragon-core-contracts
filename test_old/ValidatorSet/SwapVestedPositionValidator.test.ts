@@ -60,7 +60,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+        .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
     });
 
     it("should revert when we try to swap to new position which still matures", async function () {
@@ -88,7 +88,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+        .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
     });
 
     it("should revert when we try to swap to a position with left balance", async function () {
@@ -128,7 +128,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+        .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
     });
 
     it("should revert when we try to swap to a position with left rewards to claim", async function () {
@@ -174,7 +174,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
         vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(rewardPool, "DelegateRequirement")
-        .withArgs("vesting", ERRORS.swap.newPositionUnavilable);
+        .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
     });
 
     it("should transfer old position parameters to the new one on successful swap", async function () {

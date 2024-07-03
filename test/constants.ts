@@ -41,7 +41,7 @@ export const ERRORS = {
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
   swap: {
-    newPositionUnavilable: "NEW_POSITION_UNAVAILABLE",
+    newPositionUnavailable: "NEW_POSITION_UNAVAILABLE",
   },
   vesting: {
     invalidParamsIndex: "INVALID_PARAMS_INDEX",

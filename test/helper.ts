@@ -54,6 +54,8 @@ export async function initializeContext(context: any) {
   context.chainId = network.chainId;
 }
 
+// --------------- Epoch handlers ---------------
+
 export async function getMaxEpochReward(hydraStaking: HydraStaking) {
   const totalSupply = await hydraStaking.totalBalance();
   return totalSupply;
@@ -111,6 +113,8 @@ export async function commitEpochs(
   }
 }
 
+// --------------- Validator handlers ---------------
+
 export function initValidators(accounts: SignerWithAddress[], from: number = 0, to: number = 4) {
   if (to > accounts.length) {
     throw new Error("Too many validators");
@@ -141,6 +145,29 @@ export async function getValidatorReward(validatorSet: ValidatorSet, validatorAd
 
   return validator.withdrawableRewards;
 }
+
+/**
+ * Generate BLS pubkey and signature for validator
+ * @param account ethersjs signer
+ * @returns ValidatorBLS object with pubkey and signature
+ */
+export function generateValidatorBls(account: SignerWithAddress) {
+  const keyPair = mcl.newKeyPair();
+  const signature = genValSignature(account, keyPair);
+
+  const bls = {
+    pubkey: mcl.g2ToHex(keyPair.pubkey),
+    signature: mcl.g1ToHex(signature),
+  };
+
+  return bls;
+}
+
+export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair) {
+  return mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
+}
+
+// --------------- Index handlers ---------------
 
 export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: BigNumber): number {
   let left = 0;
@@ -207,6 +234,42 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
   return closestIndex;
 }
 
+// sami: TODO: apply for new contracts
+export async function retrieveRPSData(
+  validatorSet: ValidatorSet,
+  rewardPool: RewardPool,
+  validator: string,
+  manager: string
+) {
+  const position = await rewardPool.delegationPositions(validator, manager);
+  const maturedIn = await getClosestMaturedTimestamp(position);
+  const currentEpochId = await validatorSet.currentEpochId();
+  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
+  const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
+  const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
+  const balanceChangeIndex = findProperBalanceChangeIndex(
+    delegationPoolParamsHistory,
+    hre.ethers.BigNumber.from(epochNum)
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function getClosestMaturedTimestamp(position: any) {
+  let alreadyMatureIn = 0;
+  if (await hasMatured(position.end, position.duration)) {
+    alreadyMatureIn = position.end;
+  } else {
+    const currChainTs = await time.latest();
+    const maturedPeriod = currChainTs - position.end;
+    alreadyMatureIn = position.start.add(maturedPeriod);
+  }
+
+  return alreadyMatureIn;
+}
+
+// --------------- Delegation handlers ---------------
+
 export async function calculatePenalty(position: any, timestamp: BigNumber, amount: BigNumber) {
   const leftPeriod: BigNumber = position.end.sub(timestamp);
   let leftWeeks = leftPeriod.mod(WEEK); // get the remainder first
@@ -252,7 +315,7 @@ export async function claimPositionRewards(
 }
 
 export async function createNewVestManager(hydraDelegation: HydraDelegation, owner: SignerWithAddress) {
-  const tx = await hydraDelegation.connect(owner).newManager(hydraDelegation.address);
+  const tx = await hydraDelegation.connect(owner).newManager();
   const receipt = await tx.wait();
   const event = receipt.events?.find((e) => e.event === "NewClone");
   const address = event?.args?.newClone;
@@ -261,27 +324,6 @@ export async function createNewVestManager(hydraDelegation: HydraDelegation, own
   const vestManager: VestManager = VestManagerFactory.attach(address);
 
   return { newManagerFactory: VestManagerFactory, newManager: vestManager };
-}
-
-// sami: TODO: apply for new contracts
-export async function retrieveRPSData(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  validator: string,
-  manager: string
-) {
-  const position = await rewardPool.delegationPositions(validator, manager);
-  const maturedIn = await getClosestMaturedTimestamp(position);
-  const currentEpochId = await validatorSet.currentEpochId();
-  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
-  const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
-  const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
-  const balanceChangeIndex = findProperBalanceChangeIndex(
-    delegationPoolParamsHistory,
-    hre.ethers.BigNumber.from(epochNum)
-  );
-
-  return { position, epochNum, balanceChangeIndex };
 }
 
 export async function calculateExpectedReward(
@@ -323,27 +365,6 @@ export async function applyCustomReward(
   return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);
 }
 
-/**
- * Generate BLS pubkey and signature for validator
- * @param account ethersjs signer
- * @returns ValidatorBLS object with pubkey and signature
- */
-export function generateValidatorBls(account: SignerWithAddress) {
-  const keyPair = mcl.newKeyPair();
-  const signature = genValSignature(account, keyPair);
-
-  const bls = {
-    pubkey: mcl.g2ToHex(keyPair.pubkey),
-    signature: mcl.g1ToHex(signature),
-  };
-
-  return bls;
-}
-
-export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair) {
-  return mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
-}
-
 export async function createManagerAndVest(
   hydraDelegation: HydraDelegation,
   account: SignerWithAddress,
@@ -371,19 +392,6 @@ export async function getDelegatorPositionReward(
   const { epochNum, balanceChangeIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
 
   return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
-}
-
-export async function getClosestMaturedTimestamp(position: any) {
-  let alreadyMatureIn = 0;
-  if (await hasMatured(position.end, position.duration)) {
-    alreadyMatureIn = position.end;
-  } else {
-    const currChainTs = await time.latest();
-    const maturedPeriod = currChainTs - position.end;
-    alreadyMatureIn = position.start.add(maturedPeriod);
-  }
-
-  return alreadyMatureIn;
 }
 
 // function that returns whether a position is matured or not
