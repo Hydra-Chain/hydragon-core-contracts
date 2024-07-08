@@ -115,7 +115,13 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await liquidToken
     .connect(this.signers.system)
-    .initialize("Liquidity Token", "LQT", this.signers.governance.address, hydraStaking.address);
+    .initialize(
+      "Liquidity Token",
+      "LQT",
+      this.signers.governance.address,
+      hydraStaking.address,
+      hydraDelegation.address
+    );
 
   await aprCalculator.connect(this.signers.system).initialize(this.signers.governance.address);
 
@@ -150,7 +156,16 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       hydraChain.address
     );
 
-  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator };
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    aprCalculator,
+    validatorInit,
+  };
 }
 
 // --------------- Epoch Fixtures ---------------

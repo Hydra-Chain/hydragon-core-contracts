@@ -22,19 +22,22 @@ contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20Permi
      * @param name_ The name of the token.
      * @param symbol_ The symbol of the token.
      * @param governer The address that has rights to change the SUPPLY_CONTROLLERs.
-     * @param supplyController The address assigned for controlling the supply (mint/burn) of the token.
+     * @param hydraStakingAddr The address assigned for controlling the supply (mint/burn) of the token. (HydraStaking.sol)
+     * @param hydraDelegationAddr The address assigned for controlling the supply (mint/burn) of the token. (HydraDelegation.sol)
      */
     function initialize(
         string calldata name_,
         string calldata symbol_,
         address governer,
-        address supplyController
+        address hydraStakingAddr,
+        address hydraDelegationAddr
     ) external initializer onlySystemCall {
         __ERC20_init(name_, symbol_);
         __ERC20Permit_init(name_);
         __Governed_init(governer);
 
-        _grantRole(SUPPLY_CONTROLLER_ROLE, supplyController);
+        _grantRole(SUPPLY_CONTROLLER_ROLE, hydraStakingAddr);
+        _grantRole(SUPPLY_CONTROLLER_ROLE, hydraDelegationAddr);
     }
 
     /**

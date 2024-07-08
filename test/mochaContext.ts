@@ -44,6 +44,12 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      validatorInit: {
+        addr: string;
+        pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
+        signature: [BigNumberish, BigNumberish];
+        stake: BigNumberish;
+      };
     }>;
   };
   commitEpochTxFixture: {

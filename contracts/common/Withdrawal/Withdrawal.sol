@@ -16,9 +16,9 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
 
     // _______________ Initializer _______________
 
-    function __Withdrawal_init() internal {
+    function __Withdrawal_init(address _governance) internal {
         __ReentrancyGuard_init();
-        __Ownable2Step_init();
+        _transferOwnership(_governance);
     }
 
     // _______________ External functions _______________

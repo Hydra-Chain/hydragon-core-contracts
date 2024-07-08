@@ -25,7 +25,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     function __Delegation_init(uint256 _minDelegation, address _governace) internal onlyInitializing {
         __Governed_init(_governace);
-        __Withdrawal_init();
+        __Withdrawal_init(_governace);
         __Delegation_init_unchained(_minDelegation);
     }
 
@@ -102,7 +102,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
      * @param amount Amount to delegate
      */
     function _baseDelegate(address staker, address delegator, uint256 amount) internal virtual {
-        if (msg.value == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
+        if (amount == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
         DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (delegatedAmount + amount < minDelegation)
@@ -133,6 +133,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     function _baseUndelegate(address validator, address delegator, uint256 amount) internal virtual {
         DelegationPool storage delegation = delegationPools[validator];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
+        // sami: Do we need this check? The amounAfterUndelegate will underflow if the amount is greater than the delegatedAmount
         if (amount > delegatedAmount) revert DelegateRequirement({src: "undelegate", msg: "INSUFFICIENT_BALANCE"});
 
         uint256 amounAfterUndelegate = delegatedAmount - amount;

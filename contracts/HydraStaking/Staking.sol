@@ -29,7 +29,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
         address _governance
     ) internal onlyInitializing {
         __Governed_init(_governance);
-        __Withdrawal_init();
+        __Withdrawal_init(_governance);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
         __Staking_init_unchained(_newMinStake);
     }
@@ -122,6 +122,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
         uint256 accountStake = stakeOf(account);
+        // sami: Do we need this check? The stakeLeft will underflow if the amount is greater than the accountStake
         if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
         stakeLeft = accountStake - amount;

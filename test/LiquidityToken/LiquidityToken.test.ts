@@ -35,7 +35,9 @@ export function RunLiquidityTokenTests(): void {
     async function initializeFixture() {
       const { token } = await loadFixture(deployFixture);
       const system = await ethers.getSigner(SYSTEM);
-      await token.connect(system).initialize(tokenName, tokenSymbol, governor.address, supplyController.address);
+      await token
+        .connect(system)
+        .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address);
 
       return { token };
     }
@@ -43,7 +45,9 @@ export function RunLiquidityTokenTests(): void {
     it("should revert init from non-system address", async () => {
       const { token } = await loadFixture(deployFixture);
       await expect(
-        token.connect(governor).initialize(tokenName, tokenSymbol, governor.address, supplyController.address)
+        token
+          .connect(governor)
+          .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
       ).to.be.revertedWithCustomError(token, "Unauthorized");
     });
 
@@ -71,7 +75,7 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(initializeFixture);
 
         await expect(
-          token.initialize(tokenName, tokenSymbol, governor.address, supplyController.address)
+          token.initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
         ).to.be.revertedWith("Initializable: contract is already initialized");
       });
     });
