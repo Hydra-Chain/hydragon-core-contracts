@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import {System} from "./../common/System/System.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
+
 contract APRCalculator is Initializable, System, Governed {
     error InvalidRSI();
 
@@ -115,6 +116,7 @@ contract APRCalculator is Initializable, System, Governed {
     function applyBaseAPR(uint256 amount) public view returns (uint256) {
         return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
     }
+
     // _______________ Internal functions _______________
 
     function magnitude() internal pure returns (uint256) {
