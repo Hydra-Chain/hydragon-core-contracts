@@ -179,6 +179,7 @@ export interface Fixtures {
   validatorToBanFixture: {
     (): Promise<{
       hydraChain: HydraChain;
+      hydraStaking: HydraStaking;
       validatorToBan: SignerWithAddress;
     }>;
   };

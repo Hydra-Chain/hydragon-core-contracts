@@ -33,12 +33,18 @@ describe("LiquidityToken", async function () {
 
   async function initializeFixture() {
     const { token } = await loadFixture(deployFixture);
-    // sami : make sure to use the system account to initialize the token
     const system = await ethers.getSigner(SYSTEM);
     await token.connect(system).initialize(tokenName, tokenSymbol, governor.address, supplyController.address);
 
     return { token };
   }
+
+  it("should revert init from non-system address", async () => {
+    const { token } = await loadFixture(deployFixture);
+    await expect(
+      token.connect(governor).initialize(tokenName, tokenSymbol, governor.address, supplyController.address)
+    ).to.be.revertedWithCustomError(token, "Unauthorized");
+  });
 
   it("should have default admin role set", async () => {
     const { token } = await loadFixture(deployFixture);

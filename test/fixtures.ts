@@ -282,6 +282,7 @@ async function validatorToBanFixtureFunction(this: Mocha.Context) {
 
   return {
     hydraChain,
+    hydraStaking,
     validatorToBan: validator,
   };
 }

@@ -23,10 +23,9 @@ export const DEADLINE = ethers.constants.MaxUint256.toString();
 /* eslint-disable no-unused-vars */
 export enum VALIDATOR_STATUS {
   None = 0,
-  Whitelisted = 1,
-  Registered = 2,
-  Active = 3,
-  Banned = 4,
+  Registered = 1,
+  Active = 2,
+  Banned = 3,
 }
 
 /// @notice This bytecode is used to mock and return true with any input
