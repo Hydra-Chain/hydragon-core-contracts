@@ -105,6 +105,22 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
+### claimDelegatorReward
+
+```solidity
+function claimDelegatorReward(address validator) external nonpayable
+```
+
+Claims rewards for delegator for validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
 ### delegate
 
 ```solidity

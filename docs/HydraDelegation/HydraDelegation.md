@@ -225,6 +225,30 @@ The threshold for the maximum number of allowed balance changes
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### calculatePositionPenalty
+
+```solidity
+function calculatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty)
+```
+
+Calculates the penalty for the position.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator to calculate penalty for |
+| delegator | address | Delegator to calculate penalty for |
+| amount | uint256 | Amount to calculate penalty for |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| penalty | uint256 | undefined |
+
 ### changeWithdrawalWaitPeriod
 
 ```solidity
@@ -240,6 +264,22 @@ Changes the withdrawal wait period.
 | Name | Type | Description |
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
+
+### claimDelegatorReward
+
+```solidity
+function claimDelegatorReward(address validator) external nonpayable
+```
+
+Claims rewards for delegator for validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
 
 ### claimPositionReward
 
@@ -423,6 +463,30 @@ function epochManagerContract() external view returns (contract IEpochManager)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IEpochManager | undefined |
+
+### getRPSValues
+
+```solidity
+function getRPSValues(address validator, uint256 startEpoch, uint256 endEpoch) external view returns (struct RPS[])
+```
+
+Gets the RPS values for a validator in a given epoch range.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator that is deleagted to |
+| startEpoch | uint256 | Start epoch for values |
+| endEpoch | uint256 | End epoch for values |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | RPS[] | undefined |
 
 ### getRawDelegatorReward
 
@@ -611,6 +675,29 @@ function initialize(StakerInit[] initialStakers, uint256 initialCommission, addr
 | hydraStakingAddr | address | undefined |
 | epochManagerAddr | address | undefined |
 
+### isActiveDelegatePosition
+
+```solidity
+function isActiveDelegatePosition(address validator, address delegator) external view returns (bool)
+```
+
+Returns true if the position is active.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator for the position |
+| delegator | address | Delegator for the position |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isBalanceChangeMade
 
 ```solidity
@@ -651,6 +738,29 @@ Checks if the balance changes exceeds the threshold
 |---|---|---|
 | validator | address | Validator to delegate to |
 | delegator | address | Delegator that has delegated |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isMaturingDelegatePosition
+
+```solidity
+function isMaturingDelegatePosition(address validator, address delegator) external view returns (bool)
+```
+
+Returns true if the position is maturing.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator for the position |
+| delegator | address | Delegator for the position |
 
 #### Returns
 

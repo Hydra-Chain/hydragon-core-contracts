@@ -97,6 +97,56 @@ contract VestedDelegation is
         return userVestManagers[user];
     }
 
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function getRPSValues(
+        address validator,
+        uint256 startEpoch,
+        uint256 endEpoch
+    ) external view returns (RPS[] memory) {
+        require(startEpoch <= endEpoch, "Invalid args");
+
+        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
+        uint256 itemIndex = 0;
+        for (uint256 i = startEpoch; i <= endEpoch; i++) {
+            if (historyRPS[validator][i].value != 0) {
+                values[itemIndex] = (historyRPS[validator][i]);
+            }
+
+            itemIndex++;
+        }
+
+        return values;
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function calculatePositionPenalty(
+        address validator,
+        address delegator,
+        uint256 amount
+    ) external view returns (uint256 penalty) {
+        VestingPosition memory position = vestedDelegationPositions[validator][delegator];
+        if (position.isActive()) {
+            penalty = _calcPenalty(position, amount);
+        }
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function isActiveDelegatePosition(address validator, address delegator) external view returns (bool) {
+        return vestedDelegationPositions[validator][delegator].isActive();
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function isMaturingDelegatePosition(address validator, address delegator) external view returns (bool) {
+        return vestedDelegationPositions[validator][delegator].isMaturing();
+    }
     
     /**
      * @inheritdoc IVestedDelegation

@@ -286,30 +286,28 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   return amount.mul(bps).div(DENOMINATOR);
 }
 
-// sami: TODO: apply for new contracts
 export async function getUserManager(
-  validatorSet: ValidatorSet,
+  hydraDelegation: HydraDelegation,
   account: any,
   VestManagerFactory: any
 ): Promise<VestManager> {
   // Find user vesting position based on the emitted  events
-  const filter = validatorSet.filters.NewClone(account.address);
-  const positionAddr = (await validatorSet.queryFilter(filter))[0].args.newClone;
+  const filter = hydraDelegation.filters.NewClone(account.address);
+  const positionAddr = (await hydraDelegation.queryFilter(filter))[0].args.newClone;
   const manager = VestManagerFactory.attach(positionAddr);
 
   return manager.connect(account);
 }
 
-// sami: TODO: apply for new contracts
 export async function claimPositionRewards(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
   vestManager: VestManager,
   validator: string
 ) {
-  const position = await rewardPool.delegationPositions(validator, vestManager.address);
-  const currentEpochId = await validatorSet.currentEpochId();
-  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
+  const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
+  const currentEpochId = await hydraChain.currentEpochId();
+  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
   const rpsIndex = findProperRPSIndex(rpsValues, position.end);
   await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
 }

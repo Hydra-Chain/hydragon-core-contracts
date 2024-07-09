@@ -45,6 +45,13 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     /**
      * @inheritdoc IDelegation
      */
+    function claimDelegatorReward(address validator) external {
+        _claimDelegatorReward(validator, msg.sender);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
     function undelegate(address staker, uint256 amount) external {
         _claimDelegatorReward(staker, msg.sender);
         _undelegate(staker, msg.sender, amount);

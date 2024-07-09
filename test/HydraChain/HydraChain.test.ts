@@ -10,6 +10,7 @@ import { commitEpoch, getPermitSignature } from "../helper";
 // import { RunStakingTests } from "./Staking.test";
 // import { RunDelegationTests } from "./Delegation.test";
 import { RunInspectorTests } from "./Inspector.test";
+import { RunDelegationTests } from "./Delegation.test";
 
 export function RunHydraChainTests(): void {
   describe("", function () {
@@ -942,6 +943,9 @@ export function RunHydraChainTests(): void {
 
     describe("Inspector", function () {
       RunInspectorTests();
+    });
+    describe("Delegation", function () {
+      RunDelegationTests();
     });
   });
 }

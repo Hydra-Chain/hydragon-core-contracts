@@ -28,6 +28,12 @@ interface IDelegation is IWithdrawal {
     function totalDelegation() external view returns (uint256);
 
     /**
+     * @notice Claims rewards for delegator for validator
+     * @param validator Address of the validator
+     */
+    function claimDelegatorReward(address validator) external;
+
+    /**
      * @notice Undelegates amount from validator for sender and claims rewards.
      * @param validator Validator to undelegate from
      * @param amount The amount to undelegate
