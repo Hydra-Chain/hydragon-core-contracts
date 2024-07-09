@@ -6,9 +6,10 @@ import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol"
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
 import {VestingManager} from "./VestingManager.sol";
+import {System} from "./../common/System/System.sol";
 import {IVestingManagerFactory} from "./IVestingManagerFactory.sol";
 
-contract VestingManagerFactory is IVestingManagerFactory, Initializable {
+contract VestingManagerFactory is IVestingManagerFactory, System, Initializable {
     UpgradeableBeacon public beacon;
 
     /// @notice A vesting manager pointing to its owner
@@ -20,7 +21,7 @@ contract VestingManagerFactory is IVestingManagerFactory, Initializable {
 
     // _______________ Initializer _______________
 
-    function initialize(address hydraDelegationAddr) internal initializer {
+    function initialize(address hydraDelegationAddr) external initializer onlySystemCall{
         _initialize(hydraDelegationAddr);
     }
 

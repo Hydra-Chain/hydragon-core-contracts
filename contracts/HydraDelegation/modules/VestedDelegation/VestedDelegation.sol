@@ -58,12 +58,10 @@ contract VestedDelegation is
 
     function __VestedDelegation_init(
         address _epochManagerAddr,
-        address _vestingManagerFactoryAddr,
-        address _aprCalculatorAddr
-    ) internal onlyInitializing {
+        address _vestingManagerFactoryAddr
+        ) internal onlyInitializing {
         __EpochManagerConnector_init(_epochManagerAddr);
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
-        __APRCalculatorConnector_init(_aprCalculatorAddr);
         __VestedDelegation_init_unchained();
     }
 

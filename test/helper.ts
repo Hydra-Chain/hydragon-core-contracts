@@ -9,11 +9,17 @@ import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
 import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
 import { RewardPool } from "../typechain-types/contracts/RewardPool";
-import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
-import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
-import { APRCalculator, HydraChain, HydraDelegation, HydraStaking } from "../typechain-types";
+import {
+  APRCalculator,
+  HydraChain,
+  HydraDelegation,
+  HydraStaking,
+  VestingManager,
+  VestingManager__factory,
+  VestingManagerFactory,
+} from "../typechain-types";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -286,23 +292,24 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   return amount.mul(bps).div(DENOMINATOR);
 }
 
-export async function getUserManager(
-  hydraDelegation: HydraDelegation,
-  account: any,
-  VestManagerFactory: any
-): Promise<VestManager> {
-  // Find user vesting position based on the emitted  events
-  const filter = hydraDelegation.filters.NewClone(account.address);
-  const positionAddr = (await hydraDelegation.queryFilter(filter))[0].args.newClone;
-  const manager = VestManagerFactory.attach(positionAddr);
+// // sami: todo: apply for new contracts
+// export async function getUserManager(
+//   vestingManagerFactory: VestingManagerFactory,
+//   account: any,
+//   VestManagerFactory: any
+// ): Promise<VestManager> {
+//   // Find user vesting position based on the emitted  events
+//   const filter = vestingManagerFactory.filters.NewClone(account.address);
+//   const positionAddr = (await vestingManagerFactory.queryFilter(filter))[0].args.newClone;
+//   const manager = VestManagerFactory.attach(positionAddr);
 
-  return manager.connect(account);
-}
+//   return manager.connect(account);
+// }
 
 export async function claimPositionRewards(
   hydraChain: HydraChain,
   hydraDelegation: HydraDelegation,
-  vestManager: VestManager,
+  vestManager: VestingManager,
   validator: string
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
@@ -311,17 +318,17 @@ export async function claimPositionRewards(
   const rpsIndex = findProperRPSIndex(rpsValues, position.end);
   await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
 }
-
-export async function createNewVestManager(hydraDelegation: HydraDelegation, owner: SignerWithAddress) {
-  const tx = await hydraDelegation.connect(owner).newManager();
+// sami: TODO: check if that is still valid
+export async function createNewVestManager(vestingManagerFactory: VestingManagerFactory, owner: SignerWithAddress) {
+  const tx = await vestingManagerFactory.connect(owner).newVestingManager();
   const receipt = await tx.wait();
   const event = receipt.events?.find((e) => e.event === "NewClone");
   const address = event?.args?.newClone;
 
-  const VestManagerFactory = new VestManager__factory(owner);
-  const vestManager: VestManager = VestManagerFactory.attach(address);
+  const VestManagerFactory = new VestingManager__factory(owner);
+  const vestManager: VestingManager = VestManagerFactory.attach(address);
 
-  return { newManagerFactory: VestManagerFactory, newManager: vestManager };
+  return { newManagerFactory: vestingManagerFactory, newManager: vestManager };
 }
 
 export async function calculateExpectedReward(
@@ -364,13 +371,13 @@ export async function applyCustomReward(
 }
 
 export async function createManagerAndVest(
-  hydraDelegation: HydraDelegation,
+  vestingManagerFactory: VestingManagerFactory,
   account: SignerWithAddress,
   validator: string,
   duration: number,
   amount: BigNumber
 ) {
-  const { newManager } = await createNewVestManager(hydraDelegation, account);
+  const { newManager } = await createNewVestManager(vestingManagerFactory, account);
 
   await newManager.openVestedDelegatePosition(validator, duration, {
     value: amount,

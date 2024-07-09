@@ -533,28 +533,6 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### getUserVestingManagers
-
-```solidity
-function getUserVestingManagers(address user) external view returns (address[])
-```
-
-Gets user vesting managers.
-
-*Gets the vesting managers per user address for fast off-chain lookup.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| user | address | User address |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address[] | undefined |
-
 ### grantRole
 
 ```solidity
@@ -636,27 +614,10 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
-### implementation
-
-```solidity
-function implementation() external view returns (address)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address epochManagerAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address epochManagerAddr, address vestingManagerFactoryAddr) external nonpayable
 ```
 
 
@@ -674,6 +635,7 @@ function initialize(StakerInit[] initialStakers, uint256 initialCommission, addr
 | aprCalculatorAddr | address | undefined |
 | hydraStakingAddr | address | undefined |
 | epochManagerAddr | address | undefined |
+| vestingManagerFactoryAddr | address | undefined |
 
 ### isActiveDelegatePosition
 
@@ -791,28 +753,6 @@ Check if the new position that the user wants to swap to is available for the sw
 |---|---|---|
 | _0 | bool | undefined |
 
-### isVestingManager
-
-```solidity
-function isVestingManager(address delegator) external view returns (bool)
-```
-
-Claims that a delegator is a vest manager or not.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| delegator | address | Delegator&#39;s address |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
 ### liquidToken
 
 ```solidity
@@ -868,17 +808,6 @@ The minimum delegation amount to be delegated
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### newManager
-
-```solidity
-function newManager() external nonpayable
-```
-
-Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, so users need to create a manager first to be able to vest.
-
-
-
 
 ### owner
 
@@ -1147,29 +1076,6 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 | validator | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
 
-### userVestManagers
-
-```solidity
-function userVestManagers(address, uint256) external view returns (address)
-```
-
-Additional mapping to store all vesting managers per user address for fast off-chain lookup
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### vestedDelegationPositions
 
 ```solidity
@@ -1198,27 +1104,22 @@ The vesting positions for every delegator
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
 
-### vestingManagers
+### vestingManagerFactoryContract
 
 ```solidity
-function vestingManagers(address) external view returns (address)
+function vestingManagerFactoryContract() external view returns (contract IVestingManagerFactory)
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| _0 | contract IVestingManagerFactory | undefined |
 
 ### withdraw
 
@@ -1347,23 +1248,6 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
-
-### NewClone
-
-```solidity
-event NewClone(address indexed owner, address newClone)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| owner `indexed` | address | undefined |
-| newClone  | address | undefined |
 
 ### OwnershipTransferStarted
 

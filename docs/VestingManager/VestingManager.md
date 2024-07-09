@@ -10,6 +10,23 @@
 
 ## Methods
 
+### HYDRA_DELEGATION
+
+```solidity
+function HYDRA_DELEGATION() external view returns (contract IHydraDelegation)
+```
+
+The hydra delegation contract
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraDelegation | undefined |
+
 ### claimVestedPositionReward
 
 ```solidity
@@ -65,23 +82,6 @@ function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, 
 | v | uint8 | undefined |
 | r | bytes32 | undefined |
 | s | bytes32 | undefined |
-
-### delegation
-
-```solidity
-function delegation() external view returns (address)
-```
-
-The hydra delegation contract address
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
 
 ### initialize
 

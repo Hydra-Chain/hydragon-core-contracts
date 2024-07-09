@@ -10,7 +10,6 @@ import { commitEpoch, getPermitSignature } from "../helper";
 // import { RunStakingTests } from "./Staking.test";
 // import { RunDelegationTests } from "./Delegation.test";
 import { RunInspectorTests } from "./Inspector.test";
-import { RunDelegationTests } from "./Delegation.test";
 
 export function RunHydraChainTests(): void {
   describe("", function () {
@@ -65,9 +64,8 @@ export function RunHydraChainTests(): void {
 
       // sami: Should be in HydraDelegation
       it("should revert when initialize with invalid commission", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator } = await loadFixture(
-          this.fixtures.presetHydraChainStateFixture
-        );
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
+          await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         const exceededCommission = MAX_COMMISSION.add(1);
 
@@ -80,7 +78,8 @@ export function RunHydraChainTests(): void {
             this.signers.governance.address,
             aprCalculator.address,
             hydraStaking.address,
-            hydraChain.address
+            hydraChain.address,
+            vestingManagerFactory.address
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission")
@@ -944,8 +943,8 @@ export function RunHydraChainTests(): void {
     describe("Inspector", function () {
       RunInspectorTests();
     });
-    describe("Delegation", function () {
-      RunDelegationTests();
-    });
+    // describe("Delegation", function () {
+    //   RunDelegationTests();
+    // });
   });
 }

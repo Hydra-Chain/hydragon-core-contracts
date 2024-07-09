@@ -5,12 +5,12 @@ import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
 import {
   BLS,
   LiquidityToken,
-  VestManager,
-  VestManager__factory,
   HydraChain,
   HydraDelegation,
   HydraStaking,
   APRCalculator,
+  VestingManagerFactory,
+  VestingManager,
 } from "../typechain-types";
 
 export interface Signers {
@@ -33,6 +33,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   initializedHydraChainStateFixture: {
@@ -44,6 +45,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
       validatorInit: {
         addr: string;
         pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
@@ -62,6 +64,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       commitEpochTx: ContractTransaction;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   whitelistedValidatorsStateFixture: {
@@ -73,6 +76,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   registeredValidatorsStateFixture: {
@@ -84,6 +88,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   stakedValidatorsStateFixture: {
@@ -95,6 +100,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   newVestingValidatorFixture: {
@@ -106,6 +112,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   vestingRewardsFixture: {
@@ -129,6 +136,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       unstakedValidator: SignerWithAddress;
       unstakedAmount: BigNumber;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   delegatedFixture: {
@@ -139,6 +147,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   vestManagerFixture: {
@@ -149,9 +158,9 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   vestedDelegationFixture: {
@@ -162,8 +171,8 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
     }>;
@@ -176,8 +185,8 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
     }>;
@@ -206,8 +215,8 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       oldValidator: SignerWithAddress;
       newValidator: SignerWithAddress;

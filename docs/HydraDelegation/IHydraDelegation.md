@@ -206,28 +206,6 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 |---|---|---|
 | _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
 
-### getUserVestingManagers
-
-```solidity
-function getUserVestingManagers(address user) external view returns (address[])
-```
-
-Gets user vesting managers.
-
-*Gets the vesting managers per user address for fast off-chain lookup.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| user | address | User address |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address[] | undefined |
-
 ### isActiveDelegatePosition
 
 ```solidity
@@ -290,17 +268,6 @@ Returns the address of the token that is distributed as a liquidity on stake
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
-
-### newManager
-
-```solidity
-function newManager() external nonpayable
-```
-
-Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, so users need to create a manager first to be able to vest.
-
-
-
 
 ### pendingWithdrawals
 
