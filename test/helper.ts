@@ -318,11 +318,11 @@ export async function claimPositionRewards(
   const rpsIndex = findProperRPSIndex(rpsValues, position.end);
   await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
 }
-// sami: TODO: check if that is still valid
+
 export async function createNewVestManager(vestingManagerFactory: VestingManagerFactory, owner: SignerWithAddress) {
   const tx = await vestingManagerFactory.connect(owner).newVestingManager();
   const receipt = await tx.wait();
-  const event = receipt.events?.find((e) => e.event === "NewClone");
+  const event = receipt.events?.find((e) => e.event === "NewVestingManager");
   const address = event?.args?.newClone;
 
   const VestManagerFactory = new VestingManager__factory(owner);
