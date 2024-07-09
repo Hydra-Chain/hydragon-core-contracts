@@ -242,17 +242,17 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
 
 // sami: TODO: apply for new contracts
 export async function retrieveRPSData(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
   validator: string,
   manager: string
 ) {
-  const position = await rewardPool.delegationPositions(validator, manager);
+  const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
   const maturedIn = await getClosestMaturedTimestamp(position);
-  const currentEpochId = await validatorSet.currentEpochId();
-  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
+  const currentEpochId = await hydraChain.currentEpochId();
+  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
-  const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
+  const delegationPoolParamsHistory = await hydraDelegation.getDelegationPoolParamsHistory(validator, manager);
   const balanceChangeIndex = findProperBalanceChangeIndex(
     delegationPoolParamsHistory,
     hre.ethers.BigNumber.from(epochNum)
@@ -386,18 +386,18 @@ export async function createManagerAndVest(
   return newManager;
 }
 
-// sami: TODO: apply for new contracts
-export async function getDelegatorPositionReward(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  validator: string,
-  delegator: string
-) {
-  // prepare params for call
-  const { epochNum, balanceChangeIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
+// // sami: there's no getDelegatorPositionReward in the new contracts
+// export async function getDelegatorPositionReward(
+//   hydraChain: HydraChain,
+//   hydraDelegation: HydraDelegation,
+//   validator: string,
+//   delegator: string
+// ) {
+//   // prepare params for call
+//   const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
 
-  return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
-}
+//   return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
+// }
 
 // function that returns whether a position is matured or not
 async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {

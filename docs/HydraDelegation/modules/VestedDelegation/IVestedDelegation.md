@@ -141,6 +141,29 @@ Return the amount of delegation for a delegator to a validator
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### getDelegationPoolParamsHistory
+
+```solidity
+function getDelegationPoolParamsHistory(address validator, address delegator) external view returns (struct DelegationPoolParams[])
+```
+
+Gets the delegation pool params history for a validator and delegator.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator that is delegated to |
+| delegator | address | Delegator that delegated |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | DelegationPoolParams[] | undefined |
+
 ### getRPSValues
 
 ```solidity

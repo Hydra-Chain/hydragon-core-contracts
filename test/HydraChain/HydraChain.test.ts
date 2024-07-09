@@ -5,9 +5,8 @@ import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
 import { CHAIN_ID, DOMAIN, ERRORS, MAX_COMMISSION, VALIDATOR_STATUS, WEEK, DEADLINE } from "../constants";
-// import { generateFixtures } from "../fixtures";
 import { commitEpoch, getPermitSignature } from "../helper";
-// import { RunStakingTests } from "./Staking.test";
+import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 import { RunDelegationTests } from "./Delegation.test";
 import { RunInspectorTests } from "./Inspector.test";
 
@@ -899,7 +898,7 @@ export function RunHydraChainTests(): void {
         const { hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
 
         await hydraStaking.connect(this.signers.governance).changeWithdrawalWaitPeriod(WEEK * 2);
-        const waitPeriod = await hydraStaking.WITHDRAWAL_WAIT_PERIOD();
+        const waitPeriod = await hydraStaking.withdrawWaitPeriod();
         expect(waitPeriod).to.be.equal(WEEK * 2);
       });
     });
@@ -945,6 +944,9 @@ export function RunHydraChainTests(): void {
     });
     describe("Delegation", function () {
       RunDelegationTests();
+    });
+    describe("SwapVestedPosition", function () {
+      RunSwapVestedPositionValidatorTests();
     });
   });
 }

@@ -163,23 +163,6 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### WITHDRAWAL_WAIT_PERIOD
-
-```solidity
-function WITHDRAWAL_WAIT_PERIOD() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### acceptOwnership
 
 ```solidity
@@ -463,6 +446,29 @@ function epochManagerContract() external view returns (contract IEpochManager)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IEpochManager | undefined |
+
+### getDelegationPoolParamsHistory
+
+```solidity
+function getDelegationPoolParamsHistory(address validator, address delegator) external view returns (struct DelegationPoolParams[])
+```
+
+Gets the delegation pool params history for a validator and delegator.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Validator that is delegated to |
+| delegator | address | Delegator that delegated |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | DelegationPoolParams[] | undefined |
 
 ### getRPSValues
 
@@ -1136,6 +1142,23 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
+
+### withdrawWaitPeriod
+
+```solidity
+function withdrawWaitPeriod() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### withdrawable
 

@@ -44,23 +44,6 @@ A constant for the minimum stake limit
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### WITHDRAWAL_WAIT_PERIOD
-
-```solidity
-function WITHDRAWAL_WAIT_PERIOD() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### acceptOwnership
 
 ```solidity
@@ -583,6 +566,23 @@ Withdraws the funds of a banned validator
 
 
 
+
+### withdrawWaitPeriod
+
+```solidity
+function withdrawWaitPeriod() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### withdrawable
 

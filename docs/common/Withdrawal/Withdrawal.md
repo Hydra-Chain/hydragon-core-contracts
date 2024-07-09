@@ -10,23 +10,6 @@
 
 ## Methods
 
-### WITHDRAWAL_WAIT_PERIOD
-
-```solidity
-function WITHDRAWAL_WAIT_PERIOD() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### acceptOwnership
 
 ```solidity
@@ -152,6 +135,23 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
+
+### withdrawWaitPeriod
+
+```solidity
+function withdrawWaitPeriod() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### withdrawable
 
