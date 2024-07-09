@@ -11,14 +11,19 @@ import {IHydraDelegation} from "./../HydraDelegation/IHydraDelegation.sol";
 contract VestingManager is Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
-    /// @notice The hydra delegation contract address
-    address public delegation;
+    /// @notice The hydra delegation contract
+    IHydraDelegation public immutable HYDRA_DELEGATION;
 
     // _______________ Events _______________
 
     event Claimed(address indexed account, uint256 amount);
 
-    constructor() {
+    // _______________ Constructor _______________
+
+    constructor(address hydraDelegationAddr) {
+        // Set the HydraDelegation contract as part of the code (because immutable) when implementation is deployed.
+        // That way, we don't have to set it separately in every proxy we create later.
+        HYDRA_DELEGATION = IHydraDelegation(hydraDelegationAddr);
         _disableInitializers();
     }
 
@@ -26,13 +31,12 @@ contract VestingManager is Initializable, OwnableUpgradeable {
 
     function initialize(address owner) public initializer {
         _transferOwnership(owner);
-        delegation = msg.sender;
     }
 
     // _______________ External functions _______________
 
     function openVestedDelegatePosition(address validator, uint256 durationWeeks) external payable onlyOwner {
-        IHydraDelegation(delegation).delegateWithVesting{value: msg.value}(validator, durationWeeks);
+        HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(validator, durationWeeks);
         _sendLiquidTokens(msg.sender, msg.value);
     }
 
@@ -48,13 +52,13 @@ contract VestingManager is Initializable, OwnableUpgradeable {
         bytes32 r,
         bytes32 s
     ) external payable onlyOwner {
-        address liquidToken = IHydraDelegation(delegation).liquidToken();
+        address liquidToken = HYDRA_DELEGATION.liquidToken();
         IERC20Permit(liquidToken).permit(msg.sender, address(this), amount, deadline, v, r, s);
         _cutVestedPosition(validator, amount);
     }
 
     function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
-        IHydraDelegation(delegation).swapVestedPositionValidator(oldValidator, newValidator);
+        HYDRA_DELEGATION.swapVestedPositionValidator(oldValidator, newValidator);
     }
 
     function claimVestedPositionReward(
@@ -62,18 +66,18 @@ contract VestingManager is Initializable, OwnableUpgradeable {
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) external payable onlyOwner {
-        IHydraDelegation(delegation).claimPositionReward(validator, msg.sender, epochNumber, balanceChangeIndex);
+        HYDRA_DELEGATION.claimPositionReward(validator, msg.sender, epochNumber, balanceChangeIndex);
     }
 
     function withdraw(address to) external {
-        IHydraDelegation(delegation).withdraw(to);
+        HYDRA_DELEGATION.withdraw(to);
     }
 
     // _______________ Internal functions _______________
 
     function _cutVestedPosition(address validator, uint256 amount) internal {
         _fulfillLiquidTokens(msg.sender, amount);
-        IHydraDelegation(delegation).undelegateWithVesting(validator, amount);
+        HYDRA_DELEGATION.undelegateWithVesting(validator, amount);
     }
 
     // _______________ Private functions _______________
@@ -84,7 +88,7 @@ contract VestingManager is Initializable, OwnableUpgradeable {
      * @param amount staked amount
      */
     function _sendLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        address liquidToken = IHydraDelegation(delegation).liquidToken();
+        address liquidToken = HYDRA_DELEGATION.liquidToken();
         IERC20(liquidToken).safeTransfer(positionOwner, amount);
     }
 
@@ -94,7 +98,7 @@ contract VestingManager is Initializable, OwnableUpgradeable {
      * @param amount Amount to be unstaked
      */
     function _fulfillLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        address liquidToken = IHydraDelegation(delegation).liquidToken();
+        address liquidToken = HYDRA_DELEGATION.liquidToken();
         IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
     }
 }

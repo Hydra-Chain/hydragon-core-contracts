@@ -27,60 +27,6 @@ interface IVestedDelegation is IDelegation {
     event PositionRewardClaimed(address indexed manager, address indexed validator, uint256 amount);
 
     /**
-     * @notice Gets user vesting managers.
-     * @dev Gets the vesting managers per user address for fast off-chain lookup.
-     * @param user User address
-     */
-    function getUserVestingManagers(address user) external view returns (address[] memory);
-
-    /**
-     * @notice Creates new vesting manager which owner is the caller.
-     * Every new instance is proxy leading to base impl, so minimal fees are applied.
-     * Only Vesting manager can use the vesting functionality,
-     * so users need to create a manager first to be able to vest.
-     */
-    function newManager() external;
-
-
-    /**
-     * @notice Gets the RPS values for a validator in a given epoch range.
-     * @param validator Validator that is deleagted to
-     * @param startEpoch Start epoch for values
-     * @param endEpoch End epoch for values
-     */
-    function getRPSValues(
-        address validator,
-        uint256 startEpoch,
-        uint256 endEpoch
-    ) external view returns (RPS[] memory);
-
-    /**
-     * @notice Calculates the penalty for the position.
-     * @param validator Validator to calculate penalty for
-     * @param delegator Delegator to calculate penalty for
-     * @param amount Amount to calculate penalty for
-     */
-    function calculatePositionPenalty(
-        address validator,
-        address delegator,
-        uint256 amount
-    ) external view returns (uint256 penalty);
-
-    /**
-     * @notice Returns true if the position is active.
-     * @param validator Validator for the position
-     * @param delegator Delegator for the position
-     */
-    function isActiveDelegatePosition(address validator, address delegator) external view returns (bool);
-
-    /**
-     * @notice Returns true if the position is maturing.
-     * @param validator Validator for the position
-     * @param delegator Delegator for the position
-     */
-    function isMaturingDelegatePosition(address validator, address delegator) external view returns (bool);
-
-    /**
      * @notice Delegates sent amount to validator. Set vesting position data.
      * Delete old pool params data, if exists.
      * Can be used by vesting positions' managers only.

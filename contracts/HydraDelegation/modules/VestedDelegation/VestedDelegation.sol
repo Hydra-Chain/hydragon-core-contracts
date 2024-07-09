@@ -6,12 +6,12 @@ import {Governed} from "./../../../common/Governed/Governed.sol";
 import {Withdrawal} from "./../../../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
 import {EpochManagerConnector} from "./../../../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
-import {VestingManagerFactory} from "./../VestingManagerFactory/VestingManagerFactory.sol";
 import {DelegationPoolLib} from "./../../DelegationPoolLib.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {DelegationPool} from "./../../IDelegation.sol";
 import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
 import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.sol";
+import {VestingManagerFactoryConnector} from "./../../../VestingManager/VestingManagerFactoryConnector.sol";
 
 contract VestedDelegation is
     IVestedDelegation,
@@ -19,15 +19,12 @@ contract VestedDelegation is
     Withdrawal,
     APRCalculatorConnector,
     Delegation,
-    VestingManagerFactory,
-    EpochManagerConnector
+    EpochManagerConnector,
+    VestingManagerFactoryConnector
 {
     using DelegationPoolLib for DelegationPool;
     using VestedPositionLib for VestingPosition;
 
-    mapping(address => address) public vestingManagers;
-    /// @notice Additional mapping to store all vesting managers per user address for fast off-chain lookup
-    mapping(address => address[]) public userVestManagers;
     /**
      * @notice The vesting positions for every delegator
      * @dev Validator => Delegator => VestingPosition
@@ -59,9 +56,14 @@ contract VestedDelegation is
 
     // _______________ Initializer _______________
 
-    function __VestedDelegation_init(address _epochManagerAddr) internal onlyInitializing {
-        __VestFactory_init();
+    function __VestedDelegation_init(
+        address _epochManagerAddr,
+        address _vestingManagerFactoryAddr,
+        address _aprCalculatorAddr
+    ) internal onlyInitializing {
         __EpochManagerConnector_init(_epochManagerAddr);
+        __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
+        __APRCalculatorConnector_init(_aprCalculatorAddr);
         __VestedDelegation_init_unchained();
     }
 
@@ -72,7 +74,7 @@ contract VestedDelegation is
     // _______________ Modifiers _______________
 
     modifier onlyManager() {
-        if (!isVestingManager(msg.sender)) {
+        if (!vestingManagerFactoryContract.isVestingManager(msg.sender)) {
             revert NotVestingManager();
         }
         _;
@@ -80,74 +82,6 @@ contract VestedDelegation is
 
     // _______________ External functions _______________
 
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function newManager() external {
-        require(msg.sender != address(0), "INVALID_OWNER");
-
-        address managerAddr = _clone(msg.sender);
-        _storeVestManagerData(managerAddr, msg.sender);
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function getUserVestingManagers(address user) external view returns (address[] memory) {
-        return userVestManagers[user];
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function getRPSValues(
-        address validator,
-        uint256 startEpoch,
-        uint256 endEpoch
-    ) external view returns (RPS[] memory) {
-        require(startEpoch <= endEpoch, "Invalid args");
-
-        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
-        uint256 itemIndex = 0;
-        for (uint256 i = startEpoch; i <= endEpoch; i++) {
-            if (historyRPS[validator][i].value != 0) {
-                values[itemIndex] = (historyRPS[validator][i]);
-            }
-
-            itemIndex++;
-        }
-
-        return values;
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function calculatePositionPenalty(
-        address validator,
-        address delegator,
-        uint256 amount
-    ) external view returns (uint256 penalty) {
-        VestingPosition memory position = vestedDelegationPositions[validator][delegator];
-        if (position.isActive()) {
-            penalty = _calcPenalty(position, amount);
-        }
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function isActiveDelegatePosition(address validator, address delegator) external view returns (bool) {
-        return vestedDelegationPositions[validator][delegator].isActive();
-    }
-
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function isMaturingDelegatePosition(address validator, address delegator) external view returns (bool) {
-        return vestedDelegationPositions[validator][delegator].isMaturing();
-    }
-    
     /**
      * @inheritdoc IVestedDelegation
      */
@@ -357,14 +291,6 @@ contract VestedDelegation is
 
     // _______________ Public functions _______________
 
-    /**
-     * @notice Claims that a delegator is a vest manager or not.
-     * @param delegator Delegator's address
-     */
-    function isVestingManager(address delegator) public view returns (bool) {
-        return vestingManagers[delegator] != address(0);
-    }
-
     // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     /**
      * @notice Checks if balance change was already made in the current epoch
@@ -421,7 +347,6 @@ contract VestedDelegation is
         return true;
     }
 
-
     // _______________ Internal functions _______________
 
     /**
@@ -452,7 +377,6 @@ contract VestedDelegation is
             _saveEpochRPS(staker, delegationPools[staker].magnifiedRewardPerShare, epochId);
         }
     }
-
 
     /**
      * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
@@ -534,16 +458,6 @@ contract VestedDelegation is
     // _______________ Private functions _______________
 
     /**
-     * @notice Stores the vesting manager data
-     * @param vestManager Address of the vesting manager
-     * @param owner Address of the vest manager owner
-     */
-    function _storeVestManagerData(address vestManager, address owner) private {
-        vestingManagers[vestManager] = owner;
-        userVestManagers[owner].push(vestManager);
-    }
-
-    /**
      * @notice Saves the account specific pool params change
      * @param validator Address of the validator
      * @param delegator Address of the delegator
@@ -566,7 +480,6 @@ contract VestedDelegation is
 
         delegationPoolParamsHistory[validator][delegator].push(params);
     }
-
 
     /**
      * @notice Gets the account specific pool params for the given epoch
@@ -659,5 +572,4 @@ contract VestedDelegation is
 
         return (rewardPerShare, balanceData, correctionData);
     }
-
 }
