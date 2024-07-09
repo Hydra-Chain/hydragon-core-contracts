@@ -8,7 +8,7 @@ import { CHAIN_ID, DOMAIN, ERRORS, MAX_COMMISSION, VALIDATOR_STATUS, WEEK, DEADL
 // import { generateFixtures } from "../fixtures";
 import { commitEpoch, getPermitSignature } from "../helper";
 // import { RunStakingTests } from "./Staking.test";
-// import { RunDelegationTests } from "./Delegation.test";
+import { RunDelegationTests } from "./Delegation.test";
 import { RunInspectorTests } from "./Inspector.test";
 
 export function RunHydraChainTests(): void {
@@ -943,8 +943,8 @@ export function RunHydraChainTests(): void {
     describe("Inspector", function () {
       RunInspectorTests();
     });
-    // describe("Delegation", function () {
-    //   RunDelegationTests();
-    // });
+    describe("Delegation", function () {
+      RunDelegationTests();
+    });
   });
 }

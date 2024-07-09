@@ -292,19 +292,19 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   return amount.mul(bps).div(DENOMINATOR);
 }
 
-// // sami: todo: apply for new contracts
-// export async function getUserManager(
-//   vestingManagerFactory: VestingManagerFactory,
-//   account: any,
-//   VestManagerFactory: any
-// ): Promise<VestManager> {
-//   // Find user vesting position based on the emitted  events
-//   const filter = vestingManagerFactory.filters.NewClone(account.address);
-//   const positionAddr = (await vestingManagerFactory.queryFilter(filter))[0].args.newClone;
-//   const manager = VestManagerFactory.attach(positionAddr);
+// sami: todo: apply for new contracts
+export async function getUserManager(
+  vestingManagerFactory: VestingManagerFactory,
+  account: any,
+  VestManagerFactory: any
+): Promise<VestingManager> {
+  // Find user vesting position based on the emitted  events
+  const filter = vestingManagerFactory.filters.NewVestingManager(account.address);
+  const positionAddr = (await vestingManagerFactory.queryFilter(filter))[0].args.newClone;
+  const manager = VestManagerFactory.attach(positionAddr);
 
-//   return manager.connect(account);
-// }
+  return manager.connect(account);
+}
 
 export async function claimPositionRewards(
   hydraChain: HydraChain,
