@@ -317,6 +317,23 @@ Gets all validators. Returns already unactive validators as well.
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
 
+### hydraStakingContract
+
+```solidity
+function hydraStakingContract() external view returns (contract IHydraStaking)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraStaking | undefined |
+
 ### isValidatorActive
 
 ```solidity
@@ -460,23 +477,6 @@ function renounceOwnership() external nonpayable
 
 *Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
 
-
-### stakingContract
-
-```solidity
-function stakingContract() external view returns (contract IHydraStaking)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IHydraStaking | undefined |
 
 ### transferOwnership
 

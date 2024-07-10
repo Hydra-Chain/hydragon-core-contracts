@@ -125,8 +125,8 @@ export function RunDelegationTests(): void {
         value: delegateAmount,
       });
 
-      await expect(tx, "DelegatorRewardClaimed")
-        .to.emit(hydraDelegation, "DelegatorRewardClaimed")
+      await expect(tx, "DelegatorRewardsClaimed")
+        .to.emit(hydraDelegation, "DelegatorRewardsClaimed")
         .withArgs(this.signers.validators[0].address, this.signers.delegator.address, delegatorReward);
 
       await expect(tx, "WithdrawalFinished")
@@ -140,7 +140,7 @@ export function RunDelegationTests(): void {
   });
 
   describe("Undelegate", async function () {
-    // sami: check if we need extra if stamens for amount bigger then delegated
+    // sami: check if we need extra if statements for amount bigger then delegated
     it("should not be able to undelegate more than the delegated amount", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
       const delegatedAmount = await hydraDelegation.delegationOf(
@@ -201,8 +201,8 @@ export function RunDelegationTests(): void {
         .to.emit(hydraDelegation, "WithdrawalRegistered")
         .withArgs(this.signers.delegator.address, undelegateAmount);
 
-      await expect(tx, "DelegatorRewardClaimed")
-        .to.emit(hydraDelegation, "DelegatorRewardClaimed")
+      await expect(tx, "DelegatorRewardsClaimed")
+        .to.emit(hydraDelegation, "DelegatorRewardsClaimed")
         .withArgs(this.signers.validators[0].address, this.signers.delegator.address, expectedReward);
 
       await expect(tx, "Undelegated")
@@ -235,8 +235,8 @@ export function RunDelegationTests(): void {
         .to.emit(hydraDelegation, "WithdrawalRegistered")
         .withArgs(this.signers.delegator.address, delegatedAmount);
 
-      await expect(tx, "DelegatorRewardClaimed")
-        .to.emit(hydraDelegation, "DelegatorRewardClaimed")
+      await expect(tx, "DelegatorRewardsClaimed")
+        .to.emit(hydraDelegation, "DelegatorRewardsClaimed")
         .withArgs(this.signers.validators[0].address, this.signers.delegator.address, expectedReward);
 
       await expect(tx, "Undelegated")

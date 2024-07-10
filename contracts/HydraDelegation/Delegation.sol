@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
-import {ValidatorManagerConnector} from "./../HydraStaking/modules/ValidatorManagerConnector.sol";
+import {ValidatorManagerConnector} from "./../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 

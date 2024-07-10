@@ -3,9 +3,8 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {IValidatorManager} from "./../../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-
-import {Unauthorized} from "./../../common/Errors.sol";
+import {Unauthorized} from "../../../common/Errors.sol";
+import {IValidatorManager} from "./IValidatorManager.sol";
 
 abstract contract ValidatorManagerConnector is Initializable {
     IValidatorManager public validatorManagerContract;

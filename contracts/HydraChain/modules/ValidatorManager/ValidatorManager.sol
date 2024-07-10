@@ -5,13 +5,13 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "./../../../common/System/System.sol";
 import {AccessControl} from "../AccessControl/AccessControl.sol";
-import {StakingConnector} from "./../Connectors/StakingConnector.sol";
-import {DelegationConnector} from "./../Connectors/DelegationConnector.sol";
+import {HydraStakingConnector} from "./../../../HydraStaking/HydraStakingConnector.sol";
+import {HydraDelegationConnector} from "./../../../HydraDelegation/HydraDelegationConnector.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
 import {IBLS} from "./../../../BLS/IBLS.sol";
 import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IValidatorManager.sol";
 
-abstract contract ValidatorManager is IValidatorManager, System, AccessControl, StakingConnector, DelegationConnector {
+abstract contract ValidatorManager is IValidatorManager, System, AccessControl, HydraStakingConnector, HydraDelegationConnector {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
 
     /// @notice A constant for the maximum amount of validators
@@ -41,8 +41,8 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         address _governance
     ) internal onlyInitializing {
         __AccessControl_init(_governance);
-        __StakingConnector_init(_stakingContractAddr);
-        __DelegationConnector_init(_delegationContractAddr);
+        __HydraStakingConnector_init(_stakingContractAddr);
+        __HydraDelegationConnector_init(_delegationContractAddr);
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
@@ -116,10 +116,10 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     {
         Validator memory v = validators[validatorAddress];
         blsKey = v.blsKey;
-        totalStake = stakingContract.totalBalanceOf(validatorAddress);
-        stake = stakingContract.stakeOf(validatorAddress);
+        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
+        stake = hydraStakingContract.stakeOf(validatorAddress);
         commission = delegationContract.stakerDelegationCommission(validatorAddress);
-        withdrawableRewards = stakingContract.unclaimedRewards(validatorAddress);
+        withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;
     }
 
@@ -135,7 +135,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         emit NewValidator(msg.sender, pubkey);
     }
 
-    function activateValidator(address account) external onlyStaking {
+    function activateValidator(address account) external onlyHydraStaking {
         if (getActiveValidatorsCount() == MAX_VALIDATORS) revert MaxValidatorsReached();
         if (validators[account].status != ValidatorStatus.Registered) revert Unauthorized("MUST_BE_REGISTERED");
         unchecked {
@@ -147,7 +147,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         _updateParticipation(account);
     }
 
-    function deactivateValidator(address account) external onlyStaking {
+    function deactivateValidator(address account) external onlyHydraStaking {
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;
     }

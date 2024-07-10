@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {StakingConnector} from "./../Connectors/StakingConnector.sol";
 import {ValidatorManager, ValidatorStatus} from "./../ValidatorManager/ValidatorManager.sol";
 import {Unauthorized} from "./../../../common/Errors.sol";
 import {IInspector} from "./IInspector.sol";
 import {PenalizedStakeDistribution} from "./../../../HydraStaking/modules/PenalizeableStaking/IPenalizeableStaking.sol";
 
-abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
+abstract contract Inspector is IInspector, ValidatorManager {
     /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
     uint256 public validatorPenalty;
     /// @notice The reward for the person who reports a validator that have to be banned
@@ -84,7 +83,7 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
      * @param validator The address of the validator
      */
     function _ban(address validator) private {
-        uint256 validatorStake = stakingContract.stakeOf(validator);
+        uint256 validatorStake = hydraStakingContract.stakeOf(validator);
         if (validators[validator].status == ValidatorStatus.Active) {
             PenalizedStakeDistribution[] memory rewards;
             if (msg.sender != owner()) {
@@ -96,7 +95,7 @@ abstract contract Inspector is IInspector, StakingConnector, ValidatorManager {
                 rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             }
 
-            stakingContract.penalizeStaker(validator, validatorStake, rewards);
+            hydraStakingContract.penalizeStaker(validator, validatorStake, rewards);
         }
 
         validators[validator].status = ValidatorStatus.Banned;

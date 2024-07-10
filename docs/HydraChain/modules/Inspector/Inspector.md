@@ -350,6 +350,23 @@ Gets all validators. Returns already unactive validators as well.
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
 
+### hydraStakingContract
+
+```solidity
+function hydraStakingContract() external view returns (contract IHydraStaking)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraStaking | undefined |
+
 ### isSubjectToBan
 
 ```solidity
@@ -580,23 +597,6 @@ Set the penalty amount for the banned validators
 | Name | Type | Description |
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
-
-### stakingContract
-
-```solidity
-function stakingContract() external view returns (contract IHydraStaking)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IHydraStaking | undefined |
 
 ### transferOwnership
 

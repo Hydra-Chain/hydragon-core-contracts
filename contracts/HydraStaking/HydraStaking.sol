@@ -8,7 +8,7 @@ import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
-import {ValidatorManagerConnector} from "./modules/ValidatorManagerConnector.sol";
+import {ValidatorManagerConnector} from "./../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";

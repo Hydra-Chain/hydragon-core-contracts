@@ -3,8 +3,7 @@ pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
 import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
-import {ValidatorManagerConnector} from "./../ValidatorManagerConnector.sol";
-
+import {ValidatorManagerConnector} from "./../../../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
 contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector, Staking {
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left

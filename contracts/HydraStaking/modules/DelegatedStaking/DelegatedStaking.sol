@@ -21,8 +21,8 @@ abstract contract DelegatedStaking is Staking {
     // _______________ Modifiers _______________
 
     modifier onlyDelegationContract() {
-        if (msg.sender != address(aprCalculatorContract)) {
-            revert Unauthorized("ONLY_APR_CALCULATOR");
+        if (msg.sender != address(delegationContract)) {
+            revert Unauthorized("ONLY_HYDRA_DELEGATION");
         }
 
         _;
