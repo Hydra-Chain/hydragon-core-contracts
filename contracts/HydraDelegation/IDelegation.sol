@@ -20,7 +20,14 @@ interface IDelegation is IWithdrawal {
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
 
     error DelegateRequirement(string src, string msg);
+    error InvalidMinDelegation();
 
+    /**
+     * @notice Changes the minimum delegation amount
+     * @dev Only callable by the admin
+     * @param newMinDelegation New minimum delegation amount
+     */
+    function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
      * @notice Returns the total delegation amount

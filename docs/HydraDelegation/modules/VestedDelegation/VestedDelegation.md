@@ -113,6 +113,22 @@ Calculates the penalty for the position.
 |---|---|---|
 | penalty | uint256 | undefined |
 
+### changeMinDelegation
+
+```solidity
+function changeMinDelegation(uint256 newMinDelegation) external nonpayable
+```
+
+Changes the minimum delegation amount
+
+*Only callable by the admin*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMinDelegation | uint256 | New minimum delegation amount |
+
 ### changeWithdrawalWaitPeriod
 
 ```solidity
@@ -1214,6 +1230,17 @@ error DelegateRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
+
+### InvalidMinDelegation
+
+```solidity
+error InvalidMinDelegation()
+```
+
+
+
+
+
 
 ### InvalidWaitPeriod
 

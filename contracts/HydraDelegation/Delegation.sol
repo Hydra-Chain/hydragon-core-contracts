@@ -30,10 +30,17 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     }
 
     function __Delegation_init_unchained(uint256 _minDelegation) internal onlyInitializing {
-        minDelegation = _minDelegation;
+        _changeMinDelegation(_minDelegation);
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function changeMinDelegation(uint256 newMinDelegation) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _changeMinDelegation(newMinDelegation);
+    }
 
     /**
      * @inheritdoc IDelegation
@@ -164,6 +171,15 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     }
 
     // _______________ Private functions _______________
+
+    /**
+     * @notice Changes the minimum delegation amount
+     * @param newMinDelegation the new minimum delegation amount
+     */
+    function _changeMinDelegation(uint256 newMinDelegation) private {
+        if (newMinDelegation < MIN_DELEGATION_LIMIT) revert InvalidMinDelegation();
+        minDelegation = newMinDelegation;
+    }
 
     /**
      * @notice Claims rewards for a delegator

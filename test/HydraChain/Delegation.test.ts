@@ -9,41 +9,40 @@ import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE } from "../constants";
 import { calculatePenalty, claimPositionRewards, commitEpochs, getUserManager, getPermitSignature } from "../helper";
 
 export function RunDelegationTests(): void {
-  describe.skip("Change minDelegate", function () {
-    // sami: there's no changeMinDelegation functionality in the contract
+  describe("Change minDelegate", function () {
     it("should revert if non-default_admin_role address try to change MinDelegation", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       // eslint-disable-next-line no-unused-vars
       const adminRole = await hydraDelegation.DEFAULT_ADMIN_ROLE();
 
-      // await expect(
-      //   hydraDelegation.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2))
-      // ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address.toLocaleLowerCase(), adminRole));
+      await expect(
+        hydraDelegation.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2))
+      ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address.toLocaleLowerCase(), adminRole));
 
       expect(await hydraDelegation.minDelegation()).to.be.equal(this.minDelegation);
     });
-    // sami: there's no changeMinDelegation functionality in the contract
+
     it("should revert if MinDelegation is too low", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       // eslint-disable-next-line no-unused-vars
       const newLowMinDelegation = this.minStake.div(2);
 
-      // await expect(
-      //   hydraDelegation.connect(this.signers.governance).changeMinDelegation(newLowMinDelegation)
-      // ).to.be.revertedWithCustomError(hydraDelegation, "InvalidMinDelegation");
+      await expect(
+        hydraDelegation.connect(this.signers.governance).changeMinDelegation(newLowMinDelegation)
+      ).to.be.revertedWithCustomError(hydraDelegation, "InvalidMinDelegation");
 
       expect(await hydraDelegation.minDelegation()).to.be.equal(this.minDelegation);
     });
-    // sami: there's no changeMinDelegation functionality in the contract
+
     it("should change MinDelegation by default_admin_role address", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       const newMinDelegation = this.minDelegation.mul(2);
 
-      // await expect(hydraDelegation.connect(this.signers.governance).changeMinDelegation(newMinDelegation)).to.not.be
-      //   .reverted;
+      await expect(hydraDelegation.connect(this.signers.governance).changeMinDelegation(newMinDelegation)).to.not.be
+        .reverted;
 
       expect(await hydraDelegation.minDelegation()).to.be.equal(newMinDelegation);
     });
