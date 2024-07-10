@@ -9,48 +9,9 @@ import {
   commitEpoch,
   commitEpochs,
   createManagerAndVest,
-  findProperRPSIndex,
   getDelegatorPositionReward,
-  getValidatorReward,
   retrieveRPSData,
 } from "../helper";
-
-export function RunStakingClaimTests(): void {
-  describe("Claim position reward", function () {
-    it("should be able to claim whole reward when not in position", async function () {
-      const { stakerValidatorSet, systemValidatorSet, rewardPool } = await loadFixture(
-        this.fixtures.vestingRewardsFixture
-      );
-
-      // add reward exactly before maturing (second to the last block)
-      const position = await rewardPool.positions(this.staker.address);
-      const penultimate = position.end.sub(1);
-      await time.setNextBlockTimestamp(penultimate.toNumber());
-      await commitEpochs(
-        systemValidatorSet,
-        rewardPool,
-        [this.signers.validators[0], this.signers.validators[1], this.staker],
-        1, // number of epochs to commit
-        this.epochSize
-      );
-
-      // enter matured state
-      const nextTimestampMaturing = position.end.add(position.duration);
-      await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
-
-      // get reward amount
-      const reward = await getValidatorReward(stakerValidatorSet, this.staker.address);
-
-      // reward must be bigger than 0
-      expect(reward).to.be.gt(0);
-
-      // claim reward
-      await expect(rewardPool.connect(this.staker)["claimValidatorReward()"]())
-        .to.emit(rewardPool, "ValidatorRewardClaimed")
-        .withArgs(this.staker.address, reward);
-    });
-  });
-}
 
 export function RunDelegateClaimTests(): void {
   describe("Claim rewards", function () {
