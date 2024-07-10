@@ -6,15 +6,17 @@ import {System} from "./../common/System/System.sol";
 import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
+import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
+import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
-import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
 
 contract HydraDelegation is
     IHydraDelegation,
     System,
     APRCalculatorConnector,
     HydraStakingConnector,
+    HydraChainConnector,
     Delegation,
     LiquidDelegation,
     VestedDelegation
@@ -39,9 +41,10 @@ contract HydraDelegation is
     ) external initializer onlySystemCall {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
-        __Delegation_init(MIN_DELEGATION_LIMIT, governance, hydraChainAddr);
+        __HydraChainConnector_init(hydraChainAddr);
+        __Delegation_init(MIN_DELEGATION_LIMIT, governance);
         __LiquidDelegation_init(liquidToken);
-        __VestedDelegation_init(hydraChainAddr, vestingManagerFactoryAddr);
+        __VestedDelegation_init(vestingManagerFactoryAddr);
 
         _initialize(initialStakers, initialCommission);
     }
@@ -106,10 +109,8 @@ contract HydraDelegation is
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
-        if (
-            !validatorManagerContract.isValidatorActive(staker) &&
-            !validatorManagerContract.isValidatorRegistered(staker)
-        ) revert InvalidStaker(staker);
+        if (!hydraChainContract.isValidatorActive(staker) && !hydraChainContract.isValidatorRegistered(staker))
+            revert InvalidStaker(staker);
 
         delegationCommissionPerStaker[staker] = newCommission;
 

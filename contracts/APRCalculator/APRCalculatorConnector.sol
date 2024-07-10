@@ -11,12 +11,12 @@ abstract contract APRCalculatorConnector is Initializable {
 
     // _______________ Initializer _______________
 
-    function __APRCalculatorConnector_init(address aprCalculatorAddr) internal onlyInitializing {
-        __APRCalculatorConnector_init_unchained(aprCalculatorAddr);
+    function __APRCalculatorConnector_init(address _aprCalculatorAddr) internal onlyInitializing {
+        __APRCalculatorConnector_init_unchained(_aprCalculatorAddr);
     }
 
-    function __APRCalculatorConnector_init_unchained(address aprCalculatorAddr) internal onlyInitializing {
-        aprCalculatorContract = IAPRCalculator(aprCalculatorAddr);
+    function __APRCalculatorConnector_init_unchained(address _aprCalculatorAddr) internal onlyInitializing {
+        aprCalculatorContract = IAPRCalculator(_aprCalculatorAddr);
     }
 
     // _______________ Modifiers _______________

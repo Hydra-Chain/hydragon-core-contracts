@@ -8,12 +8,11 @@ import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
-import {ValidatorManagerConnector} from "./../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
+import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {EpochManagerConnector} from "./../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
 import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
 
@@ -22,8 +21,7 @@ import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
 contract HydraStaking is
     IHydraStaking,
     System,
-    ValidatorManagerConnector,
-    EpochManagerConnector,
+    HydraChainConnector,
     Staking,
     LiquidStaking,
     StateSyncStaking,
@@ -49,8 +47,7 @@ contract HydraStaking is
         address governance,
         address delegationContractAddr
     ) external initializer onlySystemCall {
-        __ValidatorManagerConnector_init(hydraChainAddr);
-        __EpochManagerConnector_init(hydraChainAddr);
+        __HydraChainConnector_init(hydraChainAddr);
         __Staking_init(newMinStake, aprCalculatorAddr, governance);
         __LiquidStaking_init(newLiquidToken);
         __DelegatedStaking_init(delegationContractAddr);
@@ -77,7 +74,7 @@ contract HydraStaking is
     ) external payable onlySystemCall {
         require(distributedRewardPerEpoch[epochId] == 0, "REWARD_ALREADY_DISTRIBUTED");
 
-        uint256 totalBlocks = epochManagerContract.totalBlocks(epochId);
+        uint256 totalBlocks = hydraChainContract.totalBlocks(epochId);
         require(totalBlocks != 0, "EPOCH_NOT_COMMITTED");
 
         uint256 totalSupply = totalBalance();
@@ -114,7 +111,7 @@ contract HydraStaking is
      */
     function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
         if (stakeOf(account) == 0) {
-            validatorManagerContract.activateValidator(account);
+            hydraChainContract.activateValidator(account);
         }
 
         super._stake(account, amount);
@@ -133,7 +130,7 @@ contract HydraStaking is
     {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         if (stakeLeft == 0) {
-            validatorManagerContract.deactivateValidator(account);
+            hydraChainContract.deactivateValidator(account);
         }
     }
 

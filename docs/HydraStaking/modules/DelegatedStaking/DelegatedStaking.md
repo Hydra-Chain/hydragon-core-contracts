@@ -132,23 +132,6 @@ function delegationContract() external view returns (contract IHydraDelegation)
 |---|---|---|
 | _0 | contract IHydraDelegation | undefined |
 
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
-
 ### getRoleAdmin
 
 ```solidity

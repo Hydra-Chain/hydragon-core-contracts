@@ -155,23 +155,6 @@ Claims staking rewards for the sender.
 |---|---|---|
 | rewardHistoryIndex | uint256 | The index of the reward history to claim rewards from |
 
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
-
 ### getRoleAdmin
 
 ```solidity

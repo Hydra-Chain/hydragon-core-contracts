@@ -5,7 +5,6 @@ import {Delegation} from "./../../Delegation.sol";
 import {Governed} from "./../../../common/Governed/Governed.sol";
 import {Withdrawal} from "./../../../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
-import {EpochManagerConnector} from "./../../../HydraChain/modules/EpochManager/EpochManagerConnector.sol";
 import {DelegationPoolLib} from "./../../DelegationPoolLib.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {DelegationPool} from "./../../IDelegation.sol";
@@ -19,7 +18,6 @@ contract VestedDelegation is
     Withdrawal,
     APRCalculatorConnector,
     Delegation,
-    EpochManagerConnector,
     VestingManagerFactoryConnector
 {
     using DelegationPoolLib for DelegationPool;
@@ -57,10 +55,8 @@ contract VestedDelegation is
     // _______________ Initializer _______________
 
     function __VestedDelegation_init(
-        address _hydraChainAddr,
         address _vestingManagerFactoryAddr
     ) internal onlyInitializing {
-        __EpochManagerConnector_init(_hydraChainAddr);
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __VestedDelegation_init_unchained();
     }
@@ -203,7 +199,7 @@ contract VestedDelegation is
             DelegationPoolParams({
                 balance: 0,
                 correction: correction,
-                epochNum: epochManagerContract.getCurrentEpochId()
+                epochNum: hydraChainContract.getCurrentEpochId()
             })
         );
 
@@ -228,7 +224,7 @@ contract VestedDelegation is
             DelegationPoolParams({
                 balance: amount,
                 correction: newDelegation.correctionOf(msg.sender),
-                epochNum: epochManagerContract.getCurrentEpochId()
+                epochNum: hydraChainContract.getCurrentEpochId()
             })
         );
 
@@ -262,7 +258,7 @@ contract VestedDelegation is
                     DelegationPoolParams({
                         balance: delegation.balanceOf(msg.sender),
                         correction: delegation.correctionOf(msg.sender),
-                        epochNum: epochManagerContract.getCurrentEpochId()
+                        epochNum: hydraChainContract.getCurrentEpochId()
                     })
                 );
             }
@@ -373,7 +369,7 @@ contract VestedDelegation is
             DelegationPoolParams({
                 balance: delegationOf(validator, msg.sender),
                 correction: delegation.correctionOf(msg.sender),
-                epochNum: epochManagerContract.getCurrentEpochId()
+                epochNum: hydraChainContract.getCurrentEpochId()
             })
         );
 

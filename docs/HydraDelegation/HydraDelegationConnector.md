@@ -10,10 +10,10 @@
 
 ## Methods
 
-### delegationContract
+### hydraDelegationContract
 
 ```solidity
-function delegationContract() external view returns (contract IHydraDelegation)
+function hydraDelegationContract() external view returns (contract IHydraDelegation)
 ```
 
 

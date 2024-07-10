@@ -4,11 +4,11 @@ pragma solidity 0.8.17;
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
-import {ValidatorManagerConnector} from "./../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
+import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, ValidatorManagerConnector {
+contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, HydraChainConnector {
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
@@ -26,12 +26,10 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     function __Delegation_init(
         uint256 _minDelegation,
-        address _governace,
-        address _validatorManagerAddr
+        address _governace
     ) internal onlyInitializing {
         __Governed_init(_governace);
         __Withdrawal_init(_governace);
-        __ValidatorManagerConnector_init(_validatorManagerAddr);
         __Delegation_init_unchained(_minDelegation);
     }
 
@@ -131,7 +129,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
      * @param amount Amount to delegate
      */
     function _baseDelegate(address staker, address delegator, uint256 amount) internal virtual {
-        if (validatorManagerContract.isValidatorActive(staker) == false) {
+        if (hydraChainContract.isValidatorActive(staker) == false) {
             revert DelegateRequirement({src: "delegate", msg: "VALIDATOR_INACTIVE"});
         }
         if (amount == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});

@@ -308,23 +308,6 @@ Deactivates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
-### delegationContract
-
-```solidity
-function delegationContract() external view returns (contract IHydraDelegation)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IHydraDelegation | undefined |
-
 ### epochEndBlocks
 
 ```solidity
@@ -488,6 +471,23 @@ Gets all validators. Returns already unactive validators as well.
 | Name | Type | Description |
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
+
+### hydraDelegationContract
+
+```solidity
+function hydraDelegationContract() external view returns (contract IHydraDelegation)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraDelegation | undefined |
 
 ### hydraStakingContract
 

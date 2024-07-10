@@ -10,12 +10,12 @@ abstract contract DelegatedStaking is Staking {
 
     // _______________ Initializer _______________
 
-    function __DelegatedStaking_init(address _delegationContractAddr) internal onlyInitializing {
-        __DelegatedStaking_init_unchained(_delegationContractAddr);
+    function __DelegatedStaking_init(address _hydraDelegationAddr) internal onlyInitializing {
+        __DelegatedStaking_init_unchained(_hydraDelegationAddr);
     }
 
-    function __DelegatedStaking_init_unchained(address _delegationContractAddr) internal onlyInitializing {
-        delegationContract = IHydraDelegation(_delegationContractAddr);
+    function __DelegatedStaking_init_unchained(address _hydraDelegationAddr) internal onlyInitializing {
+        delegationContract = IHydraDelegation(_hydraDelegationAddr);
     }
 
     // _______________ Modifiers _______________

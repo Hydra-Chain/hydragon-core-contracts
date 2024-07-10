@@ -115,23 +115,6 @@ Claims staking rewards for the sender.
 
 
 
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
-
 ### getRoleAdmin
 
 ```solidity

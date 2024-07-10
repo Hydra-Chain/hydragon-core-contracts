@@ -115,23 +115,6 @@ Claims staking rewards for the sender.
 
 
 
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
-
 ### getRoleAdmin
 
 ```solidity
@@ -193,6 +176,23 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
 
 ### leftToWithdrawPerStaker
 
@@ -522,23 +522,6 @@ Unstakes amount for sender. Claims rewards beforehand.
 | Name | Type | Description |
 |---|---|---|
 | amount | uint256 | Amount to unstake |
-
-### validatorManagerContract
-
-```solidity
-function validatorManagerContract() external view returns (contract IValidatorManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IValidatorManager | undefined |
 
 ### withdraw
 

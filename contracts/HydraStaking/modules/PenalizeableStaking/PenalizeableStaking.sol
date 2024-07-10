@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
 import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
-import {ValidatorManagerConnector} from "./../../../HydraChain/modules/ValidatorManager/ValidatorManagerConnector.sol";
-contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector, Staking {
+import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
+contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
      * @dev The withdrawal amount is calculated as the difference between
@@ -25,12 +25,12 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
         address staker,
         uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
-    ) external onlyValidatorManager {
+    ) external onlyHydraChain {
         // TODO: Check if the amount after unstake is gonna be smaller than the minimum stake and if yes - unstake the totalStake
         // We use the base _unstake, because we don't want all extensions to be executed on penalty
         (uint256 stakeLeft, uint256 withdrawAmount) = Staking._unstake(staker, unstakeAmount);
         if (stakeLeft == 0) {
-            validatorManagerContract.deactivateValidator(msg.sender);
+            hydraChainContract.deactivateValidator(msg.sender);
         }
 
         uint256 leftForStaker = _distributePenalizedStake(withdrawAmount, stakeDistributions);
@@ -45,7 +45,7 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
      * @inheritdoc IPenalizeableStaking
      */
     function withdrawBannedFunds() external {
-        if (!validatorManagerContract.isValidatorBanned(msg.sender)) {
+        if (!hydraChainContract.isValidatorBanned(msg.sender)) {
             revert ValidatorNotBanned(msg.sender);
         }
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];

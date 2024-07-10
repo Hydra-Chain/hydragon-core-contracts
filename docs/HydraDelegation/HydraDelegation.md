@@ -446,23 +446,6 @@ Distributes rewards to delegators.
 | reward | uint256 | Amount of rewards to distribute |
 | epochId | uint256 | Epoch ID |
 
-### epochManagerContract
-
-```solidity
-function epochManagerContract() external view returns (contract IEpochManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IEpochManager | undefined |
-
 ### getDelegationPoolParamsHistory
 
 ```solidity
@@ -666,6 +649,23 @@ Keeps the history of the RPS for the validators
 |---|---|---|
 | value | uint192 | undefined |
 | timestamp | uint64 | undefined |
+
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
 
 ### hydraStakingContract
 
@@ -1145,23 +1145,6 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 |---|---|---|
 | validator | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
-
-### validatorManagerContract
-
-```solidity
-function validatorManagerContract() external view returns (contract IValidatorManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IValidatorManager | undefined |
 
 ### vestedDelegationPositions
 

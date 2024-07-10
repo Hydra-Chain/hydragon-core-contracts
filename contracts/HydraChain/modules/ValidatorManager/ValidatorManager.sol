@@ -125,7 +125,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         blsKey = v.blsKey;
         totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         stake = hydraStakingContract.stakeOf(validatorAddress);
-        commission = delegationContract.stakerDelegationCommission(validatorAddress);
+        commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;
     }

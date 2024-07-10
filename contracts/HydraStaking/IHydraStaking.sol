@@ -5,7 +5,7 @@ import {IStaking} from "./IStaking.sol";
 import {ILiquidStaking} from "./modules/LiquidStaking/ILiquidStaking.sol";
 import {IDelegatedStaking} from "./modules/DelegatedStaking/IDelegatedStaking.sol";
 import {IPenalizeableStaking} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
-import {Epoch} from "./../HydraChain/modules/EpochManager/IEpochManager.sol";
+import {Epoch} from "./../HydraChain/IHydraChain.sol";
 import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 
 struct StakerInit {

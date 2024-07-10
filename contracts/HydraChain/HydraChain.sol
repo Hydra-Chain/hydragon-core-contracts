@@ -11,8 +11,8 @@ import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/Valida
 import {SafeMathInt} from "./../common/libs/SafeMathInt.sol";
 import {IBLS} from "../BLS/IBLS.sol";
 import {IHydraChain} from "./IHydraChain.sol";
-import {IEpochManager, Epoch} from "./modules/EpochManager/IEpochManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {Epoch} from "./IHydraChain.sol";
 
 // TODO: setup use of reward account that would handle the amounts of rewards
 
@@ -56,14 +56,14 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
     // _______________ External functions _______________
 
     /**
-     * @inheritdoc IEpochManager
+     * @inheritdoc IHydraChain
      */
     function getCurrentEpochId() external view returns (uint256) {
         return currentEpochId;
     }
 
     /**
-     * @inheritdoc IEpochManager
+     * @inheritdoc IHydraChain
      */
     function totalBlocks(uint256 epochId) external view returns (uint256 length) {
         uint256 endBlock = epochs[epochId].endBlock;
@@ -71,7 +71,7 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
     }
 
     /**
-     * @inheritdoc IEpochManager
+     * @inheritdoc IHydraChain
      */
     function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory) {
         uint256 epochIndex = epochEndBlocks.findUpperBound(blockNumber);

@@ -292,6 +292,23 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
+
 ### liquidToken
 
 ```solidity
@@ -542,23 +559,6 @@ Undelegates amount from validator for sender and claims rewards.
 |---|---|---|
 | staker | address | undefined |
 | amount | uint256 | The amount to undelegate |
-
-### validatorManagerContract
-
-```solidity
-function validatorManagerContract() external view returns (contract IValidatorManager)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IValidatorManager | undefined |
 
 ### withdraw
 

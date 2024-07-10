@@ -1,4 +1,4 @@
-# ValidatorManagerConnector
+# HydraChainConnector
 
 
 
@@ -10,10 +10,10 @@
 
 ## Methods
 
-### validatorManagerContract
+### hydraChainContract
 
 ```solidity
-function validatorManagerContract() external view returns (contract IValidatorManager)
+function hydraChainContract() external view returns (contract IHydraChain)
 ```
 
 
@@ -25,7 +25,7 @@ function validatorManagerContract() external view returns (contract IValidatorMa
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | contract IValidatorManager | undefined |
+| _0 | contract IHydraChain | undefined |
 
 
 
