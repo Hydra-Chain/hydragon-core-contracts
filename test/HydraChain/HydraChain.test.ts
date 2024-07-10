@@ -669,8 +669,8 @@ export function RunHydraChainTests(): void {
             totalStake.add(this.minDelegation)
           );
         });
-        // sami: remove Delegated & UnDelegated event from here if needed
-        it("should emit UnDelegated & Delegated & PositionSwapped on vested delegation position swap", async function () {
+
+        it("should emit Delegated & Undelegated & PositionSwapped on vested delegation position swap", async function () {
           const { systemHydraChain, hydraStaking, vestManager, vestManagerOwner, liquidToken, hydraDelegation } =
             await loadFixture(this.fixtures.vestManagerFixture);
 
@@ -690,13 +690,12 @@ export function RunHydraChainTests(): void {
           const swapTx = await vestManager
             .connect(vestManagerOwner)
             .swapVestedPositionValidator(validator.address, newValidator.address);
-
-          await expect(swapTx, "emit Undelegated for the old validator")
-            .to.emit(hydraDelegation, "Undelegated")
-            .withArgs(validator.address, vestManagerOwner.address, delegatedAmount);
           await expect(swapTx, "emit Delegated for the new validator")
             .to.emit(hydraDelegation, "Delegated")
-            .withArgs(newValidator.address, vestManagerOwner.address, delegatedAmount);
+            .withArgs(newValidator.address, vestManager.address, delegatedAmount);
+          await expect(swapTx, "emit Undelegated for the old validator")
+            .to.emit(hydraDelegation, "Undelegated")
+            .withArgs(validator.address, vestManager.address, delegatedAmount);
           await expect(swapTx, "emit PositionSwapped")
             .to.emit(hydraDelegation, "PositionSwapped")
             .withArgs(vestManager.address, validator.address, newValidator.address, delegatedAmount);

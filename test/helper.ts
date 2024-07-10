@@ -7,7 +7,6 @@ import { BigNumber, ContractTransaction } from "ethers";
 
 import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
-import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
 import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";

@@ -108,9 +108,7 @@ export function RunInspectorTests(): void {
     });
     /// sami: Check Math here
     it.skip("should ban a validator that has a vested staking position", async function () {
-      const { systemHydraChain, stakerHydraStake, hydraStaking } = await loadFixture(
-        this.fixtures.newVestingValidatorFixture
-      );
+      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
       await systemHydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
 
       const staker = this.signers.accounts[9];
@@ -122,7 +120,7 @@ export function RunInspectorTests(): void {
       // hardcode the penalty percent by 0.3% a week
       const bps = (VESTING_DURATION_WEEKS - 1) * 30;
       const unstakePenalty = this.minStake.mul(bps).div(DENOMINATOR);
-      const stakedAmount = await stakerHydraStake.stakeOf(staker.address);
+      const stakedAmount = await hydraStaking.stakeOf(staker.address);
       const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);
 
       const banTx = await systemHydraChain.connect(this.signers.governance).banValidator(staker.address);

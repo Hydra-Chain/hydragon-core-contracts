@@ -159,7 +159,9 @@ contract VestedDelegation is
         // update the old delegation position
         DelegationPool storage oldDelegation = delegationPools[oldValidator];
         uint256 amount = oldDelegation.balanceOf(msg.sender);
-        oldDelegation.withdraw(msg.sender, amount);
+
+        // undelegate (withdraw & emit event) the old amount from the old position
+        _baseUndelegate(oldValidator, msg.sender, amount);
 
         int256 correction = oldDelegation.correctionOf(msg.sender);
         _saveAccountParamsChange(
@@ -173,8 +175,8 @@ contract VestedDelegation is
         );
 
         DelegationPool storage newDelegation = delegationPools[newValidator];
-        // deposit the old amount to the new position
-        newDelegation.deposit(msg.sender, amount);
+        // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
+        _baseDelegate(newValidator, msg.sender, amount);
 
         // transfer the old position parameters to the new one
         vestedDelegationPositions[newValidator][msg.sender] = VestingPosition({
@@ -196,9 +198,6 @@ contract VestedDelegation is
                 epochNum: epochManagerContract.getCurrentEpochId()
             })
         );
-        // sami: do we need this? (It was even swapped , we Undalegared from the newValidator and Delegated to the oldValidator)
-        // _baseUndelegate(oldValidator, msg.sender, amount);
-        // _baseDelegate(newValidator, msg.sender, amount);
 
         emit PositionSwapped(msg.sender, oldValidator, newValidator, amount);
     }
