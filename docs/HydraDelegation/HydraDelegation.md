@@ -1591,6 +1591,22 @@ error InvalidMinDelegation()
 
 
 
+### InvalidStaker
+
+```solidity
+error InvalidStaker(address staker)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | undefined |
+
 ### InvalidWaitPeriod
 
 ```solidity

@@ -217,6 +217,28 @@ Retruns bool indicating if validator is active.
 |---|---|---|
 | _0 | bool | undefined |
 
+### isValidatorRegistered
+
+```solidity
+function isValidatorRegistered(address validator) external view returns (bool)
+```
+
+Retruns bool indicating if validator status is Registered.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### register
 
 ```solidity

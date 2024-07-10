@@ -239,6 +239,23 @@ Deactivates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
+### delegationContract
+
+```solidity
+function delegationContract() external view returns (contract IHydraDelegation)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraDelegation | undefined |
+
 ### getActiveValidatorsCount
 
 ```solidity
@@ -307,6 +324,28 @@ function isValidatorActive(address validator) external view returns (bool)
 ```
 
 Retruns bool indicating if validator is active.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isValidatorRegistered
+
+```solidity
+function isValidatorRegistered(address validator) external view returns (bool)
+```
+
+Retruns bool indicating if validator status is Registered.
 
 
 
@@ -458,7 +497,7 @@ function transferOwnership(address newOwner) external nonpayable
 ### validators
 
 ```solidity
-function validators(address) external view returns (uint256 liquidDebt, uint256 commission, enum ValidatorStatus status)
+function validators(address) external view returns (uint256 liquidDebt, enum ValidatorStatus status)
 ```
 
 
@@ -476,7 +515,6 @@ function validators(address) external view returns (uint256 liquidDebt, uint256 
 | Name | Type | Description |
 |---|---|---|
 | liquidDebt | uint256 | undefined |
-| commission | uint256 | undefined |
 | status | enum ValidatorStatus | undefined |
 
 ### validatorsAddresses

@@ -37,10 +37,11 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
         ValidatorInit[] calldata newValidators,
         address governance,
         address stakingContractAddr,
+        address delegationContractAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
-        __ValidatorManager_init(newValidators, newBls, stakingContractAddr, governance);
+        __ValidatorManager_init(newValidators, newBls, stakingContractAddr, delegationContractAddr, governance);
         __Inspector_init();
         __PowerExponent_init();
 

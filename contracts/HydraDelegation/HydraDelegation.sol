@@ -54,19 +54,25 @@ contract HydraDelegation is
 
     // _______________ External functions _______________
 
-    function stakerDelegationCommission(address staker) external view returns (uint256) {
-        return delegationCommissionPerStaker[staker];
-    }
-
-    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
-        _distributeDelegationRewards(staker, reward, epochId);
-    }
-
     /**
      * @inheritdoc IHydraDelegation
      */
     function setCommission(uint256 newCommission) external {
         _setCommission(msg.sender, newCommission);
+    }
+
+    /**
+     * @inheritdoc IHydraDelegation
+     */
+    function stakerDelegationCommission(address staker) external view returns (uint256) {
+        return delegationCommissionPerStaker[staker];
+    }
+
+    /**
+     * @inheritdoc IHydraDelegation
+     */
+    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
+        _distributeDelegationRewards(staker, reward, epochId);
     }
 
     // _______________ Internal functions _______________
@@ -100,6 +106,10 @@ contract HydraDelegation is
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
+        if (
+            !validatorManagerContract.isValidatorActive(staker) &&
+            !validatorManagerContract.isValidatorRegistered(staker)
+        ) revert InvalidStaker(staker);
 
         delegationCommissionPerStaker[staker] = newCommission;
 

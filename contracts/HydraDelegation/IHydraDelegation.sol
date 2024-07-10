@@ -9,6 +9,13 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
     event CommissionUpdated(address indexed validator, uint256 newCommission);
 
     error InvalidCommission(uint256 commission);
+    error InvalidStaker(address staker);
+
+    /**
+     * @notice Sets commission for validator.
+     * @param newCommission New commission (100 = 100%)
+     */
+    function setCommission(uint256 newCommission) external;
 
     /**
      * @notice Returns commission for validator.
@@ -16,12 +23,6 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
      * @return commission Commission for validator
      */
     function stakerDelegationCommission(address staker) external view returns (uint256);
-
-    /**
-     * @notice Sets commission for validator.
-     * @param newCommission New commission (100 = 100%)
-     */
-    function setCommission(uint256 newCommission) external;
 
     /**
      * @notice Distributes rewards to delegators.

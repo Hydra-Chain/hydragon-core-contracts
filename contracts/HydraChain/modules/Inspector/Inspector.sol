@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {StakingConnector} from "./../StakingConnector/StakingConnector.sol";
+import {StakingConnector} from "./../Connectors/StakingConnector.sol";
 import {ValidatorManager, ValidatorStatus} from "./../ValidatorManager/ValidatorManager.sol";
 import {Unauthorized} from "./../../../common/Errors.sol";
 import {IInspector} from "./IInspector.sol";

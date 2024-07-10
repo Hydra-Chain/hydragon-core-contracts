@@ -18,7 +18,6 @@ enum ValidatorStatus {
 struct Validator {
     uint256[4] blsKey;
     uint256 liquidDebt;
-    uint256 commission;
     ValidatorStatus status;
 }
 
@@ -41,6 +40,12 @@ interface IValidatorManager {
     function isValidatorActive(address validator) external view returns (bool);
 
     /**
+     * @notice Retruns bool indicating if validator status is Registered.
+     * @param validator Address of the validator
+     */
+    function isValidatorRegistered(address validator) external view returns (bool);
+
+    /**
      * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
      * @dev Validator must be whitelisted.
      * @param signature Signature to validate message against
@@ -54,7 +59,6 @@ interface IValidatorManager {
      * @param account Address of the validator
      */
     function activateValidator(address account) external;
-
 
     /**
      * @notice Deactivates validator.

@@ -5,12 +5,13 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "./../../../common/System/System.sol";
 import {AccessControl} from "../AccessControl/AccessControl.sol";
-import {StakingConnector} from "./../StakingConnector/StakingConnector.sol";
+import {StakingConnector} from "./../Connectors/StakingConnector.sol";
+import {DelegationConnector} from "./../Connectors/DelegationConnector.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
 import {IBLS} from "./../../../BLS/IBLS.sol";
 import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IValidatorManager.sol";
 
-abstract contract ValidatorManager is IValidatorManager, System, AccessControl, StakingConnector {
+abstract contract ValidatorManager is IValidatorManager, System, AccessControl, StakingConnector, DelegationConnector {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
 
     /// @notice A constant for the maximum amount of validators
@@ -36,10 +37,12 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
         address _stakingContractAddr,
+        address _delegationContractAddr,
         address _governance
     ) internal onlyInitializing {
         __AccessControl_init(_governance);
         __StakingConnector_init(_stakingContractAddr);
+        __DelegationConnector_init(_delegationContractAddr);
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
@@ -83,6 +86,13 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     /**
      * @inheritdoc IValidatorManager
      */
+    function isValidatorRegistered(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Registered;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
     function getValidators() external view returns (address[] memory) {
         return validatorsAddresses;
     }
@@ -108,7 +118,7 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         blsKey = v.blsKey;
         totalStake = stakingContract.totalBalanceOf(validatorAddress);
         stake = stakingContract.stakeOf(validatorAddress);
-        commission = v.commission;
+        commission = delegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = stakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;
     }

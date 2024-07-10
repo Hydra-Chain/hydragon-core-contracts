@@ -155,6 +155,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     [validatorInit],
     this.signers.governance.address,
     hydraStaking.address,
+    hydraDelegation.address,
     bls.address
   );
 

@@ -27,7 +27,9 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert when initialized without system call", async function () {
-        const { hydraChain, bls, hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const { hydraChain, bls, hydraStaking, hydraDelegation } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
 
         await expect(
           hydraChain.initialize(
@@ -35,6 +37,7 @@ export function RunHydraChainTests(): void {
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
             this.signers.governance.address,
             hydraStaking.address,
+            hydraDelegation.address,
             bls.address
           )
         )
@@ -43,7 +46,9 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert with invalid signature when initializing", async function () {
-        const { systemHydraChain, bls, hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const { systemHydraChain, bls, hydraStaking, hydraDelegation } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
 
         this.validatorSetSize = Math.floor(Math.random() * (5 - 1) + 5); // Randomly pick 5-9
         this.validatorStake = hre.ethers.utils.parseEther(String(Math.floor(Math.random() * (10000 - 1000) + 1000)));
@@ -54,6 +59,7 @@ export function RunHydraChainTests(): void {
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
             this.signers.governance.address,
             hydraStaking.address,
+            hydraDelegation.address,
             bls.address
           )
         )
@@ -117,7 +123,7 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert on reinitialization attempt", async function () {
-        const { systemHydraChain, bls, hydraStaking, validatorInit } = await loadFixture(
+        const { systemHydraChain, bls, hydraStaking, validatorInit, hydraDelegation } = await loadFixture(
           this.fixtures.initializedHydraChainStateFixture
         );
 
@@ -126,6 +132,7 @@ export function RunHydraChainTests(): void {
             [validatorInit],
             this.signers.governance.address,
             hydraStaking.address,
+            hydraDelegation.address,
             bls.address
           )
         ).to.be.revertedWith("Initializable: contract is already initialized");
@@ -899,13 +906,12 @@ export function RunHydraChainTests(): void {
 
     // sami: should be in delegation contract
     describe("Set Commission", function () {
-      // sami: there is no check for that. Is it even needed?
-      it.skip("should revert when call setCommission for unregistered or inactive validator", async function () {
+      it("should revert when call setCommission for unregistered or inactive validator", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
         await expect(hydraDelegation.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
-          .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
-          .withArgs(ERRORS.invalidValidator);
+          .to.be.revertedWithCustomError(hydraDelegation, "InvalidStaker")
+          .withArgs(this.signers.validators[3].address);
       });
 
       it("should revert with invalid commission", async function () {
@@ -917,8 +923,8 @@ export function RunHydraChainTests(): void {
           .to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission")
           .withArgs(exceededCommission);
       });
-      // sami: commission is set in the HydraDelegation contract and it is not connected to HydraChain
-      it.skip("should set commission", async function () {
+
+      it("should set commission", async function () {
         const { hydraChain, hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
         // set commission and verify event
