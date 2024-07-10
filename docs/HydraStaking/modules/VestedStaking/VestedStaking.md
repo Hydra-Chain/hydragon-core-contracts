@@ -194,6 +194,28 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### getStakingRewardsHistoryValues
+
+```solidity
+function getStakingRewardsHistoryValues(address staker) external view returns (struct StakingRewardsHistory[])
+```
+
+Returns historical records of the staking rewards of the user
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | StakingRewardsHistory[] | stakingRewardsHistory array with the historical records of the staking rewards of the user |
+
 ### grantRole
 
 ```solidity

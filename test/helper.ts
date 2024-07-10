@@ -146,10 +146,8 @@ export async function registerValidator(hydraChain: HydraChain, account: any) {
   }
 }
 
-export async function getValidatorReward(validatorSet: ValidatorSet, validatorAddr: string) {
-  const validator = await validatorSet.getValidator(validatorAddr);
-
-  return validator.withdrawableRewards;
+export async function getValidatorReward(hydraStaking: HydraStaking, validatorAddr: string) {
+  return hydraStaking.unclaimedRewards(validatorAddr);
 }
 
 /**

@@ -9,6 +9,13 @@ struct StakingRewardsHistory {
 
 interface IVestedStaking {
     /**
+     * @notice Returns historical records of the staking rewards of the user
+     * @param staker The address of the staker
+     * @return stakingRewardsHistory array with the historical records of the staking rewards of the user
+     */
+    function getStakingRewardsHistoryValues(address staker) external view returns (StakingRewardsHistory[] memory);
+
+    /**
      * @notice Returns the penalty and reward that will be burned, if vested stake position is active
      * @param staker The address of the staker
      * @param amount The amount that is going to be unstaked

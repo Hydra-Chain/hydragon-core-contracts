@@ -177,6 +177,13 @@ contract HydraStaking is
         return super._claimStakingRewards(staker);
     }
 
+    // TODO: The unrealized potential staking reward for all validators must be burned at the end because
+    // HYDRA is minted for the full potential staking reward but only part of it will go as a reward for the validators
+    // we have to handle the other part
+    // Other option and maybe better because it will simplify the logic and will decrease computation on both node and contract
+    // is having a reward wallet that will have close to full hydra balance all the time.
+    // We will use it when the actual end reward will be transfered to the recipient (staker delegator).
+
     /**
      * @notice Distributes the staking rewards for the staker.
      * @param account The account to distribute the rewards for
@@ -204,7 +211,7 @@ contract HydraStaking is
     /**
      * @notice Distributes the reward for the given validator.
      * @param epochId The epoch id
-     * @param uptime The uptime data for the validator 
+     * @param uptime The uptime data for the validator
      * @param fullReward The full reward for the epoch
      * @param totalSupply The total supply for the epoch
      * @param totalBlocks The total blocks for the epoch

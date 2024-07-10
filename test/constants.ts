@@ -39,6 +39,7 @@ export const ERRORS = {
   ownable: "Ownable: caller is not the owner",
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
+  mustBeRegistered: "MUST_BE_REGISTERED",
   swap: {
     newPositionUnavailable: "NEW_POSITION_UNAVAILABLE",
   },

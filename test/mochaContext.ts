@@ -105,7 +105,7 @@ export interface Fixtures {
   };
   newVestingValidatorFixture: {
     (): Promise<{
-      stakerHydraStake: HydraStaking;
+      stakerHydraStaking: HydraStaking;
       systemHydraChain: HydraChain;
       bls: BLS;
       hydraDelegation: HydraDelegation;
@@ -117,7 +117,7 @@ export interface Fixtures {
   };
   vestingRewardsFixture: {
     (): Promise<{
-      stakerHydraStake: HydraStaking;
+      stakerHydraStaking: HydraStaking;
       systemHydraChain: HydraChain;
       bls: BLS;
       hydraDelegation: HydraDelegation;

@@ -38,6 +38,13 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
     /**
      * @inheritdoc IVestedStaking
      */
+    function getStakingRewardsHistoryValues(address staker) external view returns (StakingRewardsHistory[] memory) {
+        return stakingRewardsHistory[staker];
+    }
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
     function calcVestedStakingPositionPenalty(
         address staker,
         uint256 amount
@@ -109,7 +116,8 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
                 delete vestedStakingPositions[account];
             }
 
-            // TODO: Burn penalty
+            // Burn penalty
+            _burnAmount(penalty);
 
             return (stakeLeft, withdrawAmount - penalty);
         }

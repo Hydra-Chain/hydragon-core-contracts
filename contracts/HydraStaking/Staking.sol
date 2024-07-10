@@ -59,8 +59,8 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
      * @inheritdoc IStaking
      */
     function unstake(uint256 amount) external {
-        _unstake(msg.sender, amount);
-        _registerWithdrawal(msg.sender, amount);
+        (, uint256 withdrawAmount) = _unstake(msg.sender, amount);
+        _registerWithdrawal(msg.sender, withdrawAmount);
     }
 
     /**
@@ -161,6 +161,15 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Epoc
         stakingRewards[staker].taken += rewards;
 
         emit StakingRewardsClaimed(staker, rewards);
+    }
+
+    /**
+     * @notice Method used to burn funds
+     * @param amount The amount to be burned
+     */
+    function _burnAmount(uint256 amount) internal {
+        (bool success, ) = address(0).call{value: amount}("");
+        require(success, "Failed to burn amount");
     }
 
     // _______________ Private functions _______________

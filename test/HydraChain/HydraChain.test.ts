@@ -691,12 +691,12 @@ export function RunHydraChainTests(): void {
             .connect(vestManagerOwner)
             .swapVestedPositionValidator(validator.address, newValidator.address);
 
-          // await expect(swapTx, "emit Undelegated for the old validator")
-          //   .to.emit(hydraDelegation, "Undelegated")
-          //   .withArgs(validator.address, vestManagerOwner.address, delegatedAmount);
-          // await expect(swapTx, "emit Delegated for the new validator")
-          //   .to.emit(hydraDelegation, "Delegated")
-          //   .withArgs(newValidator.address, vestManagerOwner.address, delegatedAmount);
+          await expect(swapTx, "emit Undelegated for the old validator")
+            .to.emit(hydraDelegation, "Undelegated")
+            .withArgs(validator.address, vestManagerOwner.address, delegatedAmount);
+          await expect(swapTx, "emit Delegated for the new validator")
+            .to.emit(hydraDelegation, "Delegated")
+            .withArgs(newValidator.address, vestManagerOwner.address, delegatedAmount);
           await expect(swapTx, "emit PositionSwapped")
             .to.emit(hydraDelegation, "PositionSwapped")
             .withArgs(vestManager.address, validator.address, newValidator.address, delegatedAmount);

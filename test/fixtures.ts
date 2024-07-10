@@ -441,8 +441,8 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
   await hydraChain.connect(this.signers.governance).addToWhitelist([staker.address]);
   await registerValidator(hydraChain, staker);
 
-  const stakerHydraStake = hydraStaking.connect(staker);
-  await stakerHydraStake.stakeWithVesting(VESTING_DURATION_WEEKS, {
+  const stakerHydraStaking = hydraStaking.connect(staker);
+  await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
     value: this.minStake,
   });
 
@@ -456,7 +456,7 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
   );
 
   return {
-    stakerHydraStake,
+    stakerHydraStaking,
     systemHydraChain,
     bls,
     hydraStaking,
@@ -469,7 +469,7 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
 
 async function vestingRewardsFixtureFunction(this: Mocha.Context) {
   const {
-    stakerHydraStake,
+    stakerHydraStaking,
     systemHydraChain,
     bls,
     hydraStaking,
@@ -489,7 +489,7 @@ async function vestingRewardsFixtureFunction(this: Mocha.Context) {
     this.epochSize
   );
 
-  await stakerHydraStake.stake({ value: this.minStake });
+  await stakerHydraStaking.stake({ value: this.minStake });
 
   await commitEpochs(
     systemHydraChain,
@@ -500,7 +500,7 @@ async function vestingRewardsFixtureFunction(this: Mocha.Context) {
   );
 
   return {
-    stakerHydraStake,
+    stakerHydraStaking,
     systemHydraChain,
     bls,
     hydraStaking,
