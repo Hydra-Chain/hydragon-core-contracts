@@ -1364,7 +1364,7 @@ event PositionRewardClaimed(address indexed manager, address indexed validator, 
 ### PositionSwapped
 
 ```solidity
-event PositionSwapped(address indexed manager, address indexed oldValidator, address newValidator, uint256 amount)
+event PositionSwapped(address indexed manager, address indexed oldValidator, address indexed newValidator, uint256 amount)
 ```
 
 
@@ -1377,7 +1377,7 @@ event PositionSwapped(address indexed manager, address indexed oldValidator, add
 |---|---|---|
 | manager `indexed` | address | undefined |
 | oldValidator `indexed` | address | undefined |
-| newValidator  | address | undefined |
+| newValidator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### RoleAdminChanged
