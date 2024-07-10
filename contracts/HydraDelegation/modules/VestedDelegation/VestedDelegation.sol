@@ -59,7 +59,7 @@ contract VestedDelegation is
     function __VestedDelegation_init(
         address _hydraChainAddr,
         address _vestingManagerFactoryAddr
-        ) internal onlyInitializing {
+    ) internal onlyInitializing {
         __EpochManagerConnector_init(_hydraChainAddr);
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __VestedDelegation_init_unchained();
@@ -79,6 +79,39 @@ contract VestedDelegation is
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function getDelegatorPositionReward(
+        address validator,
+        address delegator,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external view returns (uint256 sumReward) {
+        VestingPosition memory position = vestedDelegationPositions[validator][delegator];
+        if (_noRewardConditions(position)) {
+            return 0;
+        }
+
+        // distribute the proper vesting reward
+        (uint256 epochRPS, uint256 balance, int256 correction) = _rewardParams(
+            validator,
+            delegator,
+            epochNumber,
+            balanceChangeIndex
+        );
+
+        DelegationPool storage delegationPool = delegationPools[validator];
+        uint256 rewardIndex = delegationPool.claimableRewards(delegator, epochRPS, balance, correction);
+        sumReward = _applyVestingAPR(position, rewardIndex, true);
+
+        // If the full maturing period is finished, withdraw also the reward made after the vesting period
+        if (block.timestamp > position.end + position.duration) {
+            uint256 additionalRewardIndex = delegationPool.claimableRewards(delegator) - rewardIndex;
+            sumReward += aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
+        }
+    }
 
     /**
      * @inheritdoc IVestedDelegation

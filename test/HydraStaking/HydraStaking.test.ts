@@ -3,7 +3,14 @@ import * as hre from "hardhat";
 import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
-import { calculatePenalty, commitEpochs, findProperRPSIndex, getValidatorReward, registerValidator } from "../helper";
+import {
+  calculatePenalty,
+  commitEpoch,
+  commitEpochs,
+  findProperRPSIndex,
+  getValidatorReward,
+  registerValidator,
+} from "../helper";
 import { DENOMINATOR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 
 // TODO: Make an end-to-end test to cover full scenario with many different types of staking (non-vested, vested for different periods, banned, unstake before finish vesting, etc.) made for n validators and then all of them to dissapear. Check are the balances of hydra properly handled.
@@ -174,6 +181,31 @@ export function RunHydraStakingTests(): void {
 
         expect(await hydraStaking.pendingWithdrawals(validator.address)).to.equal(this.minStake.mul(2));
         expect(await hydraStaking.withdrawable(validator.address)).to.equal(0);
+      });
+    });
+
+    describe("Claim Rewards", function () {
+      it("should claim validator reward", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1]],
+          this.epochSize
+        );
+
+        const reward = await hydraStaking.unclaimedRewards(this.signers.validators[0].address);
+        const tx = await hydraStaking.connect(this.signers.validators[0])["claimStakingRewards()"]();
+        const receipt = await tx.wait();
+
+        const event = receipt.events?.find((log: any) => log.event === "StakingRewardsClaimed");
+        expect(event?.args?.account, "event.arg.account").to.equal(this.signers.validators[0].address);
+        expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
+
+        await expect(tx, "StakingRewardsClaimed")
+          .to.emit(hydraStaking, "StakingRewardsClaimed")
+          .withArgs(this.signers.validators[0].address, reward);
       });
     });
 

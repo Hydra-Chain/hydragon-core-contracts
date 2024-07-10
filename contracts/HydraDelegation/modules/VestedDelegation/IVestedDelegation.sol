@@ -23,8 +23,29 @@ interface IVestedDelegation is IDelegation {
         uint256 amount
     );
     event PositionCut(address indexed manager, address indexed validator, uint256 amount);
-    event PositionSwapped(address indexed manager, address indexed oldValidator, address indexed newValidator, uint256 amount);
+    event PositionSwapped(
+        address indexed manager,
+        address indexed oldValidator,
+        address indexed newValidator,
+        uint256 amount
+    );
     event PositionRewardClaimed(address indexed manager, address indexed validator, uint256 amount);
+
+    /**
+     * @notice Gets delegators's matured unclaimed rewards for a position
+     * @param validator Address of validator
+     * @param delegator Address of delegator
+     * @param epochNumber Epoch where the last claimable reward is distributed
+     * We need it because not all rewards are matured at the moment of claiming
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @return Delegator's unclaimed rewards with validator (in HYDRA wei)
+     */
+    function getDelegatorPositionReward(
+        address validator,
+        address delegator,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external view returns (uint256);
 
     /**
      * @notice Gets the RPS values for a validator in a given epoch range.

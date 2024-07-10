@@ -383,18 +383,17 @@ export async function createManagerAndVest(
   return newManager;
 }
 
-// // sami: there's no getDelegatorPositionReward in the new contracts
-// export async function getDelegatorPositionReward(
-//   hydraChain: HydraChain,
-//   hydraDelegation: HydraDelegation,
-//   validator: string,
-//   delegator: string
-// ) {
-//   // prepare params for call
-//   const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
+export async function getDelegatorPositionReward(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  delegator: string
+) {
+  // prepare params for call
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
 
-//   return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
-// }
+  return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
+}
 
 // function that returns whether a position is matured or not
 async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
@@ -458,4 +457,21 @@ export async function getPermitSignature(
       }
     )
   );
+}
+
+export async function calculateTotalPotentialPositionReward(
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  delegator: string
+) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
+  const rawReward = await hydraDelegation.getRawDelegatorReward(validator, delegator);
+  let bonus = position.base.add(position.vestBonus);
+  let divider = hre.ethers.BigNumber.from(10000);
+  if (!position.rsiBonus.eq(0)) {
+    bonus = bonus.mul(position.rsiBonus);
+    divider = divider.mul(10000);
+  }
+
+  return rawReward.mul(bonus).div(divider).div(EPOCHS_YEAR);
 }

@@ -210,7 +210,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        emit DelegatorRewardClaimed(validator, delegator, reward);
+        emit DelegatorRewardsClaimed(validator, delegator, reward);
 
         _withdraw(delegator, reward);
     }

@@ -486,6 +486,31 @@ Gets the delegation pool params history for a validator and delegator.
 |---|---|---|
 | _0 | DelegationPoolParams[] | undefined |
 
+### getDelegatorPositionReward
+
+```solidity
+function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 sumReward)
+```
+
+Gets delegators&#39;s matured unclaimed rewards for a position
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of validator |
+| delegator | address | Address of delegator |
+| epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| sumReward | uint256 | Delegator&#39;s unclaimed rewards with validator (in HYDRA wei) |
+
 ### getDelegatorReward
 
 ```solidity
@@ -1277,24 +1302,6 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
-### DelegatorRewardClaimed
-
-```solidity
-event DelegatorRewardClaimed(address indexed staker, address indexed delegator, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker `indexed` | address | undefined |
-| delegator `indexed` | address | undefined |
-| amount  | uint256 | undefined |
-
 ### DelegatorRewardDistributed
 
 ```solidity
@@ -1310,6 +1317,24 @@ event DelegatorRewardDistributed(address indexed staker, uint256 amount)
 | Name | Type | Description |
 |---|---|---|
 | staker `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### DelegatorRewardsClaimed
+
+```solidity
+event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Initialized

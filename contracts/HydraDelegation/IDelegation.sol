@@ -16,7 +16,7 @@ struct DelegationPool {
 interface IDelegation is IWithdrawal {
     event Delegated(address indexed validator, address indexed delegator, uint256 amount);
     event Undelegated(address indexed validator, address indexed delegator, uint256 amount);
-    event DelegatorRewardClaimed(address indexed staker, address indexed delegator, uint256 amount);
+    event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
 
     error DelegateRequirement(string src, string msg);
