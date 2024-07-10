@@ -34,7 +34,7 @@ interface IValidatorManager {
     error InvalidCommission(uint256 commission);
 
     /**
-     * @notice Retruns bool indicating if validator is active.
+     * @notice Retruns bool indicating if validator is Active.
      * @param validator Address of the validator
      */
     function isValidatorActive(address validator) external view returns (bool);
@@ -44,6 +44,12 @@ interface IValidatorManager {
      * @param validator Address of the validator
      */
     function isValidatorRegistered(address validator) external view returns (bool);
+
+    /**
+     * @notice Retruns bool indicating if validator Banned.
+     * @param validator Address of the validator
+     */
+    function isValidatorBanned(address validator) external view returns (bool);
 
     /**
      * @notice Validates BLS signature with the provided pubkey and registers validators into the set.

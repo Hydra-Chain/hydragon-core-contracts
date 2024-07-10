@@ -93,6 +93,13 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     /**
      * @inheritdoc IValidatorManager
      */
+    function isValidatorBanned(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Banned;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
     function getValidators() external view returns (address[] memory) {
         return validatorsAddresses;
     }

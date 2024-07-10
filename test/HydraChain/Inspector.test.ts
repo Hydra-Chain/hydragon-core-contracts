@@ -226,13 +226,12 @@ export function RunInspectorTests(): void {
   });
 
   describe("Withdraw banned funds", function () {
-    // sami: no check if validator is banned
-    it.skip("should revert when trying to withdraw from non banned validator", async function () {
+    it("should revert when trying to withdraw from non banned validator", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
 
       await expect(hydraStaking.connect(this.signers.validators[2]).withdrawBannedFunds())
-        .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-        .withArgs("UNBANNED_VALIDATOR");
+        .to.be.revertedWithCustomError(hydraStaking, "ValidatorNotBanned")
+        .withArgs(this.signers.validators[2].address);
     });
 
     it("should fail the withdrawal when there are no funds in the hydraStaking", async function () {

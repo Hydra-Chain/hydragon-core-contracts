@@ -459,4 +459,20 @@ error StakeRequirement(string src, string msg)
 | src | string | undefined |
 | msg | string | undefined |
 
+### ValidatorNotBanned
+
+```solidity
+error ValidatorNotBanned(address staker)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | undefined |
+
 

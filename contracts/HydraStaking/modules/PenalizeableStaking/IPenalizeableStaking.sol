@@ -20,6 +20,8 @@ struct WithdrawalInfo {
 
 interface IPenalizeableStaking is IStaking {
 
+    error ValidatorNotBanned(address staker);
+
     /**
      * @notice Penalizes a staker by reducing their stake and distributing the penalty
      * @dev Only the validator manager can call this function

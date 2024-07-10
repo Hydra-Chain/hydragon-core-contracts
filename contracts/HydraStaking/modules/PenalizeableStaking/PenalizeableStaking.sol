@@ -45,6 +45,9 @@ contract PenalizeableStaking is IPenalizeableStaking, ValidatorManagerConnector,
      * @inheritdoc IPenalizeableStaking
      */
     function withdrawBannedFunds() external {
+        if (!validatorManagerContract.isValidatorBanned(msg.sender)) {
+            revert ValidatorNotBanned(msg.sender);
+        }
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         delete leftToWithdrawPerStaker[msg.sender];
         _withdraw(msg.sender, leftToWithdraw);

@@ -340,7 +340,29 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 function isValidatorActive(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator is active.
+Retruns bool indicating if validator is Active.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isValidatorBanned
+
+```solidity
+function isValidatorBanned(address validator) external view returns (bool)
+```
+
+Retruns bool indicating if validator Banned.
 
 
 

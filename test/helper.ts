@@ -237,7 +237,6 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
   return closestIndex;
 }
 
-// sami: TODO: apply for new contracts
 export async function retrieveRPSData(
   hydraChain: HydraChain,
   hydraDelegation: HydraDelegation,
@@ -289,7 +288,6 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   return amount.mul(bps).div(DENOMINATOR);
 }
 
-// sami: todo: apply for new contracts
 export async function getUserManager(
   vestingManagerFactory: VestingManagerFactory,
   account: any,
