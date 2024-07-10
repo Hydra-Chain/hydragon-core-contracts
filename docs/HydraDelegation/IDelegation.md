@@ -97,6 +97,29 @@ Return the amount of delegation for a delegator to a validator
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### getDelegatorReward
+
+```solidity
+function getDelegatorReward(address validator, address delegator) external view returns (uint256)
+```
+
+Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of validator |
+| delegator | address | Address of delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
+
 ### getRawDelegatorReward
 
 ```solidity

@@ -100,12 +100,12 @@ export function RunDelegationTests(): void {
 
       expect(delegatedAmount).to.equal(delegateAmount);
     });
-    // sami : getRawDelegatorReward is not like getDelegatorReward(which is missing now)
-    it.skip("should delegate again and register a withdrawal for the claimed rewards automatically", async function () {
+
+    it("should delegate again and register a withdrawal for the claimed rewards automatically", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       const delegateAmount = this.minDelegation.div(2);
-      const delegatorReward = await hydraDelegation.getRawDelegatorReward(
+      const delegatorReward = await hydraDelegation.getDelegatorReward(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );
@@ -118,9 +118,9 @@ export function RunDelegationTests(): void {
         .to.emit(hydraDelegation, "DelegatorRewardClaimed")
         .withArgs(this.signers.validators[0].address, this.signers.delegator.address, delegatorReward);
 
-      await expect(tx, "RewardsWithdrawn")
-        .to.emit(hydraDelegation, "RewardsWithdrawn")
-        .withArgs(this.signers.delegator.address, delegatorReward);
+      await expect(tx, "WithdrawalFinished")
+        .to.emit(hydraDelegation, "WithdrawalFinished")
+        .withArgs(hydraDelegation.address, this.signers.delegator.address, delegatorReward);
 
       await expect(tx, "Delegated")
         .to.emit(hydraDelegation, "Delegated")
@@ -169,15 +169,15 @@ export function RunDelegationTests(): void {
           .undelegate(this.signers.validators[0].address, hre.ethers.constants.MaxInt256.add(1))
       ).to.be.reverted;
     });
-    // sami: getRawDelegatorReward is not like getDelegatorReward(which is missing now)
-    it.skip("should partially undelegate", async function () {
+
+    it("should partially undelegate", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       const delegatedAmount = await hydraDelegation.delegationOf(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );
-      const expectedReward = await hydraDelegation.getRawDelegatorReward(
+      const expectedReward = await hydraDelegation.getDelegatorReward(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );
@@ -204,15 +204,15 @@ export function RunDelegationTests(): void {
       );
       expect(delegatedAmountLeft, "delegatedAmountLeft").to.equal(delegatedAmount.sub(undelegateAmount));
     });
-    // sami: getRawDelegatorReward is not like getDelegatorReward(which is missing now)
-    it.skip("should completely undelegate", async function () {
+
+    it("should completely undelegate", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       const delegatedAmount = await hydraDelegation.delegationOf(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );
-      const expectedReward = await hydraDelegation.getRawDelegatorReward(
+      const expectedReward = await hydraDelegation.getDelegatorReward(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );

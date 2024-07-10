@@ -103,6 +103,15 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         return delegation.claimableRewards(delegator);
     }
 
+    /**
+     * @inheritdoc IDelegation
+     */
+    function getDelegatorReward(address validator, address delegator) external view returns (uint256) {
+        DelegationPool storage delegation = delegationPools[validator];
+        uint256 reward = delegation.claimableRewards(delegator);
+        return aprCalculatorContract.applyBaseAPR(reward);
+    }
+
     // _______________ Internal functions _______________
 
     /**
