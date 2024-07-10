@@ -56,14 +56,6 @@ export function RunDelegationTests(): void {
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("delegate", "DELEGATING_AMOUNT_ZERO");
     });
-    // sami: no check if validator is active or not now
-    it.skip("should not be able to delegate to inactive validator", async function () {
-      const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-      await expect(hydraDelegation.delegate(this.signers.validators[3].address, { value: this.minDelegation }))
-        .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
-        .withArgs(ERRORS.inactiveValidator);
-    });
 
     it("should not be able to delegate less than minDelegation", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
