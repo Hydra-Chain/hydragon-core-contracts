@@ -306,8 +306,6 @@ contract VestedDelegation is
      */
     function delegateWithVesting(address validator, uint256 durationWeeks) external payable onlyManager {
         _delegate(validator, msg.sender, msg.value);
-        // check if validator is active
-
 
         VestingPosition memory position = vestedDelegationPositions[validator][msg.sender];
         if (position.isMaturing()) {
