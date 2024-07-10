@@ -300,6 +300,28 @@ Gets all validators. Returns already unactive validators as well.
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
 
+### isValidatorActive
+
+```solidity
+function isValidatorActive(address validator) external view returns (bool)
+```
+
+Retruns bool indicating if validator is active.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isWhitelisted
 
 ```solidity

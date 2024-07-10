@@ -4,10 +4,11 @@ pragma solidity 0.8.17;
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
+import {ValidatorManagerConnector} from "./../HydraStaking/modules/ValidatorManagerConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector {
+contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, ValidatorManagerConnector {
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
@@ -23,9 +24,14 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     // _______________ Initializer _______________
 
-    function __Delegation_init(uint256 _minDelegation, address _governace) internal onlyInitializing {
+    function __Delegation_init(
+        uint256 _minDelegation,
+        address _governace,
+        address _validatorManagerAddr
+    ) internal onlyInitializing {
         __Governed_init(_governace);
         __Withdrawal_init(_governace);
+        __ValidatorManagerConnector_init(_validatorManagerAddr);
         __Delegation_init_unchained(_minDelegation);
     }
 
@@ -116,6 +122,9 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
      * @param amount Amount to delegate
      */
     function _baseDelegate(address staker, address delegator, uint256 amount) internal virtual {
+        if (validatorManagerContract.isValidatorActive(staker) == false) {
+            revert DelegateRequirement({src: "delegate", msg: "VALIDATOR_INACTIVE"});
+        }
         if (amount == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
         DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);

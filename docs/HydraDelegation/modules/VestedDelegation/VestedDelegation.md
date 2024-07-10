@@ -822,6 +822,23 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 | validator | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
 
+### validatorManagerContract
+
+```solidity
+function validatorManagerContract() external view returns (contract IValidatorManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IValidatorManager | undefined |
+
 ### vestedDelegationPositions
 
 ```solidity

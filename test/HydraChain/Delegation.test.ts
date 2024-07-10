@@ -77,6 +77,18 @@ export function RunDelegationTests(): void {
         .withArgs("delegate", "DELEGATION_TOO_LOW");
     });
 
+    it("should revert if we try to delegate to inactive validator", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      await expect(
+        hydraDelegation.delegate(this.signers.validators[3].address, {
+          value: this.minDelegation.mul(2),
+        })
+      )
+        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+        .withArgs("delegate", "VALIDATOR_INACTIVE");
+    });
+
     it("should delegate for the first time", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
       const delegateAmount = this.minDelegation.mul(2);
@@ -306,8 +318,8 @@ export function RunDelegationTests(): void {
           hydraDelegation.connect(this.signers.accounts[3]).delegateWithVesting(this.signers.accounts[3].address, 1)
         ).to.be.revertedWithCustomError(hydraDelegation, "NotVestingManager");
       });
-      // sami: no check if validator is active or not now
-      it.skip("should revert when validator is inactive", async function () {
+
+      it("should revert when validator is inactive", async function () {
         const { hydraDelegation, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
 
         await expect(
@@ -317,8 +329,8 @@ export function RunDelegationTests(): void {
               value: this.minDelegation,
             })
         )
-          .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
-          .withArgs(ERRORS.inactiveValidator);
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("delegate", "VALIDATOR_INACTIVE");
       });
 
       it("should revert when delegation too low", async function () {

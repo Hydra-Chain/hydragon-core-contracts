@@ -639,7 +639,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address epochManagerAddr, address vestingManagerFactoryAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr) external nonpayable
 ```
 
 
@@ -656,7 +656,7 @@ function initialize(StakerInit[] initialStakers, uint256 initialCommission, addr
 | governance | address | undefined |
 | aprCalculatorAddr | address | undefined |
 | hydraStakingAddr | address | undefined |
-| epochManagerAddr | address | undefined |
+| hydraChainAddr | address | undefined |
 | vestingManagerFactoryAddr | address | undefined |
 
 ### isActiveDelegatePosition
@@ -1097,6 +1097,23 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 |---|---|---|
 | validator | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
+
+### validatorManagerContract
+
+```solidity
+function validatorManagerContract() external view returns (contract IValidatorManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IValidatorManager | undefined |
 
 ### vestedDelegationPositions
 

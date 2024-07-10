@@ -355,6 +355,28 @@ Returns if a given validator is subject to a ban
 |---|---|---|
 | _0 | bool | undefined |
 
+### isValidatorActive
+
+```solidity
+function isValidatorActive(address validator) external view returns (bool)
+```
+
+Retruns bool indicating if validator is active.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isWhitelisted
 
 ```solidity

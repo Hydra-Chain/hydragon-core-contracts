@@ -520,6 +520,23 @@ Undelegates amount from validator for sender and claims rewards.
 | staker | address | undefined |
 | amount | uint256 | The amount to undelegate |
 
+### validatorManagerContract
+
+```solidity
+function validatorManagerContract() external view returns (contract IValidatorManager)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IValidatorManager | undefined |
+
 ### withdraw
 
 ```solidity

@@ -72,6 +72,14 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
 
     // _______________ External functions _______________
 
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function isValidatorActive(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Active;
+    }
+
     /**
      * @inheritdoc IValidatorManager
      */

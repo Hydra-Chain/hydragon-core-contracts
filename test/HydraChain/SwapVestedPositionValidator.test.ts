@@ -16,6 +16,27 @@ export function RunSwapVestedPositionValidatorTests(): void {
           .swapVestedPositionValidator(delegatedValidator.address, delegatedValidator.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
+    // sami: there is not check for the validator to be active in swap now, we wil add depending on what we decide to do with the delegate functions that are commented
+    it.skip("should revert if we try to swap to inActive validator", async function () {
+      const { systemHydraChain, vestManager, delegatedValidator, hydraDelegation, hydraStaking, vestManagerOwner } =
+        await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+      await commitEpoch(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize,
+        DAY
+      );
+
+      await expect(
+        vestManager
+          .connect(vestManagerOwner)
+          .swapVestedPositionValidator(delegatedValidator.address, vestManagerOwner.address)
+      )
+        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+        .withArgs("delegation", "VALIDATOR_INACTIVE");
+    });
 
     it("should revert that the old position is inactive", async function () {
       const { systemHydraChain, vestManager, delegatedValidator, hydraDelegation, vestManagerOwner, hydraStaking } =

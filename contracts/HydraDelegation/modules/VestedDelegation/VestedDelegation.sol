@@ -57,10 +57,10 @@ contract VestedDelegation is
     // _______________ Initializer _______________
 
     function __VestedDelegation_init(
-        address _epochManagerAddr,
+        address _hydraChainAddr,
         address _vestingManagerFactoryAddr
         ) internal onlyInitializing {
-        __EpochManagerConnector_init(_epochManagerAddr);
+        __EpochManagerConnector_init(_hydraChainAddr);
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __VestedDelegation_init_unchained();
     }
@@ -306,6 +306,8 @@ contract VestedDelegation is
      */
     function delegateWithVesting(address validator, uint256 durationWeeks) external payable onlyManager {
         _delegate(validator, msg.sender, msg.value);
+        // check if validator is active
+
 
         VestingPosition memory position = vestedDelegationPositions[validator][msg.sender];
         if (position.isMaturing()) {
