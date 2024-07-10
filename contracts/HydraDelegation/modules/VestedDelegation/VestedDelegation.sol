@@ -196,9 +196,9 @@ contract VestedDelegation is
                 epochNum: epochManagerContract.getCurrentEpochId()
             })
         );
-
-        _baseDelegate(oldValidator, msg.sender, amount);
-        _baseUndelegate(newValidator, msg.sender, amount);
+        // sami: do we need this? (It was even swapped , we Undalegared from the newValidator and Delegated to the oldValidator)
+        // _baseUndelegate(oldValidator, msg.sender, amount);
+        // _baseDelegate(newValidator, msg.sender, amount);
 
         emit PositionSwapped(msg.sender, oldValidator, newValidator, amount);
     }
