@@ -7,7 +7,6 @@ import { BigNumber, ContractTransaction } from "ethers";
 
 import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
-import { RewardPool } from "../typechain-types/contracts/RewardPool";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
 import {
@@ -345,16 +344,14 @@ export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNu
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
-// sami: TODO: apply for new contracts
 export async function applyCustomReward(
-  rewardPool: RewardPool,
+  hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string,
   reward: BigNumber,
   rsi: boolean
 ) {
-  const position = await rewardPool.delegationPositions(validator, delegator);
-
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
   let bonus = position.base.add(position.vestBonus);
   let divider = DENOMINATOR;
   if (rsi && !position.rsiBonus.isZero()) {

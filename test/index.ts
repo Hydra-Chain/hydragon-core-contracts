@@ -11,6 +11,7 @@ import { RunLiquidityTokenTests } from "./LiquidityToken/LiquidityToken.test";
 import { RunHydraChainTests } from "./HydraChain/HydraChain.test";
 import { RunBLSTests } from "./common/BLS.test";
 import { RunHydraStakingTests } from "./HydraStaking/HydraStaking.test";
+import { RunHydraDelegationTests } from "./HydraDelegation/HydraDelegation.test";
 
 describe("Hydra Contracts", function () {
   before(async function () {
@@ -53,5 +54,8 @@ describe("Hydra Contracts", function () {
 
   describe("HydraStaking", function () {
     RunHydraStakingTests();
+  });
+  describe("HydraDelegation", function () {
+    RunHydraDelegationTests();
   });
 });

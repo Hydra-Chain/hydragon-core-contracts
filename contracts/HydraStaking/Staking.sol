@@ -121,10 +121,12 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
         uint256 accountStake = stakeOf(account);
-        // sami: Do we need this check? The stakeLeft will underflow if the amount is greater than the accountStake
         if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
-        stakeLeft = accountStake - amount;
+        unchecked {
+            stakeLeft = accountStake - amount;
+        }
+
         if (stakeLeft < minStake && stakeLeft != 0) revert StakeRequirement({src: "unstake", msg: "STAKE_TOO_LOW"});
 
         stakes[account] = stakeLeft;

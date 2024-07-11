@@ -402,39 +402,5 @@ export function RunSwapVestedPositionValidatorTests(): void {
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
     });
-
-    // TODO: Consider deleting it as we shouldn't be getting into that case
-    it.skip("should revert when try to swap too many times", async function () {
-      const {
-        systemHydraChain,
-        hydraDelegation,
-        vestManager,
-        vestManagerOwner,
-        newValidator: oldValidator,
-        hydraStaking,
-      } = await loadFixture(this.fixtures.swappedPositionFixture);
-
-      const newValidator = this.signers.validators[2];
-
-      await commitEpoch(systemHydraChain, hydraStaking, [oldValidator, newValidator], this.epochSize, 60 * 60);
-
-      const balanceChangesThreshold = (await hydraDelegation.balanceChangeThreshold()).toNumber();
-      for (let i = 0; i < balanceChangesThreshold; i++) {
-        const _oldValidator = i % 2 === 0 ? oldValidator : newValidator;
-        const _newValidator = i % 2 === 0 ? newValidator : oldValidator;
-
-        await vestManager
-          .connect(vestManagerOwner)
-          .swapVestedPositionValidator(_oldValidator.address, _newValidator.address);
-        await commitEpoch(systemHydraChain, hydraStaking, [oldValidator, newValidator], this.epochSize, 60 * 60);
-      }
-
-      // try to swap to exceed the number of the allowed balance changes
-      await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
-      )
-        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-        .withArgs("_saveAccountParamsChange", "BALANCE_CHANGES_EXCEEDED");
-    });
   });
 }

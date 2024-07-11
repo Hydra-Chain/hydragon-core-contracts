@@ -17,6 +17,31 @@ import { DENOMINATOR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants"
 
 export function RunHydraStakingTests(): void {
   describe("", function () {
+    describe("HydraStaking initializations", function () {
+      it("should have zero staked & total supply", async function () {
+        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
+
+        expect(await hydraStaking.totalStake(), "totalStake").to.equal(0);
+
+        // initialize: because we make external calls to the HydraDelegation, which is set into the initializer (we pass no stakers)
+        await hydraStaking
+          .connect(this.signers.system)
+          .initialize(
+            [],
+            this.minStake,
+            liquidToken.address,
+            hydraChain.address,
+            aprCalculator.address,
+            this.signers.governance.address,
+            hydraDelegation.address
+          );
+
+        expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(0);
+      });
+    });
+
     describe("Change minStake", function () {
       it("should revert if non-Govern address try to change min stake", async function () {
         const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
@@ -510,6 +535,89 @@ export function RunHydraStakingTests(): void {
           await expect(stakerHydraStaking["claimStakingRewards()"]())
             .to.emit(hydraStaking, "StakingRewardsClaimed")
             .withArgs(this.staker.address, reward);
+        });
+      });
+    });
+
+    describe("StakeSyncer", function () {
+      describe("Stake", function () {
+        it("should emit Staked event on stake", async function () {
+          const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+          const validatorHydraStaking = hydraStaking.connect(this.signers.validators[0]);
+
+          await expect(validatorHydraStaking.stake({ value: this.minStake }), "emit Staked")
+            .to.emit(hydraStaking, "Staked")
+            .withArgs(this.signers.validators[0].address, this.minStake);
+
+          // ensure proper staked amount is fetched
+          const validatorData = await hydraChain.getValidator(this.signers.validators[0].address);
+          expect(validatorData.stake, "stake").to.equal(this.minStake);
+        });
+
+        it("should emit Staked event on opening a vested position", async function () {
+          const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+          const validator = this.signers.validators[1];
+          const validatorHydraStaking = hydraStaking.connect(validator);
+          const vestingDuration = 12; // weeks
+          await expect(validatorHydraStaking.stakeWithVesting(vestingDuration, { value: this.minStake }), "emit Staked")
+            .to.emit(hydraStaking, "Staked")
+            .withArgs(validator.address, this.minStake);
+
+          // ensure proper staked amount is fetched
+          const validatorData = await hydraChain.getValidator(validator.address);
+          expect(validatorData.stake, "stake").to.equal(this.minStake);
+        });
+
+        it("should emit Unstaked event on unstake", async function () {
+          const { hydraChain, systemHydraChain, hydraStaking } = await loadFixture(
+            this.fixtures.registeredValidatorsStateFixture
+          );
+
+          const validator = this.signers.validators[0];
+          const validatorHydraStaking = hydraStaking.connect(validator);
+          await validatorHydraStaking.stake({ value: this.minStake });
+          await commitEpoch(
+            systemHydraChain,
+            hydraStaking,
+            [validator, this.signers.validators[1], this.signers.validators[2]],
+            this.epochSize
+          );
+
+          await expect(validatorHydraStaking.unstake(this.minStake), "emit Unstaked")
+            .to.emit(hydraStaking, "Unstaked")
+            .withArgs(validator.address, this.minStake);
+
+          // ensure that the amount is properly unstaked
+          const validatorData = await hydraChain.getValidator(validator.address);
+          expect(validatorData.stake, "stake").to.equal(0);
+        });
+
+        it("should emit Unstaked event on unstake from vested position", async function () {
+          const { hydraChain, systemHydraChain, hydraStaking } = await loadFixture(
+            this.fixtures.registeredValidatorsStateFixture
+          );
+
+          const validator = this.signers.validators[0];
+          const validatorHydraStaking = hydraStaking.connect(validator);
+          const vestingDuration = 12; // weeks
+          const stakeAmount = this.minStake.mul(2);
+          await validatorHydraStaking.stakeWithVesting(vestingDuration, { value: stakeAmount });
+          await commitEpoch(
+            systemHydraChain,
+            hydraStaking,
+            [validator, this.signers.validators[1], this.signers.validators[2]],
+            this.epochSize
+          );
+
+          const unstakeAmount = this.minStake.div(3);
+          await expect(validatorHydraStaking.unstake(unstakeAmount), "emit Unstaked")
+            .to.emit(hydraStaking, "Unstaked")
+            .withArgs(validator.address, unstakeAmount);
+
+          // ensure proper staked amount is fetched
+          const validatorData = await hydraChain.getValidator(validator.address);
+          expect(validatorData.stake, "stake").to.equal(stakeAmount.sub(unstakeAmount));
         });
       });
     });

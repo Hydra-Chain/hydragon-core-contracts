@@ -54,9 +54,7 @@ contract VestedDelegation is
 
     // _______________ Initializer _______________
 
-    function __VestedDelegation_init(
-        address _vestingManagerFactoryAddr
-    ) internal onlyInitializing {
+    function __VestedDelegation_init(address _vestingManagerFactoryAddr) internal onlyInitializing {
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __VestedDelegation_init_unchained();
     }
@@ -196,11 +194,7 @@ contract VestedDelegation is
         _saveAccountParamsChange(
             oldValidator,
             msg.sender,
-            DelegationPoolParams({
-                balance: 0,
-                correction: correction,
-                epochNum: hydraChainContract.getCurrentEpochId()
-            })
+            DelegationPoolParams({balance: 0, correction: correction, epochNum: hydraChainContract.getCurrentEpochId()})
         );
 
         DelegationPool storage newDelegation = delegationPools[newValidator];
@@ -417,6 +411,7 @@ contract VestedDelegation is
      */
     function isPositionAvailableForSwap(address newValidator, address delegator) public view returns (bool) {
         VestingPosition memory newPosition = vestedDelegationPositions[newValidator][delegator];
+        // TODO: maturing can be missed as condition beacause if there are no rewards that must mature after the end of the position - its fine to delete the position
         if (newPosition.isActive() || newPosition.isMaturing()) {
             return false;
         }
