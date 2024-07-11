@@ -264,13 +264,9 @@ contract VestedDelegation is
             }
         }
 
-        if (fullReward != 0) {
-            penalty += fullReward;
-        }
-
         _undelegate(validator, msg.sender, amount);
         uint256 amountAfterPenalty = amount - penalty;
-        _burnAmount(penalty);
+        _burnAmount(penalty + fullReward);
         _registerWithdrawal(msg.sender, amountAfterPenalty);
 
         emit PositionCut(msg.sender, validator, amountAfterPenalty);

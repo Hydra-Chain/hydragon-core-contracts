@@ -523,8 +523,8 @@ export function RunDelegationTests(): void {
         expect(penalty, "penalty = calculatedPenalty").to.be.equal(calculatedPenalty);
         expect(reward, "reward").to.be.gt(0);
       });
-      // sami: check why balance has little difference
-      it.skip("should slash the amount when in active position", async function () {
+
+      it("should slash the amount when in active position", async function () {
         const { hydraDelegation, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
@@ -602,8 +602,8 @@ export function RunDelegationTests(): void {
         expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(cutAmount.sub(penalty));
         expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
       });
-      // sami: check why balance has little difference
-      it.skip("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
+
+      it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
         const { hydraDelegation, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
