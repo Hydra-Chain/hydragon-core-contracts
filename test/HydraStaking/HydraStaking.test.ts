@@ -289,6 +289,16 @@ export function RunHydraStakingTests(): void {
       });
 
       describe("decrease staking position with unstake()", function () {
+        it("should revert when penalizeStaker function is not called by HydraChain", async function () {
+          const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+          await expect(
+            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
+          )
+            .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+            .withArgs("ONLY_HYDRA_CHAIN");
+        });
+
         it("should get staker penalty and rewards must return 0 (burned), if closing from active position", async function () {
           const { stakerHydraStaking, systemHydraChain, hydraStaking } = await loadFixture(
             this.fixtures.newVestingValidatorFixture

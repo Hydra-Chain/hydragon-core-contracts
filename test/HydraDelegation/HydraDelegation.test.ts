@@ -47,7 +47,18 @@ export function RunHydraDelegationTests(): void {
       });
     });
 
-    // sami: should be in delegation contract
+    it("should revert distributeDelegationRewards when not called by HydraStaking Contract", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(
+        hydraDelegation
+          .connect(this.signers.accounts[1])
+          .distributeDelegationRewards(this.signers.accounts[1].address, 1, 1)
+      )
+        .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
+        .withArgs("ONLY_HYDRA_STAKING");
+    });
+
     describe("Set Commission", function () {
       it("should revert when call setCommission for unregistered or inactive validator", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);

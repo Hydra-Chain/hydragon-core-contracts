@@ -103,39 +103,6 @@ export function RunHydraChainTests(): void {
           )
         ).to.be.revertedWith("Initializable: contract is already initialized");
       });
-
-      it("should revert when calling functions protected by onlyHydraStaking modifier", async function () {
-        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(hydraChain.connect(this.signers.accounts[1]).activateValidator(this.signers.accounts[1].address))
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("ONLY_HYDRA_STAKING");
-        await expect(hydraChain.connect(this.signers.accounts[1]).deactivateValidator(this.signers.accounts[1].address))
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("ONLY_HYDRA_STAKING");
-      });
-      // sami: for HydraDelegation
-      it("should revert when calling functions protected by onlyHydraStaking modifier", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(
-          hydraDelegation
-            .connect(this.signers.accounts[1])
-            .distributeDelegationRewards(this.signers.accounts[1].address, 1, 1)
-        )
-          .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
-          .withArgs("ONLY_HYDRA_STAKING");
-      });
-      // sami: for HydraStaking
-      it("should revert when calling functions protected by onlyHydraChain modifier", async function () {
-        const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(
-          hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
-        )
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs("ONLY_HYDRA_CHAIN");
-      });
     });
 
     describe("Voting Power Exponent", async () => {
@@ -233,126 +200,6 @@ export function RunHydraChainTests(): void {
       expect(currentEpochId, "currentEpochId").to.equal(2);
     });
 
-    it("should get all validators - admin", async function () {
-      const { hydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
-
-      expect(await hydraChain.getValidators()).to.deep.equal([this.signers.admin.address]);
-    });
-
-    it("should get active validators count - the admin", async function () {
-      const { hydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.deep.equal(1);
-    });
-
-    it("should revert if we try register more than 150 Validators", async function () {
-      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-      await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(4);
-
-      const keyPair = mcl.newKeyPair();
-      const provider = hre.ethers.provider;
-      const initialBalance = hre.ethers.utils.parseEther("100000");
-
-      // * Whitelist & Register total 150 validators
-      for (let i = 4; i < 150; i++) {
-        // create a new wallet
-        const wallet = hre.ethers.Wallet.createRandom();
-        const connectedWallet = wallet.connect(provider);
-        // send eth to wallet
-        await hre.network.provider.send("hardhat_setBalance", [
-          wallet.address,
-          initialBalance.toHexString().replace(/^0x0+/, "0x"),
-        ]);
-        // whitelist, register & stake
-        await hydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
-        const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
-        await hydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
-
-        await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
-      }
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(150);
-
-      // * Try to stake with 151 validators
-      const validator151Wallet = hre.ethers.Wallet.createRandom();
-      const validator151 = validator151Wallet.connect(provider);
-      await hre.network.provider.send("hardhat_setBalance", [
-        validator151Wallet.address,
-        initialBalance.toHexString().replace(/^0x0+/, "0x"),
-      ]);
-      await hydraChain.connect(this.signers.governance).addToWhitelist([validator151Wallet.address]);
-      const signature = mcl.signValidatorMessage(
-        DOMAIN,
-        CHAIN_ID,
-        validator151Wallet.address,
-        keyPair.secret
-      ).signature;
-      await expect(
-        hydraChain
-          .connect(validator151)
-          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), { gasLimit: 1000000 })
-      ).to.be.not.be.reverted;
-      await expect(
-        hydraStaking.connect(validator151).stake({ value: this.minStake, gasLimit: 1000000 })
-      ).to.be.revertedWithCustomError(hydraChain, "MaxValidatorsReached");
-    });
-
-    it("should decrement the count of validators when a validator is banned", async function () {
-      const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
-
-      await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-    });
-
-    it("should decrement the count of validators when a validator unstake all his stake", async function () {
-      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
-
-      await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-    });
-
-    it("should decrement the count of validators, when unstake all, even if we have delegation", async function () {
-      const { hydraChain, hydraStaking, hydraDelegation } = await loadFixture(
-        this.fixtures.stakedValidatorsStateFixture
-      );
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
-
-      await hydraDelegation
-        .connect(this.signers.delegator)
-        .delegate(this.signers.validators[1].address, { value: this.minDelegation });
-
-      await hydraStaking.connect(this.signers.validators[1]).unstake(this.minStake.mul(2));
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-
-      await hydraDelegation
-        .connect(this.signers.delegator)
-        .undelegate(this.signers.validators[1].address, this.minDelegation);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-    });
-
-    it("should not decrement the count of validators on ban, if user already unstaked all", async function () {
-      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
-
-      await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-
-      await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
-
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
-    });
-
     it("should get epoch by block", async function () {
       const { systemHydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
@@ -371,6 +218,144 @@ export function RunHydraChainTests(): void {
       expect(storedEpoch.startBlock).to.equal(hre.ethers.constants.Zero);
       expect(storedEpoch.endBlock).to.equal(hre.ethers.constants.Zero);
       expect(storedEpoch.epochRoot).to.equal(hre.ethers.constants.HashZero);
+    });
+
+    describe("Validator counters", function () {
+      it("should get all validators - admin", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
+
+        expect(await hydraChain.getValidators()).to.deep.equal([this.signers.admin.address]);
+      });
+
+      it("should get active validators count - the admin", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.deep.equal(1);
+      });
+
+      it("should revert when activating validator from non-HydraStaking contract", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.connect(this.signers.accounts[1]).activateValidator(this.signers.accounts[1].address))
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("ONLY_HYDRA_STAKING");
+      });
+
+      it("should revert when deactivating validator from non-HydraStaking contract", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.connect(this.signers.accounts[1]).deactivateValidator(this.signers.accounts[1].address))
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("ONLY_HYDRA_STAKING");
+      });
+
+      it("should revert if we try activate more than 150 Validators", async function () {
+        const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+        await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(4);
+
+        const keyPair = mcl.newKeyPair();
+        const provider = hre.ethers.provider;
+        const initialBalance = hre.ethers.utils.parseEther("100000");
+
+        // * Whitelist & Register total 150 validators
+        for (let i = 4; i < 150; i++) {
+          // create a new wallet
+          const wallet = hre.ethers.Wallet.createRandom();
+          const connectedWallet = wallet.connect(provider);
+          // send eth to wallet
+          await hre.network.provider.send("hardhat_setBalance", [
+            wallet.address,
+            initialBalance.toHexString().replace(/^0x0+/, "0x"),
+          ]);
+          // whitelist, register & stake
+          await hydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
+          const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
+          await hydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+
+          await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
+        }
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(150);
+
+        // * Try to stake with 151 validators
+        const validator151Wallet = hre.ethers.Wallet.createRandom();
+        const validator151 = validator151Wallet.connect(provider);
+        await hre.network.provider.send("hardhat_setBalance", [
+          validator151Wallet.address,
+          initialBalance.toHexString().replace(/^0x0+/, "0x"),
+        ]);
+        await hydraChain.connect(this.signers.governance).addToWhitelist([validator151Wallet.address]);
+        const signature = mcl.signValidatorMessage(
+          DOMAIN,
+          CHAIN_ID,
+          validator151Wallet.address,
+          keyPair.secret
+        ).signature;
+        await expect(
+          hydraChain
+            .connect(validator151)
+            .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), { gasLimit: 1000000 })
+        ).to.be.not.be.reverted;
+        await expect(
+          hydraStaking.connect(validator151).stake({ value: this.minStake, gasLimit: 1000000 })
+        ).to.be.revertedWithCustomError(hydraChain, "MaxValidatorsReached");
+      });
+
+      it("should decrement the count of active validators when a validator is banned", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
+
+        await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+      });
+
+      it("should decrement the count of active validators when a validator unstake all his stake", async function () {
+        const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
+
+        await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+      });
+
+      it("should decrement the count of active validators, when unstake all, even if we have delegation", async function () {
+        const { hydraChain, hydraStaking, hydraDelegation } = await loadFixture(
+          this.fixtures.stakedValidatorsStateFixture
+        );
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
+
+        await hydraDelegation
+          .connect(this.signers.delegator)
+          .delegate(this.signers.validators[1].address, { value: this.minDelegation });
+
+        await hydraStaking.connect(this.signers.validators[1]).unstake(this.minStake.mul(2));
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+
+        await hydraDelegation
+          .connect(this.signers.delegator)
+          .undelegate(this.signers.validators[1].address, this.minDelegation);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+      });
+
+      it("should not decrement the count of active validators on ban, if user already unstaked all", async function () {
+        const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(3);
+
+        await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+
+        await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
+
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+      });
     });
 
     describe("Whitelist", function () {
