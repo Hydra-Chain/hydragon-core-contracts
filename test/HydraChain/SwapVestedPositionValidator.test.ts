@@ -176,27 +176,21 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
       await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
 
-      // // sami : getDelegatorPositionReward is missing in the new contract so I added a check for Raw for now
-      // // verify that there are rewards left to claim
-      // const { epochNum, balanceChangeIndex } = await retrieveRPSData(
-      //   systemHydraChain,
-      //   hydraDelegation,
-      //   newValidator.address,
-      //   vestManager.address
-      // );
-
-      // expect(
-      //   await hydraDelegation.getDelegatorPositionReward(
-      //     newValidator.address,
-      //     vestManager.address,
-      //     epochNum,
-      //     balanceChangeIndex
-      //   ),
-      //   "getDelegatorPositionReward"
-      // ).to.not.be.eq(0);
+      // verify that there are rewards left to claim
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        systemHydraChain,
+        hydraDelegation,
+        newValidator.address,
+        vestManager.address
+      );
 
       expect(
-        await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address),
+        await hydraDelegation.getDelegatorPositionReward(
+          newValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        ),
         "getDelegatorPositionReward"
       ).to.not.be.eq(0);
 

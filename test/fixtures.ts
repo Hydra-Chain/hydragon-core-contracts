@@ -515,8 +515,16 @@ async function vestingRewardsFixtureFunction(this: Mocha.Context) {
 // --------------- Withdrawable Fixtures ---------------
 
 async function withdrawableFixtureFunction(this: Mocha.Context) {
-  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, vestingManagerFactory } =
-    await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    vestingManagerFactory,
+    aprCalculator,
+  } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
   const unstakedValidator = this.signers.validators[0];
   const unstakedAmount = this.minStake.div(2);
@@ -543,14 +551,23 @@ async function withdrawableFixtureFunction(this: Mocha.Context) {
     unstakedValidator,
     unstakedAmount,
     vestingManagerFactory,
+    aprCalculator,
   };
 }
 
 // --------------- Delegated Fixtures ---------------
 
 async function delegatedFixtureFunction(this: Mocha.Context) {
-  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, vestingManagerFactory } =
-    await loadFixture(this.fixtures.withdrawableFixture);
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    vestingManagerFactory,
+    aprCalculator,
+  } = await loadFixture(this.fixtures.withdrawableFixture);
 
   const delegateAmount = this.minDelegation.mul(2);
 
@@ -566,12 +583,29 @@ async function delegatedFixtureFunction(this: Mocha.Context) {
     this.epochSize
   );
 
-  return { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, vestingManagerFactory };
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    vestingManagerFactory,
+    aprCalculator,
+  };
 }
 
 async function vestManagerFixtureFunction(this: Mocha.Context) {
-  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, vestingManagerFactory } =
-    await loadFixture(this.fixtures.delegatedFixture);
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    vestingManagerFactory,
+    aprCalculator,
+  } = await loadFixture(this.fixtures.delegatedFixture);
 
   const { newManagerFactory, newManager } = await createNewVestManager(vestingManagerFactory, this.signers.accounts[4]);
 
@@ -585,6 +619,7 @@ async function vestManagerFixtureFunction(this: Mocha.Context) {
     vestManager: newManager,
     vestManagerOwner: this.signers.accounts[4],
     vestingManagerFactory: newManagerFactory,
+    aprCalculator,
   };
 }
 
@@ -640,6 +675,7 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
     vestingManagerFactory,
     vestManager,
     vestManagerOwner,
+    aprCalculator,
   } = await loadFixture(this.fixtures.vestManagerFixture);
 
   const validator = this.signers.validators[2];
@@ -668,6 +704,7 @@ async function weeklyVestedDelegationFixtureFunction(this: Mocha.Context) {
     vestManager,
     vestManagerOwner,
     delegatedValidator: validator,
+    aprCalculator,
   };
 }
 

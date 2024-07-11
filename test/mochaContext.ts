@@ -137,6 +137,7 @@ export interface Fixtures {
       unstakedValidator: SignerWithAddress;
       unstakedAmount: BigNumber;
       vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   delegatedFixture: {
@@ -148,6 +149,7 @@ export interface Fixtures {
       hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   vestManagerFixture: {
@@ -161,6 +163,7 @@ export interface Fixtures {
       vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   vestedDelegationFixture: {
@@ -189,6 +192,7 @@ export interface Fixtures {
       vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
+      aprCalculator: APRCalculator;
     }>;
   };
   validatorToBanFixture: {

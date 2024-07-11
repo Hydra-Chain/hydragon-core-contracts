@@ -9,8 +9,7 @@ import "./big-int-fix.ts";
 dotenv.config();
 
 // eslint-disable-next-line import/first
-// sami - remove commented tasks
-// import "./tasks";
+import "./tasks";
 
 const config: HardhatUserConfig = {
   solidity: {

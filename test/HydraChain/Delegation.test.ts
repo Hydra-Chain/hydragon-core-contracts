@@ -5,7 +5,7 @@ import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
-import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE, DAY } from "../constants";
+import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE, DAY, EPOCHS_YEAR } from "../constants";
 import {
   calculatePenalty,
   claimPositionRewards,
@@ -17,6 +17,7 @@ import {
   createManagerAndVest,
   getDelegatorPositionReward,
   calculateTotalPotentialPositionReward,
+  calculateExpectedReward,
 } from "../helper";
 
 export function RunDelegationTests(): void {
@@ -1057,207 +1058,205 @@ export function RunDelegationTests(): void {
         expect(reward).to.be.eq(0);
       });
 
+      describe("getDelegatorPositionReward() With Vesting", async function () {
+        it("should get no rewards if the position is still active", async function () {
+          const { systemHydraChain, hydraChain, hydraDelegation, hydraStaking, vestingManagerFactory } =
+            await loadFixture(this.fixtures.delegatedFixture);
+
+          const validator = this.signers.validators[1];
+          const manager = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation
+          );
+
+          // commit epochs to distribute rewards
+          await commitEpochs(
+            systemHydraChain,
+            hydraStaking,
+            [this.signers.validators[0], validator],
+            5, // number of epochs to commit
+            this.epochSize,
+            DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
+          );
+
+          const managerRewards = await getDelegatorPositionReward(
+            hydraChain,
+            hydraDelegation,
+            validator.address,
+            manager.address
+          );
+
+          expect(managerRewards).to.equal(0);
+        });
+
+        it("should generate partial rewards when enter maturing period", async function () {
+          const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } =
+            await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+          // commit epoch so some more rewards are distributed
+          await commitEpoch(
+            systemHydraChain,
+            hydraStaking,
+            [this.signers.validators[0], delegatedValidator],
+            this.epochSize,
+            WEEK + 1
+          );
+
+          const managerRewards = await getDelegatorPositionReward(
+            systemHydraChain,
+            hydraDelegation,
+            delegatedValidator.address,
+            vestManager.address
+          );
+
+          const totalPotentialRewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            delegatedValidator.address,
+            vestManager.address
+          );
+
+          expect(managerRewards).to.be.lessThan(totalPotentialRewards);
+        });
+
+        it("should have the same rewards if the position size and period are the same", async function () {
+          const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
+            this.fixtures.delegatedFixture
+          );
+
+          const validator = this.signers.validators[2];
+          const manager1 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation
+          );
+          const manager2 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation
+          );
+
+          // Commit epochs so rewards to be distributed
+          await commitEpochs(
+            systemHydraChain,
+            hydraStaking,
+            [this.signers.validators[0], this.signers.validators[1], validator],
+            5, // number of epochs to commit
+            this.epochSize,
+            DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
+          );
+
+          const manager1rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager1.address
+          );
+          const manager2rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager2.address
+          );
+
+          expect(manager1rewards).to.equal(manager2rewards);
+        });
+
+        it("should have different rewards if the position period differs", async function () {
+          const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
+            this.fixtures.delegatedFixture
+          );
+
+          const validator = this.signers.validators[2];
+          const manager1 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation
+          );
+          const manager2 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            52, // max weeks
+            this.minDelegation
+          );
+
+          // Commit epochs so rewards to be distributed
+          await commitEpochs(
+            systemHydraChain,
+            hydraStaking,
+            [this.signers.validators[0], this.signers.validators[1], validator],
+            7, // number of epochs to commit
+            this.epochSize,
+            DAY * 3 // three days per epoch, so, 3 x 7 = 21 days ahead
+          );
+
+          const manager1rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager1.address
+          );
+          const manager2rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager2.address
+          );
+
+          expect(manager2rewards).to.be.greaterThan(manager1rewards);
+        });
+
+        it("should have different rewards when the position differs", async function () {
+          const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
+            this.fixtures.delegatedFixture
+          );
+
+          const validator = this.signers.validators[2];
+          const manager1 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation.mul(2)
+          );
+          const manager2 = await createManagerAndVest(
+            vestingManagerFactory,
+            this.signers.accounts[4],
+            validator.address,
+            VESTING_DURATION_WEEKS,
+            this.minDelegation
+          );
+
+          // commit epochs so rewards to be distributed
+          await commitEpochs(
+            systemHydraChain,
+            hydraStaking,
+            [this.signers.validators[0], this.signers.validators[1], validator],
+            5, // number of epochs to commit
+            this.epochSize,
+            WEEK // one week = 1 epoch
+          );
+
+          const manager1rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager1.address
+          );
+          const manager2rewards = await calculateTotalPotentialPositionReward(
+            hydraDelegation,
+            validator.address,
+            manager2.address
+          );
+
+          expect(manager1rewards).to.be.greaterThan(manager2rewards);
+        });
+      });
       // TODO: More tests with actual calculation results checks must be made
-    });
-
-    describe("Delegate position rewards", async function () {
-      it("should get no rewards if the position is still active", async function () {
-        const { systemHydraChain, hydraChain, hydraDelegation, hydraStaking, vestingManagerFactory } =
-          await loadFixture(this.fixtures.delegatedFixture);
-
-        const validator = this.signers.validators[1];
-        const manager = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
-        );
-
-        // commit epochs to distribute rewards
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], validator],
-          5, // number of epochs to commit
-          this.epochSize,
-          DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
-        );
-
-        const managerRewards = await getDelegatorPositionReward(
-          hydraChain,
-          hydraDelegation,
-          validator.address,
-          manager.address
-        );
-
-        expect(managerRewards).to.equal(0);
-      });
-
-      it("should generate partial rewards when enter maturing period", async function () {
-        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
-          this.fixtures.weeklyVestedDelegationFixture
-        );
-
-        // commit epoch so some more rewards are distributed
-        await commitEpoch(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], delegatedValidator],
-          this.epochSize,
-          WEEK + 1
-        );
-
-        const managerRewards = await getDelegatorPositionReward(
-          systemHydraChain,
-          hydraDelegation,
-          delegatedValidator.address,
-          vestManager.address
-        );
-
-        const totalPotentialRewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          delegatedValidator.address,
-          vestManager.address
-        );
-
-        expect(managerRewards).to.be.lessThan(totalPotentialRewards);
-      });
-
-      it("should have the same rewards if the position size and period are the same", async function () {
-        const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
-          this.fixtures.delegatedFixture
-        );
-
-        const validator = this.signers.validators[2];
-        const manager1 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
-        );
-        const manager2 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
-        );
-
-        // Commit epochs so rewards to be distributed
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], validator],
-          5, // number of epochs to commit
-          this.epochSize,
-          DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
-        );
-
-        const manager1rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager1.address
-        );
-        const manager2rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager2.address
-        );
-
-        expect(manager1rewards).to.equal(manager2rewards);
-      });
-
-      it("should have different rewards if the position period differs", async function () {
-        const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
-          this.fixtures.delegatedFixture
-        );
-
-        const validator = this.signers.validators[2];
-        const manager1 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
-        );
-        const manager2 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          52, // max weeks
-          this.minDelegation
-        );
-
-        // Commit epochs so rewards to be distributed
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], validator],
-          7, // number of epochs to commit
-          this.epochSize,
-          DAY * 3 // three days per epoch, so, 3 x 7 = 21 days ahead
-        );
-
-        const manager1rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager1.address
-        );
-        const manager2rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager2.address
-        );
-
-        expect(manager2rewards).to.be.greaterThan(manager1rewards);
-      });
-
-      it("should have different rewards when the position differs", async function () {
-        const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory } = await loadFixture(
-          this.fixtures.delegatedFixture
-        );
-
-        const validator = this.signers.validators[2];
-        const manager1 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation.mul(2)
-        );
-        const manager2 = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
-        );
-
-        // commit epochs so rewards to be distributed
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], validator],
-          5, // number of epochs to commit
-          this.epochSize,
-          WEEK // one week = 1 epoch
-        );
-
-        const manager1rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager1.address
-        );
-        const manager2rewards = await calculateTotalPotentialPositionReward(
-          hydraDelegation,
-          validator.address,
-          manager2.address
-        );
-
-        expect(manager1rewards).to.be.greaterThan(manager2rewards);
-      });
     });
   });
 
@@ -1283,9 +1282,222 @@ export function RunDelegationTests(): void {
         .claimDelegatorReward(this.signers.validators[0].address);
       const receipt = await tx.wait();
       const event = receipt.events?.find((log: any) => log.event === "DelegatorRewardsClaimed");
-      expect(event?.args?.staker, "event.arg.validator").to.equal(this.signers.validators[0].address);
+      expect(event?.args?.staker, "event.arg.staker").to.equal(this.signers.validators[0].address);
       expect(event?.args?.delegator, "event.arg.delegator").to.equal(this.signers.delegator.address);
       expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
+    });
+
+    it("should revert when not the vest manager owner", async function () {
+      const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+      await expect(
+        vestManager.connect(this.signers.accounts[10]).claimVestedPositionReward(delegatedValidator.address, 0, 0)
+      ).to.be.revertedWith(ERRORS.ownable);
+    });
+
+    it("should not claim when active position", async function () {
+      const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      // ensure is active position
+      expect(
+        await hydraDelegation.isActiveDelegatePosition(delegatedValidator.address, vestManager.address),
+        "isActive"
+      ).to.be.true;
+      const balanceBefore = await delegatedValidator.getBalance();
+
+      // reward to be accumulated
+      await commitEpoch(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize
+      );
+
+      expect(
+        await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
+        "getRawDelegatorReward"
+      ).to.be.gt(0);
+
+      // claim & check balance
+      await vestManager.claimVestedPositionReward(delegatedValidator.address, 0, 0);
+      const balanceAfter = await delegatedValidator.getBalance();
+      expect(balanceAfter).to.be.eq(balanceBefore);
+    });
+
+    it("should return when unused position", async function () {
+      const { hydraDelegation, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      const delegatedAmount = await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address);
+      // ensure is active position
+      expect(
+        await hydraDelegation.isActiveDelegatePosition(delegatedValidator.address, vestManager.address),
+        "isActive"
+      ).to.be.true;
+
+      await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
+      await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedAmount);
+
+      // check reward
+      expect(
+        await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
+        "getRawDelegatorReward"
+      ).to.be.eq(0);
+      expect(await hydraDelegation.withdrawable(vestManager.address), "withdrawable").to.eq(0);
+    });
+
+    it("should revert when wrong rps index is provided", async function () {
+      const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
+
+      // finish the vesting period
+      await time.increase(WEEK * 52);
+
+      // prepare params for call
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        systemHydraChain,
+        hydraDelegation,
+        delegatedValidator.address,
+        vestManager.address
+      );
+
+      await expect(
+        vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum + 1, balanceChangeIndex),
+        "claimVestedPositionReward"
+      )
+        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+        .withArgs("vesting", "INVALID_EPOCH");
+
+      // commit epoch
+      await commitEpoch(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize
+      );
+
+      await expect(
+        vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum + 1, balanceChangeIndex),
+        "claimVestedPositionReward2"
+      )
+        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+        .withArgs("vesting", "WRONG_RPS");
+    });
+
+    it("should properly claim reward when not fully matured", async function () {
+      const {
+        systemHydraChain,
+        hydraStaking,
+        hydraDelegation,
+        vestManager,
+        vestManagerOwner,
+        delegatedValidator,
+        aprCalculator,
+      } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+      // calculate base rewards
+      const baseReward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+      const base = await aprCalculator.base();
+      const vestBonus = await aprCalculator.getVestingBonus(1);
+      const rsi = await aprCalculator.rsi();
+      const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+
+      // calculate max reward
+      const maxVestBonus = await aprCalculator.getVestingBonus(52);
+      const maxRSI = await aprCalculator.MAX_RSI_BONUS();
+      const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
+
+      // commit epoch, so more reward is added that must not be claimed now
+      await commitEpoch(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize,
+        WEEK + 1
+      );
+
+      // prepare params for call
+      const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        systemHydraChain,
+        hydraDelegation,
+        delegatedValidator.address,
+        vestManager.address
+      );
+
+      await expect(
+        await vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex),
+        "claimVestedPositionReward"
+      ).to.changeEtherBalances(
+        [hre.ethers.constants.AddressZero, vestManagerOwner.address, hydraDelegation.address],
+        [maxReward.sub(expectedReward), expectedReward, maxReward.mul(-1)]
+      );
+    });
+
+    it("should properly claim reward when position fully matured", async function () {
+      const {
+        systemHydraChain,
+        hydraStaking,
+        hydraDelegation,
+        vestManager,
+        vestManagerOwner,
+        delegatedValidator,
+        aprCalculator,
+      } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+      // calculate base rewards
+      const baseReward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+      const base = await aprCalculator.base();
+      const vestBonus = await aprCalculator.getVestingBonus(1);
+      const rsi = await aprCalculator.rsi();
+      const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+
+      // calculate max reward
+      const maxVestBonus = await aprCalculator.getVestingBonus(52);
+      const maxRSI = await aprCalculator.MAX_RSI_BONUS();
+      const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
+
+      // more rewards to be distributed
+      await commitEpoch(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
+        this.epochSize,
+        WEEK * 2 + 1
+      );
+
+      const additionalReward = (
+        await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address)
+      ).sub(baseReward);
+
+      const expectedAdditionalReward = base.mul(additionalReward).div(10000).div(EPOCHS_YEAR);
+      const maxAdditionalReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, additionalReward);
+
+      // prepare params for call
+      const { position, epochNum, balanceChangeIndex } = await retrieveRPSData(
+        systemHydraChain,
+        hydraDelegation,
+        delegatedValidator.address,
+        vestManager.address
+      );
+
+      // ensure rewards are matured
+      const areRewardsMatured = position.end.add(position.duration).lt(await time.latest());
+      expect(areRewardsMatured, "areRewardsMatured").to.be.true;
+
+      const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
+      const maxFinalReward = maxReward.add(maxAdditionalReward);
+
+      await expect(
+        await vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex),
+        "claimVestedPositionReward"
+      ).to.changeEtherBalances(
+        [hre.ethers.constants.AddressZero, vestManagerOwner.address, hydraDelegation.address],
+        [maxFinalReward.sub(expectedFinalReward), expectedFinalReward, maxFinalReward.mul(-1)]
+      );
     });
   });
 }
