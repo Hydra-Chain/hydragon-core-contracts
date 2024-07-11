@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {Staking} from "./../../Staking.sol";
 import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
 import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
+
 contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
@@ -28,7 +29,7 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
     ) external onlyHydraChain {
         // TODO: Check if the amount after unstake is gonna be smaller than the minimum stake and if yes - unstake the totalStake
         // We use the base _unstake, because we don't want all extensions to be executed on penalty
-        (uint256 stakeLeft, uint256 withdrawAmount) = Staking._unstake(staker, unstakeAmount);
+        (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
         if (stakeLeft == 0) {
             hydraChainContract.deactivateValidator(msg.sender);
         }
@@ -48,6 +49,7 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         if (!hydraChainContract.isValidatorBanned(msg.sender)) {
             revert ValidatorNotBanned(msg.sender);
         }
+
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         delete leftToWithdrawPerStaker[msg.sender];
         _withdraw(msg.sender, leftToWithdraw);
@@ -58,27 +60,39 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
 
     /**
      * @notice Distributes penelized stake to the stakers
-     * @param withdrawAmount The amount to withdraw
+     * @param availableToWithdraw The amount that is available to withdraw
      * @param stakeDistributions The distribution of the penalty
      */
     function _distributePenalizedStake(
-        uint256 withdrawAmount,
+        uint256 availableToWithdraw,
         PenalizedStakeDistribution[] calldata stakeDistributions
     ) internal returns (uint256 leftForStaker) {
         for (uint256 i = 0; i < stakeDistributions.length; i++) {
-            PenalizedStakeDistribution memory reward = stakeDistributions[0];
-            if (withdrawAmount < reward.amount) {
-                _handleWithdrawal(reward.account, withdrawAmount);
+            PenalizedStakeDistribution memory stakeDistribution = stakeDistributions[i];
+            if (availableToWithdraw < stakeDistribution.amount) {
+                _handleWithdrawal(stakeDistribution.account, availableToWithdraw);
                 return 0;
             }
 
-            _handleWithdrawal(reward.account, reward.amount);
-            withdrawAmount -= reward.amount;
+            _handleWithdrawal(stakeDistribution.account, stakeDistribution.amount);
+            availableToWithdraw -= stakeDistribution.amount;
         }
 
-        return withdrawAmount;
+        return availableToWithdraw;
     }
 
+    /**
+     * @notice Handles the unstake operation on penalize.
+     * @dev You can override the behaviour in children modules
+     * @param staker The account to unstake from
+     * @param unstakeAmount The amount to unstake
+     */
+    function _executeUnstake(
+        address staker,
+        uint256 unstakeAmount
+    ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
+        return Staking._unstake(staker, unstakeAmount);
+    }
 
     /**
      * @notice Performs the necessary actions after a staker is penalized.
@@ -96,7 +110,6 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
      * @param withdrawnAmount The amount to withdraw
      */
     function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual {}
-
 
     /**
      * @notice Handles the withdrawal of the given amount for the given account

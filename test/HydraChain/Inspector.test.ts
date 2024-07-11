@@ -1,16 +1,17 @@
 /* eslint-disable node/no-extraneous-import */
+import { ethers } from "hardhat";
+import { expect } from "chai";
 import { loadFixture, time, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
-import { expect } from "chai";
-import { DENOMINATOR, ERRORS, VALIDATOR_STATUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
-import { ethers } from "hardhat";
 import { commitEpochs } from "../helper";
+import { DENOMINATOR, ERRORS, VALIDATOR_STATUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+// eslint-disable-next-line camelcase
+import { LiquidityToken__factory } from "../../typechain-types";
 
 export function RunInspectorTests(): void {
   describe("setValidatorPenalty", function () {
     it("should revert not owner when try to set validator penalty", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-
       await expect(hydraChain.connect(this.signers.validators[0]).setValidatorPenalty(0)).to.be.revertedWith(
         ERRORS.ownable
       );
@@ -106,8 +107,8 @@ export function RunInspectorTests(): void {
         .to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject")
         .withArgs();
     });
-    /// sami: Check Math here
-    it.skip("should ban a validator that has a vested staking position", async function () {
+
+    it("should ban a validator that has a vested staking position", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
       await systemHydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
 
@@ -121,14 +122,22 @@ export function RunInspectorTests(): void {
       const bps = (VESTING_DURATION_WEEKS - 1) * 30;
       const unstakePenalty = this.minStake.mul(bps).div(DENOMINATOR);
       const stakedAmount = await hydraStaking.stakeOf(staker.address);
-      const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);
 
+      const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);
       const banTx = await systemHydraChain.connect(this.signers.governance).banValidator(staker.address);
-      const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(staker.address);
+      const withdrawableAmount = await hydraStaking.leftToWithdrawPerStaker(staker.address);
 
       await expect(banTx, "ValidatorBanned").to.emit(systemHydraChain, "ValidatorBanned").withArgs(staker.address);
-      // expect(withdrawalBalance.liquidTokens, "withdrawable").to.be.equal(stakedAmount);
-      expect(withdrawalBalance, "withdrawable").to.be.equal(stakedAmountAfterPenalty);
+      expect(withdrawableAmount, "withdrawable").to.be.equal(stakedAmountAfterPenalty);
+
+      const liquidTokensThatMustBeCollected = (await hydraStaking.liquidityDebts(staker.address)).add(
+        withdrawableAmount
+      );
+      await expect(hydraStaking.connect(staker).withdrawBannedFunds(), "liquidTokens collect").to.changeTokenBalance(
+        LiquidityToken__factory.connect(await hydraStaking.liquidToken(), ethers.provider),
+        staker.address,
+        liquidTokensThatMustBeCollected.mul(-1)
+      );
     });
 
     it("should ban the validator, even if he succeeded to unstake before that", async function () {
@@ -146,32 +155,44 @@ export function RunInspectorTests(): void {
       expect(await hydraStaking.stakeOf(validatorToBan.address), "balanceOf").to.be.equal(0);
       await expect(banTx, "ValidatorBanned").to.emit(hydraChain, "ValidatorBanned").withArgs(validatorToBan.address);
     });
-    // sami: Check Math here
-    it.skip("should ban and penalize the validator", async function () {
+
+    it("should ban and penalize the validator", async function () {
       const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
-
       const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
-
       const banTx = await hydraChain.banValidator(validatorToBan.address);
-
       const reporterReward = await hydraChain.reporterReward();
       const validatorBanPenalty = await hydraChain.validatorPenalty();
-      const balanceToWithdrawFromContract = reporterReward.add(validatorBanPenalty);
-      const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(validatorToBan.address);
+      const withdrawableAmount = await hydraStaking.leftToWithdrawPerStaker(validatorToBan.address);
 
-      expect(await hydraStaking.stakeOf(validatorToBan.address), "stakedOf").to.be.equal(0);
-      // expect(withdrawalBalance.liquidTokens, "liquidTokens").to.be.equal(stakedAmount);
-      expect(withdrawalBalance, "withdrawableAmount").to.be.equal(
+      expect(await hydraStaking.stakeOf(validatorToBan.address), "stakedOf").to.be.eq(0);
+      expect(withdrawableAmount, "withdrawableAmount").to.be.equal(
         stakedAmount.sub(reporterReward).sub(validatorBanPenalty)
       );
-      await expect(banTx, "StakeChanged").to.emit(hydraStaking, "StakeChanged").withArgs(validatorToBan.address, 0);
+      await expect(banTx, "BalanceChanged event")
+        .to.emit(hydraStaking, "BalanceChanged")
+        .withArgs(validatorToBan.address, 0);
+      // penalty is burned immediately from the contract
       await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [hydraChain.address, await hydraChain.signer.getAddress(), ethers.constants.AddressZero],
-        [balanceToWithdrawFromContract.mul(-1), reporterReward, validatorBanPenalty]
+        [hydraStaking.address, ethers.constants.AddressZero],
+        [validatorBanPenalty.mul(-1), validatorBanPenalty]
+      );
+      // reporter must withdraw its reward after a given period
+      expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(reporterReward);
+
+      const liquidTokensThatMustBeCollected = (await hydraStaking.liquidityDebts(validatorToBan.address)).add(
+        withdrawableAmount
+      );
+      await expect(
+        hydraStaking.connect(validatorToBan).withdrawBannedFunds(),
+        "liquidTokens collect"
+      ).to.changeTokenBalance(
+        LiquidityToken__factory.connect(await hydraStaking.liquidToken(), ethers.provider),
+        validatorToBan.address,
+        liquidTokensThatMustBeCollected.mul(-1)
       );
     });
-    // sami: balance do not change
-    it.skip("should get only reporter reward, because it is more than the stake", async function () {
+
+    it("should get only reporter reward, because it is more than the stake", async function () {
       const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
 
       const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
@@ -184,28 +205,27 @@ export function RunInspectorTests(): void {
 
       expect(withdrawalBalance, "withdrawableAmount").to.be.equal(0);
       await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [hydraChain.address, await hydraChain.signer.getAddress(), ethers.constants.AddressZero],
-        [stakedAmount.mul(-1), stakedAmount, 0]
+        [hydraStaking.address, ethers.constants.AddressZero],
+        [0, 0]
       );
+      expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(stakedAmount);
     });
-    // sami: balance do not change
-    it.skip("should get reporter reward, but to penalyze the whole stake when penalty is more than the stake", async function () {
+
+    it("should get reporter reward, but to penalyze the whole stake when penalty is more than the stake", async function () {
       const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
-
       const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
-
       await hydraChain.connect(this.signers.governance).setValidatorPenalty(stakedAmount.mul(2));
 
       const banTx = await hydraChain.banValidator(validatorToBan.address);
-
       const reporterReward = await hydraChain.reporterReward();
       const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(validatorToBan.address);
 
-      expect(withdrawalBalance, "withdrawableAmount").to.be.equal(0);
-      await expect(banTx, "withdrawn reward").to.changeEtherBalances(
-        [hydraChain.address, await hydraChain.signer.getAddress(), ethers.constants.AddressZero],
-        [stakedAmount.mul(-1), reporterReward, stakedAmount.sub(reporterReward)]
+      expect(withdrawalBalance).to.be.equal(0);
+      await expect(banTx).to.changeEtherBalances(
+        [hydraStaking.address, ethers.constants.AddressZero],
+        [stakedAmount.sub(reporterReward).mul(-1), stakedAmount.sub(reporterReward)] // reporter reward is added to withdrawable, so reported can withdraw it in a separate tx
       );
+      expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(reporterReward);
     });
 
     it("should ban the validator even if threhshold is not met, if called from the contract owner", async function () {
@@ -241,8 +261,8 @@ export function RunInspectorTests(): void {
       setBalance(hydraStaking.address, 0);
       await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWith("WITHDRAWAL_FAILED");
     });
-    // sami: balance do not change
-    it.skip("should successfully withdraw the funds", async function () {
+
+    it("should successfully withdraw the funds", async function () {
       const { hydraChain, liquidToken, bannedValidator, stakedAmount, hydraStaking } = await loadFixture(
         this.fixtures.bannedValidatorFixture
       );
@@ -259,7 +279,7 @@ export function RunInspectorTests(): void {
         .to.emit(hydraStaking, "WithdrawalFinished")
         .withArgs(hydraStaking.address, bannedValidator.address, withdrawAmount);
       await expect(withdrawTx, "change balances").to.changeEtherBalances(
-        [hydraChain.address, bannedValidator.address],
+        [hydraStaking.address, bannedValidator.address],
         [withdrawAmount.mul(-1), withdrawAmount]
       );
 

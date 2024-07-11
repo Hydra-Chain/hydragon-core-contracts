@@ -106,6 +106,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
+            // TODO: Here the max reward index amount is not burned
             // staker lose its reward
             stakingRewards[account].taken = stakingRewards[account].total;
             uint256 penalty = _calcSlashing(position, amount);

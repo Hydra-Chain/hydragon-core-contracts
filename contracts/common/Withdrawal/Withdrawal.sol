@@ -69,5 +69,4 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
         if (_newWaitPeriod == 0) revert InvalidWaitPeriod();
         withdrawWaitPeriod = _newWaitPeriod;
     }
-
 }
