@@ -162,6 +162,39 @@ export function RunHydraChainTests(): void {
           )
         ).to.be.revertedWith("Initializable: contract is already initialized");
       });
+
+      it("should revert when calling functions protected by onlyHydraStaking modifier", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.connect(this.signers.accounts[1]).activateValidator(this.signers.accounts[1].address))
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("ONLY_HYDRA_STAKING");
+        await expect(hydraChain.connect(this.signers.accounts[1]).deactivateValidator(this.signers.accounts[1].address))
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("ONLY_HYDRA_STAKING");
+      });
+      // sami: for HydraDelegation
+      it("should revert when calling functions protected by onlyHydraStaking modifier", async function () {
+        const { hydraDelegation } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(
+          hydraDelegation
+            .connect(this.signers.accounts[1])
+            .distributeDelegationRewards(this.signers.accounts[1].address, 1, 1)
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
+          .withArgs("ONLY_HYDRA_STAKING");
+      });
+      // sami: for HydraStaking
+      it("should revert when calling functions protected by onlyHydraChain modifier", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(
+          hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
+        )
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs("ONLY_HYDRA_CHAIN");
+      });
     });
 
     describe("Voting Power Exponent", async () => {

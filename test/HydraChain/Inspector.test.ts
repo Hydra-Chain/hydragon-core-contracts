@@ -284,7 +284,6 @@ export function RunInspectorTests(): void {
       );
 
       const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(bannedValidator.address);
-      // expect(withdrawalBalance.liquidTokens, "withdrawalBalance.liquidTokens").to.be.equal(0);
       expect(withdrawalBalance, "withdrawalBalance.withdrawableAmount").to.be.equal(0);
     });
   });

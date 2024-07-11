@@ -23,7 +23,7 @@ abstract contract HydraChainConnector is Initializable {
 
     modifier onlyHydraChain() {
         if (msg.sender != address(hydraChainContract)) {
-            revert Unauthorized("ONLY_HYRDA_CHAIN");
+            revert Unauthorized("ONLY_HYDRA_CHAIN");
         }
 
         _;
