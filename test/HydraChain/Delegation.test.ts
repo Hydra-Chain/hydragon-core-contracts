@@ -141,7 +141,6 @@ export function RunDelegationTests(): void {
   });
 
   describe("Undelegate", async function () {
-    // sami: check if we need extra if statements for amount bigger then delegated
     it("should not be able to undelegate more than the delegated amount", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
       const delegatedAmount = await hydraDelegation.delegationOf(
@@ -299,10 +298,7 @@ export function RunDelegationTests(): void {
 
       it("should set manager in mappings", async function () {
         const { vestManager, vestingManagerFactory } = await loadFixture(this.fixtures.vestManagerFixture);
-        // sami: there's no vestingManagers anymore
-        // expect(await hydraDelegation.vestingManagers(vestManager.address), "vestingManagers").to.equal(
-        //   this.vestManagerOwners[0].address
-        // );
+
         expect(
           await vestingManagerFactory.userVestManagers(this.vestManagerOwners[0].address, 0),
           "userVestManagers"
