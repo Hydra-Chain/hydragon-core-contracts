@@ -4,7 +4,16 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, ERRORS, MAX_COMMISSION, VALIDATOR_STATUS, WEEK, DEADLINE } from "../constants";
+import {
+  CHAIN_ID,
+  DOMAIN,
+  ERRORS,
+  MAX_COMMISSION,
+  VALIDATOR_STATUS,
+  WEEK,
+  DEADLINE,
+  INITIAL_COMMISSION,
+} from "../constants";
 import { commitEpoch, getPermitSignature } from "../helper";
 import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -91,11 +100,27 @@ export function RunHydraChainTests(): void {
           .withArgs(exceededCommission);
       });
 
-      // sami: Should be in HydraStaking (cannot check total supply cuz we need the address of the HydraDelegation contract that is set in the initialize function)
-      it("should have zero staked supply", async function () {
-        const { hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+      // sami: Should be in HydraStaking
+      it("should have zero staked & total supply", async function () {
+        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
+        expect(await hydraStaking.totalStake(), "totalStake").to.equal(0);
 
-        expect(await hydraStaking.totalStake(), "totalSupply").to.equal(0);
+        // initialize: because we make external calls to the HydraDelegation, which is set into the initializer (we pass no stakers)
+        await hydraStaking
+          .connect(this.signers.system)
+          .initialize(
+            [],
+            this.minStake,
+            liquidToken.address,
+            hydraChain.address,
+            aprCalculator.address,
+            this.signers.governance.address,
+            hydraDelegation.address
+          );
+
+        expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(0);
       });
 
       it("should initialize successfully", async function () {
@@ -117,7 +142,7 @@ export function RunHydraChainTests(): void {
         ).to.deep.equal(validatorInit.pubkey);
         expect(await hydraStaking.stakeOf(adminAddress), "stakeOf").to.equal(this.minStake.mul(2));
         expect(await hydraDelegation.totalDelegationOf(adminAddress), "totalDelegationOf").to.equal(0);
-        // expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION); // sami: commission is set in the HydraDelegation contract and it is not connected to HydraChain
+        expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION);
         expect(await hydraChain.bls(), "bls").to.equal(bls.address);
         expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(this.minStake.mul(2));
       });
@@ -139,7 +164,6 @@ export function RunHydraChainTests(): void {
       });
     });
 
-    // sami: Make sure this test runs
     describe("Voting Power Exponent", async () => {
       it("should have valid initialized values", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
@@ -517,7 +541,7 @@ export function RunHydraChainTests(): void {
 
         expect(validator.stake, "stake").to.equal(0);
         expect(validator.totalStake, "total stake").to.equal(0);
-        // expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION); // sami: commission is set in the HydraDelegation contract and it is not connected to HydraChain
+        expect(validator.commission, "commission").to.equal(0);
         expect(validator.active, "active").to.equal(false);
         expect(
           validator.blsKey.map((x: any) => x.toHexString()),
