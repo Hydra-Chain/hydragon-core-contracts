@@ -42,15 +42,6 @@ export function RunLiquidityTokenTests(): void {
       return { token };
     }
 
-    it("should revert init from non-system address", async () => {
-      const { token } = await loadFixture(deployFixture);
-      await expect(
-        token
-          .connect(governor)
-          .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
-      ).to.be.revertedWithCustomError(token, "Unauthorized");
-    });
-
     it("should have default admin role set", async () => {
       const { token } = await loadFixture(deployFixture);
       expect(await token.DEFAULT_ADMIN_ROLE()).equal(governorRole);
@@ -62,6 +53,15 @@ export function RunLiquidityTokenTests(): void {
     });
 
     describe("initialize()", async function () {
+      it("should revert initialize from non-system address", async () => {
+        const { token } = await loadFixture(deployFixture);
+        await expect(
+          token
+            .connect(governor)
+            .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
+        ).to.be.revertedWithCustomError(token, "Unauthorized");
+      });
+
       it("should be properly initialized", async () => {
         const { token } = await loadFixture(initializeFixture);
 
