@@ -24,14 +24,14 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     // _______________ Initializer _______________
 
-    function __Delegation_init(uint256 _minDelegation, address _governace) internal onlyInitializing {
+    function __Delegation_init(address _governace) internal onlyInitializing {
         __Governed_init(_governace);
         __Withdrawal_init(_governace);
-        __Delegation_init_unchained(_minDelegation);
+        __Delegation_init_unchained();
     }
 
-    function __Delegation_init_unchained(uint256 _minDelegation) internal onlyInitializing {
-        _changeMinDelegation(_minDelegation);
+    function __Delegation_init_unchained() internal onlyInitializing {
+        _changeMinDelegation(MIN_DELEGATION_LIMIT);
     }
 
     // _______________ External functions _______________

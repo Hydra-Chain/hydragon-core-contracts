@@ -163,11 +163,11 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
+      this.signers.governance.address,
       this.minStake,
       liquidToken.address,
       hydraChain.address,
       aprCalculator.address,
-      this.signers.governance.address,
       hydraDelegation.address
     );
 
@@ -175,9 +175,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
+      this.signers.governance.address,
       INITIAL_COMMISSION,
       liquidToken.address,
-      this.signers.governance.address,
       aprCalculator.address,
       hydraStaking.address,
       hydraChain.address,

@@ -5,7 +5,16 @@ import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
 import { VestManager__factory } from "../../typechain-types";
-import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE, DAY, EPOCHS_YEAR, MAX_COMMISSION } from "../constants";
+import {
+  ERRORS,
+  VESTING_DURATION_WEEKS,
+  WEEK,
+  DEADLINE,
+  DAY,
+  EPOCHS_YEAR,
+  MAX_COMMISSION,
+  INITIAL_COMMISSION,
+} from "../constants";
 import {
   calculatePenalty,
   claimPositionRewards,
@@ -24,6 +33,51 @@ import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidat
 export function RunHydraDelegationTests(): void {
   describe("", function () {
     describe("HydraDelegation initializations", function () {
+      it("should validate default values when HydraDelegation deployed", async function () {
+        const { hydraDelegation } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+        expect(hydraDelegation.deployTransaction.from).to.equal(this.signers.admin.address);
+        expect(await hydraDelegation.owner()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraDelegation.minDelegation()).to.equal(0);
+        expect(await hydraDelegation.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraDelegation.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraDelegation.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
+
+        expect(await hydraDelegation.MAX_COMMISSION()).to.equal(MAX_COMMISSION);
+        expect(await hydraDelegation.MIN_DELEGATION_LIMIT()).to.equal(this.minDelegation);
+
+        // Vested Delegation
+        expect(await hydraDelegation.balanceChangeThreshold()).to.equal(0);
+        expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(hre.ethers.constants.AddressZero);
+
+        // Liquid Delegation
+        expect(await hydraDelegation.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
+
+        // Withdrawable
+        expect(await hydraDelegation.withdrawWaitPeriod()).to.equal(0);
+      });
+
+      it("should revert when initialized without system call", async function () {
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
+          await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+        await expect(
+          hydraDelegation.initialize(
+            // eslint-disable-next-line node/no-unsupported-features/es-syntax
+            [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
+            INITIAL_COMMISSION,
+            liquidToken.address,
+            aprCalculator.address,
+            hydraStaking.address,
+            hydraChain.address,
+            vestingManagerFactory.address
+          )
+        )
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("SYSTEMCALL");
+      });
+
       it("should revert when initialize with invalid commission", async function () {
         const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
           await loadFixture(this.fixtures.presetHydraChainStateFixture);
@@ -33,9 +87,9 @@ export function RunHydraDelegationTests(): void {
           hydraDelegation.connect(this.signers.system).initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
             exceededCommission,
             liquidToken.address,
-            this.signers.governance.address,
             aprCalculator.address,
             hydraStaking.address,
             hydraChain.address,
@@ -44,6 +98,52 @@ export function RunHydraDelegationTests(): void {
         )
           .to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission")
           .withArgs(exceededCommission);
+      });
+
+      it("should initialize successfully", async function () {
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.admin.address)).to.equal(
+          INITIAL_COMMISSION
+        );
+
+        expect(await hydraDelegation.owner()).to.equal(this.signers.governance.address);
+        expect(await hydraDelegation.minDelegation()).to.equal(this.minDelegation);
+        expect(await hydraDelegation.hydraChainContract()).to.equal(hydraChain.address);
+        expect(await hydraDelegation.hydraStakingContract()).to.equal(hydraStaking.address);
+        expect(await hydraDelegation.aprCalculatorContract()).to.equal(aprCalculator.address);
+        expect(
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
+        ).to.be.true;
+
+        // Vested Delegation
+        expect(await hydraDelegation.balanceChangeThreshold()).to.equal(32);
+        expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(vestingManagerFactory.address);
+
+        // Liquid Delegation
+        expect(await hydraDelegation.liquidToken()).to.equal(liquidToken.address);
+
+        // Withdrawable
+        expect(await hydraDelegation.withdrawWaitPeriod()).to.equal(WEEK);
+      });
+      it("should revert on re-initialization attempt", async function () {
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(
+          hydraDelegation.connect(this.signers.system).initialize(
+            // eslint-disable-next-line node/no-unsupported-features/es-syntax
+            [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
+            0,
+            liquidToken.address,
+            aprCalculator.address,
+            hydraStaking.address,
+            hydraChain.address,
+            vestingManagerFactory.address
+          )
+        ).to.be.revertedWith("Initializable: contract is already initialized");
       });
     });
 

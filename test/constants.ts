@@ -20,6 +20,7 @@ export const MIN_RSI_BONUS = ethers.BigNumber.from(10000);
 export const MAX_RSI_BONUS = ethers.BigNumber.from(17000);
 export const DENOMINATOR = ethers.BigNumber.from(10000);
 export const DEADLINE = ethers.constants.MaxUint256.toString();
+export const MAX_ACTIVE_VALIDATORS = 150;
 /* eslint-disable no-unused-vars */
 export enum VALIDATOR_STATUS {
   None = 0,

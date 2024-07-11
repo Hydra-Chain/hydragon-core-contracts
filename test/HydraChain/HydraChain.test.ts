@@ -4,7 +4,15 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, ERRORS, VALIDATOR_STATUS, INITIAL_COMMISSION } from "../constants";
+import {
+  CHAIN_ID,
+  DOMAIN,
+  ERRORS,
+  VALIDATOR_STATUS,
+  INITIAL_COMMISSION,
+  DENOMINATOR,
+  MAX_ACTIVE_VALIDATORS,
+} from "../constants";
 import { RunInspectorTests } from "./Inspector.test";
 
 export function RunHydraChainTests(): void {
@@ -12,15 +20,37 @@ export function RunHydraChainTests(): void {
     // * Main tests for the ValidatorSet with the loaded context and all child fixtures
     describe("HydraChain initializations", function () {
       it("should validate default values when HydraChain deployed", async function () {
-        const { hydraChain, hydraStaking, hydraDelegation } = await loadFixture(
-          this.fixtures.presetHydraChainStateFixture
-        );
+        const { hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(hydraChain.deployTransaction.from).to.equal(this.signers.admin.address);
-        expect(await hydraStaking.minStake()).to.equal(0);
-        expect(await hydraDelegation.minDelegation()).to.equal(0);
         expect(await hydraChain.currentEpochId()).to.equal(0);
         expect(await hydraChain.owner()).to.equal(hre.ethers.constants.AddressZero);
+
+        // Validator Manager
+        expect(await hydraChain.bls()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraChain.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraChain.hydraDelegationContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraChain.activeValidatorsCount()).to.equal(0);
+        expect(await hydraChain.getValidators()).to.deep.equal([]);
+
+        expect(await hydraChain.MAX_VALIDATORS()).to.equal(MAX_ACTIVE_VALIDATORS);
+        expect(await hydraChain.DOMAIN()).to.equal(
+          hre.ethers.utils.solidityKeccak256(["string"], ["DOMAIN_HYDRA_CHAIN"])
+        );
+
+        // Power Exponent
+        const powerExp = await hydraChain.powerExponent();
+        expect(powerExp.value, "powerExp.value").to.equal(0);
+        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
+
+        const powerExpRes = await hydraChain.getExponent();
+        expect(powerExpRes.numerator, "powerExpRes.numerator").to.equal(0);
+        expect(powerExpRes.denominator, "powerExpRes.denominator").to.equal(DENOMINATOR);
+
+        // Inspector
+        expect(await hydraChain.validatorPenalty()).to.equal(0);
+        expect(await hydraChain.reporterReward()).to.equal(0);
+        expect(await hydraChain.banThreshold()).to.equal(0);
       });
 
       it("should revert when initialized without system call", async function () {
@@ -68,27 +98,44 @@ export function RunHydraChainTests(): void {
         const { hydraChain, bls, hydraStaking, hydraDelegation, validatorInit } = await loadFixture(
           this.fixtures.initializedHydraChainStateFixture
         );
-
-        expect(await hydraStaking.minStake(), "minStake").to.equal(this.minStake);
-        expect(await hydraDelegation.minDelegation(), "minDelegation").to.equal(this.minDelegation);
-        expect(await hydraChain.currentEpochId(), "currentEpochId").to.equal(1);
-        expect(await hydraChain.owner(), "owner").to.equal(this.signers.governance.address);
-
         const adminAddress = this.signers.admin.address;
         const validator = await hydraChain.getValidator(adminAddress);
 
+        expect(await hydraChain.currentEpochId(), "currentEpochId").to.equal(1);
+        expect(await hydraChain.owner(), "owner").to.equal(this.signers.governance.address);
+        expect(
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
+        ).to.be.true;
+
+        // Validator Manager
+        expect(await hydraChain.bls()).to.equal(bls.address);
+        expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);
+        expect(await hydraChain.hydraDelegationContract()).to.equal(hydraDelegation.address);
+        expect(await hydraChain.activeValidatorsCount()).to.equal(1);
+        expect(await hydraChain.getValidators()).to.deep.equal([this.signers.admin.address]);
+        expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION);
+        expect(await hydraChain.bls(), "bls").to.equal(bls.address);
         expect(
           validator.blsKey.map((x: any) => x.toHexString()),
           "blsKey"
         ).to.deep.equal(validatorInit.pubkey);
-        expect(await hydraStaking.stakeOf(adminAddress), "stakeOf").to.equal(this.minStake.mul(2));
-        expect(await hydraDelegation.totalDelegationOf(adminAddress), "totalDelegationOf").to.equal(0);
-        expect(validator.commission, "commission").to.equal(INITIAL_COMMISSION);
-        expect(await hydraChain.bls(), "bls").to.equal(bls.address);
-        expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(this.minStake.mul(2));
+
+        // Power Exponent
+        const powerExp = await hydraChain.powerExponent();
+        expect(powerExp.value, "powerExp.value").to.equal(5000);
+        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
+
+        const powerExpRes = await hydraChain.getExponent();
+        expect(powerExpRes.numerator, "powerExpRes.numerator").to.equal(5000);
+        expect(powerExpRes.denominator, "powerExpRes.denominator").to.equal(DENOMINATOR);
+
+        // Inspector
+        expect(await hydraChain.validatorPenalty()).to.equal(hre.ethers.utils.parseEther("700"));
+        expect(await hydraChain.reporterReward()).to.equal(hre.ethers.utils.parseEther("300"));
+        expect(await hydraChain.banThreshold()).to.equal(123428);
       });
 
-      it("should revert on reinitialization attempt", async function () {
+      it("should revert on re-initialization attempt", async function () {
         const { systemHydraChain, bls, hydraStaking, validatorInit, hydraDelegation } = await loadFixture(
           this.fixtures.initializedHydraChainStateFixture
         );
@@ -106,16 +153,47 @@ export function RunHydraChainTests(): void {
     });
 
     describe("Voting Power Exponent", async () => {
-      it("should have valid initialized values", async function () {
+      it("should revert trying to update the Exponent if we are no-govern address", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.updateExponent(6000)).to.be.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("should revert trying to update the Exponent invalid small value", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.connect(this.signers.governance).updateExponent(4999)).to.be.revertedWith(
+          "0.5 <= Exponent <= 1"
+        );
+      });
+
+      it("should revert trying to update the Exponent with invalid big value", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraChain.connect(this.signers.governance).updateExponent(10001)).to.be.revertedWith(
+          "0.5 <= Exponent <= 1"
+        );
+      });
+
+      it("should update the Exponent and apply to pending", async function () {
+        const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await hydraChain.connect(this.signers.governance).updateExponent(6000);
 
         const powerExp = await hydraChain.powerExponent();
         expect(powerExp.value, "powerExp.value").to.equal(5000);
-        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
+        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(6000);
+      });
 
-        const powerExpRes = await hydraChain.getExponent();
-        expect(powerExpRes.numerator, "powerExpRes.numerator").to.equal(5000);
-        expect(powerExpRes.denominator, "powerExpRes.denominator").to.equal(10000);
+      it("should update the Exponent and commit epoch to apply the pending", async function () {
+        const { systemHydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await systemHydraChain.connect(this.signers.governance).updateExponent(6000);
+        await systemHydraChain.commitEpoch(1, this.epoch, this.epochSize, this.uptime);
+
+        const powerExp = await systemHydraChain.powerExponent();
+        expect(powerExp.value, "powerExp.value").to.equal(6000);
+        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
       });
     });
 
@@ -249,7 +327,7 @@ export function RunHydraChainTests(): void {
           .withArgs("ONLY_HYDRA_STAKING");
       });
 
-      it("should revert if we try activate more than 150 Validators", async function () {
+      it("should revert if we try activate more than Max Active Validators", async function () {
         const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
         await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
         expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(4);
@@ -258,8 +336,8 @@ export function RunHydraChainTests(): void {
         const provider = hre.ethers.provider;
         const initialBalance = hre.ethers.utils.parseEther("100000");
 
-        // * Whitelist & Register total 150 validators
-        for (let i = 4; i < 150; i++) {
+        // * Whitelist & Register total max active validators validators
+        for (let i = 4; i < MAX_ACTIVE_VALIDATORS; i++) {
           // create a new wallet
           const wallet = hre.ethers.Wallet.createRandom();
           const connectedWallet = wallet.connect(provider);
@@ -275,9 +353,9 @@ export function RunHydraChainTests(): void {
 
           await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
         }
-        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(150);
+        expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(MAX_ACTIVE_VALIDATORS);
 
-        // * Try to stake with 151 validators
+        // * Try to stake with more than max active validators
         const validator151Wallet = hre.ethers.Wallet.createRandom();
         const validator151 = validator151Wallet.connect(provider);
         await hre.network.provider.send("hardhat_setBalance", [

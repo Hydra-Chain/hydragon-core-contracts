@@ -31,9 +31,9 @@ contract HydraDelegation is
     // TODO: Move commision to Delegation module
     function initialize(
         StakerInit[] calldata initialStakers,
+        address governance,
         uint256 initialCommission,
         address liquidToken,
-        address governance,
         address aprCalculatorAddr,
         address hydraStakingAddr,
         address hydraChainAddr,
@@ -42,7 +42,7 @@ contract HydraDelegation is
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
         __HydraChainConnector_init(hydraChainAddr);
-        __Delegation_init(MIN_DELEGATION_LIMIT, governance);
+        __Delegation_init(governance);
         __LiquidDelegation_init(liquidToken);
         __VestedDelegation_init(vestingManagerFactoryAddr);
 

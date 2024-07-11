@@ -18,27 +18,129 @@ import { DENOMINATOR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants"
 export function RunHydraStakingTests(): void {
   describe("", function () {
     describe("HydraStaking initializations", function () {
-      it("should have zero staked & total supply", async function () {
+      it("should validate default values when HydraStaking deployed", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+        expect(hydraStaking.deployTransaction.from).to.equal(this.signers.admin.address);
+        expect(await hydraStaking.owner()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraStaking.minStake()).to.equal(0);
+        expect(await hydraStaking.totalStake()).to.equal(0);
+        expect(await hydraStaking.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraStaking.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
+
+        expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
+
+        // Liquid Delegation
+        expect(await hydraStaking.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
+
+        // Withdrawable
+        expect(await hydraStaking.withdrawWaitPeriod()).to.equal(0);
+      });
+
+      it("should have zero total supply if we pass no validators", async function () {
         const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
           this.fixtures.presetHydraChainStateFixture
         );
-
-        expect(await hydraStaking.totalStake(), "totalStake").to.equal(0);
 
         // initialize: because we make external calls to the HydraDelegation, which is set into the initializer (we pass no stakers)
         await hydraStaking
           .connect(this.signers.system)
           .initialize(
             [],
+            this.signers.governance.address,
             this.minStake,
             liquidToken.address,
             hydraChain.address,
             aprCalculator.address,
-            this.signers.governance.address,
             hydraDelegation.address
           );
 
         expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(0);
+      });
+
+      it("should revert when initialized without system call", async function () {
+        const { hydraChain, liquidToken, hydraStaking, hydraDelegation, aprCalculator } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
+
+        await expect(
+          hydraStaking.initialize(
+            // eslint-disable-next-line node/no-unsupported-features/es-syntax
+            [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
+            this.minStake,
+            liquidToken.address,
+            hydraChain.address,
+            aprCalculator.address,
+            hydraDelegation.address
+          )
+        )
+          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+          .withArgs("SYSTEMCALL");
+      });
+
+      it("should revert if minStake is too low", async function () {
+        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
+
+        await expect(
+          hydraStaking.connect(this.signers.system).initialize(
+            // eslint-disable-next-line node/no-unsupported-features/es-syntax
+            [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
+            0,
+            liquidToken.address,
+            hydraChain.address,
+            aprCalculator.address,
+            hydraDelegation.address
+          )
+        ).to.be.revertedWithCustomError(hydraStaking, "InvalidMinStake");
+      });
+
+      it("should initialize successfully", async function () {
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator } = await loadFixture(
+          this.fixtures.initializedHydraChainStateFixture
+        );
+
+        expect(await hydraStaking.owner()).to.equal(this.signers.governance.address);
+        expect(await hydraStaking.minStake()).to.equal(this.minStake);
+        expect(await hydraStaking.totalStake()).to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.totalBalance()).to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.hydraChainContract()).to.equal(hydraChain.address);
+        expect(await hydraStaking.delegationContract()).to.equal(hydraDelegation.address);
+        expect(await hydraStaking.aprCalculatorContract()).to.equal(aprCalculator.address);
+        expect(await hydraStaking.stakeOf(this.signers.admin.address)).to.equal(this.minStake.mul(2));
+        expect(
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
+        ).to.be.true;
+
+        expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
+
+        // Liquid Delegation
+        expect(await hydraStaking.liquidToken()).to.equal(liquidToken.address);
+
+        // Withdrawable
+        expect(await hydraStaking.withdrawWaitPeriod()).to.equal(WEEK);
+      });
+
+      it("should revert on re-initialization attempt", async function () {
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(
+          hydraDelegation.connect(this.signers.system).initialize(
+            // eslint-disable-next-line node/no-unsupported-features/es-syntax
+            [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.signers.governance.address,
+            0,
+            liquidToken.address,
+            aprCalculator.address,
+            hydraStaking.address,
+            hydraChain.address,
+            vestingManagerFactory.address
+          )
+        ).to.be.revertedWith("Initializable: contract is already initialized");
       });
     });
 

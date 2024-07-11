@@ -687,7 +687,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, uint256 initialCommission, address liquidToken, address governance, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, address governance, uint256 initialCommission, address liquidToken, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr) external nonpayable
 ```
 
 
@@ -699,9 +699,9 @@ function initialize(StakerInit[] initialStakers, uint256 initialCommission, addr
 | Name | Type | Description |
 |---|---|---|
 | initialStakers | StakerInit[] | undefined |
+| governance | address | undefined |
 | initialCommission | uint256 | undefined |
 | liquidToken | address | undefined |
-| governance | address | undefined |
 | aprCalculatorAddr | address | undefined |
 | hydraStakingAddr | address | undefined |
 | hydraChainAddr | address | undefined |
