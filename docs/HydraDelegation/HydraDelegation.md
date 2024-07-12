@@ -988,7 +988,7 @@ function setCommission(uint256 newCommission) external nonpayable
 
 Sets commission for validator.
 
-
+*Anyone can set commission, but if the caller is not validator, it will not have any effect.*
 
 #### Parameters
 
@@ -1598,22 +1598,6 @@ error InvalidMinDelegation()
 
 
 
-
-### InvalidStaker
-
-```solidity
-error InvalidStaker(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
 
 ### InvalidWaitPeriod
 

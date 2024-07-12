@@ -9,10 +9,10 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
     event CommissionUpdated(address indexed validator, uint256 newCommission);
 
     error InvalidCommission(uint256 commission);
-    error InvalidStaker(address staker);
 
     /**
      * @notice Sets commission for validator.
+     * @dev Anyone can set commission, but if the caller is not validator, it will not have any effect.
      * @param newCommission New commission (100 = 100%)
      */
     function setCommission(uint256 newCommission) external;

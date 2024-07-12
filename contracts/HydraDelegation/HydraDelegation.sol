@@ -101,7 +101,6 @@ contract HydraDelegation is
 
     /**
      * @notice Set commission for validator
-     * @dev Anyone can set commission, but it won't matter if he is not validator
      * @param staker Address of the validator
      * @param newCommission New commission (100 = 10%)
      */
