@@ -3,9 +3,10 @@ pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
 import {IHydraDelegation} from "./../../../HydraDelegation/IHydraDelegation.sol";
+import {IDelegatedStaking} from "./IDelegatedStaking.sol";
 import {Unauthorized} from "./../../../common/Errors.sol";
 
-abstract contract DelegatedStaking is Staking {
+abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     IHydraDelegation public delegationContract;
 
     // _______________ Initializer _______________
@@ -31,18 +32,14 @@ abstract contract DelegatedStaking is Staking {
     // _______________ External functions _______________
 
     /**
-     * @notice Called by the delegation contract when a user delegates to a staker
-     * @dev This function should be called by the delegation contract
-     * @param staker The address of the staker
+     * @inheritdoc IDelegatedStaking
      */
     function onDelegate(address staker) external onlyDelegationContract onlyActiveStaker(staker) {
         _onDelegate(staker);
     }
 
     /**
-     * @notice Called by the delegation contract when a user undelegates from a staker
-     * @dev This function should be called by the delegation contract
-     * @param staker The address of the staker
+     * @inheritdoc IDelegatedStaking
      */
     function onUndelegate(address staker) external onlyDelegationContract {
         _onUndelegate(staker);

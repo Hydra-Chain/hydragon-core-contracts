@@ -4,11 +4,12 @@ pragma solidity 0.8.17;
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
+import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, HydraChainConnector {
+contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, HydraStakingConnector, HydraChainConnector {
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
@@ -126,9 +127,6 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
      * @param amount Amount to delegate
      */
     function _baseDelegate(address staker, address delegator, uint256 amount) internal virtual {
-        if (hydraChainContract.isValidatorActive(staker) == false) {
-            revert DelegateRequirement({src: "delegate", msg: "VALIDATOR_INACTIVE"});
-        }
         if (amount == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
         DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
@@ -137,6 +135,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
         delegation.deposit(delegator, amount);
         _totalDelegation += amount;
+
+        hydraStakingContract.onDelegate(staker);
 
         emit Delegated(staker, delegator, amount);
     }
@@ -172,6 +172,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
         delegation.withdraw(delegator, amount);
         _totalDelegation -= amount;
+
+        hydraStakingContract.onUndelegate(validator);
 
         emit Undelegated(validator, delegator, amount);
     }

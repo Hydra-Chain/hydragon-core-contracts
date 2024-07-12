@@ -309,6 +309,23 @@ function hydraChainContract() external view returns (contract IHydraChain)
 |---|---|---|
 | _0 | contract IHydraChain | undefined |
 
+### hydraStakingContract
+
+```solidity
+function hydraStakingContract() external view returns (contract IHydraStaking)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraStaking | undefined |
+
 ### minDelegation
 
 ```solidity

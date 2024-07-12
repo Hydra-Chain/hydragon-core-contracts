@@ -144,6 +144,56 @@ export function RunHydraStakingTests(): void {
       });
     });
 
+    describe("DelegatedStaking", function () {
+      it("should revert if we try to call OnDelegate from non-HydraDelegate contract", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraStaking.onDelegate(this.signers.accounts[1].address))
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs("ONLY_HYDRA_DELEGATION");
+      });
+
+      it("should revert if we try to call OnDelegate with non-active Validator from Delegate contract", async function () {
+        const { hydraDelegation, hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraDelegation.delegate(this.signers.accounts[5].address, { value: this.minDelegation }))
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs("INACTIVE_STAKER");
+      });
+
+      it("should revert if we try to call OnUnDelegate from non-HydraDelegate contract", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(hydraStaking.onUndelegate(this.signers.accounts[3].address))
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs("ONLY_HYDRA_DELEGATION");
+      });
+
+      it("should emit BalanceChanged event when delegating", async function () {
+        const { hydraDelegation, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const validatorBalanceBefore = await hydraStaking.totalBalanceOf(this.signers.validators[0].address);
+        const tx = await hydraDelegation.delegate(this.signers.validators[0].address, { value: this.minDelegation });
+
+        await expect(tx)
+          .to.emit(hydraStaking, "BalanceChanged")
+          .withArgs(this.signers.validators[0].address, this.minDelegation.add(validatorBalanceBefore));
+      });
+
+      it("should emit BalanceChanged event on undelegate", async function () {
+        const { hydraDelegation, hydraStaking } = await loadFixture(this.fixtures.delegatedFixture);
+
+        const validatorBalanceBefore = await hydraStaking.totalBalanceOf(this.signers.validators[0].address);
+        const tx = await hydraDelegation
+          .connect(this.signers.delegator)
+          .undelegate(this.signers.validators[0].address, this.minDelegation);
+
+        await expect(tx)
+          .to.emit(hydraStaking, "BalanceChanged")
+          .withArgs(this.signers.validators[0].address, validatorBalanceBefore.sub(this.minDelegation));
+      });
+    });
+
     describe("Change minStake", function () {
       it("should revert if non-Govern address try to change min stake", async function () {
         const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);

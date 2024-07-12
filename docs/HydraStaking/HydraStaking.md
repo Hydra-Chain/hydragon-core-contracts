@@ -523,7 +523,7 @@ function onDelegate(address staker) external nonpayable
 
 Called by the delegation contract when a user delegates to a staker
 
-*This function should be called by the delegation contract*
+*This function should be called by the delegation contractThis function also checks if the validator is active*
 
 #### Parameters
 

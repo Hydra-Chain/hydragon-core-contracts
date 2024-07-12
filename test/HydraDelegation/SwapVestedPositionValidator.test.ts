@@ -18,8 +18,9 @@ export function RunSwapVestedPositionValidatorTests(): void {
     });
 
     it("should revert if we try to swap to inActive validator", async function () {
-      const { systemHydraChain, vestManager, delegatedValidator, hydraDelegation, hydraStaking, vestManagerOwner } =
-        await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+      const { systemHydraChain, vestManager, delegatedValidator, hydraStaking, vestManagerOwner } = await loadFixture(
+        this.fixtures.weeklyVestedDelegationFixture
+      );
 
       await commitEpoch(
         systemHydraChain,
@@ -34,8 +35,8 @@ export function RunSwapVestedPositionValidatorTests(): void {
           .connect(vestManagerOwner)
           .swapVestedPositionValidator(delegatedValidator.address, vestManagerOwner.address)
       )
-        .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-        .withArgs("delegate", "VALIDATOR_INACTIVE");
+        .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+        .withArgs("INACTIVE_STAKER");
     });
 
     it("should revert that the old position is inactive", async function () {

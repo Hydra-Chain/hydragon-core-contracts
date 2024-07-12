@@ -13,7 +13,7 @@ struct StakerInit {
     uint256 stake;
 }
 
-interface IHydraStaking is IStaking, ILiquidStaking, IDelegatedStaking, IPenalizeableStaking {
+interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking {
     /**
      * @notice Distributes rewards for the given epoch
      * @dev Transfers funds from sender to this contract

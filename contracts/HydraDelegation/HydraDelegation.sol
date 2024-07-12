@@ -7,7 +7,6 @@ import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol"
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
-import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
 
@@ -16,7 +15,6 @@ contract HydraDelegation is
     System,
     APRCalculatorConnector,
     HydraStakingConnector,
-    HydraChainConnector,
     Delegation,
     LiquidDelegation,
     VestedDelegation
@@ -41,10 +39,9 @@ contract HydraDelegation is
     ) external initializer onlySystemCall {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
-        __HydraChainConnector_init(hydraChainAddr);
         __Delegation_init(governance);
         __LiquidDelegation_init(liquidToken);
-        __VestedDelegation_init(vestingManagerFactoryAddr);
+        __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
 
         _initialize(initialStakers, initialCommission);
     }
@@ -104,13 +101,12 @@ contract HydraDelegation is
 
     /**
      * @notice Set commission for validator
+     * @dev Anyone can set commission, but it won't matter if he is not validator
      * @param staker Address of the validator
      * @param newCommission New commission (100 = 10%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
-        if (!hydraChainContract.isValidatorActive(staker) && !hydraChainContract.isValidatorRegistered(staker))
-            revert InvalidStaker(staker);
 
         delegationCommissionPerStaker[staker] = newCommission;
 

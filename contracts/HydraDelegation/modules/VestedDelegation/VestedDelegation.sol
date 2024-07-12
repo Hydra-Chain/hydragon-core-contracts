@@ -10,6 +10,7 @@ import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol
 import {DelegationPool} from "./../../IDelegation.sol";
 import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
 import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.sol";
+import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "./../../../VestingManager/VestingManagerFactoryConnector.sol";
 
 contract VestedDelegation is
@@ -17,6 +18,7 @@ contract VestedDelegation is
     Governed,
     Withdrawal,
     APRCalculatorConnector,
+    HydraChainConnector,
     Delegation,
     VestingManagerFactoryConnector
 {
@@ -54,8 +56,9 @@ contract VestedDelegation is
 
     // _______________ Initializer _______________
 
-    function __VestedDelegation_init(address _vestingManagerFactoryAddr) internal onlyInitializing {
+    function __VestedDelegation_init(address _vestingManagerFactoryAddr, address _hydraChainAddr) internal onlyInitializing {
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
+        __HydraChainConnector_init(_hydraChainAddr);
         __VestedDelegation_init_unchained();
     }
 

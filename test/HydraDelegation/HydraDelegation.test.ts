@@ -160,14 +160,6 @@ export function RunHydraDelegationTests(): void {
     });
 
     describe("Set Commission", function () {
-      it("should revert when call setCommission for unregistered or inactive validator", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        await expect(hydraDelegation.connect(this.signers.validators[3]).setCommission(MAX_COMMISSION))
-          .to.be.revertedWithCustomError(hydraDelegation, "InvalidStaker")
-          .withArgs(this.signers.validators[3].address);
-      });
-
       it("should revert with invalid commission", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
@@ -254,15 +246,15 @@ export function RunHydraDelegationTests(): void {
       });
 
       it("should revert if we try to delegate to inactive validator", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
+        const { hydraDelegation, hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
 
         await expect(
           hydraDelegation.delegate(this.signers.validators[3].address, {
             value: this.minDelegation.mul(2),
           })
         )
-          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("delegate", "VALIDATOR_INACTIVE");
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs("INACTIVE_STAKER");
       });
 
       it("should delegate for the first time", async function () {
@@ -733,7 +725,7 @@ export function RunHydraDelegationTests(): void {
         });
 
         it("should revert when validator is inactive", async function () {
-          const { hydraDelegation, vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+          const { vestManager, hydraStaking } = await loadFixture(this.fixtures.vestManagerFixture);
 
           await expect(
             vestManager
@@ -742,8 +734,8 @@ export function RunHydraDelegationTests(): void {
                 value: this.minDelegation,
               })
           )
-            .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-            .withArgs("delegate", "VALIDATOR_INACTIVE");
+            .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+            .withArgs("INACTIVE_STAKER");
         });
 
         it("should revert when delegation too low", async function () {
