@@ -325,6 +325,13 @@ export async function createNewVestManager(vestingManagerFactory: VestingManager
   return { newManagerFactory: vestingManagerFactory, newManager: vestManager };
 }
 
+export async function attachAddressToVestingManager(address: string) {
+  const VestManagerFactory = new VestingManager__factory();
+  const attachedManager: VestingManager = VestManagerFactory.attach(address);
+
+  return attachedManager;
+}
+
 export async function calculateExpectedReward(
   base: BigNumber,
   vestBonus: BigNumber,

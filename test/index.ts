@@ -4,14 +4,12 @@ import { generateFixtures } from "./fixtures";
 import { generateValidatorBls, initializeContext } from "./helper";
 import { RunSystemTests } from "./common/System.test";
 import { RunAPRCalculatorTests } from "./APRCalculator/APRCalculator.test";
-// import { RunStakingTests } from "./Staking.test";
-// import { RunDelegationTests } from "./Delegation.test";
-// import { RunAPRTests } from "../RewardPool/APR.test";
 import { RunLiquidityTokenTests } from "./LiquidityToken/LiquidityToken.test";
 import { RunHydraChainTests } from "./HydraChain/HydraChain.test";
 import { RunBLSTests } from "./common/BLS.test";
 import { RunHydraStakingTests } from "./HydraStaking/HydraStaking.test";
 import { RunHydraDelegationTests } from "./HydraDelegation/HydraDelegation.test";
+import { RunVestingManagerTests } from "./VestingManager/VestingManager.test";
 
 describe("Hydra Contracts", function () {
   before(async function () {
@@ -55,7 +53,12 @@ describe("Hydra Contracts", function () {
   describe("HydraStaking", function () {
     RunHydraStakingTests();
   });
+
   describe("HydraDelegation", function () {
     RunHydraDelegationTests();
+  });
+
+  describe("VestingManager", function () {
+    RunVestingManagerTests();
   });
 });
