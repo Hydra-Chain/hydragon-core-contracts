@@ -16,6 +16,22 @@ import { applyMaxReward } from "../helper";
 export function RunAPRCalculatorTests(): void {
   describe("", function () {
     describe("Initialization", function () {
+      it("should validate default values when AprCalculator deployed", async function () {
+        const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+        expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
+        expect(await aprCalculator.base()).to.equal(0);
+        expect(await aprCalculator.macroFactor()).to.equal(0);
+        expect(await aprCalculator.rsi()).to.equal(0);
+
+        expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
+        expect(await aprCalculator.INITIAL_MACRO_FACTOR()).to.equal(INITIAL_MACRO_FACTOR);
+        expect(await aprCalculator.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
+        expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
+        expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
+        expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
+      });
+
       it("should revert initialize if not called by system", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
@@ -24,6 +40,7 @@ export function RunAPRCalculatorTests(): void {
           "Unauthorized"
         );
       });
+
       it("should initialize correctly", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
         const managerRole = await aprCalculator.MANAGER_ROLE();
@@ -34,10 +51,6 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
         expect(await aprCalculator.rsi()).to.be.equal(0);
-        expect(await aprCalculator.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
-        expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
-        expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
-        expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
       });
 
       it("should initialize vesting bonus", async function () {
@@ -45,12 +58,6 @@ export function RunAPRCalculatorTests(): void {
 
         expect(await aprCalculator.getVestingBonus(1)).to.be.equal(6);
         expect(await aprCalculator.getVestingBonus(52)).to.be.equal(2178);
-      });
-
-      it("should get max RSI", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
       });
 
       it("should get max APR", async function () {
