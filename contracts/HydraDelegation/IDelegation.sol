@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IWithdrawal} from "./../common/Withdrawal/IWithdrawal.sol";
 
+// TODO: DelegationPool.validator is never initialized, fix it
 struct DelegationPool {
     uint256 supply;
     uint256 virtualSupply;

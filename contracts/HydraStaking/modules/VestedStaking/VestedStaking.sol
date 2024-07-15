@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 import {Staking} from "./../../Staking.sol";
 import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
-import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
+import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 
 /**
  * @title VestedStaking
@@ -110,10 +110,10 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
             // staker lose its reward
             stakingRewards[account].taken = stakingRewards[account].total;
             uint256 penalty = _calcSlashing(position, amount);
-            // if position is closed when active, we delete all the vesting data
+
             if (stakeLeft == 0) {
-                // TODO: Why do we have to delete the vested staking data when we would add it again when new positions is made
-                //  and it can cost less if the data is changed instead of newly created
+                // if position is closed when active, we delete all the vesting data
+                // that way allowing the user to open new position for the same validator with the same vesting manager
                 delete vestedStakingPositions[account];
             }
 

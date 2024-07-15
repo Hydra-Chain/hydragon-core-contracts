@@ -26,7 +26,6 @@ contract HydraDelegation is
 
     // _______________ Initializer _______________
 
-    // TODO: Move commision to Delegation module
     function initialize(
         StakerInit[] calldata initialStakers,
         address governance,

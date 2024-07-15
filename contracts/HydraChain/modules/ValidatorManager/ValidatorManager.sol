@@ -11,7 +11,13 @@ import {Unauthorized} from "../../../common/Errors.sol";
 import {IBLS} from "./../../../BLS/IBLS.sol";
 import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IValidatorManager.sol";
 
-abstract contract ValidatorManager is IValidatorManager, System, AccessControl, HydraStakingConnector, HydraDelegationConnector {
+abstract contract ValidatorManager is
+    IValidatorManager,
+    System,
+    AccessControl,
+    HydraStakingConnector,
+    HydraDelegationConnector
+{
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
 
     /// @notice A constant for the maximum amount of validators
@@ -32,7 +38,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
 
     // _______________ Initializer _______________
 
-    // TODO: Move commision to Delegation module
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
@@ -74,7 +79,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
     }
 
     // _______________ External functions _______________
-
 
     /**
      * @inheritdoc IValidatorManager
@@ -185,7 +189,6 @@ abstract contract ValidatorManager is IValidatorManager, System, AccessControl, 
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
         validatorsAddresses.push(validator);
-        // TODO: Create delegation pool if desired
     }
 
     function _verifyValidatorRegistration(

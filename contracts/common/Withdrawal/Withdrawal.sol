@@ -10,7 +10,6 @@ import {IWithdrawal} from "./IWithdrawal.sol";
 abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable2StepUpgradeable {
     using WithdrawalQueueLib for WithdrawalQueue;
 
-    // TODO: This should be a parameter of the contract. Add NetworkParams based on the Polygon implementation
     uint256 public withdrawWaitPeriod;
     mapping(address => WithdrawalQueue) private _withdrawals;
 

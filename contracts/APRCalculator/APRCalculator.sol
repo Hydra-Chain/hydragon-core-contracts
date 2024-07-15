@@ -37,7 +37,6 @@ contract APRCalculator is Initializable, System, Governed {
 
     // _______________ Public functions _______________
 
-
     function setBase(uint256 newBase) public onlyRole(MANAGER_ROLE) {
         base = newBase;
     }
@@ -75,7 +74,6 @@ contract APRCalculator is Initializable, System, Governed {
     }
 
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
-        // TODO: Base + vesting and RSI must return the max possible value here (implement max base)
         uint256 vestBonus = calcVestingBonus(52);
 
         nominator = (base + vestBonus) * macroFactor * MAX_RSI_BONUS;
@@ -83,7 +81,6 @@ contract APRCalculator is Initializable, System, Governed {
     }
 
     function applyMaxReward(uint256 reward) public view returns (uint256) {
-        // TODO: Consider setting max base
         // max vesting bonus is 52 weeks
         uint256 vestBonus = calcVestingBonus(52);
 
@@ -91,8 +88,6 @@ contract APRCalculator is Initializable, System, Governed {
 
         return ((reward * bonus) / (10000 * 10000)) / EPOCHS_YEAR;
     }
-
-    // TODO: Apply EPOCHS_IN_YEAR everywhere it is needed
 
     function getEpochMaxReward(uint256 totalStaked) public view returns (uint256 reward) {
         uint256 nominator;
@@ -108,7 +103,6 @@ contract APRCalculator is Initializable, System, Governed {
         return vestingBonus[weeksCount - 1];
     }
 
-    // TODO: Calculate per epoch - currently yearly reward is used
     function applyMacro(uint256 totalStaked) public view returns (uint256 reward) {
         return (totalStaked * macroFactor) / DENOMINATOR;
     }

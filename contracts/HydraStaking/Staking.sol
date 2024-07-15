@@ -7,8 +7,6 @@ import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.
 import {Unauthorized} from "./../common/Errors.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
 
-// TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
-
 contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;

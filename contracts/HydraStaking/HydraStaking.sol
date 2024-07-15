@@ -152,9 +152,9 @@ contract HydraStaking is
         address staker,
         uint256 unstakeAmount
     ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        // this will call only VestedStaking._unstake() and staking._unstake()
+        // this will call only LiquidStaking._unstake(), VestedStaking._unstake() and staking._unstake()
         // because VestedStaking is immediately after Staking in the Linearization of the inheritance graph
-        return VestedStaking._unstake(staker, unstakeAmount);
+        return LiquidStaking._unstake(staker, unstakeAmount);
     }
 
     /**
@@ -218,14 +218,15 @@ contract HydraStaking is
      * @notice Distributes the reward for the given validator.
      * @param epochId The epoch id
      * @param uptime The uptime data for the validator
-     * @param fullReward The full reward for the epoch
+     * @param fullRewardIndex The full reward index
+     * (index because only part of the reward calculations are applied at that point) for the epoch
      * @param totalSupply The total supply for the epoch
      * @param totalBlocks The total blocks for the epoch
      */
     function _distributeReward(
         uint256 epochId,
         Uptime calldata uptime,
-        uint256 fullReward,
+        uint256 fullRewardIndex,
         uint256 totalSupply,
         uint256 totalBlocks
     ) private returns (uint256 reward) {
@@ -235,12 +236,12 @@ contract HydraStaking is
         uint256 commission = _getstakerDelegationCommission(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
         // slither-disable-next-line divide-before-multiply
-        uint256 validatorReward = (fullReward * (totalStake + delegation) * uptime.signedBlocks) /
+        uint256 validatorRewardIndex = (fullRewardIndex * (totalStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 validatorShares, uint256 delegatorShares) = _calculateValidatorAndDelegatorShares(
             totalStake,
             delegation,
-            validatorReward,
+            validatorRewardIndex,
             commission
         );
 
@@ -252,7 +253,7 @@ contract HydraStaking is
             _saveStakerRewardData(uptime.validator, epochId);
         }
 
-        return validatorReward;
+        return validatorRewardIndex;
     }
 
     /**

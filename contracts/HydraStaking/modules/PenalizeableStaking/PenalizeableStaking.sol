@@ -27,8 +27,12 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
     ) external onlyHydraChain {
-        // TODO: Check if the amount after unstake is gonna be smaller than the minimum stake and if yes - unstake the totalStake
-        // We use the base _unstake, because we don't want all extensions to be executed on penalty
+        uint256 accountStake = stakeOf(staker);
+        if (isStakeLeftLow(accountStake, unstakeAmount)) {
+            // It is HydraChain responsibility to execute penalize with proper values
+            revert StakeLeftLow();
+        }
+
         (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
         if (stakeLeft == 0) {
             hydraChainContract.deactivateValidator(msg.sender);
@@ -122,5 +126,14 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         } else {
             _registerWithdrawal(account, amount);
         }
+    }
+
+    function isStakeLeftLow(uint256 accountStake, uint256 unstakeAmount) private view returns (bool) {
+        uint256 stakeLeft = accountStake - unstakeAmount;
+        if (stakeLeft < minStake && stakeLeft != 0) {
+            return true;
+        }
+
+        return false;
     }
 }
