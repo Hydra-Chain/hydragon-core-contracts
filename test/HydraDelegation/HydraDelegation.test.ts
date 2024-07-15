@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { VestManager__factory } from "../../typechain-types";
+import { VestingManager__factory } from "../../typechain-types";
 import {
   ERRORS,
   VESTING_DURATION_WEEKS,
@@ -861,7 +861,7 @@ export function RunHydraDelegationTests(): void {
           // send one more token so liquid tokens balance is enough
           const user2 = this.signers.accounts[7];
           await vestingManagerFactory.connect(user2).newVestingManager();
-          const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+          const VestManagerFactory = new VestingManager__factory(this.vestManagerOwners[0]);
           const manager2 = await getUserManager(vestingManagerFactory, user2, VestManagerFactory);
           await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
             value: this.minDelegation.mul(2),
@@ -1139,7 +1139,7 @@ export function RunHydraDelegationTests(): void {
           // send one more token so liquid tokens balance is enough
           const user2 = this.signers.accounts[7];
           await vestingManagerFactory.connect(user2).newVestingManager();
-          const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+          const VestManagerFactory = new VestingManager__factory(this.vestManagerOwners[0]);
           const manager2 = await getUserManager(vestingManagerFactory, user2, VestManagerFactory);
           await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
             value: this.minDelegation.mul(2),
@@ -1177,7 +1177,7 @@ export function RunHydraDelegationTests(): void {
           // send one more token so liquid tokens balance is enough
           const user2 = this.signers.accounts[7];
           await vestingManagerFactory.connect(user2).newVestingManager();
-          const VestManagerFactory = new VestManager__factory(this.vestManagerOwners[0]);
+          const VestManagerFactory = new VestingManager__factory(this.vestManagerOwners[0]);
           const manager2 = await getUserManager(vestingManagerFactory, user2, VestManagerFactory);
           await manager2.openVestedDelegatePosition(this.delegatedValidators[0], 1, {
             value: this.minDelegation.mul(2),
