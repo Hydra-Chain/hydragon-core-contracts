@@ -9,9 +9,12 @@ import {Governed} from "./../common/Governed/Governed.sol";
 
 contract APRCalculator is Initializable, System, Governed {
     error InvalidRSI();
+    error InvalidMacro();
 
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
+    uint256 public constant MIN_MACRO_FACTOR = 1250;
+    uint256 public constant MAX_MACRO_FACTOR = 17500;
     uint256 public constant MIN_RSI_BONUS = 10000;
     uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant DENOMINATOR = 10000;
@@ -42,6 +45,7 @@ contract APRCalculator is Initializable, System, Governed {
     }
 
     function setMacro(uint256 newMacroFactor) public onlyRole(MANAGER_ROLE) {
+        if (newMacroFactor < MIN_MACRO_FACTOR || newMacroFactor > MAX_MACRO_FACTOR) revert InvalidMacro();
         macroFactor = newMacroFactor;
     }
 
