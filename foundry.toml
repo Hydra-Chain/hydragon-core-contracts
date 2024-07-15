@@ -17,3 +17,5 @@ ffi = true
 runs = 10000
 
 # See more config options https://book.getfoundry.sh/reference/config.html
+
+fs_permissions = [{ access = "read", path = "./out"}]

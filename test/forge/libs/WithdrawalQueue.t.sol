@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 import "@utils/Test.sol";
 
-import {WithdrawalQueueLib} from "contracts/ValidatorSet/libs/WithdrawalQueue.sol";
-import {WithdrawalData, WithdrawalQueue} from "contracts/ValidatorSet/libs/IWithdrawalQueue.sol";
+import {WithdrawalQueueLib} from "contracts/common/Withdrawal/WithdrawalQueueLib.sol";
+import {WithdrawalData, WithdrawalQueue} from "contracts/common/Withdrawal/IWithdrawalQueueLib.sol";
 
 abstract contract EmptyState is Test {
     uint256 constant AMOUNT = 2 ether;
@@ -108,11 +108,7 @@ contract WithdrawalQueue_MultipleState is MultipleState {
         _fillQueue(amounts);
         uint256 expectedAmount;
         uint256 expectedNewHead;
-        currentTime = bound(
-            currentTime,
-            withdrawalQueueLibUser.headGetter(),
-            withdrawalQueueLibUser.tailGetter() - 1
-        );
+        currentTime = bound(currentTime, withdrawalQueueLibUser.headGetter(), withdrawalQueueLibUser.tailGetter() - 1);
         // calculate amount and newHead
         expectedNewHead = withdrawalQueueLibUser.headGetter();
         WithdrawalData memory withdrawal = withdrawalQueueLibUser.withdrawalsGetter(expectedNewHead);
@@ -131,11 +127,7 @@ contract WithdrawalQueue_MultipleState is MultipleState {
     function testPending(uint128[] memory amounts, uint256 currentTime) public {
         _fillQueue(amounts);
         uint256 expectedAmount;
-        currentTime = bound(
-            currentTime,
-            withdrawalQueueLibUser.headGetter(),
-            withdrawalQueueLibUser.tailGetter() - 1
-        );
+        currentTime = bound(currentTime, withdrawalQueueLibUser.headGetter(), withdrawalQueueLibUser.tailGetter() - 1);
         // calculate amount
         uint256 headCursor = withdrawalQueueLibUser.headGetter();
         WithdrawalData memory withdrawal = withdrawalQueueLibUser.withdrawalsGetter(headCursor);

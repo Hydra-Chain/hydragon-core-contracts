@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "@utils/Test.sol";
 
-import {NoTokensDelegated, DelegationPool, DelegationPoolLib} from "contracts/RewardPool/libs/DelegationPoolLib.sol";
+import {NoTokensDelegated, DelegationPool, DelegationPoolLib} from "contracts/HydraDelegation/DelegationPoolLib.sol";
 import {SafeMathInt, SafeMathUint} from "contracts/common/libs/SafeMathInt.sol";
 
 contract DelegationPoolTest is Test {
