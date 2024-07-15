@@ -9,7 +9,7 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
      * @dev The withdrawal amount is calculated as the difference between
-     * the validator's total stake and any penalties applied due to a ban
+     * the staker's total stake and any penalties applied due to a ban
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
 

@@ -4,13 +4,13 @@ pragma solidity 0.8.17;
 import "./../common/libs/SafeMathInt.sol";
 import {DelegationPool} from "./IDelegation.sol";
 
-error NoTokensDelegated(address validator);
+error NoTokensDelegated(address staker);
 
 /**
  * @title Delegation Pool Lib
  * @author Rosen Santev (Based Polygon Technology's RewardPoolLib)
  * @notice library for handling delegators and their rewards
- * Each validator has a Delegation Pool. The rewards that a validator receives are split between the validator and the delegators of that validator. The pool holds the delegators' share of the rewards, and maintains an accounting system for determining the delegators' shares in the pool. Rewards, whether to a validator (from stake) or to a delegator, do not autocompound, as to say that if a validator has a stake of 10 and earns 1 in rewards, their stake remains 10, and they have a separate one in rewards.
+ * Each staker has a Delegation Pool. The rewards that a staker receives are split between the staker and the delegators of that staker. The pool holds the delegators' share of the rewards, and maintains an accounting system for determining the delegators' shares in the pool. Rewards, whether to a staker (from stake) or to a delegator, do not autocompound, as to say that if a staker has a stake of 10 and earns 1 in rewards, their stake remains 10, and they have a separate one in rewards.
  */
 library DelegationPoolLib {
     using SafeMathUint for uint256;
@@ -23,7 +23,7 @@ library DelegationPoolLib {
      */
     function distributeReward(DelegationPool storage pool, uint256 amount) internal {
         if (amount == 0) return;
-        if (pool.virtualSupply == 0) revert NoTokensDelegated(pool.validator);
+        if (pool.virtualSupply == 0) revert NoTokensDelegated(pool.staker);
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 

@@ -54,8 +54,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     /**
      * @inheritdoc IDelegation
      */
-    function claimDelegatorReward(address validator) external {
-        _claimDelegatorReward(validator, msg.sender);
+    function claimDelegatorReward(address staker) external {
+        _claimDelegatorReward(staker, msg.sender);
     }
 
     /**
@@ -72,9 +72,9 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     /**
      * @inheritdoc IDelegation
      */
-    function delegate(address validator) public payable {
-        _claimDelegatorReward(validator, msg.sender);
-        _delegate(validator, msg.sender, msg.value);
+    function delegate(address staker) public payable {
+        _claimDelegatorReward(staker, msg.sender);
+        _delegate(staker, msg.sender, msg.value);
     }
 
     /**
@@ -102,8 +102,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     /**
      * @inheritdoc IDelegation
      */
-    function getDelegatorReward(address validator, address delegator) external view returns (uint256) {
-        DelegationPool storage delegation = delegationPools[validator];
+    function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
+        DelegationPool storage delegation = delegationPools[staker];
         uint256 reward = delegation.claimableRewards(delegator);
         return aprCalculatorContract.applyBaseAPR(reward);
     }
@@ -111,7 +111,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     // _______________ Internal functions _______________
 
     /**
-     * @notice Delegates funds to a validator
+     * @notice Delegates funds to a staker
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
@@ -121,7 +121,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     }
 
     /**
-     * @notice Base delegation funds to a validator
+     * @notice Base delegation funds to a staker
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
@@ -142,23 +142,23 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
     }
 
     /**
-     * @notice Undelegates funds from a validator
-     * @param validator Address of the validator
+     * @notice Undelegates funds from a staker
+     * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
      */
-    function _undelegate(address validator, address delegator, uint256 amount) internal virtual {
-        _baseUndelegate(validator, delegator, amount);
+    function _undelegate(address staker, address delegator, uint256 amount) internal virtual {
+        _baseUndelegate(staker, delegator, amount);
     }
 
     /**
-     * @notice Base undelegating funds from a validator
-     * @param validator Address of the validator
+     * @notice Base undelegating funds from a staker
+     * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
      */
-    function _baseUndelegate(address validator, address delegator, uint256 amount) internal virtual {
-        DelegationPool storage delegation = delegationPools[validator];
+    function _baseUndelegate(address staker, address delegator, uint256 amount) internal virtual {
+        DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (amount > delegatedAmount) revert DelegateRequirement({src: "undelegate", msg: "INSUFFICIENT_BALANCE"});
 
@@ -173,9 +173,9 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         delegation.withdraw(delegator, amount);
         _totalDelegation -= amount;
 
-        hydraStakingContract.onUndelegate(validator);
+        hydraStakingContract.onUndelegate(staker);
 
-        emit Undelegated(validator, delegator, amount);
+        emit Undelegated(staker, delegator, amount);
     }
 
     /**
@@ -201,16 +201,16 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     /**
      * @notice Claims rewards for a delegator
-     * @param validator Address of the validator
+     * @param staker Address of the validator
      * @param delegator Address of the delegator
      */
-    function _claimDelegatorReward(address validator, address delegator) private {
-        DelegationPool storage delegation = delegationPools[validator];
+    function _claimDelegatorReward(address staker, address delegator) private {
+        DelegationPool storage delegation = delegationPools[staker];
         uint256 rewardIndex = delegation.claimRewards(delegator);
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        emit DelegatorRewardsClaimed(validator, delegator, reward);
+        emit DelegatorRewardsClaimed(staker, delegator, reward);
 
         _withdraw(delegator, reward);
     }

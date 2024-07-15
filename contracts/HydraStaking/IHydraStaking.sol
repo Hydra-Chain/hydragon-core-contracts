@@ -18,7 +18,7 @@ interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenaliz
      * @notice Distributes rewards for the given epoch
      * @dev Transfers funds from sender to this contract
      * @param epochId The epoch number
-     * @param uptime uptime data for every validator
+     * @param uptime uptime data for every validator (staker)
      * @param epochSize Number of blocks per epoch
      */
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime, uint256 epochSize) external payable;

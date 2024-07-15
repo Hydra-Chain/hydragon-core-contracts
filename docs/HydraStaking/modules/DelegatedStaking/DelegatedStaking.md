@@ -78,7 +78,7 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 function changeMinStake(uint256 newMinStake) external nonpayable
 ```
 
-Changes minimum stake required for validators.
+Changes minimum stake required for stakers.
 
 *Should be called by the Governance.*
 
@@ -369,7 +369,7 @@ Returns staked amount for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 
@@ -491,7 +491,7 @@ Returns unclaimed rewards for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 

@@ -14,10 +14,6 @@ contract VestingManager is Initializable, OwnableUpgradeable {
     /// @notice The hydra delegation contract
     IHydraDelegation public immutable HYDRA_DELEGATION;
 
-    // _______________ Events _______________
-
-    event Claimed(address indexed account, uint256 amount);
-
     // _______________ Constructor _______________
 
     constructor(address hydraDelegationAddr) {
@@ -35,17 +31,17 @@ contract VestingManager is Initializable, OwnableUpgradeable {
 
     // _______________ External functions _______________
 
-    function openVestedDelegatePosition(address validator, uint256 durationWeeks) external payable onlyOwner {
-        HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(validator, durationWeeks);
+    function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable onlyOwner {
+        HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(staker, durationWeeks);
         _sendLiquidTokens(msg.sender, msg.value);
     }
 
-    function cutVestedDelegatePosition(address validator, uint256 amount) external payable onlyOwner {
-        _cutVestedPosition(validator, amount);
+    function cutVestedDelegatePosition(address staker, uint256 amount) external payable onlyOwner {
+        _cutVestedPosition(staker, amount);
     }
 
     function cutVestedDelegatePositionWithPermit(
-        address validator,
+        address staker,
         uint256 amount,
         uint256 deadline,
         uint8 v,
@@ -54,19 +50,19 @@ contract VestingManager is Initializable, OwnableUpgradeable {
     ) external payable onlyOwner {
         address liquidToken = HYDRA_DELEGATION.liquidToken();
         IERC20Permit(liquidToken).permit(msg.sender, address(this), amount, deadline, v, r, s);
-        _cutVestedPosition(validator, amount);
+        _cutVestedPosition(staker, amount);
     }
 
-    function swapVestedPositionValidator(address oldValidator, address newValidator) external onlyOwner {
-        HYDRA_DELEGATION.swapVestedPositionValidator(oldValidator, newValidator);
+    function swapVestedPositionStaker(address oldStaker, address newStaker) external onlyOwner {
+        HYDRA_DELEGATION.swapVestedPositionStaker(oldStaker, newStaker);
     }
 
     function claimVestedPositionReward(
-        address validator,
+        address staker,
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) external payable onlyOwner {
-        HYDRA_DELEGATION.claimPositionReward(validator, msg.sender, epochNumber, balanceChangeIndex);
+        HYDRA_DELEGATION.claimPositionReward(staker, msg.sender, epochNumber, balanceChangeIndex);
     }
 
     function withdraw(address to) external {
@@ -75,9 +71,9 @@ contract VestingManager is Initializable, OwnableUpgradeable {
 
     // _______________ Internal functions _______________
 
-    function _cutVestedPosition(address validator, uint256 amount) internal {
+    function _cutVestedPosition(address staker, uint256 amount) internal {
         _fulfillLiquidTokens(msg.sender, amount);
-        HYDRA_DELEGATION.undelegateWithVesting(validator, amount);
+        HYDRA_DELEGATION.undelegateWithVesting(staker, amount);
     }
 
     // _______________ Private functions _______________

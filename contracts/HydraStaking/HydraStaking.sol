@@ -56,7 +56,7 @@ contract HydraStaking is
     }
 
     function _initialize(StakerInit[] calldata initialStakers) private {
-        // set initial validators
+        // set initial stakers
         for (uint256 i = 0; i < initialStakers.length; i++) {
             _stake(initialStakers[i].addr, initialStakers[i].stake);
         }
@@ -183,8 +183,8 @@ contract HydraStaking is
         return super._claimStakingRewards(staker);
     }
 
-    // TODO: The unrealized potential staking reward for all validators must be burned at the end because
-    // HYDRA is minted for the full potential staking reward but only part of it will go as a reward for the validators
+    // TODO: The unrealized potential staking reward for all stakers must be burned at the end because
+    // HYDRA is minted for the full potential staking reward but only part of it will go as a reward for the stakers
     // we have to handle the other part
     // Other option and maybe better because it will simplify the logic and will decrease computation on both node and contract
     // is having a reward wallet that will have close to full hydra balance all the time.
@@ -215,9 +215,9 @@ contract HydraStaking is
     // _______________ Private functions _______________
 
     /**
-     * @notice Distributes the reward for the given validator.
+     * @notice Distributes the reward for the given staker.
      * @param epochId The epoch id
-     * @param uptime The uptime data for the validator
+     * @param uptime The uptime data for the validator (staker)
      * @param fullRewardIndex The full reward index
      * (index because only part of the reward calculations are applied at that point) for the epoch
      * @param totalSupply The total supply for the epoch
@@ -236,34 +236,34 @@ contract HydraStaking is
         uint256 commission = _getstakerDelegationCommission(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
         // slither-disable-next-line divide-before-multiply
-        uint256 validatorRewardIndex = (fullRewardIndex * (totalStake + delegation) * uptime.signedBlocks) /
+        uint256 stakerRewardIndex = (fullRewardIndex * (totalStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
-        (uint256 validatorShares, uint256 delegatorShares) = _calculateValidatorAndDelegatorShares(
+        (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
             totalStake,
             delegation,
-            validatorRewardIndex,
+            stakerRewardIndex,
             commission
         );
 
-        _distributeStakingReward(uptime.validator, validatorShares);
+        _distributeStakingReward(uptime.validator, stakerShares);
         distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
-        // Keep history record of the validator rewards to be used on maturing vesting reward claim
-        if (validatorShares > 0) {
+        // Keep history record of the staker rewards to be used on maturing vesting reward claim
+        if (stakerShares > 0) {
             _saveStakerRewardData(uptime.validator, epochId);
         }
 
-        return validatorRewardIndex;
+        return stakerRewardIndex;
     }
 
     /**
-     * @notice Calculates the validator and delegator shares.
+     * @notice Calculates the staker and delegator shares.
      * @param stakedBalance The staked balance
      * @param delegatedBalance The delegated balance
      * @param totalReward The total reward
-     * @param commission The commission of the validator
+     * @param commission The commission of the staker
      */
-    function _calculateValidatorAndDelegatorShares(
+    function _calculateStakerAndDelegatorShares(
         uint256 stakedBalance,
         uint256 delegatedBalance,
         uint256 totalReward,
@@ -271,11 +271,11 @@ contract HydraStaking is
     ) private pure returns (uint256, uint256) {
         if (stakedBalance == 0) return (0, 0);
         if (delegatedBalance == 0) return (totalReward, 0);
-        uint256 validatorReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
-        uint256 delegatorReward = totalReward - validatorReward;
-        uint256 validatorCommission = (commission * delegatorReward) / 100;
+        uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
+        uint256 delegatorReward = totalReward - stakerReward;
+        uint256 stakerCommission = (commission * delegatorReward) / 100;
 
-        return (validatorReward + validatorCommission, delegatorReward - validatorCommission);
+        return (stakerReward + stakerCommission, delegatorReward - stakerCommission);
     }
 
     /**
@@ -284,7 +284,7 @@ contract HydraStaking is
      * but only the macroFactor and the blocksCreated/totalEpochBlocks ratio are aplied here.
      * The participation factor is applied later in the distribution process.
      * (base + vesting and RSI are applied on claimReward for delegators
-     * and on _distributeValidatorReward for validators)
+     * and on _distributeValidatorReward for stakers)
      * @param activeStake Total active stake for the epoch
      * @param totalBlocks Number of blocks in the epoch
      * @param epochSize Expected size (number of blocks) of the epoch

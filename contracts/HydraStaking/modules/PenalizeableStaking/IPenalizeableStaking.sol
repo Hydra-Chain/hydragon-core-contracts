@@ -10,8 +10,8 @@ struct PenalizedStakeDistribution {
 
 /**
  * @notice Data type for the banned validators' withdrawals
- * @param liquidTokens The amount of liquid tokens to be taken on withdrawal from the penalized validator
- * @param withdrawableAmount The amount that is available for withdrawal after validator's penalty
+ * @param liquidTokens The amount of liquid tokens to be taken on withdrawal from the penalized staker
+ * @param withdrawableAmount The amount that is available for withdrawal after staker's penalty
  */
 struct WithdrawalInfo {
     uint256 liquidTokens;

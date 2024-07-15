@@ -174,7 +174,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
     // _______________ Private functions _______________
 
     /**
-     * @notice Function that changes the minimum stake required for validators.
+     * @notice Function that changes the minimum stake required for stakers.
      * @param newMinStake The new minimum stake
      */
     function _changeMinStake(uint256 newMinStake) private {

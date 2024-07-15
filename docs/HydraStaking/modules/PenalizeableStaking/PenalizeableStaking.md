@@ -78,7 +78,7 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 function changeMinStake(uint256 newMinStake) external nonpayable
 ```
 
-Changes minimum stake required for validators.
+Changes minimum stake required for stakers.
 
 *Should be called by the Governance.*
 
@@ -202,7 +202,7 @@ function leftToWithdrawPerStaker(address) external view returns (uint256)
 
 The withdrawal info that is required for a banned validator to withdraw the funds left
 
-*The withdrawal amount is calculated as the difference between the validator&#39;s total stake and any penalties applied due to a ban*
+*The withdrawal amount is calculated as the difference between the staker&#39;s total stake and any penalties applied due to a ban*
 
 #### Parameters
 
@@ -377,7 +377,7 @@ Returns staked amount for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 
@@ -499,7 +499,7 @@ Returns unclaimed rewards for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 

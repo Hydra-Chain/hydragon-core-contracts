@@ -13,7 +13,7 @@
 ### calculatePositionPenalty
 
 ```solidity
-function calculatePositionPenalty(address validator, address delegator, uint256 amount) external view returns (uint256 penalty)
+function calculatePositionPenalty(address staker, address delegator, uint256 amount) external view returns (uint256 penalty)
 ```
 
 Calculates the penalty for the position.
@@ -24,7 +24,7 @@ Calculates the penalty for the position.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to calculate penalty for |
+| staker | address | Validator to calculate penalty for |
 | delegator | address | Delegator to calculate penalty for |
 | amount | uint256 | Amount to calculate penalty for |
 
@@ -69,10 +69,10 @@ Changes the withdrawal wait period.
 ### claimDelegatorReward
 
 ```solidity
-function claimDelegatorReward(address validator) external nonpayable
+function claimDelegatorReward(address staker) external nonpayable
 ```
 
-Claims rewards for delegator for validator
+Claims rewards for delegator for staker
 
 
 
@@ -80,12 +80,12 @@ Claims rewards for delegator for validator
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of the validator |
+| staker | address | Address of the validator |
 
 ### claimPositionReward
 
 ```solidity
-function claimPositionReward(address validator, address to, uint256 epochNumber, uint256 balanceChangeIndex) external nonpayable
+function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external nonpayable
 ```
 
 Claims reward for the vest manager (delegator).
@@ -96,7 +96,7 @@ Claims reward for the vest manager (delegator).
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to claim from |
+| staker | address | Validator to claim from |
 | to | address | Address to transfer the reward to |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
@@ -104,10 +104,10 @@ Claims reward for the vest manager (delegator).
 ### delegate
 
 ```solidity
-function delegate(address validator) external payable
+function delegate(address staker) external payable
 ```
 
-Delegates sent amount to validator and claims rewards.
+Delegates sent amount to staker and claims rewards.
 
 
 
@@ -115,15 +115,15 @@ Delegates sent amount to validator and claims rewards.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to delegate to |
+| staker | address | Validator to delegate to |
 
 ### delegateWithVesting
 
 ```solidity
-function delegateWithVesting(address validator, uint256 durationWeeks) external payable
+function delegateWithVesting(address staker, uint256 durationWeeks) external payable
 ```
 
-Delegates sent amount to validator. Set vesting position data. Delete old pool params data, if exists. Can be used by vesting positions&#39; managers only.
+Delegates sent amount to staker. Set vesting position data. Delete old pool params data, if exists. Can be used by vesting positions&#39; managers only.
 
 
 
@@ -131,7 +131,7 @@ Delegates sent amount to validator. Set vesting position data. Delete old pool p
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to delegate to |
+| staker | address | Validator to delegate to |
 | durationWeeks | uint256 | Duration of the vesting in weeks |
 
 ### delegationOf
@@ -140,7 +140,7 @@ Delegates sent amount to validator. Set vesting position data. Delete old pool p
 function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-Return the amount of delegation for a delegator to a validator
+Return the amount of delegation for a delegator to a staker
 
 
 
@@ -160,10 +160,10 @@ Return the amount of delegation for a delegator to a validator
 ### getDelegationPoolParamsHistory
 
 ```solidity
-function getDelegationPoolParamsHistory(address validator, address delegator) external view returns (struct DelegationPoolParams[])
+function getDelegationPoolParamsHistory(address staker, address delegator) external view returns (struct DelegationPoolParams[])
 ```
 
-Gets the delegation pool params history for a validator and delegator.
+Gets the delegation pool params history for a staker and delegator.
 
 
 
@@ -171,7 +171,7 @@ Gets the delegation pool params history for a validator and delegator.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator that is delegated to |
+| staker | address | Validator that is delegated to |
 | delegator | address | Delegator that delegated |
 
 #### Returns
@@ -183,7 +183,7 @@ Gets the delegation pool params history for a validator and delegator.
 ### getDelegatorPositionReward
 
 ```solidity
-function getDelegatorPositionReward(address validator, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+function getDelegatorPositionReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
 ```
 
 Gets delegators&#39;s matured unclaimed rewards for a position
@@ -194,7 +194,7 @@ Gets delegators&#39;s matured unclaimed rewards for a position
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of validator |
+| staker | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
@@ -203,12 +203,12 @@ Gets delegators&#39;s matured unclaimed rewards for a position
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with validator (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
 
 ### getDelegatorReward
 
 ```solidity
-function getDelegatorReward(address validator, address delegator) external view returns (uint256)
+function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
 Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
@@ -219,22 +219,22 @@ Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of validator |
+| staker | address | Address of validator |
 | delegator | address | Address of delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
 
 ### getRPSValues
 
 ```solidity
-function getRPSValues(address validator, uint256 startEpoch, uint256 endEpoch) external view returns (struct RPS[])
+function getRPSValues(address staker, uint256 startEpoch, uint256 endEpoch) external view returns (struct RPS[])
 ```
 
-Gets the RPS values for a validator in a given epoch range.
+Gets the RPS values for a staker in a given epoch range.
 
 
 
@@ -242,7 +242,7 @@ Gets the RPS values for a validator in a given epoch range.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator that is deleagted to |
+| staker | address | Validator that is deleagted to |
 | startEpoch | uint256 | Start epoch for values |
 | endEpoch | uint256 | End epoch for values |
 
@@ -255,7 +255,7 @@ Gets the RPS values for a validator in a given epoch range.
 ### getRawDelegatorReward
 
 ```solidity
-function getRawDelegatorReward(address validator, address delegator) external view returns (uint256)
+function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
 Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
@@ -266,19 +266,19 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of validator |
+| staker | address | Address of validator |
 | delegator | address | Address of delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
 
 ### isActiveDelegatePosition
 
 ```solidity
-function isActiveDelegatePosition(address validator, address delegator) external view returns (bool)
+function isActiveDelegatePosition(address staker, address delegator) external view returns (bool)
 ```
 
 Returns true if the position is active.
@@ -289,7 +289,7 @@ Returns true if the position is active.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator for the position |
+| staker | address | Validator for the position |
 | delegator | address | Delegator for the position |
 
 #### Returns
@@ -301,7 +301,7 @@ Returns true if the position is active.
 ### isMaturingDelegatePosition
 
 ```solidity
-function isMaturingDelegatePosition(address validator, address delegator) external view returns (bool)
+function isMaturingDelegatePosition(address staker, address delegator) external view returns (bool)
 ```
 
 Returns true if the position is maturing.
@@ -312,7 +312,7 @@ Returns true if the position is maturing.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator for the position |
+| staker | address | Validator for the position |
 | delegator | address | Delegator for the position |
 
 #### Returns
@@ -343,13 +343,13 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
-### swapVestedPositionValidator
+### swapVestedPositionStaker
 
 ```solidity
-function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
+function swapVestedPositionStaker(address oldStaker, address newStaker) external nonpayable
 ```
 
-Move a vested position to another validator. Can be called by vesting positions&#39; managers only.
+Move a vested position to another staker. Can be called by vesting positions&#39; managers only.
 
 
 
@@ -357,8 +357,8 @@ Move a vested position to another validator. Can be called by vesting positions&
 
 | Name | Type | Description |
 |---|---|---|
-| oldValidator | address | Validator to swap from |
-| newValidator | address | Validator to swap to |
+| oldStaker | address | Validator to swap from |
+| newStaker | address | Validator to swap to |
 
 ### totalDelegation
 
@@ -402,10 +402,10 @@ Returns the total amount of delegation for a staker
 ### undelegate
 
 ```solidity
-function undelegate(address validator, uint256 amount) external nonpayable
+function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from validator for sender and claims rewards.
+Undelegates amount from staker for sender and claims rewards.
 
 
 
@@ -413,16 +413,16 @@ Undelegates amount from validator for sender and claims rewards.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to undelegate from |
+| staker | address | Validator to undelegate from |
 | amount | uint256 | The amount to undelegate |
 
 ### undelegateWithVesting
 
 ```solidity
-function undelegateWithVesting(address validator, uint256 amount) external nonpayable
+function undelegateWithVesting(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from validator for vesting position. Apply penalty in case vesting is not finished. Can be called by vesting positions&#39; managers only.
+Undelegates amount from staker for vesting position. Apply penalty in case vesting is not finished. Can be called by vesting positions&#39; managers only.
 
 
 
@@ -430,7 +430,7 @@ Undelegates amount from validator for vesting position. Apply penalty in case ve
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to undelegate from |
+| staker | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
 
 ### withdraw
@@ -478,7 +478,7 @@ Calculates how much can be withdrawn for account at this time.
 ### Delegated
 
 ```solidity
-event Delegated(address indexed validator, address indexed delegator, uint256 amount)
+event Delegated(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -489,7 +489,7 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
@@ -531,7 +531,7 @@ event DelegatorRewardsClaimed(address indexed staker, address indexed delegator,
 ### PositionCut
 
 ```solidity
-event PositionCut(address indexed manager, address indexed validator, uint256 amount)
+event PositionCut(address indexed manager, address indexed staker, uint256 amount)
 ```
 
 
@@ -543,13 +543,13 @@ event PositionCut(address indexed manager, address indexed validator, uint256 am
 | Name | Type | Description |
 |---|---|---|
 | manager `indexed` | address | undefined |
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### PositionOpened
 
 ```solidity
-event PositionOpened(address indexed manager, address indexed validator, uint256 indexed weeksDuration, uint256 amount)
+event PositionOpened(address indexed manager, address indexed staker, uint256 indexed weeksDuration, uint256 amount)
 ```
 
 
@@ -561,14 +561,14 @@ event PositionOpened(address indexed manager, address indexed validator, uint256
 | Name | Type | Description |
 |---|---|---|
 | manager `indexed` | address | undefined |
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | weeksDuration `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 ### PositionRewardClaimed
 
 ```solidity
-event PositionRewardClaimed(address indexed manager, address indexed validator, uint256 amount)
+event PositionRewardClaimed(address indexed manager, address indexed staker, uint256 amount)
 ```
 
 
@@ -580,13 +580,13 @@ event PositionRewardClaimed(address indexed manager, address indexed validator, 
 | Name | Type | Description |
 |---|---|---|
 | manager `indexed` | address | undefined |
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### PositionSwapped
 
 ```solidity
-event PositionSwapped(address indexed manager, address indexed oldValidator, address indexed newValidator, uint256 amount)
+event PositionSwapped(address indexed manager, address indexed oldStaker, address indexed newStaker, uint256 amount)
 ```
 
 
@@ -598,14 +598,14 @@ event PositionSwapped(address indexed manager, address indexed oldValidator, add
 | Name | Type | Description |
 |---|---|---|
 | manager `indexed` | address | undefined |
-| oldValidator `indexed` | address | undefined |
-| newValidator `indexed` | address | undefined |
+| oldStaker `indexed` | address | undefined |
+| newStaker `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
 ### Undelegated
 
 ```solidity
-event Undelegated(address indexed validator, address indexed delegator, uint256 amount)
+event Undelegated(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -616,7 +616,7 @@ event Undelegated(address indexed validator, address indexed delegator, uint256 
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 

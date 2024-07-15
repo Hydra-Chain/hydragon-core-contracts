@@ -30,7 +30,7 @@ The hydra delegation contract
 ### claimVestedPositionReward
 
 ```solidity
-function claimVestedPositionReward(address validator, uint256 epochNumber, uint256 balanceChangeIndex) external payable
+function claimVestedPositionReward(address staker, uint256 epochNumber, uint256 balanceChangeIndex) external payable
 ```
 
 
@@ -41,14 +41,14 @@ function claimVestedPositionReward(address validator, uint256 epochNumber, uint2
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| staker | address | undefined |
 | epochNumber | uint256 | undefined |
 | balanceChangeIndex | uint256 | undefined |
 
 ### cutVestedDelegatePosition
 
 ```solidity
-function cutVestedDelegatePosition(address validator, uint256 amount) external payable
+function cutVestedDelegatePosition(address staker, uint256 amount) external payable
 ```
 
 
@@ -59,13 +59,13 @@ function cutVestedDelegatePosition(address validator, uint256 amount) external p
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| staker | address | undefined |
 | amount | uint256 | undefined |
 
 ### cutVestedDelegatePositionWithPermit
 
 ```solidity
-function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external payable
+function cutVestedDelegatePositionWithPermit(address staker, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external payable
 ```
 
 
@@ -76,7 +76,7 @@ function cutVestedDelegatePositionWithPermit(address validator, uint256 amount, 
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| staker | address | undefined |
 | amount | uint256 | undefined |
 | deadline | uint256 | undefined |
 | v | uint8 | undefined |
@@ -102,7 +102,7 @@ function initialize(address owner) external nonpayable
 ### openVestedDelegatePosition
 
 ```solidity
-function openVestedDelegatePosition(address validator, uint256 durationWeeks) external payable
+function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable
 ```
 
 
@@ -113,7 +113,7 @@ function openVestedDelegatePosition(address validator, uint256 durationWeeks) ex
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | undefined |
+| staker | address | undefined |
 | durationWeeks | uint256 | undefined |
 
 ### owner
@@ -144,10 +144,10 @@ function renounceOwnership() external nonpayable
 *Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
 
 
-### swapVestedPositionValidator
+### swapVestedPositionStaker
 
 ```solidity
-function swapVestedPositionValidator(address oldValidator, address newValidator) external nonpayable
+function swapVestedPositionStaker(address oldStaker, address newStaker) external nonpayable
 ```
 
 
@@ -158,8 +158,8 @@ function swapVestedPositionValidator(address oldValidator, address newValidator)
 
 | Name | Type | Description |
 |---|---|---|
-| oldValidator | address | undefined |
-| newValidator | address | undefined |
+| oldStaker | address | undefined |
+| newStaker | address | undefined |
 
 ### transferOwnership
 
@@ -196,23 +196,6 @@ function withdraw(address to) external nonpayable
 
 
 ## Events
-
-### Claimed
-
-```solidity
-event Claimed(address indexed account, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| account `indexed` | address | undefined |
-| amount  | uint256 | undefined |
 
 ### Initialized
 

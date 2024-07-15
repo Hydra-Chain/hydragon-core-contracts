@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { DAY, ERRORS, WEEK } from "../constants";
 import { commitEpoch, commitEpochs, retrieveRPSData } from "../helper";
 
-export function RunSwapVestedPositionValidatorTests(): void {
+export function RunSwapVestedPositionStakerTests(): void {
   describe("Vested position swap", async function () {
     it("should revert when not the vest manager owner", async function () {
       const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
@@ -13,7 +13,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await expect(
         vestManager
           .connect(this.signers.accounts[10])
-          .swapVestedPositionValidator(delegatedValidator.address, delegatedValidator.address)
+          .swapVestedPositionStaker(delegatedValidator.address, delegatedValidator.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
@@ -33,7 +33,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await expect(
         vestManager
           .connect(vestManagerOwner)
-          .swapVestedPositionValidator(delegatedValidator.address, vestManagerOwner.address)
+          .swapVestedPositionStaker(delegatedValidator.address, vestManagerOwner.address)
       )
         .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
         .withArgs("INACTIVE_STAKER");
@@ -61,7 +61,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await expect(
         vestManager
           .connect(vestManagerOwner)
-          .swapVestedPositionValidator(this.signers.validators[0].address, this.signers.validators[1].address)
+          .swapVestedPositionStaker(this.signers.validators[0].address, this.signers.validators[1].address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("vesting", "OLD_POSITION_INACTIVE");
@@ -80,7 +80,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
         .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
 
       await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+        vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
@@ -108,7 +108,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       expect(newPosition.end.lt(await time.latest()), "isMaturing").to.be.true;
 
       await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+        vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
@@ -151,7 +151,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       ).to.not.be.eq(0);
 
       await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+        vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
@@ -196,7 +196,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       ).to.not.be.eq(0);
 
       await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+        vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
@@ -218,7 +218,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       await commitEpoch(systemHydraChain, hydraStaking, [validator, newValidator], this.epochSize);
 
       // swap validator
-      await vestManager.connect(vestManagerOwner).swapVestedPositionValidator(validator.address, newValidator.address);
+      await vestManager.connect(vestManagerOwner).swapVestedPositionStaker(validator.address, newValidator.address);
 
       const oldPosition = await hydraDelegation.vestedDelegationPositions(validator.address, vestManager.address);
       const newPosition = await hydraDelegation.vestedDelegationPositions(newValidator.address, vestManager.address);
@@ -258,9 +258,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       const oldPositionAmount = await hydraDelegation.delegationOf(oldValidator.address, vestManager.address);
 
       // swap validator
-      await vestManager
-        .connect(vestManagerOwner)
-        .swapVestedPositionValidator(oldValidator.address, newValidator.address);
+      await vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address);
 
       const newPositionAmount = await hydraDelegation.delegationOf(newValidator.address, vestManager.address);
       const oldPositionAmountAfterSwap = await hydraDelegation.delegationOf(oldValidator.address, vestManager.address);
@@ -398,7 +396,7 @@ export function RunSwapVestedPositionValidatorTests(): void {
       const newValidator = this.signers.validators[2];
       // try to swap
       await expect(
-        vestManager.connect(vestManagerOwner).swapVestedPositionValidator(oldValidator.address, newValidator.address)
+        vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
       )
         .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
         .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");

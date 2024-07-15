@@ -204,7 +204,7 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 function changeMinStake(uint256 newMinStake) external nonpayable
 ```
 
-Changes minimum stake required for validators.
+Changes minimum stake required for stakers.
 
 *Should be called by the Governance.*
 
@@ -691,7 +691,7 @@ Returns staked amount for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 
@@ -766,7 +766,7 @@ The staking rewards mapped to a staker&#39;s address
 function stakingRewardsHistory(address, uint256) external view returns (uint256 totalReward, uint256 epoch, uint256 timestamp)
 ```
 
-Keeps the rewards history of the validators
+Keeps the rewards history of the stakers
 
 
 
@@ -893,7 +893,7 @@ Returns unclaimed rewards for the given account.
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | Validator address |
+| account | address | Staker address |
 
 #### Returns
 

@@ -107,10 +107,10 @@ Changes the withdrawal wait period.
 ### claimDelegatorReward
 
 ```solidity
-function claimDelegatorReward(address validator) external nonpayable
+function claimDelegatorReward(address staker) external nonpayable
 ```
 
-Claims rewards for delegator for validator
+Claims rewards for delegator for staker
 
 
 
@@ -118,15 +118,15 @@ Claims rewards for delegator for validator
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of the validator |
+| staker | address | Address of the validator |
 
 ### delegate
 
 ```solidity
-function delegate(address validator) external payable
+function delegate(address staker) external payable
 ```
 
-Delegates sent amount to validator and claims rewards.
+Delegates sent amount to staker and claims rewards.
 
 
 
@@ -134,7 +134,7 @@ Delegates sent amount to validator and claims rewards.
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Validator to delegate to |
+| staker | address | Validator to delegate to |
 
 ### delegationOf
 
@@ -142,7 +142,7 @@ Delegates sent amount to validator and claims rewards.
 function delegationOf(address staker, address delegator) external view returns (uint256)
 ```
 
-Return the amount of delegation for a delegator to a validator
+Return the amount of delegation for a delegator to a staker
 
 
 
@@ -162,7 +162,7 @@ Return the amount of delegation for a delegator to a validator
 ### delegationPools
 
 ```solidity
-function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare, address validator)
+function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare, address staker)
 ```
 
 Keeps the delegation pools
@@ -182,12 +182,12 @@ Keeps the delegation pools
 | supply | uint256 | undefined |
 | virtualSupply | uint256 | undefined |
 | magnifiedRewardPerShare | uint256 | undefined |
-| validator | address | undefined |
+| staker | address | undefined |
 
 ### getDelegatorReward
 
 ```solidity
-function getDelegatorReward(address validator, address delegator) external view returns (uint256)
+function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
 Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
@@ -198,14 +198,14 @@ Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | Address of validator |
+| staker | address | Address of validator |
 | delegator | address | Address of delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
 
 ### getRawDelegatorReward
 
@@ -221,14 +221,14 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Address of validator |
 | delegator | address | Address of delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per validator (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
 
 ### getRoleAdmin
 
@@ -527,7 +527,7 @@ function transferOwnership(address newOwner) external nonpayable
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from validator for sender and claims rewards.
+Undelegates amount from staker for sender and claims rewards.
 
 
 
@@ -535,7 +535,7 @@ Undelegates amount from validator for sender and claims rewards.
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
+| staker | address | Validator to undelegate from |
 | amount | uint256 | The amount to undelegate |
 
 ### withdraw
@@ -600,7 +600,7 @@ Calculates how much can be withdrawn for account at this time.
 ### Delegated
 
 ```solidity
-event Delegated(address indexed validator, address indexed delegator, uint256 amount)
+event Delegated(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -611,7 +611,7 @@ event Delegated(address indexed validator, address indexed delegator, uint256 am
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 
@@ -757,7 +757,7 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 ### Undelegated
 
 ```solidity
-event Undelegated(address indexed validator, address indexed delegator, uint256 amount)
+event Undelegated(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -768,7 +768,7 @@ event Undelegated(address indexed validator, address indexed delegator, uint256 
 
 | Name | Type | Description |
 |---|---|---|
-| validator `indexed` | address | undefined |
+| staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
 

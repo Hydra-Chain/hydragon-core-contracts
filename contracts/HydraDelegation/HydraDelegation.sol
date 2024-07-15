@@ -91,15 +91,15 @@ contract HydraDelegation is
      * @inheritdoc Delegation
      */
     function _undelegate(
-        address validator,
+        address staker,
         address delegator,
         uint256 amount
     ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
-        super._undelegate(validator, delegator, amount);
+        super._undelegate(staker, delegator, amount);
     }
 
     /**
-     * @notice Set commission for validator
+     * @notice Set commission for staker
      * @param staker Address of the validator
      * @param newCommission New commission (100 = 10%)
      */

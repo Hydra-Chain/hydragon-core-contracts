@@ -31,7 +31,7 @@ interface IStaking is IWithdrawal {
 
     /**
      * @dev Should be called by the Governance.
-     * @notice Changes minimum stake required for validators.
+     * @notice Changes minimum stake required for stakers.
      * @param newMinStake New minimum stake
      */
     function changeMinStake(uint256 newMinStake) external;
@@ -40,13 +40,13 @@ interface IStaking is IWithdrawal {
 
     /**
      * @notice Returns staked amount for the given account.
-     * @param account Validator address
+     * @param account Staker address
      */
     function stakeOf(address account) external view returns (uint256);
 
     /**
      * @notice Returns unclaimed rewards for the given account.
-     * @param account Validator address
+     * @param account Staker address
      */
     function unclaimedRewards(address account) external view returns (uint256);
 

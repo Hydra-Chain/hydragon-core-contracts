@@ -213,7 +213,7 @@ contract DelegationPoolLibUser {
     DelegationPool pool;
 
     constructor() {
-        pool.validator = address(this);
+        pool.staker = address(this);
     }
 
     function distributeReward(uint256 amount) external {
@@ -261,7 +261,7 @@ contract DelegationPoolLibUser {
     }
 
     function validatorGetter() external view returns (address) {
-        return pool.validator;
+        return pool.staker;
     }
 
     function magnifiedRewardCorrectionsGetter(address a) external view returns (int256) {

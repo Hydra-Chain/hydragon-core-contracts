@@ -25,7 +25,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
      */
     mapping(address => VestingPosition) public vestedStakingPositions;
     /**
-     * @notice Keeps the rewards history of the validators
+     * @notice Keeps the rewards history of the stakers
      */
     mapping(address => StakingRewardsHistory[]) public stakingRewardsHistory;
 
@@ -113,7 +113,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
 
             if (stakeLeft == 0) {
                 // if position is closed when active, we delete all the vesting data
-                // that way allowing the user to open new position for the same validator with the same vesting manager
+                // that way allowing the user to open new position for the same staker with the same vesting manager
                 delete vestedStakingPositions[account];
             }
 

@@ -28,7 +28,7 @@ import {
   calculateTotalPotentialPositionReward,
   calculateExpectedReward,
 } from "../helper";
-import { RunSwapVestedPositionValidatorTests } from "./SwapVestedPositionValidator.test";
+import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 
 export function RunHydraDelegationTests(): void {
   describe("", function () {
@@ -1678,7 +1678,7 @@ export function RunHydraDelegationTests(): void {
       });
 
       describe("SwapVestedPosition", function () {
-        RunSwapVestedPositionValidatorTests();
+        RunSwapVestedPositionStakerTests();
       });
     });
 
@@ -1745,7 +1745,7 @@ export function RunHydraDelegationTests(): void {
 
           const swapTx = await vestManager
             .connect(vestManagerOwner)
-            .swapVestedPositionValidator(validator.address, newValidator.address);
+            .swapVestedPositionStaker(validator.address, newValidator.address);
           await expect(swapTx, "emit Delegated for the new validator")
             .to.emit(hydraDelegation, "Delegated")
             .withArgs(newValidator.address, vestManager.address, delegatedAmount);
