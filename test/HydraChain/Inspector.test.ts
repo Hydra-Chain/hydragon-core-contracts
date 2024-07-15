@@ -3,8 +3,8 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { loadFixture, time, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
-import { commitEpochs } from "../helper";
-import { DENOMINATOR, ERRORS, VALIDATOR_STATUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { calculatePenaltyByWeeks, commitEpochs } from "../helper";
+import { ERRORS, VALIDATOR_STATUS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 // eslint-disable-next-line camelcase
 import { LiquidityToken__factory } from "../../typechain-types";
 
@@ -118,9 +118,8 @@ export function RunInspectorTests(): void {
       await time.setNextBlockTimestamp(nextTimestamp);
 
       const validatorBanPenalty = await systemHydraChain.validatorPenalty();
-      // hardcode the penalty percent by 0.3% a week
-      const bps = (VESTING_DURATION_WEEKS - 1) * 30;
-      const unstakePenalty = this.minStake.mul(bps).div(DENOMINATOR);
+      // hardcode the penalty percent by 1% a week (9 weeks should be left)
+      const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, this.minStake);
       const stakedAmount = await hydraStaking.stakeOf(staker.address);
 
       const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);

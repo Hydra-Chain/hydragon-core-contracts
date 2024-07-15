@@ -5,13 +5,14 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import {
   calculatePenalty,
+  calculatePenaltyByWeeks,
   commitEpoch,
   commitEpochs,
   findProperRPSIndex,
   getValidatorReward,
   registerValidator,
 } from "../helper";
-import { DENOMINATOR, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 
 // TODO: Make an end-to-end test to cover full scenario with many different types of staking (non-vested, vested for different periods, banned, unstake before finish vesting, etc.) made for n validators and then all of them to dissapear. Check are the balances of hydra properly handled.
 
@@ -534,9 +535,8 @@ export function RunHydraStakingTests(): void {
           await time.setNextBlockTimestamp(nextTimestamp);
           await stakerHydraStaking.unstake(this.minStake);
 
-          // hardcode the penalty percent by 0.3% a week (9 weeks should be left)
-          const bps = 9 * 30;
-          const penalty = this.minStake.mul(bps).div(DENOMINATOR);
+          // hardcode the penalty percent by 1% a week (9 weeks should be left)
+          const penalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, this.minStake);
 
           const withdrawalAmount = await stakerHydraStaking.pendingWithdrawals(this.staker.address);
           expect(withdrawalAmount, "withdrawal amount = calculated amount").to.equal(this.minStake.sub(penalty));

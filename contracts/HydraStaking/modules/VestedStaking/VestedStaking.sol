@@ -192,7 +192,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
     function _calcSlashing(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
         uint256 leftPeriod = position.end - block.timestamp;
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
+        uint256 bps = 100 * leftWeeks; // 1% * left weeks
 
         return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }

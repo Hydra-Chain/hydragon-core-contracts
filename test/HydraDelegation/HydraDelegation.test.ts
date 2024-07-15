@@ -27,6 +27,7 @@ import {
   getDelegatorPositionReward,
   calculateTotalPotentialPositionReward,
   calculateExpectedReward,
+  calculatePenaltyByWeeks,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 
@@ -1030,9 +1031,8 @@ export function RunHydraDelegationTests(): void {
           await time.setNextBlockTimestamp(nextTimestamp);
           await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedBalance);
 
-          // hardcode the penalty percent by 0.3% a week (9 weeks should be left)
-          const bps = 9 * 30;
-          const penalty = delegatedBalance.mul(bps).div(10000);
+          // hardcode the penalty percent by 1% a week (9 weeks should be left)
+          const penalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, delegatedBalance);
 
           const delegatedBalanceAfter = await hydraDelegation.delegationOf(
             delegatedValidator.address,

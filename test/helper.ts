@@ -283,7 +283,14 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
   }
 
   // basis points used for precise percentage calculations
-  const bps = leftWeeks.mul(30);
+  const bps = leftWeeks.mul(100);
+  return amount.mul(bps).div(DENOMINATOR);
+}
+
+export async function calculatePenaltyByWeeks(weeksLeft: number, amount: BigNumber) {
+  // 1% penalty for each week that is left
+  const weeksInBigNumber = hre.ethers.BigNumber.from(weeksLeft);
+  const bps = weeksInBigNumber.mul(100);
   return amount.mul(bps).div(DENOMINATOR);
 }
 
