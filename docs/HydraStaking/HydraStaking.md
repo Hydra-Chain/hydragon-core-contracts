@@ -1286,6 +1286,17 @@ error NoWithdrawalAvailable()
 
 
 
+### StakeLeftLow
+
+```solidity
+error StakeLeftLow()
+```
+
+
+
+
+
+
 ### StakeRequirement
 
 ```solidity

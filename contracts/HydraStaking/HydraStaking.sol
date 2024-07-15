@@ -24,8 +24,8 @@ contract HydraStaking is
     HydraChainConnector,
     Staking,
     VestedStaking,
-    LiquidStaking,
     StateSyncStaking,
+    LiquidStaking,
     PenalizeableStaking,
     DelegatedStaking
 {
@@ -125,7 +125,7 @@ contract HydraStaking is
         uint256 amount
     )
         internal
-        override(Staking, VestedStaking, LiquidStaking, StateSyncStaking)
+        override(Staking, VestedStaking, StateSyncStaking, LiquidStaking)
         returns (uint256 stakeLeft, uint256 withdrawAmount)
     {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
@@ -152,9 +152,9 @@ contract HydraStaking is
         address staker,
         uint256 unstakeAmount
     ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        // this will call only LiquidStaking._unstake(), VestedStaking._unstake() and staking._unstake()
-        // because VestedStaking is immediately after Staking in the Linearization of the inheritance graph
-        return LiquidStaking._unstake(staker, unstakeAmount);
+        // this will call only StateSyncStaking._unstake(), VestedStaking._unstake() and staking._unstake()
+        // because this is the order in the Linearization of the inheritance graph
+        return StateSyncStaking._unstake(staker, unstakeAmount);
     }
 
     /**
