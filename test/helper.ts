@@ -7,12 +7,17 @@ import { BigNumber, ContractTransaction } from "ethers";
 
 import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
-import { ValidatorSet } from "../typechain-types/contracts/ValidatorSet";
-import { RewardPool } from "../typechain-types/contracts/RewardPool";
-import { VestManager } from "../typechain-types/contracts/ValidatorSet/modules/Delegation";
-import { VestManager__factory } from "../typechain-types/factories/contracts/ValidatorSet/modules/Delegation";
-import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, INITIAL_COMMISSION, SYSTEM, WEEK } from "./constants";
+import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
 import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
+import {
+  APRCalculator,
+  HydraChain,
+  HydraDelegation,
+  HydraStaking,
+  VestingManager,
+  VestingManager__factory,
+  VestingManagerFactory,
+} from "../typechain-types";
 
 interface RewardParams {
   timestamp: BigNumber;
@@ -53,21 +58,23 @@ export async function initializeContext(context: any) {
   context.chainId = network.chainId;
 }
 
-export async function getMaxEpochReward(validatorSet: ValidatorSet) {
-  const totalStake = await validatorSet.totalSupply();
-  return totalStake;
+// --------------- Epoch handlers ---------------
+
+export async function getMaxEpochReward(hydraStaking: HydraStaking) {
+  const totalSupply = await hydraStaking.totalBalance();
+  return totalSupply;
 }
 
 export async function commitEpoch(
-  systemValidatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  systemHydraChain: HydraChain,
+  hydraStaking: HydraStaking,
   validators: SignerWithAddress[],
   epochSize: BigNumber,
   increaseTime?: number
 ): Promise<{ commitEpochTx: ContractTransaction; distributeRewardsTx: ContractTransaction }> {
-  const currEpochId = await systemValidatorSet.currentEpochId();
+  const currEpochId = await systemHydraChain.currentEpochId();
   const prevEpochId = currEpochId.sub(1);
-  const previousEpoch = await systemValidatorSet.epochs(prevEpochId);
+  const previousEpoch = await systemHydraChain.epochs(prevEpochId);
   const newEpoch = {
     startBlock: previousEpoch.endBlock.add(1),
     endBlock: previousEpoch.endBlock.add(epochSize),
@@ -83,11 +90,11 @@ export async function commitEpoch(
   increaseTime = increaseTime || DAY; // default 1 day
   await time.increase(increaseTime);
 
-  const commitEpochTx = await systemValidatorSet.commitEpoch(currEpochId, newEpoch, epochSize);
+  const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
 
-  const maxReward = await getMaxEpochReward(systemValidatorSet);
-  const distributeRewardsTx = await rewardPool
-    .connect(systemValidatorSet.signer)
+  const maxReward = await getMaxEpochReward(hydraStaking);
+  const distributeRewardsTx = await hydraStaking
+    .connect(systemHydraChain.signer)
     .distributeRewardsFor(currEpochId, validatorsUptime, epochSize, {
       value: maxReward,
     });
@@ -96,8 +103,8 @@ export async function commitEpoch(
 }
 
 export async function commitEpochs(
-  systemValidatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  systemHydraChain: HydraChain,
+  hydraStaking: HydraStaking,
   validators: SignerWithAddress[],
   numOfEpochsToCommit: number,
   epochSize: BigNumber,
@@ -106,9 +113,11 @@ export async function commitEpochs(
   if (epochSize.isZero() || numOfEpochsToCommit === 0) return;
 
   for (let i = 0; i < numOfEpochsToCommit; i++) {
-    await commitEpoch(systemValidatorSet, rewardPool, validators, epochSize, increaseTime);
+    await commitEpoch(systemHydraChain, hydraStaking, validators, epochSize, increaseTime);
   }
 }
+
+// --------------- Validator handlers ---------------
 
 export function initValidators(accounts: SignerWithAddress[], from: number = 0, to: number = 4) {
   if (to > accounts.length) {
@@ -123,13 +132,11 @@ export function initValidators(accounts: SignerWithAddress[], from: number = 0, 
   return validators;
 }
 
-export async function registerValidator(validatorSet: ValidatorSet, account: any) {
+export async function registerValidator(hydraChain: HydraChain, account: any) {
   const keyPair = mcl.newKeyPair();
   const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
 
-  const tx = await validatorSet
-    .connect(account)
-    .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), INITIAL_COMMISSION);
+  const tx = await hydraChain.connect(account).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
   const txReceipt = await tx.wait();
 
   if (txReceipt.status !== 1) {
@@ -137,11 +144,32 @@ export async function registerValidator(validatorSet: ValidatorSet, account: any
   }
 }
 
-export async function getValidatorReward(validatorSet: ValidatorSet, validatorAddr: string) {
-  const validator = await validatorSet.getValidator(validatorAddr);
-
-  return validator.withdrawableRewards;
+export async function getValidatorReward(hydraStaking: HydraStaking, validatorAddr: string) {
+  return hydraStaking.unclaimedRewards(validatorAddr);
 }
+
+/**
+ * Generate BLS pubkey and signature for validator
+ * @param account ethersjs signer
+ * @returns ValidatorBLS object with pubkey and signature
+ */
+export function generateValidatorBls(account: SignerWithAddress) {
+  const keyPair = mcl.newKeyPair();
+  const signature = genValSignature(account, keyPair);
+
+  const bls = {
+    pubkey: mcl.g2ToHex(keyPair.pubkey),
+    signature: mcl.g1ToHex(signature),
+  };
+
+  return bls;
+}
+
+export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair) {
+  return mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
+}
+
+// --------------- Index handlers ---------------
 
 export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: BigNumber): number {
   let left = 0;
@@ -208,6 +236,41 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
   return closestIndex;
 }
 
+export async function retrieveRPSData(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  manager: string
+) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
+  const maturedIn = await getClosestMaturedTimestamp(position);
+  const currentEpochId = await hydraChain.currentEpochId();
+  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
+  const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
+  const delegationPoolParamsHistory = await hydraDelegation.getDelegationPoolParamsHistory(validator, manager);
+  const balanceChangeIndex = findProperBalanceChangeIndex(
+    delegationPoolParamsHistory,
+    hre.ethers.BigNumber.from(epochNum)
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function getClosestMaturedTimestamp(position: any) {
+  let alreadyMatureIn = 0;
+  if (await hasMatured(position.end, position.duration)) {
+    alreadyMatureIn = position.end;
+  } else {
+    const currChainTs = await time.latest();
+    const maturedPeriod = currChainTs - position.end;
+    alreadyMatureIn = position.start.add(maturedPeriod);
+  }
+
+  return alreadyMatureIn;
+}
+
+// --------------- Delegation handlers ---------------
+
 export async function calculatePenalty(position: any, timestamp: BigNumber, amount: BigNumber) {
   const leftPeriod: BigNumber = position.end.sub(timestamp);
   let leftWeeks = leftPeriod.mod(WEEK); // get the remainder first
@@ -225,65 +288,48 @@ export async function calculatePenalty(position: any, timestamp: BigNumber, amou
 }
 
 export async function getUserManager(
-  validatorSet: ValidatorSet,
+  vestingManagerFactory: VestingManagerFactory,
   account: any,
   VestManagerFactory: any
-): Promise<VestManager> {
+): Promise<VestingManager> {
   // Find user vesting position based on the emitted  events
-  const filter = validatorSet.filters.NewClone(account.address);
-  const positionAddr = (await validatorSet.queryFilter(filter))[0].args.newClone;
+  const filter = vestingManagerFactory.filters.NewVestingManager(account.address);
+  const positionAddr = (await vestingManagerFactory.queryFilter(filter))[0].args.newClone;
   const manager = VestManagerFactory.attach(positionAddr);
 
   return manager.connect(account);
 }
 
 export async function claimPositionRewards(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  vestManager: VestManager,
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  vestManager: VestingManager,
   validator: string
 ) {
-  const position = await rewardPool.delegationPositions(validator, vestManager.address);
-  const currentEpochId = await validatorSet.currentEpochId();
-  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
+  const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
+  const currentEpochId = await hydraChain.currentEpochId();
+  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
   const rpsIndex = findProperRPSIndex(rpsValues, position.end);
   await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
 }
 
-export async function createNewVestManager(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  owner: SignerWithAddress
-) {
-  const tx = await validatorSet.connect(owner).newManager(rewardPool.address);
+export async function createNewVestManager(vestingManagerFactory: VestingManagerFactory, owner: SignerWithAddress) {
+  const tx = await vestingManagerFactory.connect(owner).newVestingManager();
   const receipt = await tx.wait();
-  const event = receipt.events?.find((e) => e.event === "NewClone");
+  const event = receipt.events?.find((e) => e.event === "NewVestingManager");
   const address = event?.args?.newClone;
 
-  const VestManagerFactory = new VestManager__factory(owner);
-  const vestManager: VestManager = VestManagerFactory.attach(address);
+  const VestManagerFactory = new VestingManager__factory(owner);
+  const vestManager: VestingManager = VestManagerFactory.attach(address);
 
-  return { newManagerFactory: VestManagerFactory, newManager: vestManager };
+  return { newManagerFactory: vestingManagerFactory, newManager: vestManager };
 }
 
-export async function retrieveRPSData(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
-  validator: string,
-  manager: string
-) {
-  const position = await rewardPool.delegationPositions(validator, manager);
-  const maturedIn = await getClosestMaturedTimestamp(position);
-  const currentEpochId = await validatorSet.currentEpochId();
-  const rpsValues = await rewardPool.getRPSValues(validator, 0, currentEpochId);
-  const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
-  const delegationPoolParamsHistory = await rewardPool.getDelegationPoolParamsHistory(validator, manager);
-  const balanceChangeIndex = findProperBalanceChangeIndex(
-    delegationPoolParamsHistory,
-    hre.ethers.BigNumber.from(epochNum)
-  );
+export async function attachAddressToVestingManager(address: string) {
+  const VestManagerFactory = new VestingManager__factory();
+  const attachedManager: VestingManager = VestManagerFactory.attach(address);
 
-  return { position, epochNum, balanceChangeIndex };
+  return attachedManager;
 }
 
 export async function calculateExpectedReward(
@@ -296,24 +342,23 @@ export async function calculateExpectedReward(
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
-export async function applyMaxReward(rewardPool: RewardPool, reward: BigNumber) {
-  const base = await rewardPool.base();
-  const rsi = await rewardPool.rsi();
-  const vestBonus = await rewardPool.getVestingBonus(52);
+export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNumber) {
+  const base = await aprCalculator.base();
+  const rsi = await aprCalculator.rsi();
+  const vestBonus = await aprCalculator.getVestingBonus(52);
 
   // calculate expected reward
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
 export async function applyCustomReward(
-  rewardPool: RewardPool,
+  hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string,
   reward: BigNumber,
   rsi: boolean
 ) {
-  const position = await rewardPool.delegationPositions(validator, delegator);
-
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
   let bonus = position.base.add(position.vestBonus);
   let divider = DENOMINATOR;
   if (rsi && !position.rsiBonus.isZero()) {
@@ -324,36 +369,14 @@ export async function applyCustomReward(
   return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);
 }
 
-/**
- * Generate BLS pubkey and signature for validator
- * @param account ethersjs signer
- * @returns ValidatorBLS object with pubkey and signature
- */
-export function generateValidatorBls(account: SignerWithAddress) {
-  const keyPair = mcl.newKeyPair();
-  const signature = genValSignature(account, keyPair);
-
-  const bls = {
-    pubkey: mcl.g2ToHex(keyPair.pubkey),
-    signature: mcl.g1ToHex(signature),
-  };
-
-  return bls;
-}
-
-export function genValSignature(account: SignerWithAddress, keyPair: mcl.keyPair) {
-  return mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
-}
-
 export async function createManagerAndVest(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  vestingManagerFactory: VestingManagerFactory,
   account: SignerWithAddress,
   validator: string,
   duration: number,
   amount: BigNumber
 ) {
-  const { newManager } = await createNewVestManager(validatorSet, rewardPool, account);
+  const { newManager } = await createNewVestManager(vestingManagerFactory, account);
 
   await newManager.openVestedDelegatePosition(validator, duration, {
     value: amount,
@@ -363,28 +386,15 @@ export async function createManagerAndVest(
 }
 
 export async function getDelegatorPositionReward(
-  validatorSet: ValidatorSet,
-  rewardPool: RewardPool,
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string
 ) {
   // prepare params for call
-  const { epochNum, balanceChangeIndex } = await retrieveRPSData(validatorSet, rewardPool, validator, delegator);
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
 
-  return await rewardPool.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
-}
-
-export async function getClosestMaturedTimestamp(position: any) {
-  let alreadyMatureIn = 0;
-  if (await hasMatured(position.end, position.duration)) {
-    alreadyMatureIn = position.end;
-  } else {
-    const currChainTs = await time.latest();
-    const maturedPeriod = currChainTs - position.end;
-    alreadyMatureIn = position.start.add(maturedPeriod);
-  }
-
-  return alreadyMatureIn;
+  return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
 }
 
 // function that returns whether a position is matured or not
@@ -449,4 +459,21 @@ export async function getPermitSignature(
       }
     )
   );
+}
+
+export async function calculateTotalPotentialPositionReward(
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  delegator: string
+) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
+  const rawReward = await hydraDelegation.getRawDelegatorReward(validator, delegator);
+  let bonus = position.base.add(position.vestBonus);
+  let divider = hre.ethers.BigNumber.from(10000);
+  if (!position.rsiBonus.eq(0)) {
+    bonus = bonus.mul(position.rsiBonus);
+    divider = divider.mul(10000);
+  }
+
+  return rawReward.mul(bonus).div(divider).div(EPOCHS_YEAR);
 }

@@ -5,11 +5,12 @@ import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
 import {
   BLS,
   LiquidityToken,
-  RewardPool,
-  System,
-  ValidatorSet,
-  VestManager,
-  VestManager__factory,
+  HydraChain,
+  HydraDelegation,
+  HydraStaking,
+  APRCalculator,
+  VestingManagerFactory,
+  VestingManager,
 } from "../typechain-types";
 
 export interface Signers {
@@ -23,147 +24,188 @@ export interface Signers {
 }
 
 export interface Fixtures {
-  systemFixture: { (): Promise<System> };
-  presetValidatorSetStateFixture: {
+  presetHydraChainStateFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
-  initializedValidatorSetStateFixture: {
+  initializedHydraChainStateFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
+      validatorInit: {
+        addr: string;
+        pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
+        signature: [BigNumberish, BigNumberish];
+        stake: BigNumberish;
+      };
     }>;
   };
   commitEpochTxFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
       commitEpochTx: ContractTransaction;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   whitelistedValidatorsStateFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   registeredValidatorsStateFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   stakedValidatorsStateFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   newVestingValidatorFixture: {
     (): Promise<{
-      stakerValidatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      stakerHydraStaking: HydraStaking;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
     }>;
   };
   vestingRewardsFixture: {
     (): Promise<{
-      stakerValidatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      stakerHydraStaking: HydraStaking;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
     }>;
   };
   withdrawableFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
       unstakedValidator: SignerWithAddress;
       unstakedAmount: BigNumber;
+      vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   delegatedFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
+      vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   vestManagerFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
+      vestingManagerFactory: VestingManagerFactory;
+      aprCalculator: APRCalculator;
     }>;
   };
   vestedDelegationFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
     }>;
   };
   weeklyVestedDelegationFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
       bls: BLS;
-      rewardPool: RewardPool;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      VestManagerFactory: VestManager__factory;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
+      aprCalculator: APRCalculator;
     }>;
   };
   validatorToBanFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      hydraStaking: HydraStaking;
       validatorToBan: SignerWithAddress;
     }>;
   };
   bannedValidatorFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
+      hydraChain: HydraChain;
+      hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       bannedValidator: SignerWithAddress;
       stakedAmount: BigNumber;
@@ -171,11 +213,14 @@ export interface Fixtures {
   };
   swappedPositionFixture: {
     (): Promise<{
-      validatorSet: ValidatorSet;
-      systemValidatorSet: ValidatorSet;
-      rewardPool: RewardPool;
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       liquidToken: LiquidityToken;
-      vestManager: VestManager;
+      vestingManagerFactory: VestingManagerFactory;
+      vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       oldValidator: SignerWithAddress;
       newValidator: SignerWithAddress;

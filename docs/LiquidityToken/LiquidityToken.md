@@ -44,6 +44,57 @@ function DOMAIN_SEPARATOR() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### NATIVE_TOKEN_CONTRACT
+
+```solidity
+function NATIVE_TOKEN_CONTRACT() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE_GAS
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### SUPPLY_CONTROLLER_ROLE
 
 ```solidity
@@ -60,6 +111,57 @@ The role identifier for address(es) that have permission to mint and burn the to
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes32 | undefined |
+
+### SYSTEM
+
+```solidity
+function SYSTEM() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE_GAS
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### allowance
 
@@ -297,7 +399,7 @@ function increaseAllowance(address spender, uint256 addedValue) external nonpaya
 ### initialize
 
 ```solidity
-function initialize(string name_, string symbol_, address governer, address supplyController) external nonpayable
+function initialize(string name_, string symbol_, address governer, address hydraStakingAddr, address hydraDelegationAddr) external nonpayable
 ```
 
 
@@ -311,7 +413,8 @@ function initialize(string name_, string symbol_, address governer, address supp
 | name_ | string | The name of the token. |
 | symbol_ | string | The symbol of the token. |
 | governer | address | The address that has rights to change the SUPPLY_CONTROLLERs. |
-| supplyController | address | The address assigned for controlling the supply (mint/burn) of the token. |
+| hydraStakingAddr | address | The address assigned for controlling the supply (mint/burn) of the token. (HydraStaking.sol) |
+| hydraDelegationAddr | address | The address assigned for controlling the supply (mint/burn) of the token. (HydraDelegation.sol) |
 
 ### mint
 
@@ -649,5 +752,24 @@ event Transfer(address indexed from, address indexed to, uint256 value)
 | to `indexed` | address | undefined |
 | value  | uint256 | undefined |
 
+
+
+## Errors
+
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
 
 

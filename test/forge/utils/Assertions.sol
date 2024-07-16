@@ -8,8 +8,8 @@ pragma solidity 0.8.17;
 import {StdAssertions} from "forge-std/StdAssertions.sol";
 
 // 📦 BOILERPLATE
-import {Validator} from "contracts/ValidatorSet/IValidatorSet.sol";
-import {WithdrawalData} from "contracts/ValidatorSet/libs/IWithdrawalQueue.sol";
+import {Validator} from "contracts/HydraChain/modules/ValidatorManager/IValidatorManager.sol";
+import {WithdrawalData} from "contracts/common/Withdrawal/IWithdrawalQueueLib.sol";
 
 // ⭐️ ASSERTIONS
 abstract contract Assertions is StdAssertions {

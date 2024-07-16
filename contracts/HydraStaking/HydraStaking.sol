@@ -1,0 +1,301 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.17;
+
+import {Staking} from "./Staking.sol";
+import {System} from "./../common/System/System.sol";
+import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
+import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
+import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
+import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
+import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
+import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
+import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
+import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
+import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
+import {Governed} from "./../common/Governed/Governed.sol";
+import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
+
+// TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
+
+contract HydraStaking is
+    IHydraStaking,
+    System,
+    HydraChainConnector,
+    Staking,
+    VestedStaking,
+    StateSyncStaking,
+    LiquidStaking,
+    PenalizeableStaking,
+    DelegatedStaking
+{
+    /// @notice Mapping used to keep the paid rewards per epoch
+    mapping(uint256 => uint256) public distributedRewardPerEpoch;
+
+    // _______________ Initializer _______________
+
+    /**
+     * @notice Initializer function for genesis contract, called by Hydra client at genesis to set up the initial set.
+     * @dev only callable by client, can only be called once
+     */
+    function initialize(
+        StakerInit[] calldata initialStakers,
+        address governance,
+        uint256 newMinStake,
+        address newLiquidToken,
+        address hydraChainAddr,
+        address aprCalculatorAddr,
+        address delegationContractAddr
+    ) external initializer onlySystemCall {
+        __HydraChainConnector_init(hydraChainAddr);
+        __Staking_init(newMinStake, aprCalculatorAddr, governance);
+        __LiquidStaking_init(newLiquidToken);
+        __DelegatedStaking_init(delegationContractAddr);
+
+        _initialize(initialStakers);
+    }
+
+    function _initialize(StakerInit[] calldata initialStakers) private {
+        // set initial stakers
+        for (uint256 i = 0; i < initialStakers.length; i++) {
+            _stake(initialStakers[i].addr, initialStakers[i].stake);
+        }
+    }
+
+    // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IHydraStaking
+     */
+    function distributeRewardsFor(
+        uint256 epochId,
+        Uptime[] calldata uptime,
+        uint256 epochSize
+    ) external payable onlySystemCall {
+        require(distributedRewardPerEpoch[epochId] == 0, "REWARD_ALREADY_DISTRIBUTED");
+
+        uint256 totalBlocks = hydraChainContract.totalBlocks(epochId);
+        require(totalBlocks != 0, "EPOCH_NOT_COMMITTED");
+
+        uint256 totalSupply = totalBalance();
+        uint256 rewardIndex = _calcRewardIndex(totalSupply, epochSize, totalBlocks);
+        uint256 length = uptime.length;
+        uint256 totalReward = 0;
+        for (uint256 i = 0; i < length; ++i) {
+            totalReward += _distributeReward(epochId, uptime[i], rewardIndex, totalSupply, totalBlocks);
+        }
+
+        distributedRewardPerEpoch[epochId] = totalReward;
+    }
+
+    // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IHydraStaking
+     */
+    function totalBalanceOf(address staker) public view returns (uint256) {
+        return stakeOf(staker) + _getStakerDelegatedBalance(staker);
+    }
+
+    /**
+     * @inheritdoc IHydraStaking
+     */
+    function totalBalance() public view returns (uint256) {
+        return totalStake + _totalDelegation();
+    }
+
+    // _______________ Internal functions _______________
+
+    /**
+     * @inheritdoc Staking
+     */
+    function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
+        if (stakeOf(account) == 0) {
+            hydraChainContract.activateValidator(account);
+        }
+
+        super._stake(account, amount);
+    }
+
+    /**
+     * @inheritdoc Staking
+     */
+    function _unstake(
+        address account,
+        uint256 amount
+    )
+        internal
+        override(Staking, VestedStaking, StateSyncStaking, LiquidStaking)
+        returns (uint256 stakeLeft, uint256 withdrawAmount)
+    {
+        (stakeLeft, withdrawAmount) = super._unstake(account, amount);
+        if (stakeLeft == 0) {
+            hydraChainContract.deactivateValidator(account);
+        }
+    }
+
+    /**
+     * @inheritdoc DelegatedStaking
+     */
+    function _onDelegate(address staker) internal virtual override {
+        _syncState(staker);
+    }
+
+    /**
+     * @inheritdoc DelegatedStaking
+     */
+    function _onUndelegate(address staker) internal virtual override {
+        _syncState(staker);
+    }
+
+    function _executeUnstake(
+        address staker,
+        uint256 unstakeAmount
+    ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
+        // this will call only StateSyncStaking._unstake(), VestedStaking._unstake() and staking._unstake()
+        // because this is the order in the Linearization of the inheritance graph
+        return StateSyncStaking._unstake(staker, unstakeAmount);
+    }
+
+    /**
+     * @inheritdoc PenalizeableStaking
+     */
+    function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
+        // the unstake amount of liquid tokens must be paid at the time of withdrawal
+        // but only the leftForStaker will be automatically requested,
+        // so we have to set the unstake amount - leftForStaker as liquidity debt
+        liquidityDebts[staker] += (unstakeAmount - leftForStaker);
+        _syncState(staker);
+    }
+
+    /**
+     * @inheritdoc PenalizeableStaking
+     */
+    function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual override {
+        _collectTokens(staker, withdrawnAmount);
+    }
+
+    /**
+     * @notice Claims the staking rewards for the staker.
+     * @param staker The staker to claim the rewards for
+     */
+    function _claimStakingRewards(address staker) internal override(Staking, VestedStaking) returns (uint256 rewards) {
+        return super._claimStakingRewards(staker);
+    }
+
+    // TODO: The unrealized potential staking reward for all stakers must be burned at the end because
+    // HYDRA is minted for the full potential staking reward but only part of it will go as a reward for the stakers
+    // we have to handle the other part
+    // Other option and maybe better because it will simplify the logic and will decrease computation on both node and contract
+    // is having a reward wallet that will have close to full hydra balance all the time.
+    // We will use it when the actual end reward will be transfered to the recipient (staker delegator).
+
+    /**
+     * @notice Distributes the staking rewards for the staker.
+     * @param account The account to distribute the rewards for
+     * @param rewardIndex The reward index to distribute
+     */
+    function _distributeStakingReward(address account, uint256 rewardIndex) internal override(Staking, VestedStaking) {
+        return super._distributeStakingReward(account, rewardIndex);
+    }
+
+    /**
+     * @notice Syncs the state of the staker.
+     * @dev Checks if the staker has no stake
+     * @param account The staker to sync the state for
+     */
+    function _getBalanceToSync(address account) internal virtual override returns (uint256) {
+        if (stakeOf(account) == 0) {
+            return 0;
+        }
+
+        return totalBalanceOf(account);
+    }
+
+    // _______________ Private functions _______________
+
+    /**
+     * @notice Distributes the reward for the given staker.
+     * @param epochId The epoch id
+     * @param uptime The uptime data for the validator (staker)
+     * @param fullRewardIndex The full reward index
+     * (index because only part of the reward calculations are applied at that point) for the epoch
+     * @param totalSupply The total supply for the epoch
+     * @param totalBlocks The total blocks for the epoch
+     */
+    function _distributeReward(
+        uint256 epochId,
+        Uptime calldata uptime,
+        uint256 fullRewardIndex,
+        uint256 totalSupply,
+        uint256 totalBlocks
+    ) private returns (uint256 reward) {
+        require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
+
+        uint256 totalStake = stakeOf(uptime.validator);
+        uint256 commission = _getstakerDelegationCommission(uptime.validator);
+        uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
+        // slither-disable-next-line divide-before-multiply
+        uint256 stakerRewardIndex = (fullRewardIndex * (totalStake + delegation) * uptime.signedBlocks) /
+            (totalSupply * totalBlocks);
+        (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
+            totalStake,
+            delegation,
+            stakerRewardIndex,
+            commission
+        );
+
+        _distributeStakingReward(uptime.validator, stakerShares);
+        distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
+
+        // Keep history record of the staker rewards to be used on maturing vesting reward claim
+        if (stakerShares > 0) {
+            _saveStakerRewardData(uptime.validator, epochId);
+        }
+
+        return stakerRewardIndex;
+    }
+
+    /**
+     * @notice Calculates the staker and delegator shares.
+     * @param stakedBalance The staked balance
+     * @param delegatedBalance The delegated balance
+     * @param totalReward The total reward
+     * @param commission The commission of the staker
+     */
+    function _calculateStakerAndDelegatorShares(
+        uint256 stakedBalance,
+        uint256 delegatedBalance,
+        uint256 totalReward,
+        uint256 commission
+    ) private pure returns (uint256, uint256) {
+        if (stakedBalance == 0) return (0, 0);
+        if (delegatedBalance == 0) return (totalReward, 0);
+        uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
+        uint256 delegatorReward = totalReward - stakerReward;
+        uint256 stakerCommission = (commission * delegatorReward) / 100;
+
+        return (stakerReward + stakerCommission, delegatorReward - stakerCommission);
+    }
+
+    /**
+     * Calculates the epoch reward index.
+     * We call it index because it is not the actual reward
+     * but only the macroFactor and the blocksCreated/totalEpochBlocks ratio are aplied here.
+     * The participation factor is applied later in the distribution process.
+     * (base + vesting and RSI are applied on claimReward for delegators
+     * and on _distributeValidatorReward for stakers)
+     * @param activeStake Total active stake for the epoch
+     * @param totalBlocks Number of blocks in the epoch
+     * @param epochSize Expected size (number of blocks) of the epoch
+     */
+    function _calcRewardIndex(
+        uint256 activeStake,
+        uint256 epochSize,
+        uint256 totalBlocks
+    ) private view returns (uint256) {
+        uint256 modifiedEpochReward = aprCalculatorContract.applyMacro(activeStake);
+
+        return (modifiedEpochReward * totalBlocks) / (epochSize);
+    }
+}

@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-export const DOMAIN = ethers.utils.arrayify(ethers.utils.solidityKeccak256(["string"], ["DOMAIN_VALIDATOR_SET"]));
+export const DOMAIN = ethers.utils.arrayify(ethers.utils.solidityKeccak256(["string"], ["DOMAIN_HYDRA_CHAIN"]));
 export const SYSTEM = "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE";
 export const NATIVE_TOKEN_CONTRACT = "0x0000000000000000000000000000000000001010";
 export const NATIVE_TRANSFER_PRECOMPILE = "0x0000000000000000000000000000000000002020";
@@ -20,13 +20,13 @@ export const MIN_RSI_BONUS = ethers.BigNumber.from(10000);
 export const MAX_RSI_BONUS = ethers.BigNumber.from(17000);
 export const DENOMINATOR = ethers.BigNumber.from(10000);
 export const DEADLINE = ethers.constants.MaxUint256.toString();
+export const MAX_ACTIVE_VALIDATORS = 150;
 /* eslint-disable no-unused-vars */
 export enum VALIDATOR_STATUS {
   None = 0,
-  Whitelisted = 1,
-  Registered = 2,
-  Active = 3,
-  Banned = 4,
+  Registered = 1,
+  Active = 2,
+  Banned = 3,
 }
 
 /// @notice This bytecode is used to mock and return true with any input
@@ -40,8 +40,9 @@ export const ERRORS = {
   ownable: "Ownable: caller is not the owner",
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
+  mustBeRegistered: "MUST_BE_REGISTERED",
   swap: {
-    newPositionUnavilable: "NEW_POSITION_UNAVAILABLE",
+    newPositionUnavailable: "NEW_POSITION_UNAVAILABLE",
   },
   vesting: {
     invalidParamsIndex: "INVALID_PARAMS_INDEX",
