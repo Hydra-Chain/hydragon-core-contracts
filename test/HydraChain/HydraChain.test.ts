@@ -68,8 +68,8 @@ export function RunHydraChainTests(): void {
             bls.address
           )
         )
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("SYSTEMCALL");
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.systemCallArg);
       });
 
       it("should revert with invalid signature when initializing", async function () {
@@ -201,8 +201,8 @@ export function RunHydraChainTests(): void {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(hydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime))
-        .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-        .withArgs("SYSTEMCALL");
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.systemCallArg);
     });
 
     it("should revert with unexpected epoch id", async function () {
@@ -315,16 +315,16 @@ export function RunHydraChainTests(): void {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(hydraChain.connect(this.signers.accounts[1]).activateValidator(this.signers.accounts[1].address))
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("ONLY_HYDRA_STAKING");
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.onlyHydraStakingArg);
       });
 
       it("should revert when deactivating validator from non-HydraStaking contract", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(hydraChain.connect(this.signers.accounts[1]).deactivateValidator(this.signers.accounts[1].address))
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("ONLY_HYDRA_STAKING");
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.onlyHydraStakingArg);
       });
 
       it("should revert if we try activate more than Max Active Validators", async function () {

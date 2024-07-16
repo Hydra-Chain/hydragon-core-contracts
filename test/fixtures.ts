@@ -12,6 +12,7 @@ import {
   HydraDelegation__factory,
   HydraStaking__factory,
   LiquidityToken__factory,
+  RewardWallet__factory,
   VestingManagerFactory__factory,
 } from "../typechain-types";
 import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS, WEEK } from "./constants";
@@ -68,6 +69,13 @@ async function VestingManagerFactoryFixtureFunction(this: Mocha.Context) {
   return vestingManagerFactory;
 }
 
+async function RewardWalletFixtureFunction(this: Mocha.Context) {
+  const rewardWalletFactoryFactory = new RewardWallet__factory(this.signers.admin);
+  const rewardWallet = await rewardWalletFactoryFactory.deploy();
+
+  return rewardWallet;
+}
+
 async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const HydraChainFactory = new HydraChain__factory(this.signers.admin);
   const hydraChain = await HydraChainFactory.deploy();
@@ -103,6 +111,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const hydraStaking = await HydraStakingFixtureFunction.bind(this)();
   const aprCalculator = await aprCalculatorFixtureFunction.bind(this)();
   const vestingManagerFactory = await VestingManagerFactoryFixtureFunction.bind(this)();
+  const rewardWallet = await RewardWalletFixtureFunction.bind(this)();
 
   return {
     hydraChain,
@@ -113,6 +122,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 
@@ -128,6 +138,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    rewardWallet,
   } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
   await mcl.init();
@@ -186,6 +197,14 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
 
+  await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
+
+  await this.signers.rewardWallet.sendTransaction({
+    from: this.signers.rewardWallet.address,
+    to: rewardWallet.address,
+    value: this.minStake.mul(5),
+  });
+
   return {
     hydraChain,
     systemHydraChain,
@@ -196,6 +215,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     validatorInit,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 
@@ -211,6 +231,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    rewardWallet,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
   const epochId = hre.ethers.BigNumber.from(1);
@@ -241,6 +262,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     liquidToken,
     commitEpochTx,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 
@@ -256,6 +278,7 @@ async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    rewardWallet,
   } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
   await hydraChain
@@ -276,6 +299,7 @@ async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 
@@ -289,6 +313,7 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    rewardWallet,
   } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
   const keyPair = mcl.newKeyPair();
@@ -332,6 +357,7 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 
@@ -407,6 +433,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    rewardWallet,
   } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
   // set the rsi to the minimum value
@@ -423,6 +450,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    rewardWallet,
   };
 }
 

@@ -76,8 +76,8 @@ export function RunHydraStakingTests(): void {
             hydraDelegation.address
           )
         )
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("SYSTEMCALL");
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.systemCallArg);
       });
 
       it("should revert if minStake is too low", async function () {
@@ -150,24 +150,24 @@ export function RunHydraStakingTests(): void {
         const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(hydraStaking.onDelegate(this.signers.accounts[1].address))
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs("ONLY_HYDRA_DELEGATION");
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.onlyHydraDelegationArg);
       });
 
       it("should revert if we try to call OnDelegate with non-active Validator from Delegate contract", async function () {
         const { hydraDelegation, hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(hydraDelegation.delegate(this.signers.accounts[5].address, { value: this.minDelegation }))
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs("INACTIVE_STAKER");
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.inactiveStakerArg);
       });
 
       it("should revert if we try to call OnUnDelegate from non-HydraDelegate contract", async function () {
         const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(hydraStaking.onUndelegate(this.signers.accounts[3].address))
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs("ONLY_HYDRA_DELEGATION");
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.onlyHydraDelegationArg);
       });
 
       it("should emit BalanceChanged event when delegating", async function () {
@@ -233,7 +233,7 @@ export function RunHydraStakingTests(): void {
         const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
         await expect(hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake }))
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
           .withArgs(ERRORS.mustBeRegistered);
       });
 

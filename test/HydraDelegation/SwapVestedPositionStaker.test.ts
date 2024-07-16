@@ -35,8 +35,8 @@ export function RunSwapVestedPositionStakerTests(): void {
           .connect(vestManagerOwner)
           .swapVestedPositionStaker(delegatedValidator.address, vestManagerOwner.address)
       )
-        .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-        .withArgs("INACTIVE_STAKER");
+        .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.inactiveStakerArg);
     });
 
     it("should revert that the old position is inactive", async function () {

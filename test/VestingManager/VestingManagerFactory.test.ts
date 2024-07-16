@@ -3,6 +3,7 @@ import * as hre from "hardhat";
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { createNewVestManager } from "../helper";
+import { ERRORS } from "../constants";
 
 export function RunVestManagerFactoryTests(): void {
   describe("", function () {
@@ -20,8 +21,8 @@ export function RunVestManagerFactoryTests(): void {
         );
 
         await expect(vestingManagerFactory.initialize(hydraDelegation.address))
-          .to.be.revertedWithCustomError(vestingManagerFactory, "Unauthorized")
-          .withArgs("SYSTEMCALL");
+          .to.be.revertedWithCustomError(vestingManagerFactory, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.systemCallArg);
       });
 
       it("should initialize successfully", async function () {

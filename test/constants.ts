@@ -40,6 +40,13 @@ export const alwaysRevertBytecode = "0x60006000FD";
 
 export const ERRORS = {
   ownable: "Ownable: caller is not the owner",
+  unauthorized: {
+    name: "Unauthorized",
+    systemCallArg: "SYSTEMCALL",
+    onlyHydraStakingArg: "ONLY_HYDRA_STAKING",
+    onlyHydraDelegationArg: "ONLY_HYDRA_DELEGATION",
+    inactiveStakerArg: "INACTIVE_STAKER",
+  },
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
   mustBeRegistered: "MUST_BE_REGISTERED",

@@ -41,7 +41,7 @@ export function RunAPRCalculatorTests(): void {
 
         await expect(aprCalculator.initialize(this.signers.governance.address)).to.be.revertedWithCustomError(
           aprCalculator,
-          "Unauthorized"
+          ERRORS.unauthorized.name
         );
       });
 
