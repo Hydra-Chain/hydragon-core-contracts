@@ -13,7 +13,7 @@ import {System} from "./../common/System/System.sol";
  * @dev It will be fulfilled with enough funds in order to be able to always have enough liqudity.
  */
 contract RewardWallet is IRewardWallet, System, Initializable {
-    /// @notice The mapping of the managers with a boolean to flag if it is active manager or not
+    /// @notice The mapping of the managers
     mapping(address => bool) public rewardManagers;
 
     // _______________ Initializer _______________
