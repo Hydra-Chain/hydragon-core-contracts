@@ -331,28 +331,6 @@ function base() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### calcVestingBonus
-
-```solidity
-function calcVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| weeksCount | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
-
 ### getBaseAPR
 
 ```solidity

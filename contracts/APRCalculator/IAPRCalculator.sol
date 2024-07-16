@@ -36,12 +36,6 @@ interface IAPRCalculator {
     function applyMaxReward(uint256 reward) external view returns (uint256);
 
     /**
-     * @notice calculates vesting bonus for the given weeks count
-     * @return weeksCount amount of weeks to calculate the bonus for
-     */
-    function calcVestingBonus(uint256 weeksCount) external view returns (uint256);
-
-    /**
      * @notice applies macro factor for the given total staked amount
      * @param totalStaked the total staked amount to apply the macro factor to
      */

@@ -103,7 +103,7 @@ Return the amount of delegation for a delegator to a staker
 function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
 
 
 
@@ -118,7 +118,7 @@ Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
 ### getRawDelegatorReward
 
@@ -126,7 +126,7 @@ Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
 function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
 
 
 
@@ -141,7 +141,7 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
 ### pendingWithdrawals
 

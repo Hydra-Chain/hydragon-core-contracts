@@ -70,18 +70,18 @@ interface IDelegation is IWithdrawal {
     function delegationOf(address staker, address delegator) external view returns (uint256);
 
     /**
-     * @notice Gets delegator's unclaimed rewards index (without custom APR params applied)
+     * @notice Gets delegator's unclaimed rewards (without custom APR params applied)
      * @param staker Address of validator
      * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards index per staker (in HYDRA wei)
+     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function getRawDelegatorReward(address staker, address delegator) external view returns (uint256);
 
     /**
-     * @notice Gets delegator's unclaimed rewards index (with custom APR params applied)
+     * @notice Gets delegator's unclaimed rewards (with custom APR params applied)
      * @param staker Address of validator
      * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards index per staker (in HYDRA wei)
+     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function getDelegatorReward(address staker, address delegator) external view returns (uint256);
 }

@@ -8,8 +8,6 @@ import "./big-int-fix.ts";
 
 dotenv.config();
 
-// eslint-disable-next-line import/first
-
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [

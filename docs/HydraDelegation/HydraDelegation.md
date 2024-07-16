@@ -500,7 +500,7 @@ Gets delegators&#39;s matured unclaimed rewards for a position
 function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
 
 
 
@@ -515,7 +515,7 @@ Gets delegator&#39;s unclaimed rewards index (with custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
 ### getRPSValues
 
@@ -547,7 +547,7 @@ Gets the RPS values for a staker in a given epoch range.
 function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
 
 
 
@@ -562,7 +562,7 @@ Gets delegator&#39;s unclaimed rewards index (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards index per staker (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
 ### getRoleAdmin
 

@@ -72,7 +72,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
             start: block.timestamp,
             end: block.timestamp + duration,
             base: aprCalculatorContract.getBaseAPR(),
-            vestBonus: aprCalculatorContract.calcVestingBonus(durationWeeks),
+            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
         });
 

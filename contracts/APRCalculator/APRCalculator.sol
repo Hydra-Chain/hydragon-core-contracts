@@ -41,10 +41,6 @@ contract APRCalculator is Initializable, System, Governed {
         base = newBase;
     }
 
-    function calcVestingBonus(uint256 weeksCount) public view returns (uint256 nominator) {
-        return vestingBonus[weeksCount - 1];
-    }
-
     function setMacro(uint256 newMacroFactor) public onlyRole(MANAGER_ROLE) {
         macroFactor = newMacroFactor;
     }
@@ -74,7 +70,7 @@ contract APRCalculator is Initializable, System, Governed {
     }
 
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
-        uint256 vestBonus = calcVestingBonus(52);
+        uint256 vestBonus = getVestingBonus(52);
 
         nominator = (base + vestBonus) * macroFactor * MAX_RSI_BONUS;
         denominator = 10000 * 10000 * 10000;
@@ -82,7 +78,7 @@ contract APRCalculator is Initializable, System, Governed {
 
     function applyMaxReward(uint256 reward) public view returns (uint256) {
         // max vesting bonus is 52 weeks
-        uint256 vestBonus = calcVestingBonus(52);
+        uint256 vestBonus = getVestingBonus(52);
 
         uint256 bonus = (base + vestBonus) * MAX_RSI_BONUS;
 

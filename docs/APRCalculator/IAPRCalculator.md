@@ -76,28 +76,6 @@ applies the max reward for the given amount - 52 weeks
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### calcVestingBonus
-
-```solidity
-function calcVestingBonus(uint256 weeksCount) external view returns (uint256)
-```
-
-calculates vesting bonus for the given weeks count
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| weeksCount | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | weeksCount amount of weeks to calculate the bonus for |
-
 ### getBaseAPR
 
 ```solidity
