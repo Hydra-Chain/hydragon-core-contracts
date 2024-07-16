@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 import {System} from "./../common/System/System.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
