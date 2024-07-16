@@ -452,6 +452,17 @@ error InvalidWaitPeriod()
 
 
 
+### NoFundsToWithdraw
+
+```solidity
+error NoFundsToWithdraw()
+```
+
+
+
+
+
+
 ### NoRewards
 
 ```solidity

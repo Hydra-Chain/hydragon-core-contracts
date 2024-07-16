@@ -48,12 +48,12 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
         _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
 
+    // _______________ Internal functions _______________
+
     function _registerWithdrawal(address account, uint256 amount) internal {
         _withdrawals[account].append(amount, block.timestamp + withdrawWaitPeriod);
         emit WithdrawalRegistered(account, amount);
     }
-
-    // _______________ Internal functions _______________
 
     function _withdraw(address to, uint256 amount) internal {
         (bool success, ) = to.call{value: amount}("");

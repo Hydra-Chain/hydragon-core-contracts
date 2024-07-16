@@ -285,5 +285,18 @@ export function RunInspectorTests(): void {
       const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(bannedValidator.address);
       expect(withdrawalBalance, "withdrawalBalance.withdrawableAmount").to.be.equal(0);
     });
+
+    it("should revert when trying to withdraw banned funds more than once", async function () {
+      const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
+
+      await hydraStaking.connect(bannedValidator).withdrawBannedFunds();
+      expect(await hydraStaking.connect(bannedValidator).leftToWithdrawPerStaker(bannedValidator.address)).to.be.equal(
+        0
+      );
+      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWithCustomError(
+        hydraStaking,
+        "NoFundsToWithdraw"
+      );
+    });
   });
 }

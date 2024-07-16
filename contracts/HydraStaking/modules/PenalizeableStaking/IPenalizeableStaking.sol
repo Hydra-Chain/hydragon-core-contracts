@@ -20,6 +20,7 @@ struct WithdrawalInfo {
 
 interface IPenalizeableStaking is IStaking {
     error ValidatorNotBanned(address staker);
+    error NoFundsToWithdraw();
     error StakeLeftLow();
 
     /**

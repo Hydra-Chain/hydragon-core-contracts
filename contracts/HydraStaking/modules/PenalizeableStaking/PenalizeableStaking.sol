@@ -27,14 +27,9 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
     ) external onlyHydraChain {
-        uint256 accountStake = stakeOf(staker);
-        if (isStakeLeftLow(accountStake, unstakeAmount)) {
-            // It is HydraChain responsibility to execute penalize with proper values
-            revert StakeLeftLow();
-        }
-
         (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
         if (stakeLeft == 0) {
+            // we pass HydraChain address to save gas (each time new validator is banned it won't change his satus 2 times)
             hydraChainContract.deactivateValidator(msg.sender);
         }
 
@@ -55,6 +50,9 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         }
 
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
+        if (leftToWithdraw == 0) {
+            revert NoFundsToWithdraw();
+        }
         delete leftToWithdrawPerStaker[msg.sender];
         _withdraw(msg.sender, leftToWithdraw);
         _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
@@ -128,7 +126,7 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         }
     }
 
-    function isStakeLeftLow(uint256 accountStake, uint256 unstakeAmount) private view returns (bool) {
+    function _isStakeLeftLow(uint256 accountStake, uint256 unstakeAmount) private view returns (bool) {
         uint256 stakeLeft = accountStake - unstakeAmount;
         if (stakeLeft < minStake && stakeLeft != 0) {
             return true;
