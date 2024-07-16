@@ -63,8 +63,7 @@ describe("Hydra Contracts", function () {
     RunVestingManagerTests();
   });
 
-  // vito - delete only
-  describe.only("RewardWallet", function () {
+  describe("RewardWallet", function () {
     RunRewardWalletTests();
   });
 });
