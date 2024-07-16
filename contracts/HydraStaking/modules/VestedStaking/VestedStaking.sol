@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
-import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
@@ -13,14 +12,8 @@ import {Vesting} from "./../../../common/Vesting/Vesting.sol";
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking, Vesting {
+contract VestedStaking is IVestedStaking, Staking, Vesting {
     using VestedPositionLib for VestingPosition;
-
-    /**
-     * @notice A constant for the calculation of the weeks left of a vesting period
-     * @dev Representing a week in seconds - 1
-     */
-    uint256 private constant WEEK_MINUS_SECOND = 604799;
 
     /**
      * @notice The stakers' vesting positions
@@ -101,6 +94,11 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking, Vesti
 
     // _______________ Internal functions _______________
 
+    /**
+     * @notice Unstakes the given amount for the given account
+     * @param account The account to unstake for
+     * @param amount The amount to unstake
+     */
     function _unstake(
         address account,
         uint256 amount

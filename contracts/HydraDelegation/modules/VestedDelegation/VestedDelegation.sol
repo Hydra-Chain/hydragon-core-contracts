@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import {Delegation} from "./../../Delegation.sol";
 import {Governed} from "./../../../common/Governed/Governed.sol";
 import {Withdrawal} from "./../../../common/Withdrawal/Withdrawal.sol";
-import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
 import {DelegationPoolLib} from "./../../DelegationPoolLib.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {DelegationPool} from "./../../IDelegation.sol";
@@ -18,7 +17,6 @@ contract VestedDelegation is
     IVestedDelegation,
     Governed,
     Withdrawal,
-    APRCalculatorConnector,
     HydraChainConnector,
     Delegation,
     VestingManagerFactoryConnector,
