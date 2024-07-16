@@ -162,15 +162,6 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
         emit StakingRewardsClaimed(staker, rewards);
     }
 
-    /**
-     * @notice Method used to burn funds
-     * @param amount The amount to be burned
-     */
-    function _burnAmount(uint256 amount) internal {
-        (bool success, ) = address(0).call{value: amount}("");
-        require(success, "Failed to burn amount");
-    }
-
     // _______________ Private functions _______________
 
     /**
