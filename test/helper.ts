@@ -83,7 +83,7 @@ export async function commitEpoch(
 
   const validatorsUptime = [];
   for (const validator of validators) {
-    validatorsUptime.push({ validator: validator.address, signedBlocks: 64 });
+    validatorsUptime.push({ validator: validator.address, signedBlocks: epochSize });
   }
 
   await mine(epochSize, { interval: 2 });

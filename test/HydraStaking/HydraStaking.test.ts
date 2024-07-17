@@ -378,28 +378,31 @@ export function RunHydraStakingTests(): void {
       });
     });
 
+    // TODO: add some more coverage here, like in the HydraDelegation's claim rewards
     describe("Claim Rewards", function () {
       it("should claim validator reward", async function () {
         const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
+        const rewardingValidator = this.signers.validators[0];
+
         await commitEpoch(
           systemHydraChain,
           hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1]],
+          [rewardingValidator, this.signers.validators[1]],
           this.epochSize
         );
 
-        const reward = await hydraStaking.unclaimedRewards(this.signers.validators[0].address);
-        const tx = await hydraStaking.connect(this.signers.validators[0])["claimStakingRewards()"]();
+        const reward = await hydraStaking.unclaimedRewards(rewardingValidator.address);
+        const tx = await hydraStaking.connect(rewardingValidator)["claimStakingRewards()"]();
         const receipt = await tx.wait();
 
         const event = receipt.events?.find((log: any) => log.event === "StakingRewardsClaimed");
-        expect(event?.args?.account, "event.arg.account").to.equal(this.signers.validators[0].address);
+        expect(event?.args?.account, "event.arg.account").to.equal(rewardingValidator.address);
         expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
 
         await expect(tx, "StakingRewardsClaimed")
           .to.emit(hydraStaking, "StakingRewardsClaimed")
-          .withArgs(this.signers.validators[0].address, reward);
+          .withArgs(rewardingValidator.address, reward);
       });
     });
 
