@@ -24,14 +24,11 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
      */
     function penalizeStaker(
         address staker,
-        uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
-    ) external onlyHydraChain {
+    ) external onlyHydraChain {  
+        uint256 unstakeAmount = stakeOf(staker);
         (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
-        if (stakeLeft == 0) {
-            // we pass HydraChain address to save gas (each time new validator is banned it won't change his satus 2 times)
-            hydraChainContract.deactivateValidator(msg.sender);
-        }
+        assert(stakeLeft == 0);
 
         uint256 leftForStaker = _distributePenalizedStake(withdrawAmount, stakeDistributions);
         if (leftForStaker > 0) {

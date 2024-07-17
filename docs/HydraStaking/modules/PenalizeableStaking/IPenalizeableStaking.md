@@ -56,7 +56,7 @@ Claims staking rewards for the sender.
 ### penalizeStaker
 
 ```solidity
-function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
+function penalizeStaker(address staker, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
 ```
 
 
@@ -68,7 +68,6 @@ function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDis
 | Name | Type | Description |
 |---|---|---|
 | staker | address | undefined |
-| unstakeAmount | uint256 | undefined |
 | stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingWithdrawals

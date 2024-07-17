@@ -446,7 +446,7 @@ export function RunHydraStakingTests(): void {
           const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
           await expect(
-            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
+            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, [])
           )
             .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
             .withArgs("ONLY_HYDRA_CHAIN");
@@ -780,69 +780,6 @@ export function RunHydraStakingTests(): void {
           // ensure proper staked amount is fetched
           const validatorData = await hydraChain.getValidator(validator.address);
           expect(validatorData.stake, "stake").to.equal(stakeAmount.sub(unstakeAmount));
-        });
-      });
-    });
-
-    describe("PenalizeableStaking", function () {
-      describe("penalizeStaker", function () {
-        it("should revert if non-HydraChain contract tries to penalize", async function () {
-          const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-          await expect(
-            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
-          )
-            .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-            .withArgs("ONLY_HYDRA_CHAIN");
-        });
-
-        it("should execute unstake and emit Unstaked event", async function () {
-          const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-          const banTx = await hydraChain.banValidator(validatorToBan.address);
-          expect(banTx, "banTx").to.emit(hydraStaking, "Unstaked").withArgs(validatorToBan.address, this.minStake);
-        });
-
-        it("should emit WithdrawalRegistered event", async function () {
-          const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-          const banTx = await hydraChain.banValidator(validatorToBan.address);
-          expect(banTx, "banTx")
-            .to.emit(hydraStaking, "WithdrawalRegistered")
-            .withArgs(validatorToBan.address, this.minStake);
-        });
-
-        it("should emit WithdrawalFinished event", async function () {
-          const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-          const banTx = await hydraChain.banValidator(validatorToBan.address);
-          expect(banTx, "banTx")
-            .to.emit(hydraStaking, "WithdrawalFinished")
-            .withArgs(validatorToBan.address, this.minStake);
-        });
-
-        it("should increase liquidityDebts", async function () {
-          const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-          const liquidityDebtsBefore = await hydraStaking.liquidityDebts(validatorToBan.address);
-          await hydraChain.banValidator(validatorToBan.address);
-          const liquidityDebtsAfter = await hydraStaking.liquidityDebts(validatorToBan.address);
-
-          expect(liquidityDebtsAfter, "liquidityDebtsAfter").to.above(liquidityDebtsBefore);
-        });
-
-        it("should change status of hydraChain for the 1st ban and keep it on every other ban", async function () {
-          const { hydraChain, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
-          expect(await hydraChain.isValidatorRegistered(hydraChain.address)).to.equal(false);
-
-          await hydraChain.banValidator(validatorToBan.address);
-          expect(await hydraChain.isValidatorBanned(validatorToBan.address)).to.equal(true);
-          expect(await hydraChain.isValidatorRegistered(hydraChain.address)).to.equal(true);
-
-          await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[1].address);
-
-          expect(await hydraChain.isValidatorBanned(this.signers.validators[1].address)).to.equal(true);
-          expect(await hydraChain.isValidatorRegistered(hydraChain.address)).to.equal(true);
         });
       });
     });
