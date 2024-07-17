@@ -483,6 +483,23 @@ function revokeRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
+
 ### supportsInterface
 
 ```solidity

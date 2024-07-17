@@ -191,23 +191,6 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
-### balanceChangeThreshold
-
-```solidity
-function balanceChangeThreshold() external view returns (uint256)
-```
-
-The threshold for the maximum number of allowed balance changes
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### calculatePositionPenalty
 
 ```solidity
@@ -687,7 +670,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, address governance, uint256 initialCommission, address liquidToken, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, address governance, uint256 initialCommission, address liquidToken, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr, address rewardWalletConnectorAddr) external nonpayable
 ```
 
 
@@ -706,6 +689,7 @@ function initialize(StakerInit[] initialStakers, address governance, uint256 ini
 | hydraStakingAddr | address | undefined |
 | hydraChainAddr | address | undefined |
 | vestingManagerFactoryAddr | address | undefined |
+| rewardWalletConnectorAddr | address | undefined |
 
 ### isActiveDelegatePosition
 
@@ -747,29 +731,6 @@ Checks if balance change was already made in the current epoch
 | staker | address | Validator to delegate to |
 | delegator | address | Delegator that has delegated |
 | currentEpochNum | uint256 | Current epoch number |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
-### isBalanceChangeThresholdExceeded
-
-```solidity
-function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool)
-```
-
-Checks if the balance changes exceeds the threshold
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Validator to delegate to |
-| delegator | address | Delegator that has delegated |
 
 #### Returns
 
@@ -979,6 +940,23 @@ function revokeRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
 
 ### setCommission
 

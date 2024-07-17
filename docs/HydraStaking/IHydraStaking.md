@@ -56,7 +56,7 @@ Claims staking rewards for the sender.
 ### distributeRewardsFor
 
 ```solidity
-function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external nonpayable
 ```
 
 

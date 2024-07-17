@@ -6,10 +6,19 @@ import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, HydraStakingConnector, HydraChainConnector {
+contract Delegation is
+    IDelegation,
+    Governed,
+    Withdrawal,
+    APRCalculatorConnector,
+    HydraStakingConnector,
+    HydraChainConnector,
+    RewardWalletConnector
+{
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
@@ -17,6 +26,7 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
+
     // @note maybe this must be part of the HydraChain
     /// @notice The minimum delegation amount to be delegated
     uint256 public minDelegation;
@@ -210,8 +220,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        emit DelegatorRewardsClaimed(staker, delegator, reward);
+        rewardWalletContract.distributeReward(delegator, reward);
 
-        _withdraw(delegator, reward);
+        emit DelegatorRewardsClaimed(staker, delegator, reward);
     }
 }

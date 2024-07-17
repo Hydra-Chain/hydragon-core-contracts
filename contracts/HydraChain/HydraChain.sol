@@ -14,8 +14,6 @@ import {IHydraChain} from "./IHydraChain.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {Epoch} from "./IHydraChain.sol";
 
-// TODO: setup use of reward account that would handle the amounts of rewards
-
 contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, Inspector, PowerExponent {
     using ArraysUpgradeable for uint256[];
 

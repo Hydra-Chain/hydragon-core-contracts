@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./../../Staking.sol";
-import {IHydraDelegation} from "./../../../HydraDelegation/IHydraDelegation.sol";
 import {IDelegatedStaking} from "./IDelegatedStaking.sol";
+import {Staking} from "./../../Staking.sol";
 import {Unauthorized} from "./../../../common/Errors.sol";
+import {IHydraDelegation} from "./../../../HydraDelegation/IHydraDelegation.sol";
 
 abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     IHydraDelegation public delegationContract;
@@ -58,7 +58,6 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
      * @param staker The staker address
      */
     function _onUndelegate(address staker) internal virtual;
-
 
     /**
      * @notice Returns the total amount of delegation

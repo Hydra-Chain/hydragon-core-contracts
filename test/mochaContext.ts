@@ -120,6 +120,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   vestingRewardsFixture: {
@@ -131,6 +132,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
+      rewardWallet: RewardWallet;
     }>;
   };
   withdrawableFixture: {
@@ -145,6 +147,7 @@ export interface Fixtures {
       unstakedAmount: BigNumber;
       vestingManagerFactory: VestingManagerFactory;
       aprCalculator: APRCalculator;
+      rewardWallet: RewardWallet;
     }>;
   };
   delegatedFixture: {
@@ -157,6 +160,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
       aprCalculator: APRCalculator;
+      rewardWallet: RewardWallet;
     }>;
   };
   vestManagerFixture: {
@@ -171,6 +175,7 @@ export interface Fixtures {
       vestManagerOwner: SignerWithAddress;
       vestingManagerFactory: VestingManagerFactory;
       aprCalculator: APRCalculator;
+      rewardWallet: RewardWallet;
     }>;
   };
   vestedDelegationFixture: {
@@ -185,6 +190,7 @@ export interface Fixtures {
       vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
+      rewardWallet: RewardWallet;
     }>;
   };
   weeklyVestedDelegationFixture: {
@@ -200,6 +206,7 @@ export interface Fixtures {
       vestManagerOwner: SignerWithAddress;
       delegatedValidator: SignerWithAddress;
       aprCalculator: APRCalculator;
+      rewardWallet: RewardWallet;
     }>;
   };
   validatorToBanFixture: {

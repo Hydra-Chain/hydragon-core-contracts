@@ -2,15 +2,16 @@
 pragma solidity 0.8.17;
 
 import {Staking} from "./Staking.sol";
-import {System} from "./../common/System/System.sol";
-import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
+import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
-import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
-import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {System} from "./../common/System/System.sol";
+import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
+import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
@@ -22,6 +23,7 @@ contract HydraStaking is
     IHydraStaking,
     System,
     HydraChainConnector,
+    RewardWalletConnector,
     Staking,
     VestedStaking,
     StateSyncStaking,
@@ -45,10 +47,11 @@ contract HydraStaking is
         address newLiquidToken,
         address hydraChainAddr,
         address aprCalculatorAddr,
-        address delegationContractAddr
+        address delegationContractAddr,
+        address rewardWalletContractAddr
     ) external initializer onlySystemCall {
         __HydraChainConnector_init(hydraChainAddr);
-        __Staking_init(newMinStake, aprCalculatorAddr, governance);
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletContractAddr, governance);
         __LiquidStaking_init(newLiquidToken);
         __DelegatedStaking_init(delegationContractAddr);
 
@@ -71,7 +74,7 @@ contract HydraStaking is
         uint256 epochId,
         Uptime[] calldata uptime,
         uint256 epochSize
-    ) external payable onlySystemCall {
+    ) external onlySystemCall {
         require(distributedRewardPerEpoch[epochId] == 0, "REWARD_ALREADY_DISTRIBUTED");
 
         uint256 totalBlocks = hydraChainContract.totalBlocks(epochId);
@@ -182,13 +185,6 @@ contract HydraStaking is
     function _claimStakingRewards(address staker) internal override(Staking, VestedStaking) returns (uint256 rewards) {
         return super._claimStakingRewards(staker);
     }
-
-    // TODO: The unrealized potential staking reward for all stakers must be burned at the end because
-    // HYDRA is minted for the full potential staking reward but only part of it will go as a reward for the stakers
-    // we have to handle the other part
-    // Other option and maybe better because it will simplify the logic and will decrease computation on both node and contract
-    // is having a reward wallet that will have close to full hydra balance all the time.
-    // We will use it when the actual end reward will be transfered to the recipient (staker delegator).
 
     /**
      * @notice Distributes the staking rewards for the staker.

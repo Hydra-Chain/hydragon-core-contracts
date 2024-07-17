@@ -87,9 +87,9 @@ contract VestedStaking is IVestedStaking, Staking, Vesting {
 
         stakingRewards[msg.sender].taken += rewards;
 
-        emit StakingRewardsClaimed(msg.sender, rewards);
+        rewardWalletContract.distributeReward(msg.sender, rewards);
 
-        _withdraw(msg.sender, rewards);
+        emit StakingRewardsClaimed(msg.sender, rewards);
     }
 
     // _______________ Internal functions _______________
@@ -106,7 +106,6 @@ contract VestedStaking is IVestedStaking, Staking, Vesting {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
-            // TODO: Here the max reward index amount is not burned
             // staker lose its reward
             stakingRewards[account].taken = stakingRewards[account].total;
             uint256 penalty = _calcPenalty(position, amount);

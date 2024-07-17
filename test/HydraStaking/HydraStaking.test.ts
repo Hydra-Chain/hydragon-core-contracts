@@ -39,9 +39,8 @@ export function RunHydraStakingTests(): void {
       });
 
       it("should have zero total supply if we pass no validators", async function () {
-        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
-          this.fixtures.presetHydraChainStateFixture
-        );
+        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator, rewardWallet } =
+          await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         // initialize: because we make external calls to the HydraDelegation, which is set into the initializer (we pass no stakers)
         await hydraStaking
@@ -53,16 +52,16 @@ export function RunHydraStakingTests(): void {
             liquidToken.address,
             hydraChain.address,
             aprCalculator.address,
-            hydraDelegation.address
+            hydraDelegation.address,
+            rewardWallet.address
           );
 
         expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(0);
       });
 
       it("should revert when initialized without system call", async function () {
-        const { hydraChain, liquidToken, hydraStaking, hydraDelegation, aprCalculator } = await loadFixture(
-          this.fixtures.presetHydraChainStateFixture
-        );
+        const { hydraChain, liquidToken, hydraStaking, hydraDelegation, aprCalculator, rewardWallet } =
+          await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
           hydraStaking.initialize(
@@ -73,7 +72,8 @@ export function RunHydraStakingTests(): void {
             liquidToken.address,
             hydraChain.address,
             aprCalculator.address,
-            hydraDelegation.address
+            hydraDelegation.address,
+            rewardWallet.address
           )
         )
           .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
@@ -81,9 +81,8 @@ export function RunHydraStakingTests(): void {
       });
 
       it("should revert if minStake is too low", async function () {
-        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator } = await loadFixture(
-          this.fixtures.presetHydraChainStateFixture
-        );
+        const { hydraStaking, hydraDelegation, hydraChain, liquidToken, aprCalculator, rewardWallet } =
+          await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
           hydraStaking.connect(this.signers.system).initialize(
@@ -94,40 +93,56 @@ export function RunHydraStakingTests(): void {
             liquidToken.address,
             hydraChain.address,
             aprCalculator.address,
-            hydraDelegation.address
+            hydraDelegation.address,
+            rewardWallet.address
           )
         ).to.be.revertedWithCustomError(hydraStaking, "InvalidMinStake");
       });
 
       it("should initialize successfully", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator } = await loadFixture(
-          this.fixtures.initializedHydraChainStateFixture
-        );
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, rewardWallet } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        expect(await hydraStaking.owner()).to.equal(this.signers.governance.address);
-        expect(await hydraStaking.minStake()).to.equal(this.minStake);
-        expect(await hydraStaking.totalStake()).to.equal(this.minStake.mul(2));
-        expect(await hydraStaking.totalBalance()).to.equal(this.minStake.mul(2));
-        expect(await hydraStaking.hydraChainContract()).to.equal(hydraChain.address);
-        expect(await hydraStaking.delegationContract()).to.equal(hydraDelegation.address);
-        expect(await hydraStaking.aprCalculatorContract()).to.equal(aprCalculator.address);
-        expect(await hydraStaking.stakeOf(this.signers.admin.address)).to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.owner(), "owner").to.equal(this.signers.governance.address);
+        expect(await hydraStaking.minStake(), "minStake").to.equal(this.minStake);
+        expect(await hydraStaking.totalStake(), "totalStake").to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.totalBalance(), "totalBalance").to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.hydraChainContract(), "hydraChainContract").to.equal(hydraChain.address);
+        expect(await hydraStaking.delegationContract(), "delegationContract").to.equal(hydraDelegation.address);
+        expect(await hydraStaking.aprCalculatorContract(), "aprCalculatorContract").to.equal(aprCalculator.address);
+        expect(await hydraStaking.stakeOf(this.signers.admin.address), "stakeOf").to.equal(this.minStake.mul(2));
         expect(
-          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          "hasRole"
         ).to.be.true;
 
-        expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
+        expect(await hydraStaking.MIN_STAKE_LIMIT(), "MIN_STAKE_LIMIT").to.equal(this.minStake);
 
         // Liquid Delegation
-        expect(await hydraStaking.liquidToken()).to.equal(liquidToken.address);
+        expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);
 
         // Withdrawable
-        expect(await hydraStaking.withdrawWaitPeriod()).to.equal(WEEK);
+        expect(await hydraStaking.withdrawWaitPeriod(), "withdrawWaitPeriod").to.equal(WEEK);
+
+        // Reward Wallet
+        const rewardWalletInitialAmount = this.minStake.mul(5);
+        expect(await hre.ethers.provider.getBalance(rewardWallet.address), "getBalance").to.be.eq(
+          rewardWalletInitialAmount
+        );
+        expect(await rewardWallet.rewardManagers(hydraStaking.address), "hydraStaking").to.equal(true);
+        expect(await rewardWallet.rewardManagers(hydraDelegation.address), "hydraDelegation").to.equal(true);
       });
 
       it("should revert on re-initialization attempt", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
-          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const {
+          hydraChain,
+          hydraDelegation,
+          liquidToken,
+          hydraStaking,
+          aprCalculator,
+          vestingManagerFactory,
+          rewardWallet,
+        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
           hydraDelegation.connect(this.signers.system).initialize(
@@ -139,7 +154,8 @@ export function RunHydraStakingTests(): void {
             aprCalculator.address,
             hydraStaking.address,
             hydraChain.address,
-            vestingManagerFactory.address
+            vestingManagerFactory.address,
+            rewardWallet.address
           )
         ).to.be.revertedWith("Initializable: contract is already initialized");
       });

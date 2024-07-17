@@ -72,23 +72,6 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
-### balanceChangeThreshold
-
-```solidity
-function balanceChangeThreshold() external view returns (uint256)
-```
-
-The threshold for the maximum number of allowed balance changes
-
-*We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### calculatePositionPenalty
 
 ```solidity
@@ -572,29 +555,6 @@ Checks if balance change was already made in the current epoch
 |---|---|---|
 | _0 | bool | undefined |
 
-### isBalanceChangeThresholdExceeded
-
-```solidity
-function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool)
-```
-
-Checks if the balance changes exceeds the threshold
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Validator to delegate to |
-| delegator | address | Delegator that has delegated |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
 ### isMaturingDelegatePosition
 
 ```solidity
@@ -758,6 +718,23 @@ function revokeRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
 
 ### supportsInterface
 
