@@ -50,7 +50,9 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         if (leftToWithdraw == 0) {
             revert NoFundsToWithdraw();
         }
+
         delete leftToWithdrawPerStaker[msg.sender];
+
         _withdraw(msg.sender, leftToWithdraw);
         _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
     }
