@@ -151,7 +151,7 @@ Initializes the reward wallet with the provided addresses that will be able to d
 function rewardManagers(address) external view returns (bool)
 ```
 
-The mapping of the managers with a boolean to flag if it is active manager or not
+The mapping of the managers
 
 
 
