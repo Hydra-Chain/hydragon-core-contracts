@@ -7,7 +7,9 @@ import {
   ERRORS,
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
+  MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
+  MIN_MACRO_FACTOR,
   MIN_RSI_BONUS,
 } from "../constants";
 import { ethers } from "hardhat";
@@ -26,6 +28,8 @@ export function RunAPRCalculatorTests(): void {
 
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.INITIAL_MACRO_FACTOR()).to.equal(INITIAL_MACRO_FACTOR);
+        expect(await aprCalculator.MIN_MACRO_FACTOR()).to.equal(MIN_MACRO_FACTOR);
+        expect(await aprCalculator.MAX_MACRO_FACTOR()).to.equal(MAX_MACRO_FACTOR);
         expect(await aprCalculator.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
@@ -121,6 +125,24 @@ export function RunAPRCalculatorTests(): void {
 
         await expect(aprCalculator.setMacro(10000)).to.be.revertedWith(
           ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
+        );
+      });
+
+      it("should revert when trying to set higher than max macro", async function () {
+        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(aprCalculator.connect(this.signers.governance).setMacro(20000)).to.be.revertedWithCustomError(
+          aprCalculator,
+          "InvalidMacro"
+        );
+      });
+
+      it("should revert when trying to set lower than min macro", async function () {
+        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(aprCalculator.connect(this.signers.governance).setMacro(1000)).to.be.revertedWithCustomError(
+          aprCalculator,
+          "InvalidMacro"
         );
       });
 

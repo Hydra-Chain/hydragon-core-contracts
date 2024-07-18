@@ -112,10 +112,44 @@ function MANAGER_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### MAX_MACRO_FACTOR
+
+```solidity
+function MAX_MACRO_FACTOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MAX_RSI_BONUS
 
 ```solidity
 function MAX_RSI_BONUS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### MIN_MACRO_FACTOR
+
+```solidity
+function MIN_MACRO_FACTOR() external view returns (uint256)
 ```
 
 
@@ -776,6 +810,17 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
+
+### InvalidMacro
+
+```solidity
+error InvalidMacro()
+```
+
+
+
+
+
 
 ### InvalidRSI
 
