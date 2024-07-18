@@ -25,7 +25,7 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
     function penalizeStaker(
         address staker,
         PenalizedStakeDistribution[] calldata stakeDistributions
-    ) external onlyHydraChain {  
+    ) external onlyHydraChain {
         uint256 unstakeAmount = stakeOf(staker);
         (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
         assert(stakeLeft == 0);
@@ -125,12 +125,6 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         }
     }
 
-    function _isStakeLeftLow(uint256 accountStake, uint256 unstakeAmount) private view returns (bool) {
-        uint256 stakeLeft = accountStake - unstakeAmount;
-        if (stakeLeft < minStake && stakeLeft != 0) {
-            return true;
-        }
-
-        return false;
-    }
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

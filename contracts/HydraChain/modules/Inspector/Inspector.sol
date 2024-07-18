@@ -100,6 +100,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         if (validators[validator].status == ValidatorStatus.Active) {
             activeValidatorsCount--;
         }
+
         validators[validator].status = ValidatorStatus.Banned;
 
         emit ValidatorBanned(validator);
