@@ -253,7 +253,7 @@ function owner() external view returns (address)
 ### penalizeStaker
 
 ```solidity
-function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
+function penalizeStaker(address staker, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
 ```
 
 
@@ -265,7 +265,6 @@ function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDis
 | Name | Type | Description |
 |---|---|---|
 | staker | address | undefined |
-| unstakeAmount | uint256 | undefined |
 | stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingOwner
@@ -826,6 +825,17 @@ error InvalidWaitPeriod()
 
 
 
+### NoFundsToWithdraw
+
+```solidity
+error NoFundsToWithdraw()
+```
+
+
+
+
+
+
 ### NoRewards
 
 ```solidity
@@ -891,21 +901,5 @@ error Unauthorized(string only)
 | Name | Type | Description |
 |---|---|---|
 | only | string | undefined |
-
-### ValidatorNotBanned
-
-```solidity
-error ValidatorNotBanned(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
 
 

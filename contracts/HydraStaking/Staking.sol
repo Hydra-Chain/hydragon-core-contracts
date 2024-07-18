@@ -131,7 +131,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
         totalStake -= amount;
         withdrawAmount = amount;
 
-        emit Unstaked(msg.sender, amount);
+        emit Unstaked(account, amount);
     }
 
     /**

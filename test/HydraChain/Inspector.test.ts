@@ -191,6 +191,60 @@ export function RunInspectorTests(): void {
       );
     });
 
+    it("should emit WithdrawalRegistered event for the reporter with the report reward", async function () {
+      const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      const reporterReward = await hydraChain.reporterReward();
+      const banTx = await hydraChain.connect(this.signers.delegator).banValidator(validatorToBan.address);
+      await expect(banTx, "banTx")
+        .to.emit(hydraStaking, "WithdrawalRegistered")
+        .withArgs(this.signers.delegator.address, reporterReward);
+    });
+
+    it("should emit WithdrawalFinished event for 0 address with validator penalty", async function () {
+      const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      const validatorBanPenalty = await hydraChain.validatorPenalty();
+      const banTx = await hydraChain.banValidator(validatorToBan.address);
+      await expect(banTx, "banTx")
+        .to.emit(hydraStaking, "WithdrawalFinished")
+        .withArgs(hydraStaking.address, ethers.constants.AddressZero, validatorBanPenalty);
+    });
+
+    it("should increase liquidityDebts correctly on ban", async function () {
+      const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+      const stake = await hydraStaking.stakeOf(validatorToBan.address);
+
+      const validatorBanPenalty = await hydraChain.validatorPenalty();
+      const reporterReward = await hydraChain.reporterReward();
+      const leftForStaker = stake.sub(reporterReward).sub(validatorBanPenalty);
+
+      const liquidityDebtsBefore = await hydraStaking.liquidityDebts(validatorToBan.address);
+      await hydraChain.banValidator(validatorToBan.address);
+      const liquidityDebtsAfter = await hydraStaking.liquidityDebts(validatorToBan.address);
+
+      expect(liquidityDebtsBefore, "liquidityDebtsBefore").to.equal(0);
+      expect(liquidityDebtsAfter, "liquidityDebtsAfter").to.equal(stake.sub(leftForStaker));
+    });
+
+    it("should unstake all funds & emit event on ban", async function () {
+      const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+      const stake = await hydraStaking.stakeOf(validatorToBan.address);
+
+      expect(await hydraStaking.stakeOf(validatorToBan.address)).to.be.above(0);
+
+      const banTx = await hydraChain.banValidator(validatorToBan.address);
+      await expect(banTx, "banTx").to.emit(hydraStaking, "Unstaked").withArgs(validatorToBan.address, stake);
+      expect(await hydraStaking.stakeOf(validatorToBan.address)).to.equal(0);
+    });
+
+    it("should not add funds to withdraw queue on ban for the banned validator", async function () {
+      const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      await hydraChain.banValidator(validatorToBan.address);
+      expect(await hydraStaking.pendingWithdrawals(validatorToBan.address)).to.equal(0);
+    });
+
     it("should get only reporter reward, because it is more than the stake", async function () {
       const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
 
@@ -207,6 +261,10 @@ export function RunInspectorTests(): void {
         [hydraStaking.address, ethers.constants.AddressZero],
         [0, 0]
       );
+      await expect(banTx, "emit WithdrawalRegistered")
+        .to.emit(hydraStaking, "WithdrawalRegistered")
+        .withArgs(this.signers.accounts[0].address, stakedAmount);
+      await expect(banTx, "emit WithdrawalFinished").to.not.emit(hydraStaking, "WithdrawalFinished");
       expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(stakedAmount);
     });
 
@@ -224,10 +282,13 @@ export function RunInspectorTests(): void {
         [hydraStaking.address, ethers.constants.AddressZero],
         [stakedAmount.sub(reporterReward).mul(-1), stakedAmount.sub(reporterReward)] // reporter reward is added to withdrawable, so reported can withdraw it in a separate tx
       );
+      await expect(banTx, "emit WithdrawalFinished")
+        .to.emit(hydraStaking, "WithdrawalFinished")
+        .withArgs(hydraStaking.address, ethers.constants.AddressZero, stakedAmount.sub(reporterReward));
       expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(reporterReward);
     });
 
-    it("should ban the validator even if threhshold is not met, if called from the contract owner", async function () {
+    it("should ban the validator even if threshold is not met, if called from the contract owner", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       // commit a couple of epochs in order to have a timestamp
@@ -245,20 +306,25 @@ export function RunInspectorTests(): void {
   });
 
   describe("Withdraw banned funds", function () {
-    it("should revert when trying to withdraw from non banned validator", async function () {
-      const { hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
-
-      await expect(hydraStaking.connect(this.signers.validators[2]).withdrawBannedFunds())
-        .to.be.revertedWithCustomError(hydraStaking, "ValidatorNotBanned")
-        .withArgs(this.signers.validators[2].address);
-    });
-
     it("should fail the withdrawal when there are no funds in the hydraStaking", async function () {
       const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
 
       // clear the contract's balance in order to force withdrawal fail
       setBalance(hydraStaking.address, 0);
       await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWith("WITHDRAWAL_FAILED");
+    });
+
+    it("should revert when trying to withdraw banned funds when there is none to withdraw", async function () {
+      const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
+
+      await hydraStaking.connect(bannedValidator).withdrawBannedFunds();
+      expect(await hydraStaking.connect(bannedValidator).leftToWithdrawPerStaker(bannedValidator.address)).to.be.equal(
+        0
+      );
+      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWithCustomError(
+        hydraStaking,
+        "NoFundsToWithdraw"
+      );
     });
 
     it("should successfully withdraw the funds", async function () {
@@ -284,6 +350,7 @@ export function RunInspectorTests(): void {
 
       const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(bannedValidator.address);
       expect(withdrawalBalance, "withdrawalBalance.withdrawableAmount").to.be.equal(0);
+      expect(await hydraStaking.liquidityDebts(bannedValidator.address)).to.be.equal(0);
     });
   });
 }

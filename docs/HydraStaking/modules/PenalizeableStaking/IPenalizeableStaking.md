@@ -56,7 +56,7 @@ Claims staking rewards for the sender.
 ### penalizeStaker
 
 ```solidity
-function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
+function penalizeStaker(address staker, PenalizedStakeDistribution[] stakeDistributions) external nonpayable
 ```
 
 
@@ -68,7 +68,6 @@ function penalizeStaker(address staker, uint256 unstakeAmount, PenalizedStakeDis
 | Name | Type | Description |
 |---|---|---|
 | staker | address | undefined |
-| unstakeAmount | uint256 | undefined |
 | stakeDistributions | PenalizedStakeDistribution[] | undefined |
 
 ### pendingWithdrawals
@@ -346,6 +345,17 @@ error InvalidWaitPeriod()
 
 
 
+### NoFundsToWithdraw
+
+```solidity
+error NoFundsToWithdraw()
+```
+
+
+
+
+
+
 ### NoRewards
 
 ```solidity
@@ -395,21 +405,5 @@ error StakeRequirement(string src, string msg)
 |---|---|---|
 | src | string | undefined |
 | msg | string | undefined |
-
-### ValidatorNotBanned
-
-```solidity
-error ValidatorNotBanned(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
 
 

@@ -24,19 +24,11 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
      */
     function penalizeStaker(
         address staker,
-        uint256 unstakeAmount,
         PenalizedStakeDistribution[] calldata stakeDistributions
     ) external onlyHydraChain {
-        uint256 accountStake = stakeOf(staker);
-        if (isStakeLeftLow(accountStake, unstakeAmount)) {
-            // It is HydraChain responsibility to execute penalize with proper values
-            revert StakeLeftLow();
-        }
-
+        uint256 unstakeAmount = stakeOf(staker);
         (uint256 stakeLeft, uint256 withdrawAmount) = _executeUnstake(staker, unstakeAmount);
-        if (stakeLeft == 0) {
-            hydraChainContract.deactivateValidator(msg.sender);
-        }
+        assert(stakeLeft == 0);
 
         uint256 leftForStaker = _distributePenalizedStake(withdrawAmount, stakeDistributions);
         if (leftForStaker > 0) {
@@ -50,12 +42,13 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
      * @inheritdoc IPenalizeableStaking
      */
     function withdrawBannedFunds() external {
-        if (!hydraChainContract.isValidatorBanned(msg.sender)) {
-            revert ValidatorNotBanned(msg.sender);
+        uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
+        if (leftToWithdraw == 0) {
+            revert NoFundsToWithdraw();
         }
 
-        uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         delete leftToWithdrawPerStaker[msg.sender];
+
         _withdraw(msg.sender, leftToWithdraw);
         _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
     }
@@ -128,12 +121,6 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
         }
     }
 
-    function isStakeLeftLow(uint256 accountStake, uint256 unstakeAmount) private view returns (bool) {
-        uint256 stakeLeft = accountStake - unstakeAmount;
-        if (stakeLeft < minStake && stakeLeft != 0) {
-            return true;
-        }
-
-        return false;
-    }
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

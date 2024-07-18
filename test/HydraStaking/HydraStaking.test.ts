@@ -446,7 +446,7 @@ export function RunHydraStakingTests(): void {
           const { hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
           await expect(
-            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, 1, [])
+            hydraStaking.connect(this.signers.accounts[1]).penalizeStaker(this.signers.accounts[1].address, [])
           )
             .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
             .withArgs("ONLY_HYDRA_CHAIN");

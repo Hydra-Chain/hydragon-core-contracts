@@ -83,7 +83,6 @@ abstract contract Inspector is IInspector, ValidatorManager {
      * @param validator The address of the validator
      */
     function _ban(address validator) private {
-        uint256 validatorStake = hydraStakingContract.stakeOf(validator);
         if (validators[validator].status == ValidatorStatus.Active) {
             PenalizedStakeDistribution[] memory rewards;
             if (msg.sender != owner()) {
@@ -95,7 +94,11 @@ abstract contract Inspector is IInspector, ValidatorManager {
                 rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             }
 
-            hydraStakingContract.penalizeStaker(validator, validatorStake, rewards);
+            hydraStakingContract.penalizeStaker(validator, rewards);
+        }
+
+        if (validators[validator].status == ValidatorStatus.Active) {
+            activeValidatorsCount--;
         }
 
         validators[validator].status = ValidatorStatus.Banned;
