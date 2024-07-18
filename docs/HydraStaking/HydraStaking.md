@@ -1340,20 +1340,4 @@ error Unauthorized(string only)
 |---|---|---|
 | only | string | undefined |
 
-### ValidatorNotBanned
-
-```solidity
-error ValidatorNotBanned(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
-
 

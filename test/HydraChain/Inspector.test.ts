@@ -306,14 +306,6 @@ export function RunInspectorTests(): void {
   });
 
   describe("Withdraw banned funds", function () {
-    it("should revert when trying to withdraw from non banned validator", async function () {
-      const { hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
-
-      await expect(hydraStaking.connect(this.signers.validators[2]).withdrawBannedFunds())
-        .to.be.revertedWithCustomError(hydraStaking, "ValidatorNotBanned")
-        .withArgs(this.signers.validators[2].address);
-    });
-
     it("should fail the withdrawal when there are no funds in the hydraStaking", async function () {
       const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
 

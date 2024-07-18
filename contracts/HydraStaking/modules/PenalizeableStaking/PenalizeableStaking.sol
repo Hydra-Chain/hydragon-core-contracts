@@ -42,10 +42,6 @@ contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staki
      * @inheritdoc IPenalizeableStaking
      */
     function withdrawBannedFunds() external {
-        if (!hydraChainContract.isValidatorBanned(msg.sender)) {
-            revert ValidatorNotBanned(msg.sender);
-        }
-
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         if (leftToWithdraw == 0) {
             revert NoFundsToWithdraw();
