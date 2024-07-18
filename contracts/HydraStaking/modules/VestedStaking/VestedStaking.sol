@@ -2,23 +2,18 @@
 pragma solidity 0.8.17;
 
 import {Staking} from "./../../Staking.sol";
-import {APRCalculatorConnector} from "./../../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
+import {Vesting} from "./../../../common/Vesting/Vesting.sol";
+
 
 /**
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
+contract VestedStaking is IVestedStaking, Staking, Vesting {
     using VestedPositionLib for VestingPosition;
-
-    /**
-     * @notice A constant for the calculation of the weeks left of a vesting period
-     * @dev Representing a week in seconds - 1
-     */
-    uint256 private constant WEEK_MINUS_SECOND = 604799;
 
     /**
      * @notice The stakers' vesting positions
@@ -52,7 +47,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         reward = stakingRewards[staker].total - stakingRewards[staker].taken;
         VestingPosition memory position = vestedStakingPositions[staker];
         if (position.isActive()) {
-            penalty = _calcSlashing(position, amount);
+            penalty = _calcPenalty(position, amount);
             // if active position, reward is burned
             reward = 0;
         }
@@ -99,6 +94,11 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
 
     // _______________ Internal functions _______________
 
+    /**
+     * @notice Unstakes the given amount for the given account
+     * @param account The account to unstake for
+     * @param amount The amount to unstake
+     */
     function _unstake(
         address account,
         uint256 amount
@@ -109,7 +109,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
             // TODO: Here the max reward index amount is not burned
             // staker lose its reward
             stakingRewards[account].taken = stakingRewards[account].total;
-            uint256 penalty = _calcSlashing(position, amount);
+            uint256 penalty = _calcPenalty(position, amount);
 
             if (stakeLeft == 0) {
                 // if position is closed when active, we delete all the vesting data
@@ -147,7 +147,7 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
     function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
-            uint256 reward = _applyCustomAPR(position, rewardIndex, true);
+            uint256 reward = _applyVestingAPR(position, rewardIndex, true);
             stakingRewards[account].total += reward;
 
             emit StakingRewardDistributed(account, reward);
@@ -180,44 +180,6 @@ contract VestedStaking is IVestedStaking, APRCalculatorConnector, Staking {
         }
 
         return 0;
-    }
-
-    /**
-     * @notice Calculates what part of the provided amount of tokens to be slashed
-     * @dev Invoke only when position is active, otherwise - underflow
-     * @param position The vesting position of the staker
-     * @param amount Amount of tokens to be slashed
-     * @return The amount of tokens to be slashed
-     */
-    function _calcSlashing(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
-        uint256 leftPeriod = position.end - block.timestamp;
-        uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = 30 * leftWeeks; // 0.3% * left weeks
-
-        return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
-    }
-
-    /**
-     * @notice Function that applies the custom factors - base APR, vest bonus and rsi bonus
-     * @dev Denominator is used because we should work with floating-point numbers
-     * @param position The vesting position of the staker
-     * @param reward index The reward to which we gonna apply the custom APR
-     * @param rsi If the RSI bonus should be applied
-     * @return The reward with the applied APR
-     */
-    function _applyCustomAPR(
-        VestingPosition memory position,
-        uint256 reward,
-        bool rsi
-    ) internal view returns (uint256) {
-        uint256 bonus = (position.base + position.vestBonus);
-        uint256 divider = aprCalculatorContract.getDENOMINATOR();
-        if (rsi && position.rsiBonus != 0) {
-            bonus = bonus * position.rsiBonus;
-            divider *= divider;
-        }
-
-        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
     }
 
     /**
