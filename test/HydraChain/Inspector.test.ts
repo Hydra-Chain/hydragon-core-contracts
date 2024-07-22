@@ -311,7 +311,10 @@ export function RunInspectorTests(): void {
 
       // clear the contract's balance in order to force withdrawal fail
       setBalance(hydraStaking.address, 0);
-      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWith("WITHDRAWAL_FAILED");
+      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWithCustomError(
+        hydraStaking,
+        "WithdrawalFailed"
+      );
     });
 
     it("should revert when trying to withdraw banned funds when there is none to withdraw", async function () {
