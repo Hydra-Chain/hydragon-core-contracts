@@ -56,7 +56,7 @@ contract RewardWallet is IRewardWallet, System, Initializable {
 
     function _distributeReward(address to, uint256 amount) internal {
         (bool success, ) = to.call{value: amount}("");
-        require(success, "DISTRIBUTE_FAILED");
+        if (!success) revert DistributionFailed();
 
         emit RewardDistributed(to, amount);
     }

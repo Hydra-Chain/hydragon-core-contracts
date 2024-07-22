@@ -19,19 +19,14 @@ abstract contract ValidatorManager is
     HydraDelegationConnector
 {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
-
     /// @notice A constant for the maximum amount of validators
     uint256 public constant MAX_VALIDATORS = 150;
 
     IBLS public bls;
-
     address[] public validatorsAddresses;
-
     uint256 public activeValidatorsCount;
-
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
-
     /**
      * @notice Mapping that keeps the last time when a validator has participated in the consensus
      * @dev Keep in mind that the validator will initially be set active when stake,

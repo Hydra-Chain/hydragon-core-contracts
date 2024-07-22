@@ -7,6 +7,7 @@ interface IWithdrawal {
 
     error NoWithdrawalAvailable();
     error InvalidWaitPeriod();
+    error WithdrawalFailed();
 
     /**
      * @notice Withdraws sender's withdrawable amount to specified address.
