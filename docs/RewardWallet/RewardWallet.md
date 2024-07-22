@@ -225,6 +225,17 @@ event RewardDistributed(address indexed account, uint256 amount)
 
 ## Errors
 
+### DistributionFailed
+
+```solidity
+error DistributionFailed()
+```
+
+
+
+
+
+
 ### Unauthorized
 
 ```solidity

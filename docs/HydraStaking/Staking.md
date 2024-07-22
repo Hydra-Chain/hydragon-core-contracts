@@ -797,4 +797,15 @@ error StakeRequirement(string src, string msg)
 | src | string | undefined |
 | msg | string | undefined |
 
+### WithdrawalFailed
+
+```solidity
+error WithdrawalFailed()
+```
+
+
+
+
+
+
 

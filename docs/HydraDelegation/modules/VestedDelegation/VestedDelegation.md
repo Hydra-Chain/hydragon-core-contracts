@@ -1340,4 +1340,15 @@ error NotVestingManager()
 
 
 
+### WithdrawalFailed
+
+```solidity
+error WithdrawalFailed()
+```
+
+
+
+
+
+
 

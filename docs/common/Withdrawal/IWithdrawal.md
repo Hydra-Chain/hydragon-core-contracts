@@ -151,4 +151,15 @@ error NoWithdrawalAvailable()
 
 
 
+### WithdrawalFailed
+
+```solidity
+error WithdrawalFailed()
+```
+
+
+
+
+
+
 
