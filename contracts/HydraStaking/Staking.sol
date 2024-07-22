@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Unauthorized} from "../common/Errors.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
+import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
-import {Governed} from "./../common/Governed/Governed.sol";
-import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
-import {Unauthorized} from "./../common/Errors.sol";
-import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
-import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 
 contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, RewardWalletConnector {
     /// @notice A constant for the minimum stake limit

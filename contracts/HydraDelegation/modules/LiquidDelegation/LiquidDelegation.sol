@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Delegation} from "./../../Delegation.sol";
-import {Liquid} from "./../../../common/Liquid/Liquid.sol";
+import {Delegation} from "../../Delegation.sol";
+import {Liquid} from "../../../common/Liquid/Liquid.sol";
 
-contract LiquidDelegation is Delegation, Liquid {
-
+abstract contract LiquidDelegation is Delegation, Liquid {
     // _______________ Initializer _______________
 
     function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
@@ -29,4 +28,7 @@ contract LiquidDelegation is Delegation, Liquid {
         _collectTokens(delegator, amount);
         super._undelegate(staker, delegator, amount);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

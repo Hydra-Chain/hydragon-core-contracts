@@ -14,7 +14,7 @@ export function RunSwapVestedPositionStakerTests(): void {
         vestManager
           .connect(this.signers.accounts[10])
           .swapVestedPositionStaker(delegatedValidator.address, delegatedValidator.address)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith(ERRORS.ownable);
     });
 
     it("should revert if we try to swap to inActive validator", async function () {

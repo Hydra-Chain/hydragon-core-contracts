@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./Staking.sol";
-import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {System} from "../common/System/System.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {Unauthorized, StakeRequirement} from "../common/Errors.sol";
+import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
+import {DelegationPool} from "../HydraDelegation/IDelegation.sol";
+import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
-import {System} from "./../common/System/System.sol";
-import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
-import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
-import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
-import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {Governed} from "./../common/Governed/Governed.sol";
-import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
+import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {Staking} from "./Staking.sol";
+
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -294,4 +295,7 @@ contract HydraStaking is
 
         return (modifiedEpochReward * totalBlocks) / (epochSize);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

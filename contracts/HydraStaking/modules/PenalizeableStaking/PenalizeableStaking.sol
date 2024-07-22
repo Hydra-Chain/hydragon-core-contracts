@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./../../Staking.sol";
+import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
+import {Staking} from "../../Staking.sol";
 import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
-import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
 
-contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
+abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
     /**
      * @notice The withdrawal info that is required for a banned validator to withdraw the funds left
      * @dev The withdrawal amount is calculated as the difference between

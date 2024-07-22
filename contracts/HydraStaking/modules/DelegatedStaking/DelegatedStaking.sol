@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Unauthorized} from "../../../common/Errors.sol";
+import {IHydraDelegation} from "../../../HydraDelegation/IHydraDelegation.sol";
+import {Staking} from "../../Staking.sol";
 import {IDelegatedStaking} from "./IDelegatedStaking.sol";
-import {Staking} from "./../../Staking.sol";
-import {Unauthorized} from "./../../../common/Errors.sol";
-import {IHydraDelegation} from "./../../../HydraDelegation/IHydraDelegation.sol";
 
 abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     IHydraDelegation public delegationContract;
@@ -94,4 +94,7 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
         delegationContract.distributeDelegationRewards(staker, reward, epochId);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

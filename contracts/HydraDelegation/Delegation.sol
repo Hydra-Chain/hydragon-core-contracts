@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "./../common/Governed/Governed.sol";
-import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
-import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
-import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
-import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
-import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
+import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
+import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
+import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
@@ -224,4 +224,7 @@ contract Delegation is
 
         emit DelegatorRewardsClaimed(staker, delegator, reward);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

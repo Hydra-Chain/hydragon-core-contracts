@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./../../Staking.sol";
-import {Liquid} from "./../../../common/Liquid/Liquid.sol";
-import {ILiquidityToken} from "./../../../LiquidityToken/ILiquidityToken.sol";
+import {Liquid} from "../../../common/Liquid/Liquid.sol";
+import {ILiquidityToken} from "../../../LiquidityToken/ILiquidityToken.sol";
+import {Staking} from "../../Staking.sol";
 
 /**
  * @title LiquidStaking
  * @notice An extension of the Staking contract that enables the distribution of liquid tokens to stakers
  */
-contract LiquidStaking is Staking, Liquid {
+abstract contract LiquidStaking is Staking, Liquid {
     // _______________ Initializer _______________
 
     function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {

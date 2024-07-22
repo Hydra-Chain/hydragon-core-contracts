@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./../common/Errors.sol";
+import "../common/Errors.sol";
 
 error InsufficientCooldown();
 
@@ -21,6 +21,21 @@ contract Faucet is AccessControl {
         _grantRole(MANAGER_ROLE, manager);
     }
 
+    // _______________ External functions _______________
+
+    /**
+     * @notice Users can send HYDRA to the contract.
+     */
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Managers sends HYDRA to an account.
+     * @param account address to send HYDRA.
+     */
     function requestHYDRA(address account) public onlyRole(MANAGER_ROLE) {
         if (account == address(0)) revert ZeroAddress();
 
@@ -33,11 +48,6 @@ contract Faucet is AccessControl {
         emit Distribution(account, withdrawalAmount);
     }
 
-    function _sendHYDRA(address to, uint256 amount) private {
-        (bool sent, ) = payable(to).call{value: amount}("");
-        if (!sent) revert SendFailed();
-    }
-
     /**
      * @notice Setting Withdrawal Amount.
      * @param amount amount of HYDRA to withdraw.
@@ -48,10 +58,10 @@ contract Faucet is AccessControl {
     }
 
     /**
-     * @notice Users can send HYDRA to the contract.
+     * @notice Setting the cooling time.
      */
-    receive() external payable {
-        emit Received(msg.sender, msg.value);
+    function setLockTime(uint8 time) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        lockTime = time * 1 hours;
     }
 
     /**
@@ -61,10 +71,10 @@ contract Faucet is AccessControl {
         _sendHYDRA(msg.sender, address(this).balance);
     }
 
-    /**
-     * @notice Setting the cooling time.
-     */
-    function setLockTime(uint8 time) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        lockTime = time * 1 hours;
+    // _______________ Private functions _______________
+
+    function _sendHYDRA(address to, uint256 amount) private {
+        (bool sent, ) = payable(to).call{value: amount}("");
+        if (!sent) revert SendFailed();
     }
 }

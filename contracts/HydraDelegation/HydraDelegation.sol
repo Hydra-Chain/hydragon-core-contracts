@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Delegation} from "./Delegation.sol";
-import {System} from "./../common/System/System.sol";
+import {System} from "../common/System/System.sol";
+import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
+import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
+import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
-import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
-import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
-import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
-import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
+import {Delegation} from "./Delegation.sol";
 
 contract HydraDelegation is
     IHydraDelegation,
@@ -113,4 +113,7 @@ contract HydraDelegation is
 
         emit CommissionUpdated(staker, newCommission);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IDelegation} from "./../../IDelegation.sol";
+import {IDelegation} from "../../IDelegation.sol";
 
 struct DelegationPoolParams {
     uint256 balance;
@@ -30,6 +30,8 @@ interface IVestedDelegation is IDelegation {
         uint256 amount
     );
     event PositionRewardClaimed(address indexed manager, address indexed staker, uint256 amount);
+
+    error NotVestingManager();
 
     /**
      * @notice Gets delegators's matured unclaimed rewards for a position
@@ -124,10 +126,34 @@ interface IVestedDelegation is IDelegation {
      * We need it because not all rewards are matured at the moment of claiming
      * @param balanceChangeIndex Whether to redelegate the claimed rewards
      */
-    function claimPositionReward(
+    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external;
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Checks if balance change was already made in the current epoch
+     * @param staker Validator to delegate to
+     * @param delegator Delegator that has delegated
+     * @param currentEpochNum Current epoch number
+     */
+    function isBalanceChangeMade(
         address staker,
-        address to,
-        uint256 epochNumber,
-        uint256 balanceChangeIndex
-    ) external;
+        address delegator,
+        uint256 currentEpochNum
+    ) external view returns (bool);
+
+    /**
+     * @notice Checks if the balance changes exceeds the threshold
+     * @param staker Validator to delegate to
+     * @param delegator Delegator that has delegated
+     */
+    function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool);
+
+    /**
+     * @notice Check if the new position that the user wants to swap to is available for the swap
+     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
+     * @param newStaker The address of the new validator
+     * @param delegator The address of the delegator
+     */
+    function isPositionAvailableForSwap(address newStaker, address delegator) external view returns (bool);
 }

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ILiquid} from "./../common/Liquid/ILiquid.sol";
-import {IDelegation} from "./IDelegation.sol";
+import {ILiquid} from "../common/Liquid/ILiquid.sol";
 import {IVestedDelegation} from "./modules/VestedDelegation/IVestedDelegation.sol";
+import {IDelegation} from "./IDelegation.sol";
 
 interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
     event CommissionUpdated(address indexed staker, uint256 newCommission);

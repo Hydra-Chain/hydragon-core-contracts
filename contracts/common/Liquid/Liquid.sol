@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import {ILiquidityToken} from "../../LiquidityToken/ILiquidityToken.sol";
 import {ILiquid} from "./ILiquid.sol";
-import {ILiquidityToken} from "./../../LiquidityToken/ILiquidityToken.sol";
 
 /**
  * @title Liquid
@@ -15,6 +15,8 @@ abstract contract Liquid is ILiquid, Initializable {
 
     /// Liquid Staking token given to stakers and delegators
     address internal _liquidToken;
+
+    // _______________ Initializer _______________
 
     function __LiquidStaking_init(address newLiquidToken) internal onlyInitializing {
         __LiquidStaking_init_unchained(newLiquidToken);

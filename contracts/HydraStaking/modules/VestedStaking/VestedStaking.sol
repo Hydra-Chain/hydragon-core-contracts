@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./../../Staking.sol";
-import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
-import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
+import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
+import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
+import {Vesting} from "../../../common/Vesting/Vesting.sol";
+import {Staking} from "../../Staking.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
-import {Vesting} from "./../../../common/Vesting/Vesting.sol";
-
 
 /**
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-contract VestedStaking is IVestedStaking, Staking, Vesting {
+abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     using VestedPositionLib for VestingPosition;
 
     /**
@@ -195,4 +194,7 @@ contract VestedStaking is IVestedStaking, Staking, Vesting {
 
         stakingRewardsHistory[staker].push(rewardData);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

@@ -20,6 +20,14 @@ export function RunVestingManagerTests(): void {
           "Initializable: contract is already initialized"
         );
       });
+
+      it("should revert withdraw when not called by vesting manager owner", async function () {
+        const { vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+
+        await expect(
+          vestManager.connect(this.signers.delegator).withdraw(this.signers.delegator.address)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
+      });
     });
 
     describe("VestingManagerFactory", function () {

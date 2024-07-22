@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {APRCalculatorConnector} from "./../../APRCalculator/APRCalculatorConnector.sol";
+import {APRCalculatorConnector} from "../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./VestedPositionLib.sol";
 import {VestingPosition} from "./IVesting.sol";
 
@@ -9,7 +9,7 @@ import {VestingPosition} from "./IVesting.sol";
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-contract Vesting is APRCalculatorConnector {
+abstract contract Vesting is APRCalculatorConnector {
     using VestedPositionLib for VestingPosition;
 
     /**
@@ -70,4 +70,7 @@ contract Vesting is APRCalculatorConnector {
         (bool success, ) = address(0).call{value: amount}("");
         require(success, "Failed to burn amount");
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

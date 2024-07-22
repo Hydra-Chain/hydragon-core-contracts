@@ -756,6 +756,16 @@ export function RunHydraDelegationTests(): void {
           ).to.be.revertedWithCustomError(hydraDelegation, "NotVestingManager");
         });
 
+        it("should revert when not the vest manager owner", async function () {
+          const { vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+
+          await expect(
+            vestManager
+              .connect(this.signers.accounts[10])
+              .openVestedDelegatePosition(this.signers.accounts[10].address, 1, { value: this.minDelegation })
+          ).to.be.revertedWith(ERRORS.ownable);
+        });
+
         it("should revert when validator is inactive", async function () {
           const { vestManager, hydraStaking } = await loadFixture(this.fixtures.vestManagerFixture);
 
@@ -882,7 +892,14 @@ export function RunHydraDelegationTests(): void {
       });
 
       describe("cutVestedDelegatePosition()", async function () {
-        // reverts with "0x11" which is not a custom error uint256 delegatedAmountLeft = delegatedAmount - amount;
+        it("should revert if not vesting manager owner", async function () {
+          const { vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+          await expect(
+            vestManager.connect(this.signers.accounts[10]).cutVestedDelegatePosition(this.delegatedValidators[0], 1)
+          ).to.be.revertedWith(ERRORS.ownable);
+        });
+
         it("should revert when insufficient balance", async function () {
           const { hydraDelegation, vestManager, liquidToken, vestingManagerFactory } = await loadFixture(
             this.fixtures.vestedDelegationFixture
@@ -902,7 +919,7 @@ export function RunHydraDelegationTests(): void {
           await liquidToken.connect(user2).transfer(this.vestManagerOwners[0].address, 1);
           const balanceToCut = balance.add(1);
           await liquidToken.connect(this.vestManagerOwners[0]).approve(vestManager.address, balanceToCut);
-
+          // reverts with "0x11" which is not a custom error uint256 delegatedAmountLeft = delegatedAmount - amount;
           await expect(
             vestManager.cutVestedDelegatePosition(this.delegatedValidators[0], balanceToCut)
           ).to.be.revertedWithPanic("0x11");
@@ -1027,7 +1044,7 @@ export function RunHydraDelegationTests(): void {
 
           // increase time so reward is available to be withdrawn
           await time.increase(WEEK);
-          await vestManager.withdraw(vestManagerOwner.address);
+          await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
 
           const balanceAfter = await vestManagerOwner.getBalance();
 
@@ -1083,7 +1100,7 @@ export function RunHydraDelegationTests(): void {
 
           // increase time so reward is available to be withdrawn
           await time.increase(WEEK);
-          await vestManager.withdraw(vestManagerOwner.address);
+          await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
 
           const balanceAfter = await vestManagerOwner.getBalance();
 
@@ -1127,7 +1144,7 @@ export function RunHydraDelegationTests(): void {
 
           // increase time so reward is available to be withdrawn
           await time.increase(WEEK);
-          await vestManager.withdraw(vestManagerOwner.address);
+          await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
 
           const balanceAfter = await vestManagerOwner.getBalance();
 
@@ -1160,6 +1177,26 @@ export function RunHydraDelegationTests(): void {
       });
 
       describe("cutVestedDelegatePositionWithPermit()", async function () {
+        it("should revert when not the vest manager owner", async function () {
+          const { vestManager, liquidToken, vestManagerOwner } = await loadFixture(
+            this.fixtures.vestedDelegationFixture
+          );
+
+          const { v, r, s } = await getPermitSignature(
+            vestManagerOwner,
+            liquidToken,
+            vestManager.address,
+            this.minDelegation,
+            DEADLINE
+          );
+
+          await expect(
+            vestManager
+              .connect(this.signers.accounts[7])
+              .cutVestedDelegatePositionWithPermit(vestManagerOwner.address, this.minDelegation, DEADLINE, v, r, s)
+          ).to.be.revertedWith(ERRORS.ownable);
+        });
+
         it("should revert on wrong deadline", async function () {
           const { hydraDelegation, vestManager, liquidToken, vestingManagerFactory } = await loadFixture(
             this.fixtures.vestedDelegationFixture
@@ -1284,7 +1321,7 @@ export function RunHydraDelegationTests(): void {
 
           // increase time so reward is available to be withdrawn
           await time.increase(WEEK);
-          await vestManager.withdraw(vestManagerOwner.address);
+          await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
 
           const balanceAfter = await vestManagerOwner.getBalance();
 

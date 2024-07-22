@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {Unauthorized} from "./../common/Errors.sol";
+import {Unauthorized} from "../common/Errors.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 
 abstract contract HydraDelegationConnector is Initializable {

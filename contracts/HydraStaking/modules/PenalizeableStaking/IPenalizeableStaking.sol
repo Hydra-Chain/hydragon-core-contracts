@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IStaking} from "./../../IStaking.sol";
+import {IStaking} from "../../IStaking.sol";
 
 struct PenalizedStakeDistribution {
     address account;

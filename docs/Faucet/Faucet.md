@@ -179,7 +179,7 @@ function renounceRole(bytes32 role, address account) external nonpayable
 function requestHYDRA(address account) external nonpayable
 ```
 
-
+Managers sends HYDRA to an account.
 
 
 
@@ -187,7 +187,7 @@ function requestHYDRA(address account) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | address to send HYDRA. |
 
 ### revokeRole
 
