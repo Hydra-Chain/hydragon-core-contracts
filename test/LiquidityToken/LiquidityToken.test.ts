@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { getPermitSignature } from "../helper";
-import { DEADLINE, SYSTEM } from "../constants";
+import { DEADLINE, ERRORS, SYSTEM } from "../constants";
 import { expect } from "chai";
 
 export function RunLiquidityTokenTests(): void {
@@ -59,7 +59,7 @@ export function RunLiquidityTokenTests(): void {
           token
             .connect(governor)
             .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
-        ).to.be.revertedWithCustomError(token, "Unauthorized");
+        ).to.be.revertedWithCustomError(token, ERRORS.unauthorized.name);
       });
 
       it("should be properly initialized", async () => {

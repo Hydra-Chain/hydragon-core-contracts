@@ -10,6 +10,7 @@ import { RunBLSTests } from "./common/BLS.test";
 import { RunHydraStakingTests } from "./HydraStaking/HydraStaking.test";
 import { RunHydraDelegationTests } from "./HydraDelegation/HydraDelegation.test";
 import { RunVestingManagerTests } from "./VestingManager/VestingManager.test";
+import { RunRewardWalletTests } from "./RewardWallet/RewardWallet.test";
 
 describe("Hydra Contracts", function () {
   before(async function () {
@@ -60,5 +61,9 @@ describe("Hydra Contracts", function () {
 
   describe("VestingManager", function () {
     RunVestingManagerTests();
+  });
+
+  describe("RewardWallet", function () {
+    RunRewardWalletTests();
   });
 });

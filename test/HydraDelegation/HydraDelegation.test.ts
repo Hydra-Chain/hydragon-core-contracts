@@ -75,8 +75,8 @@ export function RunHydraDelegationTests(): void {
             vestingManagerFactory.address
           )
         )
-          .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-          .withArgs("SYSTEMCALL");
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.systemCallArg);
       });
 
       it("should revert when initialize with invalid commission", async function () {
@@ -156,8 +156,8 @@ export function RunHydraDelegationTests(): void {
           .connect(this.signers.accounts[1])
           .distributeDelegationRewards(this.signers.accounts[1].address, 1, 1)
       )
-        .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
-        .withArgs("ONLY_HYDRA_STAKING");
+        .to.be.revertedWithCustomError(hydraDelegation, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.onlyHydraStakingArg);
     });
 
     describe("Set Commission", function () {
@@ -254,8 +254,8 @@ export function RunHydraDelegationTests(): void {
             value: this.minDelegation.mul(2),
           })
         )
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs("INACTIVE_STAKER");
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.inactiveStakerArg);
       });
 
       it("should delegate for the first time", async function () {
@@ -735,8 +735,8 @@ export function RunHydraDelegationTests(): void {
                 value: this.minDelegation,
               })
           )
-            .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-            .withArgs("INACTIVE_STAKER");
+            .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+            .withArgs(ERRORS.unauthorized.inactiveStakerArg);
         });
 
         it("should revert when delegation too low", async function () {

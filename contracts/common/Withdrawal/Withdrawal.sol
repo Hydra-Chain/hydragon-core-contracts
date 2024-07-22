@@ -57,7 +57,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
 
     function _withdraw(address to, uint256 amount) internal {
         (bool success, ) = to.call{value: amount}("");
-        require(success, "WITHDRAWAL_FAILED");
+        if (!success) revert WithdrawalFailed();
 
         emit WithdrawalFinished(address(this), to, amount);
     }

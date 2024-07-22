@@ -19,7 +19,6 @@ abstract contract ValidatorManager is
     HydraDelegationConnector
 {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
-
     /// @notice A constant for the maximum amount of validators
     uint256 public constant MAX_VALIDATORS = 150;
 

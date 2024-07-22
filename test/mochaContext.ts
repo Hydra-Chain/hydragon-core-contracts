@@ -11,6 +11,7 @@ import {
   APRCalculator,
   VestingManagerFactory,
   VestingManager,
+  RewardWallet,
 } from "../typechain-types";
 
 export interface Signers {
@@ -34,6 +35,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   initializedHydraChainStateFixture: {
@@ -46,6 +48,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
       validatorInit: {
         addr: string;
         pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
@@ -65,6 +68,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       commitEpochTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   whitelistedValidatorsStateFixture: {
@@ -77,6 +81,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   registeredValidatorsStateFixture: {
@@ -89,6 +94,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   stakedValidatorsStateFixture: {
@@ -101,6 +107,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
     }>;
   };
   newVestingValidatorFixture: {

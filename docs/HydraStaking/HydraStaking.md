@@ -1340,4 +1340,15 @@ error Unauthorized(string only)
 |---|---|---|
 | only | string | undefined |
 
+### WithdrawalFailed
+
+```solidity
+error WithdrawalFailed()
+```
+
+
+
+
+
+
 
