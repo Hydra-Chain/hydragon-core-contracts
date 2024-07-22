@@ -1,9 +1,10 @@
 import { ethers } from "hardhat";
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
 import { ERRORS } from "../constants";
+import { commitEpochs } from "../helper";
 
 export function RunRewardWalletTests(): void {
   describe("Initialization", function () {
@@ -67,6 +68,61 @@ export function RunRewardWalletTests(): void {
       await expect(rewardWallet.distributeReward(this.signers.validators[0].address, this.minStake))
         .to.be.revertedWithCustomError(rewardWallet, ERRORS.unauthorized.name)
         .withArgs("ONLY_MANAGER");
+    });
+
+    it("should revert when distribution is failing", async function () {
+      const { systemHydraChain, hydraStaking, rewardWallet } = await loadFixture(
+        this.fixtures.stakedValidatorsStateFixture
+      );
+
+      const rewardingValidator = this.signers.validators[0];
+
+      // commit some epochs in order to distribute rewards
+      await commitEpochs(
+        systemHydraChain,
+        hydraStaking,
+        [rewardingValidator, this.signers.validators[1]],
+        3,
+        this.epochSize
+      );
+
+      await setBalance(rewardWallet.address, 0);
+      const balance = await ethers.provider.getBalance(rewardWallet.address);
+      expect(balance, "rewardWallet balance").to.equal(0);
+
+      await expect(
+        hydraStaking.connect(rewardingValidator)["claimStakingRewards()"](),
+        "DistributionFailed"
+      ).to.be.revertedWithCustomError(rewardWallet, "DistributionFailed");
+    });
+
+    it("should successfully distribute reward", async function () {
+      const { systemHydraChain, hydraStaking, rewardWallet } = await loadFixture(
+        this.fixtures.stakedValidatorsStateFixture
+      );
+
+      const rewardingValidator = this.signers.validators[0];
+
+      // commit some epochs in order to distribute rewards
+      await commitEpochs(
+        systemHydraChain,
+        hydraStaking,
+        [rewardingValidator, this.signers.validators[1]],
+        10,
+        this.epochSize
+      );
+
+      const unclaimedRewards = await hydraStaking.unclaimedRewards(rewardingValidator.address);
+      const claimRewardsTx = await hydraStaking.connect(rewardingValidator)["claimStakingRewards()"]();
+
+      expect(unclaimedRewards, "unclaimedRewards").to.not.be.eq(0);
+      await expect(claimRewardsTx, "RewardDistributed emitted")
+        .to.emit(rewardWallet, "RewardDistributed")
+        .withArgs(rewardingValidator.address, unclaimedRewards);
+      await expect(claimRewardsTx, "claimStakingRewards").to.changeEtherBalances(
+        [rewardingValidator.address, rewardWallet.address],
+        [unclaimedRewards, unclaimedRewards.mul(-1)]
+      );
     });
   });
 }

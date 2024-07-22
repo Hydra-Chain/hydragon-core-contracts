@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IStaking, StakingReward} from "./IStaking.sol";
 import {Governed} from "./../common/Governed/Governed.sol";
 import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
-import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {Unauthorized} from "./../common/Errors.sol";
-import {IStaking, StakingReward} from "./IStaking.sol";
+import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
+import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 
-contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
+contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, RewardWalletConnector {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
 
@@ -23,11 +24,13 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
     function __Staking_init(
         uint256 _newMinStake,
         address _aprCalculatorAddr,
+        address _rewardWalletAddr,
         address _governance
     ) internal onlyInitializing {
         __Governed_init(_governance);
         __Withdrawal_init(_governance);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
+        __RewardWalletConnector_init(_rewardWalletAddr);
         __Staking_init_unchained(_newMinStake);
     }
 
@@ -87,7 +90,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector {
      * @inheritdoc IStaking
      */
     function claimStakingRewards() public {
-        _withdraw(msg.sender, _claimStakingRewards(msg.sender));
+        rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
     }
 
     // _______________ Internal functions _______________

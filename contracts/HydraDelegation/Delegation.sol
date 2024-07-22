@@ -6,10 +6,19 @@ import {Withdrawal} from "./../common/Withdrawal/Withdrawal.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {DelegationPoolLib} from "./DelegationPoolLib.sol";
 import {IDelegation, DelegationPool} from "./IDelegation.sol";
 
-contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector, HydraStakingConnector, HydraChainConnector {
+contract Delegation is
+    IDelegation,
+    Governed,
+    Withdrawal,
+    APRCalculatorConnector,
+    HydraStakingConnector,
+    HydraChainConnector,
+    RewardWalletConnector
+{
     using DelegationPoolLib for DelegationPool;
 
     /// @notice A constant for the minimum delegation limit
@@ -25,9 +34,10 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
 
     // _______________ Initializer _______________
 
-    function __Delegation_init(address _governace) internal onlyInitializing {
+    function __Delegation_init(address _governace, address _rewardWalletAddr) internal onlyInitializing {
         __Governed_init(_governace);
         __Withdrawal_init(_governace);
+        __RewardWalletConnector_init(_rewardWalletAddr);
         __Delegation_init_unchained();
     }
 
@@ -210,8 +220,8 @@ contract Delegation is IDelegation, Governed, Withdrawal, APRCalculatorConnector
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        emit DelegatorRewardsClaimed(staker, delegator, reward);
+        rewardWalletContract.distributeReward(delegator, reward);
 
-        _withdraw(delegator, reward);
+        emit DelegatorRewardsClaimed(staker, delegator, reward);
     }
 }

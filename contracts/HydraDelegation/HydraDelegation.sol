@@ -7,6 +7,7 @@ import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol"
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {APRCalculatorConnector} from "./../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "./../HydraStaking/HydraStakingConnector.sol";
+import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
 
@@ -15,6 +16,7 @@ contract HydraDelegation is
     System,
     APRCalculatorConnector,
     HydraStakingConnector,
+    RewardWalletConnector,
     Delegation,
     LiquidDelegation,
     VestedDelegation
@@ -34,11 +36,12 @@ contract HydraDelegation is
         address aprCalculatorAddr,
         address hydraStakingAddr,
         address hydraChainAddr,
-        address vestingManagerFactoryAddr
+        address vestingManagerFactoryAddr,
+        address rewardWalletConnectorAddr
     ) external initializer onlySystemCall {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
-        __Delegation_init(governance);
+        __Delegation_init(governance, rewardWalletConnectorAddr);
         __LiquidDelegation_init(liquidToken);
         __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
 

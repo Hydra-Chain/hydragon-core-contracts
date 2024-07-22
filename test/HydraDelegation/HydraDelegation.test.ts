@@ -48,7 +48,6 @@ export function RunHydraDelegationTests(): void {
         expect(await hydraDelegation.MIN_DELEGATION_LIMIT()).to.equal(this.minDelegation);
 
         // Vested Delegation
-        expect(await hydraDelegation.balanceChangeThreshold()).to.equal(0);
         expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(hre.ethers.constants.AddressZero);
 
         // Liquid Delegation
@@ -59,8 +58,15 @@ export function RunHydraDelegationTests(): void {
       });
 
       it("should revert when initialized without system call", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
-          await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const {
+          hydraChain,
+          hydraDelegation,
+          liquidToken,
+          hydraStaking,
+          aprCalculator,
+          vestingManagerFactory,
+          rewardWallet,
+        } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
           hydraDelegation.initialize(
@@ -72,7 +78,8 @@ export function RunHydraDelegationTests(): void {
             aprCalculator.address,
             hydraStaking.address,
             hydraChain.address,
-            vestingManagerFactory.address
+            vestingManagerFactory.address,
+            rewardWallet.address
           )
         )
           .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
@@ -80,8 +87,15 @@ export function RunHydraDelegationTests(): void {
       });
 
       it("should revert when initialize with invalid commission", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
-          await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const {
+          hydraChain,
+          hydraDelegation,
+          liquidToken,
+          hydraStaking,
+          aprCalculator,
+          vestingManagerFactory,
+          rewardWallet,
+        } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
         const exceededCommission = MAX_COMMISSION.add(1);
 
         await expect(
@@ -94,7 +108,8 @@ export function RunHydraDelegationTests(): void {
             aprCalculator.address,
             hydraStaking.address,
             hydraChain.address,
-            vestingManagerFactory.address
+            vestingManagerFactory.address,
+            rewardWallet.address
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission")
@@ -102,35 +117,61 @@ export function RunHydraDelegationTests(): void {
       });
 
       it("should initialize successfully", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
-          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const {
+          hydraChain,
+          hydraDelegation,
+          liquidToken,
+          hydraStaking,
+          aprCalculator,
+          vestingManagerFactory,
+          rewardWallet,
+        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.admin.address)).to.equal(
-          INITIAL_COMMISSION
-        );
-
-        expect(await hydraDelegation.owner()).to.equal(this.signers.governance.address);
-        expect(await hydraDelegation.minDelegation()).to.equal(this.minDelegation);
-        expect(await hydraDelegation.hydraChainContract()).to.equal(hydraChain.address);
-        expect(await hydraDelegation.hydraStakingContract()).to.equal(hydraStaking.address);
-        expect(await hydraDelegation.aprCalculatorContract()).to.equal(aprCalculator.address);
         expect(
-          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
+          await hydraDelegation.delegationCommissionPerStaker(this.signers.admin.address),
+          "delegationCommissionPerStaker"
+        ).to.equal(INITIAL_COMMISSION);
+
+        expect(await hydraDelegation.owner(), "owner").to.equal(this.signers.governance.address);
+        expect(await hydraDelegation.minDelegation(), "minDelegation").to.equal(this.minDelegation);
+        expect(await hydraDelegation.hydraChainContract(), "hydraChainContract").to.equal(hydraChain.address);
+        expect(await hydraDelegation.hydraStakingContract(), "hydraStakingContract").to.equal(hydraStaking.address);
+        expect(await hydraDelegation.aprCalculatorContract(), "aprCalculatorContract").to.equal(aprCalculator.address);
+        expect(
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          "hasRole"
         ).to.be.true;
 
         // Vested Delegation
-        expect(await hydraDelegation.balanceChangeThreshold()).to.equal(32);
-        expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(vestingManagerFactory.address);
+        expect(await hydraDelegation.vestingManagerFactoryContract(), "vestingManagerFactoryContract").to.equal(
+          vestingManagerFactory.address
+        );
 
         // Liquid Delegation
-        expect(await hydraDelegation.liquidToken()).to.equal(liquidToken.address);
+        expect(await hydraDelegation.liquidToken(), "liquidToken").to.equal(liquidToken.address);
 
         // Withdrawable
-        expect(await hydraDelegation.withdrawWaitPeriod()).to.equal(WEEK);
+        expect(await hydraDelegation.withdrawWaitPeriod(), "withdrawWaitPeriod").to.equal(WEEK);
+
+        // Reward Wallet
+        const rewardWalletInitialAmount = this.minStake.mul(5);
+        expect(await hre.ethers.provider.getBalance(rewardWallet.address), "getBalance").to.be.eq(
+          rewardWalletInitialAmount
+        );
+        expect(await rewardWallet.rewardManagers(hydraStaking.address), "hydraStaking").to.equal(true);
+        expect(await rewardWallet.rewardManagers(hydraDelegation.address), "hydraDelegation").to.equal(true);
       });
+
       it("should revert on re-initialization attempt", async function () {
-        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, vestingManagerFactory } =
-          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const {
+          hydraChain,
+          hydraDelegation,
+          liquidToken,
+          hydraStaking,
+          aprCalculator,
+          vestingManagerFactory,
+          rewardWallet,
+        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
           hydraDelegation.connect(this.signers.system).initialize(
@@ -142,7 +183,8 @@ export function RunHydraDelegationTests(): void {
             aprCalculator.address,
             hydraStaking.address,
             hydraChain.address,
-            vestingManagerFactory.address
+            vestingManagerFactory.address,
+            rewardWallet.address
           )
         ).to.be.revertedWith("Initializable: contract is already initialized");
       });
@@ -279,7 +321,7 @@ export function RunHydraDelegationTests(): void {
       });
 
       it("should delegate again and register a withdrawal for the claimed rewards automatically", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+        const { hydraDelegation, rewardWallet } = await loadFixture(this.fixtures.delegatedFixture);
 
         const delegateAmount = this.minDelegation.div(2);
         const delegatorReward = await hydraDelegation.getDelegatorReward(
@@ -295,9 +337,9 @@ export function RunHydraDelegationTests(): void {
           .to.emit(hydraDelegation, "DelegatorRewardsClaimed")
           .withArgs(this.signers.validators[0].address, this.signers.delegator.address, delegatorReward);
 
-        await expect(tx, "WithdrawalFinished")
-          .to.emit(hydraDelegation, "WithdrawalFinished")
-          .withArgs(hydraDelegation.address, this.signers.delegator.address, delegatorReward);
+        await expect(tx, "RewardDistributed")
+          .to.emit(rewardWallet, "RewardDistributed")
+          .withArgs(this.signers.delegator.address, delegatorReward);
 
         await expect(tx, "Delegated")
           .to.emit(hydraDelegation, "Delegated")
@@ -553,6 +595,7 @@ export function RunHydraDelegationTests(): void {
           vestManagerOwner,
           delegatedValidator,
           aprCalculator,
+          rewardWallet,
         } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
         // calculate base rewards
@@ -561,11 +604,6 @@ export function RunHydraDelegationTests(): void {
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
         const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
-
-        // calculate max reward
-        const maxVestBonus = await aprCalculator.getVestingBonus(52);
-        const maxRSI = await aprCalculator.MAX_RSI_BONUS();
-        const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 
         // commit epoch, so more reward is added that must not be claimed now
         await commitEpoch(
@@ -588,8 +626,8 @@ export function RunHydraDelegationTests(): void {
           await vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex),
           "claimVestedPositionReward"
         ).to.changeEtherBalances(
-          [hre.ethers.constants.AddressZero, vestManagerOwner.address, hydraDelegation.address],
-          [maxReward.sub(expectedReward), expectedReward, maxReward.mul(-1)]
+          [vestManagerOwner.address, rewardWallet.address],
+          [expectedReward, expectedReward.mul(-1)]
         );
       });
 
@@ -602,6 +640,7 @@ export function RunHydraDelegationTests(): void {
           vestManagerOwner,
           delegatedValidator,
           aprCalculator,
+          rewardWallet,
         } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
         // calculate base rewards
@@ -610,11 +649,6 @@ export function RunHydraDelegationTests(): void {
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
         const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
-
-        // calculate max reward
-        const maxVestBonus = await aprCalculator.getVestingBonus(52);
-        const maxRSI = await aprCalculator.MAX_RSI_BONUS();
-        const maxReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, baseReward);
 
         // more rewards to be distributed
         await commitEpoch(
@@ -630,7 +664,7 @@ export function RunHydraDelegationTests(): void {
         ).sub(baseReward);
 
         const expectedAdditionalReward = base.mul(additionalReward).div(10000).div(EPOCHS_YEAR);
-        const maxAdditionalReward = await calculateExpectedReward(base, maxVestBonus, maxRSI, additionalReward);
+        const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
 
         // prepare params for call
         const { position, epochNum, balanceChangeIndex } = await retrieveRPSData(
@@ -644,15 +678,12 @@ export function RunHydraDelegationTests(): void {
         const areRewardsMatured = position.end.add(position.duration).lt(await time.latest());
         expect(areRewardsMatured, "areRewardsMatured").to.be.true;
 
-        const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
-        const maxFinalReward = maxReward.add(maxAdditionalReward);
-
         await expect(
           await vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex),
           "claimVestedPositionReward"
         ).to.changeEtherBalances(
-          [hre.ethers.constants.AddressZero, vestManagerOwner.address, hydraDelegation.address],
-          [maxFinalReward.sub(expectedFinalReward), expectedFinalReward, maxFinalReward.mul(-1)]
+          [vestManagerOwner.address, rewardWallet.address],
+          [expectedFinalReward, expectedFinalReward.mul(-1)]
         );
       });
     });

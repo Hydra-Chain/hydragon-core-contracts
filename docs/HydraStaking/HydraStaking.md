@@ -277,7 +277,7 @@ function delegationContract() external view returns (contract IHydraDelegation)
 ### distributeRewardsFor
 
 ```solidity
-function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external payable
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external nonpayable
 ```
 
 
@@ -418,7 +418,7 @@ function hydraChainContract() external view returns (contract IHydraChain)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, address governance, uint256 newMinStake, address newLiquidToken, address hydraChainAddr, address aprCalculatorAddr, address delegationContractAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, address governance, uint256 newMinStake, address newLiquidToken, address hydraChainAddr, address aprCalculatorAddr, address delegationContractAddr, address rewardWalletContractAddr) external nonpayable
 ```
 
 
@@ -436,6 +436,7 @@ function initialize(StakerInit[] initialStakers, address governance, uint256 new
 | hydraChainAddr | address | undefined |
 | aprCalculatorAddr | address | undefined |
 | delegationContractAddr | address | undefined |
+| rewardWalletContractAddr | address | undefined |
 
 ### leftToWithdrawPerStaker
 
@@ -664,6 +665,23 @@ function revokeRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
 
 ### stake
 

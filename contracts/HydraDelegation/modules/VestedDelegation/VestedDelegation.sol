@@ -12,12 +12,14 @@ import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.
 import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "./../../../VestingManager/VestingManagerFactoryConnector.sol";
 import {Vesting} from "./../../../common/Vesting/Vesting.sol";
+import {RewardWalletConnector} from "./../../../RewardWallet/RewardWalletConnector.sol";
 
 contract VestedDelegation is
     IVestedDelegation,
     Governed,
     Withdrawal,
     HydraChainConnector,
+    RewardWalletConnector,
     Delegation,
     VestingManagerFactoryConnector,
     Vesting
@@ -35,23 +37,25 @@ contract VestedDelegation is
      * @dev Staker => Delegator => Pool params data
      */
     mapping(address => mapping(address => DelegationPoolParams[])) public delegationPoolParamsHistory;
-
-    /**
-     * @notice The threshold for the maximum number of allowed balance changes
-     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
-     */
-    uint256 public balanceChangeThreshold;
     /**
      * @notice Keeps the history of the RPS for the stakers
      * @dev This is used to keep the history RPS in order to calculate properly the rewards
      */
     mapping(address => mapping(uint256 => RPS)) public historyRPS;
+    /**
+     * @notice The threshold for the maximum number of allowed balance changes
+     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
+     */
+    uint256 public balanceChangeThreshold;
 
     error NotVestingManager();
 
     // _______________ Initializer _______________
 
-    function __VestedDelegation_init(address _vestingManagerFactoryAddr, address _hydraChainAddr) internal onlyInitializing {
+    function __VestedDelegation_init(
+        address _vestingManagerFactoryAddr,
+        address _hydraChainAddr
+    ) internal onlyInitializing {
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __HydraChainConnector_init(_hydraChainAddr);
         __VestedDelegation_init_unchained();
@@ -108,11 +112,7 @@ contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function getRPSValues(
-        address staker,
-        uint256 startEpoch,
-        uint256 endEpoch
-    ) external view returns (RPS[] memory) {
+    function getRPSValues(address staker, uint256 startEpoch, uint256 endEpoch) external view returns (RPS[] memory) {
         require(startEpoch <= endEpoch, "Invalid args");
 
         RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
@@ -232,11 +232,10 @@ contract VestedDelegation is
         uint256 delegatedAmount = delegation.balanceOf(msg.sender);
         uint256 delegatedAmountLeft = delegatedAmount - amount;
         uint256 penalty;
-        uint256 fullReward;
         if (position.isActive()) {
             penalty = _calcPenalty(position, amount);
-            // apply the max Vesting bonus, because the full reward must be burned
-            fullReward = aprCalculatorContract.applyMaxReward(delegation.claimRewards(msg.sender));
+            // claim rewards to clear them (but without distributing) because the delegator loses its rewards
+            delegation.claimRewards(msg.sender);
 
             // if position is closed when active, we delete the vesting data
             if (delegatedAmountLeft == 0) {
@@ -258,7 +257,7 @@ contract VestedDelegation is
 
         _undelegate(staker, msg.sender, amount);
         uint256 amountAfterPenalty = amount - penalty;
-        _burnAmount(penalty + fullReward);
+        _burnAmount(penalty);
         _registerWithdrawal(msg.sender, amountAfterPenalty);
 
         emit PositionCut(msg.sender, staker, amountAfterPenalty);
@@ -267,19 +266,13 @@ contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function claimPositionReward(
-        address staker,
-        address to,
-        uint256 epochNumber,
-        uint256 balanceChangeIndex
-    ) external {
+    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (_noRewardConditions(position)) {
             return;
         }
 
         uint256 sumReward;
-        uint256 sumMaxReward;
         DelegationPool storage delegationPool = delegationPools[staker];
 
         // distribute the proper vesting reward
@@ -291,28 +284,19 @@ contract VestedDelegation is
         );
 
         uint256 reward = delegationPool.claimRewards(msg.sender, epochRPS, balance, correction);
-        uint256 maxReward = aprCalculatorContract.applyMaxReward(reward);
         reward = _applyVestingAPR(position, reward, true);
         sumReward += reward;
-        sumMaxReward += maxReward;
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp > position.end + position.duration) {
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            uint256 maxAdditionalReward = aprCalculatorContract.applyMaxReward(additionalReward);
             additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
             sumReward += additionalReward;
-            sumMaxReward += maxAdditionalReward;
-        }
-
-        uint256 remainder = sumMaxReward - sumReward;
-        if (remainder > 0) {
-            _burnAmount(remainder);
         }
 
         if (sumReward == 0) return;
 
-        _withdraw(to, sumReward);
+        rewardWalletContract.distributeReward(to, sumReward);
 
         emit PositionRewardClaimed(msg.sender, staker, sumReward);
     }
@@ -340,7 +324,7 @@ contract VestedDelegation is
 
         uint256 duration = durationWeeks * 1 weeks;
         delete delegationPoolParamsHistory[staker][msg.sender];
-        // TODO: calculate end of period instead of write in in the cold storage. It is cheaper
+        // TODO: calculate end of period instead of write in the cold storage. It is cheaper
         vestedDelegationPositions[staker][msg.sender] = VestingPosition({
             duration: duration,
             start: block.timestamp,
@@ -391,16 +375,6 @@ contract VestedDelegation is
         return false;
     }
 
-    // TODO: Consider deleting it as we shouldn't be getting into that case
-    /**
-     * @notice Checks if the balance changes exceeds the threshold
-     * @param staker Validator to delegate to
-     * @param delegator Delegator that has delegated
-     */
-    function isBalanceChangeThresholdExceeded(address staker, address delegator) public view returns (bool) {
-        return delegationPoolParamsHistory[staker][delegator].length > balanceChangeThreshold;
-    }
-
     /**
      * @notice Check if the new position that the user wants to swap to is available for the swap
      * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
@@ -421,6 +395,16 @@ contract VestedDelegation is
         }
 
         return true;
+    }
+
+    // TODO: Consider deleting it as we shouldn't be getting into that case
+    /**
+     * @notice Checks if the balance changes exceeds the threshold
+     * @param staker Validator to delegate to
+     * @param delegator Delegator that has delegated
+     */
+    function isBalanceChangeThresholdExceeded(address staker, address delegator) public view returns (bool) {
+        return delegationPoolParamsHistory[staker][delegator].length > balanceChangeThreshold;
     }
 
     // _______________ Internal functions _______________
@@ -496,19 +480,10 @@ contract VestedDelegation is
      * @param delegator Address of the delegator
      * @param params Delegation pool params
      */
-    function _saveAccountParamsChange(
-        address staker,
-        address delegator,
-        DelegationPoolParams memory params
-    ) private {
+    function _saveAccountParamsChange(address staker, address delegator, DelegationPoolParams memory params) private {
         if (isBalanceChangeMade(staker, delegator, params.epochNum)) {
             // balance can be changed only once per epoch
             revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
-        }
-
-        if (isBalanceChangeThresholdExceeded(staker, delegator)) {
-            // maximum amount of balance changes exceeded
-            revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGES_EXCEEDED"});
         }
 
         delegationPoolParamsHistory[staker][delegator].push(params);

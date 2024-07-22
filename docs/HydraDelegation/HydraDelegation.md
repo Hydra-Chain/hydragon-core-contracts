@@ -687,7 +687,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(StakerInit[] initialStakers, address governance, uint256 initialCommission, address liquidToken, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr) external nonpayable
+function initialize(StakerInit[] initialStakers, address governance, uint256 initialCommission, address liquidToken, address aprCalculatorAddr, address hydraStakingAddr, address hydraChainAddr, address vestingManagerFactoryAddr, address rewardWalletConnectorAddr) external nonpayable
 ```
 
 
@@ -706,6 +706,7 @@ function initialize(StakerInit[] initialStakers, address governance, uint256 ini
 | hydraStakingAddr | address | undefined |
 | hydraChainAddr | address | undefined |
 | vestingManagerFactoryAddr | address | undefined |
+| rewardWalletConnectorAddr | address | undefined |
 
 ### isActiveDelegatePosition
 
@@ -979,6 +980,23 @@ function revokeRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
 
 ### setCommission
 

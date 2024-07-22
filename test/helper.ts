@@ -83,7 +83,7 @@ export async function commitEpoch(
 
   const validatorsUptime = [];
   for (const validator of validators) {
-    validatorsUptime.push({ validator: validator.address, signedBlocks: 64 });
+    validatorsUptime.push({ validator: validator.address, signedBlocks: epochSize });
   }
 
   await mine(epochSize, { interval: 2 });
@@ -92,12 +92,9 @@ export async function commitEpoch(
 
   const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
 
-  const maxReward = await getMaxEpochReward(hydraStaking);
   const distributeRewardsTx = await hydraStaking
     .connect(systemHydraChain.signer)
-    .distributeRewardsFor(currEpochId, validatorsUptime, epochSize, {
-      value: maxReward,
-    });
+    .distributeRewardsFor(currEpochId, validatorsUptime, epochSize);
 
   return { commitEpochTx, distributeRewardsTx };
 }
