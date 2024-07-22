@@ -37,12 +37,16 @@ contract VestedDelegation is
      * @dev Staker => Delegator => Pool params data
      */
     mapping(address => mapping(address => DelegationPoolParams[])) public delegationPoolParamsHistory;
-
     /**
      * @notice Keeps the history of the RPS for the stakers
      * @dev This is used to keep the history RPS in order to calculate properly the rewards
      */
     mapping(address => mapping(uint256 => RPS)) public historyRPS;
+    /**
+     * @notice The threshold for the maximum number of allowed balance changes
+     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
+     */
+    uint256 public balanceChangeThreshold;
 
     error NotVestingManager();
 
@@ -50,12 +54,15 @@ contract VestedDelegation is
 
     function __VestedDelegation_init(
         address _vestingManagerFactoryAddr,
-        address _hydraChainAddr,
-        address _rewardWalletAddr
+        address _hydraChainAddr
     ) internal onlyInitializing {
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __HydraChainConnector_init(_hydraChainAddr);
-        __RewardWalletConnector_init(_rewardWalletAddr);
+        __VestedDelegation_init_unchained();
+    }
+
+    function __VestedDelegation_init_unchained() internal onlyInitializing {
+        balanceChangeThreshold = 32;
     }
 
     // _______________ Modifiers _______________
@@ -227,7 +234,7 @@ contract VestedDelegation is
         uint256 penalty;
         if (position.isActive()) {
             penalty = _calcPenalty(position, amount);
-            // claim rewards to increase the claimedRewards because the delegator lose its rewards
+            // claim rewards to clear them (but without distributing) because the delegator loses its rewards
             delegation.claimRewards(msg.sender);
 
             // if position is closed when active, we delete the vesting data
@@ -388,6 +395,16 @@ contract VestedDelegation is
         }
 
         return true;
+    }
+
+    // TODO: Consider deleting it as we shouldn't be getting into that case
+    /**
+     * @notice Checks if the balance changes exceeds the threshold
+     * @param staker Validator to delegate to
+     * @param delegator Delegator that has delegated
+     */
+    function isBalanceChangeThresholdExceeded(address staker, address delegator) public view returns (bool) {
+        return delegationPoolParamsHistory[staker][delegator].length > balanceChangeThreshold;
     }
 
     // _______________ Internal functions _______________

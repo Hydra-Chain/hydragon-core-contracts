@@ -41,9 +41,9 @@ contract HydraDelegation is
     ) external initializer onlySystemCall {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
-        __Delegation_init(governance);
+        __Delegation_init(governance, rewardWalletConnectorAddr);
         __LiquidDelegation_init(liquidToken);
-        __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr, rewardWalletConnectorAddr);
+        __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
 
         _initialize(initialStakers, initialCommission);
     }
