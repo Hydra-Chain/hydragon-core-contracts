@@ -269,6 +269,27 @@ export function RunVestedDelegationTests(): void {
           .withArgs("undelegate", "DELEGATION_TOO_LOW");
       });
 
+      it("should revert if we try to cut the position in a epoch that is made balance change", async function () {
+        const { hydraDelegation, vestManager, vestManagerOwner, liquidToken } = await loadFixture(
+          this.fixtures.vestManagerFixture
+        );
+
+        const validator = this.signers.validators[2];
+        await vestManager.openVestedDelegatePosition(validator.address, VESTING_DURATION_WEEKS, {
+          value: this.minDelegation.mul(2),
+        });
+
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+
+        await expect(
+          vestManager
+            .connect(this.vestManagerOwners[0])
+            .cutVestedDelegatePosition(validator.address, this.minDelegation)
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
+      });
+
       it("should get staker penalty and rewards that will be burned, if closing from active position", async function () {
         const { systemHydraChain, hydraDelegation, vestManager, delegatedValidator, hydraStaking } = await loadFixture(
           this.fixtures.vestedDelegationFixture
