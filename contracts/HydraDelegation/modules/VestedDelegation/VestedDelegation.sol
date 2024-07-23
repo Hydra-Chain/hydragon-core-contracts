@@ -303,8 +303,6 @@ abstract contract VestedDelegation is
      * @inheritdoc IVestedDelegation
      */
     function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
-        _delegate(staker, msg.sender, msg.value);
-
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (position.isMaturing()) {
             revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
@@ -342,6 +340,8 @@ abstract contract VestedDelegation is
                 epochNum: hydraChainContract.getCurrentEpochId()
             })
         );
+
+        _delegate(staker, msg.sender, msg.value);
 
         emit PositionOpened(msg.sender, staker, durationWeeks, msg.value);
     }

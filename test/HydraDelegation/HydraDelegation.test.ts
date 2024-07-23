@@ -588,6 +588,7 @@ export function RunHydraDelegationTests(): void {
           await vestManager.openVestedDelegatePosition(validator.address, vestingDuration, {
             value: this.minDelegation,
           });
+
           // because balance change can be made only once per epoch when vested delegation position
           await commitEpoch(
             systemHydraChain,
@@ -635,7 +636,8 @@ export function RunHydraDelegationTests(): void {
             vestManagerOwner,
             liquidToken,
             vestManager.address,
-            this.minDelegation,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation),
+
             DEADLINE
           );
 

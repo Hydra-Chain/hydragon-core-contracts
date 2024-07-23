@@ -35,6 +35,10 @@ abstract contract LiquidStaking is Staking, Liquid {
         return super._unstake(account, amount);
     }
 
+    function _distributeTokens(address account, uint256 amount) internal virtual {
+        _mintTokens(account, amount);
+    }
+
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
 }

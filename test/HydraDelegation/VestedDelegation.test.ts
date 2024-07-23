@@ -651,12 +651,12 @@ export function RunVestedDelegationTests(): void {
           vestManagerOwner,
           liquidToken,
           vestManager.address,
-          delegatedBalance,
+          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance),
           DEADLINE
         );
         await vestManager.cutVestedDelegatePositionWithPermit(
           delegatedValidator.address,
-          delegatedBalance,
+          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance),
           DEADLINE,
           v,
           r,

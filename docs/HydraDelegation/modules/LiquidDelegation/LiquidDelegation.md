@@ -72,6 +72,29 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
+### calculateOwedLiquidTokens
+
+```solidity
+function calculateOwedLiquidTokens(address account, uint256 amount) external view returns (uint256)
+```
+
+Returns the amount of liquid tokens the user owes to the protocol based on the given amount
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The address of the account |
+| amount | uint256 | The amount to be checked |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | The amount of liquid tokens the user owes to the protocol |
+
 ### changeMinDelegation
 
 ```solidity
@@ -346,7 +369,7 @@ Returns the address of the token that is distributed as a liquidity on stake
 ### liquidityDebts
 
 ```solidity
-function liquidityDebts(address) external view returns (uint256)
+function liquidityDebts(address) external view returns (int256)
 ```
 
 
@@ -363,7 +386,7 @@ function liquidityDebts(address) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | int256 | undefined |
 
 ### minDelegation
 

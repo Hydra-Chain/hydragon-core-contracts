@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import "./../../common/libs/SafeMathInt.sol";
 import {ILiquidityToken} from "../../LiquidityToken/ILiquidityToken.sol";
 import {ILiquid} from "./ILiquid.sol";
 
@@ -11,7 +12,9 @@ import {ILiquid} from "./ILiquid.sol";
  * @notice An extension of the Staking contract that enables the distribution of liquid tokens
  */
 abstract contract Liquid is ILiquid, Initializable {
-    mapping(address => uint256) public liquidityDebts;
+    using SafeMathUint for uint256;
+
+    mapping(address => int256) public liquidityDebts;
 
     /// Liquid Staking token given to stakers and delegators
     address internal _liquidToken;
@@ -32,26 +35,48 @@ abstract contract Liquid is ILiquid, Initializable {
         return _liquidToken;
     }
 
-    // _______________ Internal functions _______________
+    /**
+     * @inheritdoc ILiquid
+     */
+    function calculateOwedLiquidTokens(address account, uint256 amount) external view returns (uint256) {
+        int256 liquidDebt = liquidityDebts[account];
+        int256 amountInt = amount.toInt256Safe();
+        int256 amountAfterDebt = amountInt + liquidDebt;
 
-    function _distributeTokens(address account, uint256 amount) internal virtual {
-        _mintTokens(account, amount);
+        if (amountAfterDebt < 1) {
+            return 0;
+        }
+
+        return uint256(amountAfterDebt);
     }
 
+    // _______________ Internal functions _______________
+
     function _collectTokens(address account, uint256 amount) internal virtual {
-        // User needs to burn the liquid tokens for slashed stake as well
-        uint256 liquidDebt = liquidityDebts[account];
-        if (liquidDebt > 0) {
-            liquidityDebts[account] = 0;
-            amount += liquidDebt;
+        // User needs to provide their liquid tokens debt as well
+        int256 liquidDebt = liquidityDebts[account];
+        int256 amountInt = amount.toInt256Safe();
+        int256 amountAfterDebt = amountInt + liquidDebt;
+        // if negative debt is bigger than or equal to the amount, so we get the whole amount from the debt
+        if (amountAfterDebt < 1) {
+            liquidityDebts[account] -= amountInt;
+            amount = 0;
+
+            return;
         }
+
+        // otherwise apply the whole debt to the amount
+        liquidityDebts[account] = 0;
+        amount = uint256(amountAfterDebt);
 
         _burnTokens(account, amount);
     }
 
-    function _mintTokens(address account, uint256 amount) private {
+    function _mintTokens(address account, uint256 amount) internal {
         ILiquidityToken(_liquidToken).mint(account, amount);
     }
+
+    // _______________ Private functions _______________
 
     function _burnTokens(address account, uint256 amount) private {
         ILiquidityToken(_liquidToken).burn(account, amount);

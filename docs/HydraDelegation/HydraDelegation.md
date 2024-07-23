@@ -27,6 +27,23 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### DENOMINATOR
+
+```solidity
+function DENOMINATOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MAX_COMMISSION
 
 ```solidity
@@ -207,6 +224,29 @@ The threshold for the maximum number of allowed balance changes
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### calculateOwedLiquidTokens
+
+```solidity
+function calculateOwedLiquidTokens(address account, uint256 amount) external view returns (uint256)
+```
+
+Returns the amount of liquid tokens the user owes to the protocol based on the given amount
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The address of the account |
+| amount | uint256 | The amount to be checked |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | The amount of liquid tokens the user owes to the protocol |
 
 ### calculatePositionPenalty
 
@@ -844,7 +884,7 @@ Returns the address of the token that is distributed as a liquidity on stake
 ### liquidityDebts
 
 ```solidity
-function liquidityDebts(address) external view returns (uint256)
+function liquidityDebts(address) external view returns (int256)
 ```
 
 
@@ -861,7 +901,7 @@ function liquidityDebts(address) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | int256 | undefined |
 
 ### minDelegation
 
@@ -1191,6 +1231,23 @@ The vesting positions for every delegator
 | base | uint256 | undefined |
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
+
+### vestingLiquidityDecreasePerWeek
+
+```solidity
+function vestingLiquidityDecreasePerWeek() external view returns (uint256)
+```
+
+A fraction&#39;s numerator representing the rate at which the liquidity tokens&#39; distribution is decreased on a weekly basis
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### vestingManagerFactoryContract
 

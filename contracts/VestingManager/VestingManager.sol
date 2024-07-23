@@ -37,14 +37,15 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      */
     function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable onlyOwner {
         HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(staker, durationWeeks);
-        _sendLiquidTokens(msg.sender, msg.value);
+        address liquidToken = HYDRA_DELEGATION.liquidToken();
+        _sendLiquidTokens(msg.sender, IERC20(liquidToken).balanceOf(address(this)));
     }
 
     /**
      * @inheritdoc IVestingManager
      */
     function cutVestedDelegatePosition(address staker, uint256 amount) external payable onlyOwner {
-        _cutVestedPosition(staker, amount);
+        _cutVestedPosition(staker, amount, HYDRA_DELEGATION.calculateOwedLiquidTokens(address(this), amount));
     }
 
     /**
@@ -59,8 +60,9 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
         bytes32 s
     ) external payable onlyOwner {
         address liquidToken = HYDRA_DELEGATION.liquidToken();
-        IERC20Permit(liquidToken).permit(msg.sender, address(this), amount, deadline, v, r, s);
-        _cutVestedPosition(staker, amount);
+        uint256 owedLiquidTokens = HYDRA_DELEGATION.calculateOwedLiquidTokens(address(this), amount);
+        IERC20Permit(liquidToken).permit(msg.sender, address(this), owedLiquidTokens, deadline, v, r, s);
+        _cutVestedPosition(staker, amount, owedLiquidTokens);
     }
 
     /**
@@ -90,8 +92,8 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
 
     // _______________ Internal functions _______________
 
-    function _cutVestedPosition(address staker, uint256 amount) internal {
-        _fulfillLiquidTokens(msg.sender, amount);
+    function _cutVestedPosition(address staker, uint256 amount, uint256 owedLiquidTokens) internal {
+        _fulfillLiquidTokens(msg.sender, owedLiquidTokens);
         HYDRA_DELEGATION.undelegateWithVesting(staker, amount);
     }
 
