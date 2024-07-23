@@ -39,6 +39,16 @@ export function RunRewardWalletTests(): void {
       expect(await rewardWallet.rewardManagers(hydraDelegation.address), "hydraDelegation").to.equal(true);
     });
 
+    it("should revert on re-initialization attempt", async function () {
+      const { rewardWallet, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.initializedHydraChainStateFixture
+      );
+
+      await expect(
+        rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address])
+      ).to.be.revertedWith(ERRORS.initialized);
+    });
+
     it("should send some HYDRA to the reward wallet successfully", async function () {
       const { rewardWallet, hydraStaking, hydraDelegation } = await loadFixture(
         this.fixtures.presetHydraChainStateFixture

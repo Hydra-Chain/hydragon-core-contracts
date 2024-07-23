@@ -38,7 +38,7 @@ export function RunVestManagerFactoryTests(): void {
 
         await expect(
           vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address)
-        ).to.be.revertedWith("Initializable: contract is already initialized");
+        ).to.be.revertedWith(ERRORS.initialized);
       });
     });
 
