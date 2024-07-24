@@ -60,7 +60,7 @@ contract HydraStaking is
     }
 
     function _initialize(StakerInit[] calldata initialStakers) private {
-        /// @dev the amount of stake for all initial stakers will be send as hydra to the contract from the node
+        // the amount of stake for all initial stakers will be send as hydra to the contract from the node
         uint256 length = initialStakers.length;
         for (uint256 i = 0; i < length; i++) {
             _stake(initialStakers[i].addr, initialStakers[i].stake);

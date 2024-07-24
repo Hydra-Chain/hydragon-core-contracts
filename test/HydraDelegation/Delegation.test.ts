@@ -7,7 +7,7 @@ import * as hre from "hardhat";
 import { ERRORS } from "../constants";
 
 export function RunDelegationTests(): void {
-  describe("", function () {
+  describe("Delegate", function () {
     it("should revert when delegating zero amount", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
