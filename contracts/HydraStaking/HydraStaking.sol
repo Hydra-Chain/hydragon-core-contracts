@@ -48,13 +48,13 @@ contract HydraStaking is
         address newLiquidToken,
         address hydraChainAddr,
         address aprCalculatorAddr,
-        address delegationContractAddr,
-        address rewardWalletContractAddr
+        address hydraDelegationAddr,
+        address rewardWalletAddr
     ) external initializer onlySystemCall {
         __HydraChainConnector_init(hydraChainAddr);
-        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletContractAddr, governance);
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, governance);
         __LiquidStaking_init(newLiquidToken);
-        __DelegatedStaking_init(delegationContractAddr);
+        __DelegatedStaking_init(hydraDelegationAddr);
 
         _initialize(initialStakers);
     }

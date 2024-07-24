@@ -40,13 +40,13 @@ abstract contract ValidatorManager is
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
-        address _stakingContractAddr,
-        address _delegationContractAddr,
+        address _hydraStakingAddr,
+        address _hydraDelegationAddr,
         address _governance
     ) internal onlyInitializing {
         __AccessControl_init(_governance);
-        __HydraStakingConnector_init(_stakingContractAddr);
-        __HydraDelegationConnector_init(_delegationContractAddr);
+        __HydraStakingConnector_init(_hydraStakingAddr);
+        __HydraDelegationConnector_init(_hydraDelegationAddr);
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
