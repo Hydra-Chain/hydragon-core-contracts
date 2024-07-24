@@ -39,6 +39,7 @@ export const alwaysFalseBytecode = "0x60206000F3";
 export const alwaysRevertBytecode = "0x60006000FD";
 
 export const ERRORS = {
+  initialized: "Initializable: contract is already initialized",
   ownable: "Ownable: caller is not the owner",
   unauthorized: {
     name: "Unauthorized",

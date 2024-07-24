@@ -2,6 +2,7 @@
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { RunVestManagerFactoryTests } from "./VestingManagerFactory.test";
+import { ERRORS } from "../constants";
 
 export function RunVestingManagerTests(): void {
   describe("", function () {
@@ -16,9 +17,15 @@ export function RunVestingManagerTests(): void {
       it("should revert on re-initialization attempt", async function () {
         const { vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
 
-        await expect(vestManager.initialize(this.signers.delegator.address)).to.be.revertedWith(
-          "Initializable: contract is already initialized"
-        );
+        await expect(vestManager.initialize(this.signers.delegator.address)).to.be.revertedWith(ERRORS.initialized);
+      });
+
+      it("should revert withdraw when not called by vesting manager owner", async function () {
+        const { vestManager } = await loadFixture(this.fixtures.vestManagerFixture);
+
+        await expect(
+          vestManager.connect(this.signers.delegator).withdraw(this.signers.delegator.address)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
 

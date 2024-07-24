@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IStaking} from "./IStaking.sol";
+import {Epoch} from "../HydraChain/IHydraChain.sol";
+import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {ILiquidStaking} from "./modules/LiquidStaking/ILiquidStaking.sol";
 import {IDelegatedStaking} from "./modules/DelegatedStaking/IDelegatedStaking.sol";
 import {IPenalizeableStaking} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
-import {Epoch} from "./../HydraChain/IHydraChain.sol";
-import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
+import {IStaking} from "./IStaking.sol";
 
 struct StakerInit {
     address addr;

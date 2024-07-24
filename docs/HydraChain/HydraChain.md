@@ -509,7 +509,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address stakingContractAddr, address delegationContractAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -522,8 +522,8 @@ function initialize(ValidatorInit[] newValidators, address governance, address s
 |---|---|---|
 | newValidators | ValidatorInit[] | undefined |
 | governance | address | undefined |
-| stakingContractAddr | address | undefined |
-| delegationContractAddr | address | undefined |
+| hydraStakingAddr | address | undefined |
+| hydraDelegationAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan

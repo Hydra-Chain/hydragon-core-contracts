@@ -6,9 +6,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {IHydraDelegation} from "./../HydraDelegation/IHydraDelegation.sol";
+import {IHydraDelegation} from "../HydraDelegation/IHydraDelegation.sol";
+import {IVestingManager} from "./IVestingManager.sol";
 
-contract VestingManager is Initializable, OwnableUpgradeable {
+contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     /// @notice The hydra delegation contract
@@ -31,15 +32,24 @@ contract VestingManager is Initializable, OwnableUpgradeable {
 
     // _______________ External functions _______________
 
+    /**
+     * @inheritdoc IVestingManager
+     */
     function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable onlyOwner {
         HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(staker, durationWeeks);
         _sendLiquidTokens(msg.sender, msg.value);
     }
 
+    /**
+     * @inheritdoc IVestingManager
+     */
     function cutVestedDelegatePosition(address staker, uint256 amount) external payable onlyOwner {
         _cutVestedPosition(staker, amount);
     }
 
+    /**
+     * @inheritdoc IVestingManager
+     */
     function cutVestedDelegatePositionWithPermit(
         address staker,
         uint256 amount,
@@ -53,10 +63,16 @@ contract VestingManager is Initializable, OwnableUpgradeable {
         _cutVestedPosition(staker, amount);
     }
 
+    /**
+     * @inheritdoc IVestingManager
+     */
     function swapVestedPositionStaker(address oldStaker, address newStaker) external onlyOwner {
         HYDRA_DELEGATION.swapVestedPositionStaker(oldStaker, newStaker);
     }
 
+    /**
+     * @inheritdoc IVestingManager
+     */
     function claimVestedPositionReward(
         address staker,
         uint256 epochNumber,
@@ -65,7 +81,10 @@ contract VestingManager is Initializable, OwnableUpgradeable {
         HYDRA_DELEGATION.claimPositionReward(staker, msg.sender, epochNumber, balanceChangeIndex);
     }
 
-    function withdraw(address to) external {
+    /**
+     * @inheritdoc IVestingManager
+     */
+    function withdraw(address to) external onlyOwner {
         HYDRA_DELEGATION.withdraw(to);
     }
 

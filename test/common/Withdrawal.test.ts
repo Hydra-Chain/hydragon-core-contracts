@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { loadFixture, setBalance, time } from "@nomicfoundation/hardhat-network-helpers";
 import { ERRORS, WEEK } from "../constants";
 
-export function RunHydraDelegationTests(): void {
+export function RunWithdrawalTests(): void {
   describe("", function () {
     it("should fail the withdrawal", async function () {
       const { hydraChain, unstakedValidator, hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);

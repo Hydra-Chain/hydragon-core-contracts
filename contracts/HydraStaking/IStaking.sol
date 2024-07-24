@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IWithdrawal} from "./../common/Withdrawal/IWithdrawal.sol";
+import {IWithdrawal} from "../common/Withdrawal/IWithdrawal.sol";
 
 struct StakingReward {
     uint256 taken;

@@ -2,6 +2,31 @@
 pragma solidity 0.8.17;
 
 interface IAPRCalculator {
+    error InvalidRSI();
+    error InvalidMacro();
+
+    /**
+     * @notice sets new base APR
+     * @dev only owner can call this function
+     * @param newBase new base APR
+     */
+    function setBase(uint256 newBase) external;
+
+    /**
+     * @notice sets new Macro factor
+     * @dev only owner can call this function
+     * @param newMacroFactor new macro factor
+     */
+    function setMacro(uint256 newMacroFactor) external;
+
+    /**
+     * @notice sets new RSI value
+     * @dev only owner can call this function
+     * @param newRSI new RSI value
+     */
+    function setRSI(uint256 newRSI) external;
+
+    // _______________ Public functions _______________
 
     /**
      * @notice returns base APR
@@ -46,4 +71,17 @@ interface IAPRCalculator {
      * @param weeksCount the amount of weeks to calculate the bonus for
      */
     function getVestingBonus(uint256 weeksCount) external view returns (uint256 nominator);
+
+    /**
+     * @notice returns the max APR for 52 weeks
+     * @return nominator the nominator for the max APR
+     * @return denominator the denominator for the max APR
+     */
+    function getMaxAPR() external view returns (uint256 nominator, uint256 denominator);
+
+    /**
+     * @notice returns the epoch max reward for the given total staked amount
+     * @param totalStaked the total staked amount to apply the max epoch reward to
+     */
+    function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward);
 }

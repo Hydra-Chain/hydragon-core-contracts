@@ -5,8 +5,8 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
+import {System} from "../common/System/System.sol";
 import {VestingManager} from "./VestingManager.sol";
-import {System} from "./../common/System/System.sol";
 import {IVestingManagerFactory} from "./IVestingManagerFactory.sol";
 
 contract VestingManagerFactory is IVestingManagerFactory, System, Initializable {

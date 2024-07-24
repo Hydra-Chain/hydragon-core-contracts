@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Delegation} from "./../../Delegation.sol";
-import {Governed} from "./../../../common/Governed/Governed.sol";
-import {Withdrawal} from "./../../../common/Withdrawal/Withdrawal.sol";
-import {DelegationPoolLib} from "./../../DelegationPoolLib.sol";
-import {VestedPositionLib} from "./../../../common/Vesting/VestedPositionLib.sol";
-import {DelegationPool} from "./../../IDelegation.sol";
-import {VestingPosition} from "./../../../common/Vesting/IVesting.sol";
+import {Governed} from "../../../common/Governed/Governed.sol";
+import {Withdrawal} from "../../../common/Withdrawal/Withdrawal.sol";
+import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
+import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
+import {Vesting} from "../../../common/Vesting/Vesting.sol";
+import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
+import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
+import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
+import {Delegation} from "../../Delegation.sol";
+import {DelegationPool} from "../../IDelegation.sol";
+import {DelegationPoolLib} from "../../DelegationPoolLib.sol";
 import {IVestedDelegation, DelegationPoolParams, RPS} from "./IVestedDelegation.sol";
-import {HydraChainConnector} from "./../../../HydraChain/HydraChainConnector.sol";
-import {VestingManagerFactoryConnector} from "./../../../VestingManager/VestingManagerFactoryConnector.sol";
-import {Vesting} from "./../../../common/Vesting/Vesting.sol";
-import {RewardWalletConnector} from "./../../../RewardWallet/RewardWalletConnector.sol";
 
-contract VestedDelegation is
+abstract contract VestedDelegation is
     IVestedDelegation,
     Governed,
     Withdrawal,
@@ -47,8 +47,6 @@ contract VestedDelegation is
      * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
      */
     uint256 public balanceChangeThreshold;
-
-    error NotVestingManager();
 
     // _______________ Initializer _______________
 
@@ -266,7 +264,7 @@ contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external {
+    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external onlyManager {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (_noRewardConditions(position)) {
             return;
@@ -352,10 +350,7 @@ contract VestedDelegation is
 
     // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     /**
-     * @notice Checks if balance change was already made in the current epoch
-     * @param staker Validator to delegate to
-     * @param delegator Delegator that has delegated
-     * @param currentEpochNum Current epoch number
+     * @inheritdoc IVestedDelegation
      */
     function isBalanceChangeMade(
         address staker,
@@ -376,10 +371,7 @@ contract VestedDelegation is
     }
 
     /**
-     * @notice Check if the new position that the user wants to swap to is available for the swap
-     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
-     * @param newStaker The address of the new validator
-     * @param delegator The address of the delegator
+     * @inheritdoc IVestedDelegation
      */
     function isPositionAvailableForSwap(address newStaker, address delegator) public view returns (bool) {
         VestingPosition memory newPosition = vestedDelegationPositions[newStaker][delegator];
@@ -399,9 +391,7 @@ contract VestedDelegation is
 
     // TODO: Consider deleting it as we shouldn't be getting into that case
     /**
-     * @notice Checks if the balance changes exceeds the threshold
-     * @param staker Validator to delegate to
-     * @param delegator Delegator that has delegated
+     * @inheritdoc IVestedDelegation
      */
     function isBalanceChangeThresholdExceeded(address staker, address delegator) public view returns (bool) {
         return delegationPoolParamsHistory[staker][delegator].length > balanceChangeThreshold;
@@ -580,4 +570,7 @@ contract VestedDelegation is
 
         return (rewardPerShare, balanceData, correctionData);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

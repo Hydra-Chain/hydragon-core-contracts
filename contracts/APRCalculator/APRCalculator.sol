@@ -3,13 +3,11 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {System} from "./../common/System/System.sol";
-import {Governed} from "./../common/Governed/Governed.sol";
+import {System} from "../common/System/System.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is Initializable, System, Governed {
-    error InvalidRSI();
-    error InvalidMacro();
-
+contract APRCalculator is IAPRCalculator, Initializable, System, Governed {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
     uint256 public constant MIN_MACRO_FACTOR = 1250;
@@ -20,9 +18,9 @@ contract APRCalculator is Initializable, System, Governed {
     uint256 public constant EPOCHS_YEAR = 31500;
     bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
+    uint256 public rsi;
     uint256 public base;
     uint256 public macroFactor;
-    uint256 public rsi;
     uint256[52] public vestingBonus;
 
     // _______________ Initializer _______________
@@ -37,34 +35,27 @@ contract APRCalculator is Initializable, System, Governed {
         _grantRole(MANAGER_ROLE, manager);
     }
 
-    // _______________ Public functions _______________
+    // _______________ External functions _______________
 
-    function setBase(uint256 newBase) public onlyRole(MANAGER_ROLE) {
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function setBase(uint256 newBase) external onlyRole(MANAGER_ROLE) {
         base = newBase;
     }
 
-    function setMacro(uint256 newMacroFactor) public onlyRole(MANAGER_ROLE) {
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function setMacro(uint256 newMacroFactor) external onlyRole(MANAGER_ROLE) {
         if (newMacroFactor < MIN_MACRO_FACTOR || newMacroFactor > MAX_MACRO_FACTOR) revert InvalidMacro();
         macroFactor = newMacroFactor;
     }
 
-    function getBaseAPR() public view returns (uint256) {
-        return base;
-    }
-
-    function getRSIBonus() public view returns (uint256) {
-        return rsi;
-    }
-
-    function getDENOMINATOR() public pure returns (uint256) {
-        return DENOMINATOR;
-    }
-
-    function getEpochsPerYear() public pure returns (uint256) {
-        return EPOCHS_YEAR;
-    }
-
-    function setRSI(uint256 newRSI) public onlyRole(MANAGER_ROLE) {
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function setRSI(uint256 newRSI) external onlyRole(MANAGER_ROLE) {
         if (newRSI > MAX_RSI_BONUS) revert InvalidRSI();
 
         if (newRSI < MIN_RSI_BONUS) newRSI = 0;
@@ -72,6 +63,46 @@ contract APRCalculator is Initializable, System, Governed {
         rsi = newRSI;
     }
 
+    // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function getBaseAPR() public view returns (uint256) {
+        return base;
+    }
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function getRSIBonus() public view returns (uint256) {
+        return rsi;
+    }
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function getDENOMINATOR() public pure returns (uint256) {
+        return DENOMINATOR;
+    }
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function getEpochsPerYear() public pure returns (uint256) {
+        return EPOCHS_YEAR;
+    }
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
+    function getVestingBonus(uint256 weeksCount) public view returns (uint256 nominator) {
+        return vestingBonus[weeksCount - 1];
+    }
+
+    /**
+     * @inheritdoc IAPRCalculator
+     */
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
         uint256 vestBonus = getVestingBonus(52);
 
@@ -79,6 +110,9 @@ contract APRCalculator is Initializable, System, Governed {
         denominator = 10000 * 10000 * 10000;
     }
 
+    /**
+     * @inheritdoc IAPRCalculator
+     */
     function applyMaxReward(uint256 reward) public view returns (uint256) {
         // max vesting bonus is 52 weeks
         uint256 vestBonus = getVestingBonus(52);
@@ -88,6 +122,9 @@ contract APRCalculator is Initializable, System, Governed {
         return ((reward * bonus) / (10000 * 10000)) / EPOCHS_YEAR;
     }
 
+    /**
+     * @inheritdoc IAPRCalculator
+     */
     function getEpochMaxReward(uint256 totalStaked) public view returns (uint256 reward) {
         uint256 nominator;
         uint256 denominator;
@@ -98,26 +135,25 @@ contract APRCalculator is Initializable, System, Governed {
         return (totalStaked * nominator) / denominator / EPOCHS_YEAR;
     }
 
-    function getVestingBonus(uint256 weeksCount) public view returns (uint256 nominator) {
-        return vestingBonus[weeksCount - 1];
-    }
-
+    /**
+     * @inheritdoc IAPRCalculator
+     */
     function applyMacro(uint256 totalStaked) public view returns (uint256 reward) {
         return (totalStaked * macroFactor) / DENOMINATOR;
     }
 
+    /**
+     * @inheritdoc IAPRCalculator
+     */
     function applyBaseAPR(uint256 amount) public view returns (uint256) {
         return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
     }
 
-    // _______________ Internal functions _______________
-
-    function magnitude() internal pure returns (uint256) {
-        return 1e18;
-    }
-
     // _______________ Private functions _______________
 
+    /**
+     * @notice Initializes vesting bonus for each week.
+     */
     function initializeVestingBonus() private {
         vestingBonus[0] = 6;
         vestingBonus[1] = 16;
@@ -172,4 +208,7 @@ contract APRCalculator is Initializable, System, Governed {
         vestingBonus[50] = 2116;
         vestingBonus[51] = 2178;
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

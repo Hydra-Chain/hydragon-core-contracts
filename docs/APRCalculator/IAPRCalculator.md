@@ -110,6 +110,28 @@ returns the denominator for the APR calculation
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### getEpochMaxReward
+
+```solidity
+function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward)
+```
+
+returns the epoch max reward for the given total staked amount
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| totalStaked | uint256 | the total staked amount to apply the max epoch reward to |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | undefined |
+
 ### getEpochsPerYear
 
 ```solidity
@@ -126,6 +148,24 @@ returns the number of epochs per year
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### getMaxAPR
+
+```solidity
+function getMaxAPR() external view returns (uint256 nominator, uint256 denominator)
+```
+
+returns the max APR for 52 weeks
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| nominator | uint256 | the nominator for the max APR |
+| denominator | uint256 | the denominator for the max APR |
 
 ### getRSIBonus
 
@@ -165,6 +205,79 @@ returns the vesting bonus for the given weeks count
 | Name | Type | Description |
 |---|---|---|
 | nominator | uint256 | undefined |
+
+### setBase
+
+```solidity
+function setBase(uint256 newBase) external nonpayable
+```
+
+sets new base APR
+
+*only owner can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newBase | uint256 | new base APR |
+
+### setMacro
+
+```solidity
+function setMacro(uint256 newMacroFactor) external nonpayable
+```
+
+sets new Macro factor
+
+*only owner can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMacroFactor | uint256 | new macro factor |
+
+### setRSI
+
+```solidity
+function setRSI(uint256 newRSI) external nonpayable
+```
+
+sets new RSI value
+
+*only owner can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRSI | uint256 | new RSI value |
+
+
+
+
+## Errors
+
+### InvalidMacro
+
+```solidity
+error InvalidMacro()
+```
+
+
+
+
+
+
+### InvalidRSI
+
+```solidity
+error InvalidRSI()
+```
+
+
+
 
 
 

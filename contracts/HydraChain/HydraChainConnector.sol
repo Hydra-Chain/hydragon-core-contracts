@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {Unauthorized} from "./../common/Errors.sol";
+import {Unauthorized} from "../common/Errors.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 
 abstract contract HydraChainConnector is Initializable {

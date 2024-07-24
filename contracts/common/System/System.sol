@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../../common/Errors.sol";
+import "../../common/Errors.sol";
 
 abstract contract System {
     // pre-compiled contracts
@@ -23,6 +23,8 @@ abstract contract System {
     // genesis contracts
     // slither-disable-next-line too-many-digits
     address public constant NATIVE_TOKEN_CONTRACT = 0x0000000000000000000000000000000000001010;
+
+    // _______________ Modifiers _______________
 
     modifier onlySystemCall() {
         if (msg.sender != SYSTEM) revert Unauthorized("SYSTEMCALL");

@@ -5,7 +5,6 @@ struct ValidatorInit {
     address addr;
     uint256[4] pubkey;
     uint256[2] signature;
-    uint256 stake;
 }
 
 enum ValidatorStatus {

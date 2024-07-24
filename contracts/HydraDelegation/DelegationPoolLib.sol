@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../common/libs/SafeMathInt.sol";
+import "../common/libs/SafeMathInt.sol";
 import {DelegationPool} from "./IDelegation.sol";
 
 error NoTokensDelegated(address staker);

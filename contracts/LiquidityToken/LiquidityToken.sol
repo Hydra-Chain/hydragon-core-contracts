@@ -5,9 +5,9 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "../common/System/System.sol";
+import "../common/Governed/Governed.sol";
 import "./ILiquidityToken.sol";
-import "./../common/System/System.sol";
-import "./../common/Governed/Governed.sol";
 
 /**
  * @title LiquidityToken
@@ -16,6 +16,8 @@ import "./../common/Governed/Governed.sol";
 contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20PermitUpgradeable, Governed {
     /// @notice The role identifier for address(es) that have permission to mint and burn the token.
     bytes32 public constant SUPPLY_CONTROLLER_ROLE = keccak256("SUPPLY_CONTROLLER_ROLE");
+
+    // _______________ Initializer _______________
 
     /**
      * @dev Initializes the token contract with the provided name, symbol, governed role, and supply controller.
@@ -40,6 +42,8 @@ contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20Permi
         _grantRole(SUPPLY_CONTROLLER_ROLE, hydraDelegationAddr);
     }
 
+    // _______________ Public functions _______________
+
     /**
      * @inheritdoc ILiquidityToken
      */
@@ -53,4 +57,7 @@ contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20Permi
     function burn(address account, uint256 amount) public onlyRole(SUPPLY_CONTROLLER_ROLE) {
         _burn(account, amount);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

@@ -4,14 +4,14 @@ pragma solidity 0.8.17;
 import {ArraysUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ArraysUpgradeable.sol";
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
-import {System} from "./../common/System/System.sol";
+import {IBLS} from "../BLS/IBLS.sol";
+import {System} from "../common/System/System.sol";
+import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
-import {SafeMathInt} from "./../common/libs/SafeMathInt.sol";
-import {IBLS} from "../BLS/IBLS.sol";
-import {IHydraChain} from "./IHydraChain.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
 contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, Inspector, PowerExponent {
@@ -34,12 +34,12 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
     function initialize(
         ValidatorInit[] calldata newValidators,
         address governance,
-        address stakingContractAddr,
-        address delegationContractAddr,
+        address hydraStakingAddr,
+        address hydraDelegationAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
-        __ValidatorManager_init(newValidators, newBls, stakingContractAddr, delegationContractAddr, governance);
+        __ValidatorManager_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);
         __Inspector_init();
         __PowerExponent_init();
 
@@ -76,6 +76,9 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
         return epochs[epochIndex];
     }
 
+    /**
+     * @inheritdoc IHydraChain
+     */
     function commitEpoch(
         uint256 id,
         Epoch calldata epoch,

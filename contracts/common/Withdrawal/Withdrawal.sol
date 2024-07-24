@@ -11,6 +11,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     using WithdrawalQueueLib for WithdrawalQueue;
 
     uint256 public withdrawWaitPeriod;
+
     mapping(address => WithdrawalQueue) private _withdrawals;
 
     // _______________ Initializer _______________
@@ -27,6 +28,9 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
 
     // _______________ External functions _______________
 
+    /**
+     * @inheritdoc IWithdrawal
+     */
     function withdraw(address to) external nonReentrant {
         WithdrawalQueue storage queue = _withdrawals[msg.sender];
         (uint256 amount, uint256 newHead) = queue.withdrawable();
@@ -36,14 +40,23 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
         _withdraw(to, amount);
     }
 
+    /**
+     * @inheritdoc IWithdrawal
+     */
     function withdrawable(address account) external view returns (uint256 amount) {
         (amount, ) = _withdrawals[account].withdrawable();
     }
 
+    /**
+     * @inheritdoc IWithdrawal
+     */
     function pendingWithdrawals(address account) external view returns (uint256) {
         return _withdrawals[account].pending();
     }
 
+    /**
+     * @inheritdoc IWithdrawal
+     */
     function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
         _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
@@ -68,4 +81,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
         if (_newWaitPeriod == 0) revert InvalidWaitPeriod();
         withdrawWaitPeriod = _newWaitPeriod;
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

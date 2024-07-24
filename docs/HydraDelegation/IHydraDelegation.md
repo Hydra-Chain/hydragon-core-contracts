@@ -316,6 +316,53 @@ Returns true if the position is active.
 |---|---|---|
 | _0 | bool | undefined |
 
+### isBalanceChangeMade
+
+```solidity
+function isBalanceChangeMade(address staker, address delegator, uint256 currentEpochNum) external view returns (bool)
+```
+
+Checks if balance change was already made in the current epoch
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Validator to delegate to |
+| delegator | address | Delegator that has delegated |
+| currentEpochNum | uint256 | Current epoch number |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isBalanceChangeThresholdExceeded
+
+```solidity
+function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool)
+```
+
+Checks if the balance changes exceeds the threshold
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Validator to delegate to |
+| delegator | address | Delegator that has delegated |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isMaturingDelegatePosition
 
 ```solidity
@@ -332,6 +379,29 @@ Returns true if the position is maturing.
 |---|---|---|
 | staker | address | Validator for the position |
 | delegator | address | Delegator for the position |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isPositionAvailableForSwap
+
+```solidity
+function isPositionAvailableForSwap(address newStaker, address delegator) external view returns (bool)
+```
+
+Check if the new position that the user wants to swap to is available for the swap
+
+*Available positions one that is not active, not maturing and doesn&#39;t have any left balance or rewards*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newStaker | address | The address of the new validator |
+| delegator | address | The address of the delegator |
 
 #### Returns
 
@@ -808,6 +878,17 @@ error InvalidWaitPeriod()
 
 ```solidity
 error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+### NotVestingManager
+
+```solidity
+error NotVestingManager()
 ```
 
 

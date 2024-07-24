@@ -76,7 +76,7 @@ export function RunLiquidityTokenTests(): void {
 
         await expect(
           token.initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
-        ).to.be.revertedWith("Initializable: contract is already initialized");
+        ).to.be.revertedWith(ERRORS.initialized);
       });
     });
 

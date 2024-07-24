@@ -3,12 +3,12 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {System} from "./../../../common/System/System.sol";
-import {AccessControl} from "../AccessControl/AccessControl.sol";
-import {HydraStakingConnector} from "./../../../HydraStaking/HydraStakingConnector.sol";
-import {HydraDelegationConnector} from "./../../../HydraDelegation/HydraDelegationConnector.sol";
+import {System} from "../../../common/System/System.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
-import {IBLS} from "./../../../BLS/IBLS.sol";
+import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
+import {HydraDelegationConnector} from "../../../HydraDelegation/HydraDelegationConnector.sol";
+import {IBLS} from "../../../BLS/IBLS.sol";
+import {AccessControl} from "../AccessControl/AccessControl.sol";
 import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IValidatorManager.sol";
 
 abstract contract ValidatorManager is
@@ -23,14 +23,10 @@ abstract contract ValidatorManager is
     uint256 public constant MAX_VALIDATORS = 150;
 
     IBLS public bls;
-
     address[] public validatorsAddresses;
-
     uint256 public activeValidatorsCount;
-
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
-
     /**
      * @notice Mapping that keeps the last time when a validator has participated in the consensus
      * @dev Keep in mind that the validator will initially be set active when stake,
@@ -44,13 +40,13 @@ abstract contract ValidatorManager is
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
-        address _stakingContractAddr,
-        address _delegationContractAddr,
+        address _hydraStakingAddr,
+        address _hydraDelegationAddr,
         address _governance
     ) internal onlyInitializing {
         __AccessControl_init(_governance);
-        __HydraStakingConnector_init(_stakingContractAddr);
-        __HydraDelegationConnector_init(_delegationContractAddr);
+        __HydraStakingConnector_init(_hydraStakingAddr);
+        __HydraDelegationConnector_init(_hydraDelegationAddr);
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
@@ -149,6 +145,9 @@ abstract contract ValidatorManager is
         emit NewValidator(msg.sender, pubkey);
     }
 
+    /**
+     * @inheritdoc IValidatorManager
+     */
     function activateValidator(address account) external onlyHydraStaking {
         if (getActiveValidatorsCount() == MAX_VALIDATORS) revert MaxValidatorsReached();
         if (validators[account].status != ValidatorStatus.Registered) revert Unauthorized("MUST_BE_REGISTERED");
@@ -161,6 +160,9 @@ abstract contract ValidatorManager is
         _updateParticipation(account);
     }
 
+    /**
+     * @inheritdoc IValidatorManager
+     */
     function deactivateValidator(address account) external onlyHydraStaking {
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;

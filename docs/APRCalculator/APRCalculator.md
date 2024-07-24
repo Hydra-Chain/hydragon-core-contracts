@@ -288,7 +288,7 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 function applyBaseAPR(uint256 amount) external view returns (uint256)
 ```
 
-
+applies the base APR for the given amount
 
 
 
@@ -296,7 +296,7 @@ function applyBaseAPR(uint256 amount) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| amount | uint256 | undefined |
+| amount | uint256 | the amount to apply the APR to |
 
 #### Returns
 
@@ -310,7 +310,7 @@ function applyBaseAPR(uint256 amount) external view returns (uint256)
 function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
 ```
 
-
+applies macro factor for the given total staked amount
 
 
 
@@ -318,7 +318,7 @@ function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
 
 | Name | Type | Description |
 |---|---|---|
-| totalStaked | uint256 | undefined |
+| totalStaked | uint256 | the total staked amount to apply the macro factor to |
 
 #### Returns
 
@@ -332,7 +332,7 @@ function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
 function applyMaxReward(uint256 reward) external view returns (uint256)
 ```
 
-
+applies the max reward for the given amount - 52 weeks
 
 
 
@@ -340,7 +340,7 @@ function applyMaxReward(uint256 reward) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| reward | uint256 | undefined |
+| reward | uint256 | the reward to apply the max reward to |
 
 #### Returns
 
@@ -371,7 +371,7 @@ function base() external view returns (uint256)
 function getBaseAPR() external view returns (uint256)
 ```
 
-
+returns base APR
 
 
 
@@ -388,7 +388,7 @@ function getBaseAPR() external view returns (uint256)
 function getDENOMINATOR() external pure returns (uint256)
 ```
 
-
+returns the denominator for the APR calculation
 
 
 
@@ -405,7 +405,7 @@ function getDENOMINATOR() external pure returns (uint256)
 function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward)
 ```
 
-
+returns the epoch max reward for the given total staked amount
 
 
 
@@ -413,7 +413,7 @@ function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 r
 
 | Name | Type | Description |
 |---|---|---|
-| totalStaked | uint256 | undefined |
+| totalStaked | uint256 | the total staked amount to apply the max epoch reward to |
 
 #### Returns
 
@@ -427,7 +427,7 @@ function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 r
 function getEpochsPerYear() external pure returns (uint256)
 ```
 
-
+returns the number of epochs per year
 
 
 
@@ -444,7 +444,7 @@ function getEpochsPerYear() external pure returns (uint256)
 function getMaxAPR() external view returns (uint256 nominator, uint256 denominator)
 ```
 
-
+returns the max APR for 52 weeks
 
 
 
@@ -453,8 +453,8 @@ function getMaxAPR() external view returns (uint256 nominator, uint256 denominat
 
 | Name | Type | Description |
 |---|---|---|
-| nominator | uint256 | undefined |
-| denominator | uint256 | undefined |
+| nominator | uint256 | the nominator for the max APR |
+| denominator | uint256 | the denominator for the max APR |
 
 ### getRSIBonus
 
@@ -462,7 +462,7 @@ function getMaxAPR() external view returns (uint256 nominator, uint256 denominat
 function getRSIBonus() external view returns (uint256)
 ```
 
-
+returns max reward
 
 
 
@@ -501,7 +501,7 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 function getVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
 ```
 
-
+returns the vesting bonus for the given weeks count
 
 
 
@@ -509,7 +509,7 @@ function getVestingBonus(uint256 weeksCount) external view returns (uint256 nomi
 
 | Name | Type | Description |
 |---|---|---|
-| weeksCount | uint256 | undefined |
+| weeksCount | uint256 | the amount of weeks to calculate the bonus for |
 
 #### Returns
 
@@ -647,15 +647,15 @@ function rsi() external view returns (uint256)
 function setBase(uint256 newBase) external nonpayable
 ```
 
+sets new base APR
 
-
-
+*only owner can call this function*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newBase | uint256 | undefined |
+| newBase | uint256 | new base APR |
 
 ### setMacro
 
@@ -663,15 +663,15 @@ function setBase(uint256 newBase) external nonpayable
 function setMacro(uint256 newMacroFactor) external nonpayable
 ```
 
+sets new Macro factor
 
-
-
+*only owner can call this function*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newMacroFactor | uint256 | undefined |
+| newMacroFactor | uint256 | new macro factor |
 
 ### setRSI
 
@@ -679,15 +679,15 @@ function setMacro(uint256 newMacroFactor) external nonpayable
 function setRSI(uint256 newRSI) external nonpayable
 ```
 
+sets new RSI value
 
-
-
+*only owner can call this function*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newRSI | uint256 | undefined |
+| newRSI | uint256 | new RSI value |
 
 ### supportsInterface
 

@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Staking} from "./Staking.sol";
-import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {System} from "../common/System/System.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {Unauthorized, StakeRequirement} from "../common/Errors.sol";
+import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
+import {DelegationPool} from "../HydraDelegation/IDelegation.sol";
+import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
-import {System} from "./../common/System/System.sol";
-import {Unauthorized, StakeRequirement} from "./../common/Errors.sol";
-import {HydraChainConnector} from "./../HydraChain/HydraChainConnector.sol";
-import {RewardWalletConnector} from "./../RewardWallet/RewardWalletConnector.sol";
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
-import {Uptime} from "./../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {Governed} from "./../common/Governed/Governed.sol";
-import {DelegationPool} from "./../HydraDelegation/IDelegation.sol";
+import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
+import {Staking} from "./Staking.sol";
+
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -47,20 +48,21 @@ contract HydraStaking is
         address newLiquidToken,
         address hydraChainAddr,
         address aprCalculatorAddr,
-        address delegationContractAddr,
-        address rewardWalletContractAddr
+        address hydraDelegationAddr,
+        address rewardWalletAddr
     ) external initializer onlySystemCall {
         __HydraChainConnector_init(hydraChainAddr);
-        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletContractAddr, governance);
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, governance);
         __LiquidStaking_init(newLiquidToken);
-        __DelegatedStaking_init(delegationContractAddr);
+        __DelegatedStaking_init(hydraDelegationAddr);
 
         _initialize(initialStakers);
     }
 
     function _initialize(StakerInit[] calldata initialStakers) private {
-        // set initial stakers
-        for (uint256 i = 0; i < initialStakers.length; i++) {
+        // the amount of stake for all initial stakers will be send as hydra to the contract from the node
+        uint256 length = initialStakers.length;
+        for (uint256 i = 0; i < length; i++) {
             _stake(initialStakers[i].addr, initialStakers[i].stake);
         }
     }
@@ -294,4 +296,7 @@ contract HydraStaking is
 
         return (modifiedEpochReward * totalBlocks) / (epochSize);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

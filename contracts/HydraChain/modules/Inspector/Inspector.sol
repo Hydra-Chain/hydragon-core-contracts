@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ValidatorManager, ValidatorStatus} from "./../ValidatorManager/ValidatorManager.sol";
-import {Unauthorized} from "./../../../common/Errors.sol";
+import {Unauthorized} from "../../../common/Errors.sol";
+import {PenalizedStakeDistribution} from "../../../HydraStaking/modules/PenalizeableStaking/IPenalizeableStaking.sol";
+import {ValidatorManager, ValidatorStatus} from "../ValidatorManager/ValidatorManager.sol";
 import {IInspector} from "./IInspector.sol";
-import {PenalizedStakeDistribution} from "./../../../HydraStaking/modules/PenalizeableStaking/IPenalizeableStaking.sol";
 
 abstract contract Inspector is IInspector, ValidatorManager {
     /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
