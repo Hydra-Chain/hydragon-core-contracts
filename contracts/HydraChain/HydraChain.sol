@@ -29,8 +29,10 @@ contract HydraChain is
 
     address public hydraVault;
     uint256 public currentEpochId;
+    uint256 public vaultDistribution;
     /// @notice Epoch data linked with the epoch id
     mapping(uint256 => Epoch) public epochs;
+    mapping(uint256 => uint256) vaultDistributionPerEpoch;
     /// @notice Array with epoch ending blocks
     uint256[] public epochEndBlocks;
 
@@ -120,9 +122,32 @@ contract HydraChain is
             _updateParticipation(uptime[i].validator);
         }
 
-        _distributeVaultFunds();
-
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function distributeVaultFunds() external onlySystemCall {
+        require(vaultDistributionPerEpoch[currentEpochId] == 0, "VAULT_FUNDS_ALREADY_DISTRIBUTED");
+        
+        uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
+            aprCalculatorContract.getEpochsPerYear();
+        vaultDistributionPerEpoch[currentEpochId] = reward;
+        vaultDistribution += reward;
+
+        emit VaultFundsDistributed(currentEpochId, reward);
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function claimVaultFunds() external {
+        uint256 reward = vaultDistribution;
+        vaultDistribution = 0;
+        rewardWalletContract.distributeReward(hydraVault, reward);
+
+        emit VaultFunded(currentEpochId, reward);
     }
 
     // _______________ Public functions _______________
@@ -141,45 +166,6 @@ contract HydraChain is
         }
 
         return true;
-    }
-
-    // _______________ Private functions _______________
-
-    function _distributeVaultFunds() private {
-        uint256 epochsPerYear;
-        uint256 reward;
-        try aprCalculatorContract.getEpochsPerYear() returns (uint256 _epochsPerYear) {
-            epochsPerYear = _epochsPerYear;
-        } catch Error(string memory reason) {
-            emit VaultFunded(currentEpochId, 0, reason, "");
-            return;
-        } catch (bytes memory lowLevelData) {
-            emit VaultFunded(currentEpochId, 0, "", lowLevelData);
-            return;
-        }
-
-        try hydraStakingContract.totalBalance() returns (uint256 _totalBalance) {
-            if (epochsPerYear == 0) {
-                return;
-            }
-            reward = (_totalBalance * 200) / 10000 / epochsPerYear;
-        } catch Error(string memory reason) {
-            emit VaultFunded(currentEpochId, 0, reason, "");
-            return;
-        } catch (bytes memory lowLevelData) {
-            emit VaultFunded(currentEpochId, 0, "", lowLevelData);
-            return;
-        }
-
-        try rewardWalletContract.distributeReward(hydraVault, reward) {
-            emit VaultFunded(currentEpochId, reward, "", "");
-        } catch Error(string memory reason) {
-            emit VaultFunded(currentEpochId, reward, reason, "");
-            return;
-        } catch (bytes memory lowLevelData) {
-            emit VaultFunded(currentEpochId, reward, "", lowLevelData);
-            return;
-        }
     }
 
     // slither-disable-next-line unused-state,naming-convention
