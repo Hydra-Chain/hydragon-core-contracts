@@ -10,7 +10,7 @@ import {IRewardWallet} from "./IRewardWallet.sol";
 /**
  * @title RewardWallet
  * @dev This contract will be responsible for the rewards that will be distributed to stakers.
- * @dev It will be fulfilled with enough funds in order to be able to always have enough liqudity.
+ * It will be fulfilled with enough funds in order to be able to always have enough liqudity.
  */
 contract RewardWallet is IRewardWallet, System, Initializable {
     /// @notice The mapping of the managers
@@ -52,6 +52,16 @@ contract RewardWallet is IRewardWallet, System, Initializable {
         _distributeReward(to, amount);
     }
 
+    /**
+     * @notice Method used to fund the contract with HYDRA.
+     * @dev This function is used to prevent modifications to the node's logic for systems transactions,
+     * which currently require an input. Since the `receive` function cannot be taken as an input there,
+     * we have decided to create this new function.
+     */
+    function fund() public payable {
+        emit Received(msg.sender, msg.value);
+    }
+
     // _______________ Internal functions _______________
 
     function _distributeReward(address to, uint256 amount) internal {
@@ -59,13 +69,5 @@ contract RewardWallet is IRewardWallet, System, Initializable {
         if (!success) revert DistributionFailed();
 
         emit RewardDistributed(to, amount);
-    }
-
-    /**
-     * @notice Users can send HYDRA to the contract.
-     * @dev Sender will usually be the node, but anyone can send funds.
-     */
-    receive() external payable {
-        emit Received(msg.sender, msg.value);
     }
 }

@@ -194,9 +194,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
 
-  await this.signers.rewardWallet.sendTransaction({
-    from: this.signers.rewardWallet.address,
-    to: rewardWallet.address,
+  await rewardWallet.fund({
     value: this.minStake.mul(5),
   });
 

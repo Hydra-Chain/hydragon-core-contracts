@@ -49,25 +49,22 @@ export function RunRewardWalletTests(): void {
       ).to.be.revertedWith(ERRORS.initialized);
     });
 
-    it("should send some HYDRA to the reward wallet successfully", async function () {
-      const { rewardWallet, hydraStaking, hydraDelegation } = await loadFixture(
-        this.fixtures.presetHydraChainStateFixture
-      );
-
-      await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
+    it("should successfully send some HYDRA using the fund function", async function () {
+      const { rewardWallet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       const sendAmount = this.minStake.mul(5);
+      const sender = await rewardWallet.signer.getAddress();
 
-      const tx = await this.signers.rewardWallet.sendTransaction({
-        from: this.signers.rewardWallet.address,
-        to: rewardWallet.address,
+      const fundTx = await rewardWallet.fund({
         value: sendAmount,
       });
 
-      expect(await ethers.provider.getBalance(rewardWallet.address), "getBalance").to.be.eq(sendAmount);
-      await expect(tx, "Received emitted")
-        .to.emit(rewardWallet, "Received")
-        .withArgs(this.signers.rewardWallet.address, sendAmount);
+      await expect(fundTx, "fundTx balance changes").to.changeEtherBalances(
+        [sender, rewardWallet.address],
+        [sendAmount.mul(-1), sendAmount]
+      );
+      expect(await ethers.provider.getBalance(rewardWallet.address), "getBalance").to.not.be.eq(0);
+      await expect(fundTx, "Received emitted").to.emit(rewardWallet, "Received").withArgs(sender, sendAmount);
     });
   });
 
