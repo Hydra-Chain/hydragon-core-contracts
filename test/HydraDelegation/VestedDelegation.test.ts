@@ -654,9 +654,10 @@ export function RunVestedDelegationTests(): void {
           await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance),
           DEADLINE
         );
+
         await vestManager.cutVestedDelegatePositionWithPermit(
           delegatedValidator.address,
-          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance),
+          delegatedBalance,
           DEADLINE,
           v,
           r,
