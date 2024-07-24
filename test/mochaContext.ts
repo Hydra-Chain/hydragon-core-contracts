@@ -12,6 +12,7 @@ import {
   VestingManagerFactory,
   VestingManager,
   RewardWallet,
+  HydraVault,
 } from "../typechain-types";
 
 export interface Signers {
@@ -36,6 +37,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      hydraVault: HydraVault;
     }>;
   };
   initializedHydraChainStateFixture: {
@@ -49,6 +51,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      hydraVault: HydraVault;
       validatorInit: {
         addr: string;
         pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];

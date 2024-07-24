@@ -273,6 +273,17 @@ function bls() external view returns (contract IBLS)
 |---|---|---|
 | _0 | contract IBLS | undefined |
 
+### claimVaultFunds
+
+```solidity
+function claimVaultFunds() external nonpayable
+```
+
+Claim distributed vault funds
+
+
+
+
 ### commitEpoch
 
 ```solidity
@@ -324,6 +335,17 @@ Deactivates validator.
 | Name | Type | Description |
 |---|---|---|
 | account | address | Address of the validator |
+
+### distributeVaultFunds
+
+```solidity
+function distributeVaultFunds() external nonpayable
+```
+
+Distribute vault funds
+
+*Only callable by the system*
+
 
 ### epochEndBlocks
 
@@ -989,6 +1011,45 @@ Mapping that keeps the last time when a validator has participated in the consen
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### vaultDistribution
+
+```solidity
+function vaultDistribution() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### vaultDistributionPerEpoch
+
+```solidity
+function vaultDistributionPerEpoch(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 
 
 ## Events
@@ -1130,7 +1191,7 @@ event ValidatorBanned(address indexed validator)
 ### VaultFunded
 
 ```solidity
-event VaultFunded(uint256 indexed epoch, uint256 amount, string reason, bytes lowLevelData)
+event VaultFunded(uint256 indexed epoch, uint256 amount)
 ```
 
 
@@ -1143,8 +1204,23 @@ event VaultFunded(uint256 indexed epoch, uint256 amount, string reason, bytes lo
 |---|---|---|
 | epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
-| reason  | string | undefined |
-| lowLevelData  | bytes | undefined |
+
+### VaultFundsDistributed
+
+```solidity
+event VaultFundsDistributed(uint256 indexed epoch, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epoch `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
 
 
 

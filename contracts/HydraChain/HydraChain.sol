@@ -7,11 +7,11 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
 import {IBLS} from "../BLS/IBLS.sol";
 import {System} from "../common/System/System.sol";
 import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
-import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
+import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {DaoInsentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
@@ -19,20 +19,17 @@ import {Epoch} from "./IHydraChain.sol";
 contract HydraChain is
     IHydraChain,
     Ownable2StepUpgradeable,
+    HydraStakingConnector,
     ValidatorManager,
     Inspector,
     PowerExponent,
-    APRCalculatorConnector,
-    RewardWalletConnector
+    DaoInsentive
 {
     using ArraysUpgradeable for uint256[];
 
-    address public hydraVault;
     uint256 public currentEpochId;
-    uint256 public vaultDistribution;
     /// @notice Epoch data linked with the epoch id
     mapping(uint256 => Epoch) public epochs;
-    mapping(uint256 => uint256) vaultDistributionPerEpoch;
     /// @notice Array with epoch ending blocks
     uint256[] public epochEndBlocks;
 
@@ -55,29 +52,21 @@ contract HydraChain is
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
-        __APRCalculatorConnector_init(aprCalculatorAddr);
-        __RewardWalletConnector_init(rewardWalletAddr);
-        __ValidatorManager_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);
+        __HydraStakingConnector_init(hydraStakingAddr);
+        __DaoInsentive_init(aprCalculatorAddr, rewardWalletAddr, hydraVaultAddr);
+        __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);
         __Inspector_init();
         __PowerExponent_init();
 
-        _initialize(hydraVaultAddr);
+        _initialize();
     }
 
-    function _initialize(address hydraVaultAddr) private {
-        hydraVault = hydraVaultAddr;
+    function _initialize() private {
         currentEpochId = 1;
         epochEndBlocks.push(0);
     }
 
     // _______________ External functions _______________
-
-    /**
-     * @inheritdoc IHydraChain
-     */
-    function getCurrentEpochId() external view returns (uint256) {
-        return currentEpochId;
-    }
 
     /**
      * @inheritdoc IHydraChain
@@ -125,32 +114,14 @@ contract HydraChain is
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }
 
-    /**
-     * @inheritdoc IHydraChain
-     */
-    function distributeVaultFunds() external onlySystemCall {
-        require(vaultDistributionPerEpoch[currentEpochId] == 0, "VAULT_FUNDS_ALREADY_DISTRIBUTED");
-        
-        uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
-            aprCalculatorContract.getEpochsPerYear();
-        vaultDistributionPerEpoch[currentEpochId] = reward;
-        vaultDistribution += reward;
-
-        emit VaultFundsDistributed(currentEpochId, reward);
-    }
-
-    /**
-     * @inheritdoc IHydraChain
-     */
-    function claimVaultFunds() external {
-        uint256 reward = vaultDistribution;
-        vaultDistribution = 0;
-        rewardWalletContract.distributeReward(hydraVault, reward);
-
-        emit VaultFunded(currentEpochId, reward);
-    }
-
     // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function getCurrentEpochId() public view override(DaoInsentive, IHydraChain) returns (uint256) {
+        return currentEpochId;
+    }
 
     /**
      * @notice Returns if a given validator is subject to a ban

@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IInspector} from "./modules/Inspector/IInspector.sol";
 import {IPowerExponent} from "./modules/PowerExponent/IPowerExponent.sol";
+import {IDaoIncentive} from "./modules/DaoIncentive/IDaoIncentive.sol";
 import {IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
@@ -12,15 +13,13 @@ struct Epoch {
     bytes32 epochRoot;
 }
 
-interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
+interface IHydraChain is IInspector, IValidatorManager, IPowerExponent, IDaoIncentive {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
-    event VaultFundsDistributed(uint256 indexed epoch, uint256 amount);
-    event VaultFunded(uint256 indexed epoch, uint256 amount);
 
     /**
      * @notice Get current epoch ID
      */
-    function getCurrentEpochId() external view returns (uint256);
+    function getCurrentEpochId() external view override returns (uint256);
 
     /**
      * @notice Total amount of blocks in a given epoch
@@ -45,15 +44,4 @@ interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
      * @param uptime uptime data for every validator
      */
     function commitEpoch(uint256 id, Epoch calldata epoch, uint256 epochSize, Uptime[] calldata uptime) external;
-
-    /**
-     * @notice Distribute vault funds
-     * @dev Only callable by the system
-     */
-    function distributeVaultFunds() external;
-
-    /**
-     * @notice Claim distributed vault funds
-     */
-    function claimVaultFunds() external;
 }

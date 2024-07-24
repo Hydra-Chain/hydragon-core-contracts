@@ -11,6 +11,7 @@ import {
   HydraChain__factory,
   HydraDelegation__factory,
   HydraStaking__factory,
+  HydraVault__factory,
   LiquidityToken__factory,
   RewardWallet__factory,
   VestingManagerFactory__factory,
@@ -63,10 +64,17 @@ async function VestingManagerFactoryFixtureFunction(this: Mocha.Context) {
 }
 
 async function RewardWalletFixtureFunction(this: Mocha.Context) {
-  const rewardWalletFactoryFactory = new RewardWallet__factory(this.signers.admin);
-  const rewardWallet = await rewardWalletFactoryFactory.deploy();
+  const rewardWalletFactory = new RewardWallet__factory(this.signers.admin);
+  const rewardWallet = await rewardWalletFactory.deploy();
 
   return rewardWallet;
+}
+
+async function hydraVaultFixtureFunction(this: Mocha.Context) {
+  const hydraVaultFactory = new HydraVault__factory(this.signers.admin);
+  const hydraVault = await hydraVaultFactory.deploy();
+
+  return hydraVault;
 }
 
 async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
@@ -105,6 +113,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const aprCalculator = await aprCalculatorFixtureFunction.bind(this)();
   const vestingManagerFactory = await VestingManagerFactoryFixtureFunction.bind(this)();
   const rewardWallet = await RewardWalletFixtureFunction.bind(this)();
+  const hydraVault = await hydraVaultFixtureFunction.bind(this)();
 
   return {
     hydraChain,
@@ -116,6 +125,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
+    hydraVault,
   };
 }
 
@@ -132,6 +142,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
+    hydraVault,
   } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
   await mcl.init();
@@ -160,6 +171,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     this.signers.governance.address,
     hydraStaking.address,
     hydraDelegation.address,
+    aprCalculator.address,
+    rewardWallet.address,
+    hydraVault.address,
     bls.address
   );
 
@@ -209,6 +223,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     validatorInit,
     vestingManagerFactory,
     rewardWallet,
+    hydraVault,
   };
 }
 
