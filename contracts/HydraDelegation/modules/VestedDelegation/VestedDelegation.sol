@@ -330,7 +330,9 @@ abstract contract VestedDelegation is
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
         });
 
-        // keep the change in the delegation pool params per account
+        _delegate(staker, msg.sender, msg.value);
+
+        // keep the change in the delegation pool params per account after the actual _delegate()
         _saveAccountParamsChange(
             staker,
             msg.sender,
@@ -340,8 +342,6 @@ abstract contract VestedDelegation is
                 epochNum: hydraChainContract.getCurrentEpochId()
             })
         );
-
-        _delegate(staker, msg.sender, msg.value);
 
         emit PositionOpened(msg.sender, staker, durationWeeks, msg.value);
     }

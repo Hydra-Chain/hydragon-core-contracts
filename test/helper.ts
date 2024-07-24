@@ -70,7 +70,7 @@ export async function commitEpoch(
   hydraStaking: HydraStaking,
   validators: SignerWithAddress[],
   epochSize: BigNumber,
-  increaseTime?: number
+  increaseTime: number = DAY // default 1 day
 ): Promise<{ commitEpochTx: ContractTransaction; distributeRewardsTx: ContractTransaction }> {
   const currEpochId = await systemHydraChain.currentEpochId();
   const prevEpochId = currEpochId.sub(1);
@@ -87,7 +87,6 @@ export async function commitEpoch(
   }
 
   await mine(epochSize, { interval: 2 });
-  increaseTime = increaseTime || DAY; // default 1 day
   await time.increase(increaseTime);
 
   const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
