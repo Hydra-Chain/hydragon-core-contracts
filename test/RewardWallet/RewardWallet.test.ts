@@ -69,6 +69,24 @@ export function RunRewardWalletTests(): void {
         .to.emit(rewardWallet, "Received")
         .withArgs(this.signers.rewardWallet.address, sendAmount);
     });
+
+    it("should successfully send some HYDRA using the fund function", async function () {
+      const { rewardWallet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      const sendAmount = this.minStake.mul(5);
+      const sender = await rewardWallet.signer.getAddress();
+
+      const fundTx = await rewardWallet.fund({
+        value: sendAmount,
+      });
+
+      await expect(fundTx, "fundTx balance changes").to.changeEtherBalances(
+        [sender, rewardWallet.address],
+        [sendAmount.mul(-1), sendAmount]
+      );
+      expect(await ethers.provider.getBalance(rewardWallet.address), "getBalance").to.not.be.eq(0);
+      await expect(fundTx, "Received emitted").to.emit(rewardWallet, "Received").withArgs(sender, sendAmount);
+    });
   });
 
   describe("Distribute reward", function () {

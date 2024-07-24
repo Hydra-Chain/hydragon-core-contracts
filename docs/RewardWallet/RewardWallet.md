@@ -129,6 +129,17 @@ Distribute the specified `amount` of coins to the given address.
 | to | address | The address to receive the coins. |
 | amount | uint256 | The amount of coins to send. |
 
+### fund
+
+```solidity
+function fund() external payable
+```
+
+Method used to fund the contract with HYDRA.
+
+*This is used in order to avoid modifications in the node&#39;s logic for the system transactions.*
+
+
 ### initialize
 
 ```solidity

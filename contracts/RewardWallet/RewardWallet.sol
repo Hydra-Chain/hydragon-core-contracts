@@ -52,6 +52,14 @@ contract RewardWallet is IRewardWallet, System, Initializable {
         _distributeReward(to, amount);
     }
 
+    /**
+     * @notice Method used to fund the contract with HYDRA.
+     * @dev This is used in order to avoid modifications in the node's logic for the system transactions.
+     */
+    function fund() public payable {
+        emit Received(msg.sender, msg.value);
+    }
+
     // _______________ Internal functions _______________
 
     function _distributeReward(address to, uint256 amount) internal {
