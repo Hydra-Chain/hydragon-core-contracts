@@ -6,7 +6,7 @@
 
 
 
-*This contract will be responsible for the rewards that will be distributed to stakers.It will be fulfilled with enough funds in order to be able to always have enough liqudity.*
+*This contract will be responsible for the rewards that will be distributed to stakers. It will be fulfilled with enough funds in order to be able to always have enough liqudity.*
 
 ## Methods
 
@@ -137,7 +137,7 @@ function fund() external payable
 
 Method used to fund the contract with HYDRA.
 
-*This is used in order to avoid modifications in the node&#39;s logic for the system transactions.*
+*This function is used to prevent modifications to the node&#39;s logic for systems transactions, which currently require an input. Since the `receive` function cannot be taken as an input there, we have decided to create this new function.*
 
 
 ### initialize
