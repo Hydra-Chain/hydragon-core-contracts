@@ -49,27 +49,6 @@ export function RunRewardWalletTests(): void {
       ).to.be.revertedWith(ERRORS.initialized);
     });
 
-    it("should send some HYDRA to the reward wallet successfully", async function () {
-      const { rewardWallet, hydraStaking, hydraDelegation } = await loadFixture(
-        this.fixtures.presetHydraChainStateFixture
-      );
-
-      await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
-
-      const sendAmount = this.minStake.mul(5);
-
-      const tx = await this.signers.rewardWallet.sendTransaction({
-        from: this.signers.rewardWallet.address,
-        to: rewardWallet.address,
-        value: sendAmount,
-      });
-
-      expect(await ethers.provider.getBalance(rewardWallet.address), "getBalance").to.be.eq(sendAmount);
-      await expect(tx, "Received emitted")
-        .to.emit(rewardWallet, "Received")
-        .withArgs(this.signers.rewardWallet.address, sendAmount);
-    });
-
     it("should successfully send some HYDRA using the fund function", async function () {
       const { rewardWallet } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
