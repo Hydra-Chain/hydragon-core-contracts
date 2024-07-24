@@ -7,6 +7,8 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
 import {IBLS} from "../BLS/IBLS.sol";
 import {System} from "../common/System/System.sol";
 import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
+import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
+import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
@@ -14,9 +16,18 @@ import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
-contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, Inspector, PowerExponent {
+contract HydraChain is
+    IHydraChain,
+    Ownable2StepUpgradeable,
+    ValidatorManager,
+    Inspector,
+    PowerExponent,
+    APRCalculatorConnector,
+    RewardWalletConnector
+{
     using ArraysUpgradeable for uint256[];
 
+    address public hydraVault;
     uint256 public currentEpochId;
     /// @notice Epoch data linked with the epoch id
     mapping(uint256 => Epoch) public epochs;
@@ -36,17 +47,23 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
         address governance,
         address hydraStakingAddr,
         address hydraDelegationAddr,
+        address aprCalculatorAddr,
+        address rewardWalletAddr,
+        address hydraVaultAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
+        __APRCalculatorConnector_init(aprCalculatorAddr);
+        __RewardWalletConnector_init(rewardWalletAddr);
         __ValidatorManager_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);
         __Inspector_init();
         __PowerExponent_init();
 
-        _initialize();
+        _initialize(hydraVaultAddr);
     }
 
-    function _initialize() private {
+    function _initialize(address hydraVaultAddr) private {
+        hydraVault = hydraVaultAddr;
         currentEpochId = 1;
         epochEndBlocks.push(0);
     }
@@ -103,6 +120,8 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
             _updateParticipation(uptime[i].validator);
         }
 
+        _distributeVaultFunds();
+
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }
 
@@ -122,6 +141,45 @@ contract HydraChain is IHydraChain, Ownable2StepUpgradeable, ValidatorManager, I
         }
 
         return true;
+    }
+
+    // _______________ Private functions _______________
+
+    function _distributeVaultFunds() private {
+        uint256 epochsPerYear;
+        uint256 reward;
+        try aprCalculatorContract.getEpochsPerYear() returns (uint256 _epochsPerYear) {
+            epochsPerYear = _epochsPerYear;
+        } catch Error(string memory reason) {
+            emit VaultFunded(currentEpochId, 0, reason, "");
+            return;
+        } catch (bytes memory lowLevelData) {
+            emit VaultFunded(currentEpochId, 0, "", lowLevelData);
+            return;
+        }
+
+        try hydraStakingContract.totalBalance() returns (uint256 _totalBalance) {
+            if (epochsPerYear == 0) {
+                return;
+            }
+            reward = (_totalBalance * 200) / 10000 / epochsPerYear;
+        } catch Error(string memory reason) {
+            emit VaultFunded(currentEpochId, 0, reason, "");
+            return;
+        } catch (bytes memory lowLevelData) {
+            emit VaultFunded(currentEpochId, 0, "", lowLevelData);
+            return;
+        }
+
+        try rewardWalletContract.distributeReward(hydraVault, reward) {
+            emit VaultFunded(currentEpochId, reward, "", "");
+        } catch Error(string memory reason) {
+            emit VaultFunded(currentEpochId, reward, reason, "");
+            return;
+        } catch (bytes memory lowLevelData) {
+            emit VaultFunded(currentEpochId, reward, "", lowLevelData);
+            return;
+        }
     }
 
     // slither-disable-next-line unused-state,naming-convention

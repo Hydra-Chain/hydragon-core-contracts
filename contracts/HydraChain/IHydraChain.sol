@@ -14,6 +14,7 @@ struct Epoch {
 
 interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
+    event VaultFunded(uint256 indexed epoch, uint256 amount, string reason, bytes lowLevelData);
 
     /**
      * @notice Get current epoch ID

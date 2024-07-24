@@ -206,6 +206,23 @@ Adds addresses that are allowed to register as validators.
 |---|---|---|
 | whitelistAddreses | address[] | Array of address to whitelist |
 
+### aprCalculatorContract
+
+```solidity
+function aprCalculatorContract() external view returns (contract IAPRCalculator)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IAPRCalculator | undefined |
+
 ### banThreshold
 
 ```solidity
@@ -506,10 +523,27 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
+### hydraVault
+
+```solidity
+function hydraVault() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address aprCalculatorAddr, address rewardWalletAddr, address hydraVaultAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -524,6 +558,9 @@ function initialize(ValidatorInit[] newValidators, address governance, address h
 | governance | address | undefined |
 | hydraStakingAddr | address | undefined |
 | hydraDelegationAddr | address | undefined |
+| aprCalculatorAddr | address | undefined |
+| rewardWalletAddr | address | undefined |
+| hydraVaultAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan
@@ -748,6 +785,23 @@ The reward for the person who reports a validator that have to be banned
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
 
 ### setBanThreshold
 
@@ -1072,6 +1126,25 @@ event ValidatorBanned(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+### VaultFunded
+
+```solidity
+event VaultFunded(uint256 indexed epoch, uint256 amount, string reason, bytes lowLevelData)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epoch `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+| reason  | string | undefined |
+| lowLevelData  | bytes | undefined |
 
 
 

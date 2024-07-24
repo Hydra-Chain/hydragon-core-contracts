@@ -420,6 +420,25 @@ event ValidatorBanned(address indexed validator)
 |---|---|---|
 | validator `indexed` | address | undefined |
 
+### VaultFunded
+
+```solidity
+event VaultFunded(uint256 indexed epoch, uint256 amount, string reason, bytes lowLevelData)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epoch `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+| reason  | string | undefined |
+| lowLevelData  | bytes | undefined |
+
 
 
 ## Errors

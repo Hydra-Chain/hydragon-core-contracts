@@ -1,4 +1,4 @@
-# FeeHandler
+# HydraVault
 
 
 
@@ -13,7 +13,7 @@
 ### initialize
 
 ```solidity
-function initialize(address owner) external nonpayable
+function initialize(address governer) external nonpayable
 ```
 
 
@@ -24,7 +24,7 @@ function initialize(address owner) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| owner | address | undefined |
+| governer | address | undefined |
 
 ### owner
 
