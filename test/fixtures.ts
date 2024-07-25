@@ -164,7 +164,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       hydraDelegation.address
     );
 
-  await aprCalculator.connect(this.signers.system).initialize(this.signers.governance.address);
+  await aprCalculator.connect(this.signers.system).initialize(this.signers.governance.address, hydraChain.address);
 
   await systemHydraChain.initialize(
     [validatorInit],
