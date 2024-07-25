@@ -72,6 +72,22 @@ export interface Fixtures {
       commitEpochTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      hydraVault: HydraVault;
+    }>;
+  };
+  distributeVaultFundsFixture: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
+      liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      distributeVaultFundsTx: ContractTransaction;
+      vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
+      hydraVault: HydraVault;
     }>;
   };
   whitelistedValidatorsStateFixture: {

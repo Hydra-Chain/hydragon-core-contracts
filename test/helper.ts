@@ -71,7 +71,11 @@ export async function commitEpoch(
   validators: SignerWithAddress[],
   epochSize: BigNumber,
   increaseTime: number = DAY // default 1 day
-): Promise<{ commitEpochTx: ContractTransaction; distributeRewardsTx: ContractTransaction }> {
+): Promise<{
+  commitEpochTx: ContractTransaction;
+  distributeRewardsTx: ContractTransaction;
+  distributeVaultFundsTx: ContractTransaction;
+}> {
   const currEpochId = await systemHydraChain.currentEpochId();
   const prevEpochId = currEpochId.sub(1);
   const previousEpoch = await systemHydraChain.epochs(prevEpochId);
@@ -91,11 +95,13 @@ export async function commitEpoch(
 
   const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
 
+  const distributeVaultFundsTx = await systemHydraChain.distributeVaultFunds();
+
   const distributeRewardsTx = await hydraStaking
     .connect(systemHydraChain.signer)
     .distributeRewardsFor(currEpochId, validatorsUptime, epochSize);
 
-  return { commitEpochTx, distributeRewardsTx };
+  return { commitEpochTx, distributeRewardsTx, distributeVaultFundsTx };
 }
 
 export async function commitEpochs(

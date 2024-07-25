@@ -63,6 +63,8 @@ abstract contract DaoInsentive is
      */
     function claimVaultFunds() external {
         uint256 reward = vaultDistribution;
+        require(reward != 0, "NO_VAULT_FUNDS_TO_CLAIM");
+        
         vaultDistribution = 0;
         rewardWalletContract.distributeReward(hydraVault, reward);
 

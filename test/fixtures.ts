@@ -206,7 +206,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
 
-  await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
+  await rewardWallet
+    .connect(this.signers.system)
+    .initialize([hydraChain.address, hydraStaking.address, hydraDelegation.address]);
 
   await rewardWallet.fund({
     value: this.minStake.mul(5),
@@ -240,6 +242,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     liquidToken,
     vestingManagerFactory,
     rewardWallet,
+    hydraVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
   const epochId = hre.ethers.BigNumber.from(1);
@@ -268,6 +271,38 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     commitEpochTx,
     vestingManagerFactory,
     rewardWallet,
+    hydraVault,
+  };
+}
+
+async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    vestingManagerFactory,
+    rewardWallet,
+    hydraVault,
+  } = await loadFixture(this.fixtures.commitEpochTxFixture);
+
+  const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeVaultFunds();
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    distributeVaultFundsTx,
+    vestingManagerFactory,
+    rewardWallet,
+    hydraVault,
   };
 }
 
@@ -806,6 +841,7 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.presetHydraChainStateFixture = presetHydraChainStateFixtureFunction.bind(context);
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
+  context.fixtures.distributeVaultFundsFixture = distributeVaultFundsFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);

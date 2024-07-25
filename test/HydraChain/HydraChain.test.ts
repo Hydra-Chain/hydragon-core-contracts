@@ -8,6 +8,7 @@ import { RunInspectorTests } from "./Inspector.test";
 import { RunAccessControlTests } from "./AccessControl.test";
 import { RunPowerExponentTests } from "./PowerExponent.test";
 import { RunValidatorManagerTests } from "./ValidatorManager.test";
+import { RunDaoIncentiveTests } from "./DaoIncentive.test";
 
 export function RunHydraChainTests(): void {
   describe("", function () {
@@ -285,6 +286,9 @@ export function RunHydraChainTests(): void {
 
     describe("Access Control", function () {
       RunAccessControlTests();
+    });
+    describe("Dao Incentive", function () {
+      RunDaoIncentiveTests();
     });
     describe("Inspector", function () {
       RunInspectorTests();
