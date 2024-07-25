@@ -5,10 +5,19 @@ import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
 import { ERRORS, WEEK, EPOCHS_YEAR, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
-import { commitEpochs, retrieveRPSData, commitEpoch, calculateExpectedReward, getPermitSignature } from "../helper";
+import {
+  commitEpochs,
+  retrieveRPSData,
+  commitEpoch,
+  calculateExpectedReward,
+  getPermitSignature,
+  calcLiquidTokensToDistributeOnVesting,
+} from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
 import { RunVestedDelegationTests } from "./VestedDelegation.test";
+// eslint-disable-next-line camelcase
+import { LiquidityToken__factory } from "../../typechain-types";
 
 export function RunHydraDelegationTests(): void {
   describe("", function () {
@@ -499,6 +508,21 @@ export function RunHydraDelegationTests(): void {
           );
         });
 
+        it("should distribute decreased amount of liquid tokens", async function () {
+          const { vestManager, hydraDelegation } = await loadFixture(this.fixtures.vestManagerFixture);
+
+          const validator = this.signers.validators[0];
+          const vestingDuration = 12; // weeks
+
+          await expect(
+            vestManager.openVestedDelegatePosition(validator.address, vestingDuration, { value: this.minDelegation })
+          ).to.changeTokenBalance(
+            LiquidityToken__factory.connect(await hydraDelegation.liquidToken(), hre.ethers.provider),
+            await vestManager.owner(),
+            calcLiquidTokensToDistributeOnVesting(vestingDuration, this.minDelegation)
+          );
+        });
+
         it("should emit Delegated event on open vested position", async function () {
           const { hydraChain, vestManager, hydraDelegation } = await loadFixture(this.fixtures.vestManagerFixture);
 
@@ -637,7 +661,6 @@ export function RunHydraDelegationTests(): void {
             liquidToken,
             vestManager.address,
             await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation),
-
             DEADLINE
           );
 

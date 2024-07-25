@@ -2,18 +2,17 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
+import {SafeMathUint} from "../common/libs/SafeMathInt.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
+import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
+import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
-
 import {Delegation} from "./Delegation.sol";
-import {StakerInit} from "./../HydraStaking/IHydraStaking.sol";
-import {SafeMathUint} from "./../common/libs/SafeMathInt.sol";
-import {VestingPosition} from "./../common/Vesting/IVesting.sol";
 
 contract HydraDelegation is
     IHydraDelegation,

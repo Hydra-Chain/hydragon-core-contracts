@@ -480,3 +480,10 @@ export async function calculateTotalPotentialPositionReward(
 
   return rawReward.mul(bonus).div(divider).div(EPOCHS_YEAR);
 }
+
+export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, delegateAmount: BigNumber) {
+  const decrease = durationWeeks * 133;
+  const denominator = 10000;
+
+  return delegateAmount.sub(delegateAmount.mul(decrease).div(denominator));
+}

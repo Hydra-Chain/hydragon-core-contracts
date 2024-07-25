@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { VestingManager__factory } from "../../typechain-types";
+import { LiquidityToken__factory, VestingManager__factory } from "../../typechain-types";
 import { ERRORS, VESTING_DURATION_WEEKS, WEEK, DEADLINE, DAY } from "../constants";
 import {
   calculatePenalty,
@@ -18,6 +18,7 @@ import {
   getDelegatorPositionReward,
   calculateTotalPotentialPositionReward,
   calculatePenaltyByWeeks,
+  calcLiquidTokensToDistributeOnVesting,
 } from "../helper";
 
 export function RunVestedDelegationTests(): void {
@@ -531,13 +532,15 @@ export function RunVestedDelegationTests(): void {
 
     describe("cutVestedDelegatePositionWithPermit()", async function () {
       it("should revert when not the vest manager owner", async function () {
-        const { vestManager, liquidToken, vestManagerOwner } = await loadFixture(this.fixtures.vestedDelegationFixture);
+        const { vestManager, liquidToken, vestManagerOwner, hydraDelegation } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
 
         const { v, r, s } = await getPermitSignature(
           vestManagerOwner,
           liquidToken,
           vestManager.address,
-          this.minDelegation,
+          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation),
           DEADLINE
         );
 
@@ -570,7 +573,7 @@ export function RunVestedDelegationTests(): void {
           this.vestManagerOwners[0],
           liquidToken,
           vestManager.address,
-          balanceToCut,
+          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, balanceToCut),
           DEADLINE
         );
 
@@ -601,7 +604,7 @@ export function RunVestedDelegationTests(): void {
           this.vestManagerOwners[0],
           liquidToken,
           vestManager.address,
-          balanceToCut,
+          await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, balanceToCut),
           DEADLINE
         );
 
@@ -655,13 +658,20 @@ export function RunVestedDelegationTests(): void {
           DEADLINE
         );
 
-        await vestManager.cutVestedDelegatePositionWithPermit(
-          delegatedValidator.address,
-          delegatedBalance,
-          DEADLINE,
-          v,
-          r,
-          s
+        // check liquid tokens to collect value
+        await expect(
+          vestManager.cutVestedDelegatePositionWithPermit(
+            delegatedValidator.address,
+            delegatedBalance,
+            DEADLINE,
+            v,
+            r,
+            s
+          )
+        ).to.changeTokenBalance(
+          LiquidityToken__factory.connect(await hydraDelegation.liquidToken(), hre.ethers.provider),
+          await vestManager.owner(),
+          calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, delegatedBalance).mul(-1)
         );
 
         // increase time so reward is available to be withdrawn
