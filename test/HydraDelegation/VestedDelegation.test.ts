@@ -252,7 +252,12 @@ export function RunVestedDelegationTests(): void {
 
         await liquidToken.connect(user2).transfer(this.vestManagerOwners[0].address, 1);
         const balanceToCut = balance.add(1);
-        await liquidToken.connect(this.vestManagerOwners[0]).approve(vestManager.address, balanceToCut);
+        await liquidToken
+          .connect(this.vestManagerOwners[0])
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, balanceToCut)
+          );
         // reverts with "0x11" which is not a custom error uint256 delegatedAmountLeft = delegatedAmount - amount;
         await expect(
           vestManager.cutVestedDelegatePosition(this.delegatedValidators[0], balanceToCut)
@@ -264,7 +269,12 @@ export function RunVestedDelegationTests(): void {
 
         const balance = await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address);
         const balanceToCut = balance.sub(1);
-        await liquidToken.connect(this.vestManagerOwners[0]).approve(vestManager.address, balanceToCut);
+        await liquidToken
+          .connect(this.vestManagerOwners[0])
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, balanceToCut)
+          );
         await expect(vestManager.cutVestedDelegatePosition(this.delegatedValidators[0], balanceToCut))
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
           .withArgs("undelegate", "DELEGATION_TOO_LOW");
@@ -280,7 +290,12 @@ export function RunVestedDelegationTests(): void {
           value: this.minDelegation.mul(2),
         });
 
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation)
+          );
 
         await expect(
           vestManager
@@ -372,7 +387,12 @@ export function RunVestedDelegationTests(): void {
         //   decrease.mul(-1)
         // );
 
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, cutAmount);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, cutAmount)
+          );
 
         const latestTimestamp = hre.ethers.BigNumber.from(await time.latest());
         const nextTimestamp = latestTimestamp.add(2);
@@ -427,7 +447,12 @@ export function RunVestedDelegationTests(): void {
           vestManager.address
         );
 
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedBalance);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance)
+          );
 
         const nextTimestamp = position.start.add(WEEK);
         await time.setNextBlockTimestamp(nextTimestamp);
@@ -493,7 +518,12 @@ export function RunVestedDelegationTests(): void {
         const delegatedBalance = await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address);
         expect(delegatedBalance, "delegatedBalance").to.not.be.eq(0);
 
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedBalance);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedBalance)
+          );
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedBalance);
 
         // increase time so reward is available to be withdrawn
@@ -522,7 +552,12 @@ export function RunVestedDelegationTests(): void {
 
         // cut the whole position
         const delegatedAmount = await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address);
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedAmount)
+          );
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedAmount);
         expect(
           (await hydraDelegation.vestedDelegationPositions(delegatedValidator.address, vestManager.address)).start

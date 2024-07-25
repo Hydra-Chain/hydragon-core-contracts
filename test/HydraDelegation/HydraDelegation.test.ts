@@ -333,7 +333,12 @@ export function RunHydraDelegationTests(): void {
           "isActive"
         ).to.be.true;
 
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, delegatedAmount);
+        await liquidToken
+          .connect(vestManagerOwner)
+          .approve(
+            vestManager.address,
+            await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedAmount)
+          );
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedAmount);
 
         // check reward
@@ -622,7 +627,12 @@ export function RunHydraDelegationTests(): void {
           );
           const { totalStake } = await hydraChain.getValidator(validator.address);
 
-          await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+          await liquidToken
+            .connect(vestManagerOwner)
+            .approve(
+              vestManager.address,
+              await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation)
+            );
           await expect(vestManager.cutVestedDelegatePosition(validator.address, this.minDelegation), "emit Undelegated")
             .to.emit(hydraDelegation, "Undelegated")
             .withArgs(validator.address, vestManager.address, this.minDelegation);
