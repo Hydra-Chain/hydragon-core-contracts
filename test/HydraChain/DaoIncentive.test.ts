@@ -1,9 +1,9 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { ethers } from "hardhat";
 import { expect } from "chai";
 
 import { EPOCHS_YEAR, ERRORS } from "../constants";
-import { ethers } from "hardhat";
 
 export function RunDaoIncentiveTests(): void {
   describe("distributeVaultFunds", function () {

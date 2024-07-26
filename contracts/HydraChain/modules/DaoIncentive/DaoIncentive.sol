@@ -9,7 +9,7 @@ import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector
 import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
 import {IDaoIncentive} from "./IDaoIncentive.sol";
 
-abstract contract DaoInsentive is
+abstract contract DaoIncentive is
     IDaoIncentive,
     System,
     Initializable,
@@ -27,17 +27,17 @@ abstract contract DaoInsentive is
      * @notice Initializer function for genesis contract, called by the Hydra client at genesis to set up the initial state.
      * @dev only callable by client, can only be called once
      */
-    function __DaoInsentive_init(
+    function __DaoIncentive_init(
         address aprCalculatorAddr,
         address rewardWalletAddr,
         address hydraVaultAddr
-    ) internal onlyInitializing onlySystemCall {
+    ) internal onlyInitializing {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __RewardWalletConnector_init(rewardWalletAddr);
-        __DaoInsentive_init_unchained(hydraVaultAddr);
+        __DaoIncentive_init_unchained(hydraVaultAddr);
     }
 
-    function __DaoInsentive_init_unchained(address hydraVaultAddr) private {
+    function __DaoIncentive_init_unchained(address hydraVaultAddr) internal {
         hydraVault = hydraVaultAddr;
     }
 
@@ -64,7 +64,7 @@ abstract contract DaoInsentive is
     function claimVaultFunds() external {
         uint256 reward = vaultDistribution;
         require(reward != 0, "NO_VAULT_FUNDS_TO_CLAIM");
-        
+
         vaultDistribution = 0;
         rewardWalletContract.distributeReward(hydraVault, reward);
 

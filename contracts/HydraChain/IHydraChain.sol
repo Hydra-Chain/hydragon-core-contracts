@@ -19,7 +19,7 @@ interface IHydraChain is IInspector, IValidatorManager, IPowerExponent, IDaoInce
     /**
      * @notice Get current epoch ID
      */
-    function getCurrentEpochId() external view override returns (uint256);
+    function getCurrentEpochId() external view returns (uint256);
 
     /**
      * @notice Total amount of blocks in a given epoch

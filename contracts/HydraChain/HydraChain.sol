@@ -11,7 +11,7 @@ import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
-import {DaoInsentive} from "./modules/DaoIncentive/DaoIncentive.sol";
+import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
@@ -23,7 +23,7 @@ contract HydraChain is
     ValidatorManager,
     Inspector,
     PowerExponent,
-    DaoInsentive
+    DaoIncentive
 {
     using ArraysUpgradeable for uint256[];
 
@@ -53,7 +53,7 @@ contract HydraChain is
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
         __HydraStakingConnector_init(hydraStakingAddr);
-        __DaoInsentive_init(aprCalculatorAddr, rewardWalletAddr, hydraVaultAddr);
+        __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, hydraVaultAddr);
         __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);
         __Inspector_init();
         __PowerExponent_init();
@@ -119,7 +119,7 @@ contract HydraChain is
     /**
      * @inheritdoc IHydraChain
      */
-    function getCurrentEpochId() public view override(DaoInsentive, IHydraChain) returns (uint256) {
+    function getCurrentEpochId() public view override(DaoIncentive, IHydraChain) returns (uint256) {
         return currentEpochId;
     }
 
