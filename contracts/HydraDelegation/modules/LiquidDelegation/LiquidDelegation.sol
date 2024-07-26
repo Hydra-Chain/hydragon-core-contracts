@@ -18,7 +18,7 @@ abstract contract LiquidDelegation is Delegation, Liquid {
      */
     function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
         super._delegate(staker, delegator, amount);
-        _distributeTokens(delegator, amount);
+        _distributeTokens(staker, delegator, amount);
     }
 
     /**
@@ -27,6 +27,10 @@ abstract contract LiquidDelegation is Delegation, Liquid {
     function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
         _collectTokens(delegator, amount);
         super._undelegate(staker, delegator, amount);
+    }
+
+    function _distributeTokens(address /* staker */, address account, uint256 amount) internal virtual {
+        _mintTokens(account, amount);
     }
 
     // slither-disable-next-line unused-state,naming-convention

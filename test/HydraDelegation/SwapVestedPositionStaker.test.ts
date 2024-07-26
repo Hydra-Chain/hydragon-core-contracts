@@ -170,7 +170,12 @@ export function RunSwapVestedPositionStakerTests(): void {
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
 
     // give allowance & undelegate full amount
-    await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation);
+    await liquidToken
+      .connect(vestManagerOwner)
+      .approve(
+        vestManager.address,
+        await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, this.minDelegation)
+      );
     await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
 
     // verify that there are rewards left to claim

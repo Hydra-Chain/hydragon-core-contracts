@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
 import {Governed} from "../common/Governed/Governed.sol";
+import {SafeMathUint} from "./../common/libs/SafeMathInt.sol";
 import {Unauthorized, StakeRequirement} from "../common/Errors.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {DelegationPool} from "../HydraDelegation/IDelegation.sol";
@@ -16,7 +17,6 @@ import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableSta
 import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {Staking} from "./Staking.sol";
-
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -32,6 +32,8 @@ contract HydraStaking is
     PenalizeableStaking,
     DelegatedStaking
 {
+    using SafeMathUint for uint256;
+
     /// @notice Mapping used to keep the paid rewards per epoch
     mapping(uint256 => uint256) public distributedRewardPerEpoch;
 
@@ -169,7 +171,7 @@ contract HydraStaking is
         // the unstake amount of liquid tokens must be paid at the time of withdrawal
         // but only the leftForStaker will be automatically requested,
         // so we have to set the unstake amount - leftForStaker as liquidity debt
-        liquidityDebts[staker] += (unstakeAmount - leftForStaker);
+        liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
         _syncState(staker);
     }
 

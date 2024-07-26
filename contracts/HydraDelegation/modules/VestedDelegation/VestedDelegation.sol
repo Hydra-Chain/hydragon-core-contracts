@@ -303,8 +303,6 @@ abstract contract VestedDelegation is
      * @inheritdoc IVestedDelegation
      */
     function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
-        _delegate(staker, msg.sender, msg.value);
-
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (position.isMaturing()) {
             revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
@@ -332,7 +330,9 @@ abstract contract VestedDelegation is
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
         });
 
-        // keep the change in the delegation pool params per account
+        _delegate(staker, msg.sender, msg.value);
+
+        // keep the change in the delegation pool params per account after the actual _delegate()
         _saveAccountParamsChange(
             staker,
             msg.sender,

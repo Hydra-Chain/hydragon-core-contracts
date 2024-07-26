@@ -2,7 +2,10 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
+import {SafeMathUint} from "../common/libs/SafeMathInt.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
+import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
+import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
@@ -21,9 +24,15 @@ contract HydraDelegation is
     LiquidDelegation,
     VestedDelegation
 {
+    using SafeMathUint for uint256;
+
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
+    uint256 public constant DENOMINATOR = 10000;
 
+    /// A fraction's numerator representing the rate
+    /// at which the liquidity tokens' distribution is decreased on a weekly basis
+    uint256 public vestingLiquidityDecreasePerWeek;
     mapping(address => uint256) public delegationCommissionPerStaker;
 
     // _______________ Initializer _______________
@@ -49,6 +58,7 @@ contract HydraDelegation is
     }
 
     function _initialize(StakerInit[] calldata initialStakers, uint256 initialCommission) private {
+        vestingLiquidityDecreasePerWeek = 133; // 0.0133
         for (uint256 i = 0; i < initialStakers.length; i++) {
             _setCommission(initialStakers[i].addr, initialCommission);
         }
@@ -99,6 +109,30 @@ contract HydraDelegation is
         uint256 amount
     ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
         super._undelegate(staker, delegator, amount);
+    }
+
+    /**
+     * This function is called to distribute tokens to a delegator. If the delegator is opening a vested position,
+     * the amount of liquid tokens distributed is decreased based on the vesting duration. Specifically, the amount is
+     * reduced by a percentage per week of vesting. The corresponding negative debt is also added to the account's liquidity debts,
+     * ensuring that the user must return the appropriate decreased amount.
+     */
+    function _distributeTokens(address staker, address account, uint256 amount) internal virtual override {
+        VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
+        if (_isDelegateWithVesting(position)) {
+            uint256 positionDurationInWeeks = position.duration / 1 weeks;
+            uint256 debt = (amount * positionDurationInWeeks * vestingLiquidityDecreasePerWeek) / DENOMINATOR;
+            liquidityDebts[account] -= debt.toInt256Safe(); // Add negative debt
+            amount -= debt;
+        }
+
+        super._distributeTokens(staker, account, amount);
+    }
+
+    // _______________ Private functions _______________
+
+    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
+        return position.start == block.timestamp;
     }
 
     /**
