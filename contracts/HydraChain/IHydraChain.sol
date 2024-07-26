@@ -3,8 +3,9 @@ pragma solidity 0.8.17;
 
 import {IInspector} from "./modules/Inspector/IInspector.sol";
 import {IPowerExponent} from "./modules/PowerExponent/IPowerExponent.sol";
+import {IDaoIncentive} from "./modules/DaoIncentive/IDaoIncentive.sol";
 import {IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
-import{Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
 struct Epoch {
     uint256 startBlock;
@@ -12,7 +13,7 @@ struct Epoch {
     bytes32 epochRoot;
 }
 
-interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
+interface IHydraChain is IInspector, IValidatorManager, IPowerExponent, IDaoIncentive {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
 
     /**
@@ -42,10 +43,5 @@ interface IHydraChain is IInspector, IValidatorManager, IPowerExponent {
      * @param epochSize Number of blocks per epoch
      * @param uptime uptime data for every validator
      */
-    function commitEpoch(
-        uint256 id,
-        Epoch calldata epoch,
-        uint256 epochSize,
-        Uptime[] calldata uptime
-    ) external;
+    function commitEpoch(uint256 id, Epoch calldata epoch, uint256 epochSize, Uptime[] calldata uptime) external;
 }

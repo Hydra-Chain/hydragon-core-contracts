@@ -70,4 +70,7 @@ contract RewardWallet is IRewardWallet, System, Initializable {
 
         emit RewardDistributed(to, amount);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

@@ -21,7 +21,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
 
     // _______________ Initializer _______________
 
-    function initialize(address hydraDelegationAddr) external initializer onlySystemCall{
+    function initialize(address hydraDelegationAddr) external initializer onlySystemCall {
         _initialize(hydraDelegationAddr);
     }
 
@@ -73,4 +73,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
         vestingManagerOwners[vestManager] = owner;
         userVestManagers[owner].push(vestManager);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

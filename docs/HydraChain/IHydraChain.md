@@ -42,6 +42,17 @@ Method used to ban a validator, if the ban threshold is reached
 |---|---|---|
 | validator | address | Address of the validator |
 
+### claimVaultFunds
+
+```solidity
+function claimVaultFunds() external nonpayable
+```
+
+Claim distributed vault funds
+
+
+
+
 ### commitEpoch
 
 ```solidity
@@ -76,6 +87,17 @@ Deactivates validator.
 | Name | Type | Description |
 |---|---|---|
 | account | address | Address of the validator |
+
+### distributeVaultFunds
+
+```solidity
+function distributeVaultFunds() external nonpayable
+```
+
+Distribute vault funds
+
+*Only callable by the system*
+
 
 ### getActiveValidatorsCount
 
@@ -419,6 +441,38 @@ event ValidatorBanned(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+### VaultFunded
+
+```solidity
+event VaultFunded(uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount  | uint256 | undefined |
+
+### VaultFundsDistributed
+
+```solidity
+event VaultFundsDistributed(uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount  | uint256 | undefined |
 
 
 

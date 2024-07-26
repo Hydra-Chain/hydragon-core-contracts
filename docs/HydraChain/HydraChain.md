@@ -206,6 +206,23 @@ Adds addresses that are allowed to register as validators.
 |---|---|---|
 | whitelistAddreses | address[] | Array of address to whitelist |
 
+### aprCalculatorContract
+
+```solidity
+function aprCalculatorContract() external view returns (contract IAPRCalculator)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IAPRCalculator | undefined |
+
 ### banThreshold
 
 ```solidity
@@ -255,6 +272,17 @@ function bls() external view returns (contract IBLS)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IBLS | undefined |
+
+### claimVaultFunds
+
+```solidity
+function claimVaultFunds() external nonpayable
+```
+
+Claim distributed vault funds
+
+
+
 
 ### commitEpoch
 
@@ -307,6 +335,17 @@ Deactivates validator.
 | Name | Type | Description |
 |---|---|---|
 | account | address | Address of the validator |
+
+### distributeVaultFunds
+
+```solidity
+function distributeVaultFunds() external nonpayable
+```
+
+Distribute vault funds
+
+*Only callable by the system*
+
 
 ### epochEndBlocks
 
@@ -506,10 +545,27 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
+### hydraVault
+
+```solidity
+function hydraVault() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address aprCalculatorAddr, address rewardWalletAddr, address hydraVaultAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -524,6 +580,9 @@ function initialize(ValidatorInit[] newValidators, address governance, address h
 | governance | address | undefined |
 | hydraStakingAddr | address | undefined |
 | hydraDelegationAddr | address | undefined |
+| aprCalculatorAddr | address | undefined |
+| rewardWalletAddr | address | undefined |
+| hydraVaultAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan
@@ -749,6 +808,23 @@ The reward for the person who reports a validator that have to be banned
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### rewardWalletContract
+
+```solidity
+function rewardWalletContract() external view returns (contract IRewardWallet)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IRewardWallet | undefined |
+
 ### setBanThreshold
 
 ```solidity
@@ -935,6 +1011,23 @@ Mapping that keeps the last time when a validator has participated in the consen
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### vaultDistribution
+
+```solidity
+function vaultDistribution() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 
 
 ## Events
@@ -1072,6 +1165,38 @@ event ValidatorBanned(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+### VaultFunded
+
+```solidity
+event VaultFunded(uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount  | uint256 | undefined |
+
+### VaultFundsDistributed
+
+```solidity
+event VaultFundsDistributed(uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| amount  | uint256 | undefined |
 
 
 

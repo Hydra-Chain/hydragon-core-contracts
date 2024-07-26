@@ -11,6 +11,7 @@ import {
   HydraChain__factory,
   HydraDelegation__factory,
   HydraStaking__factory,
+  HydraVault__factory,
   LiquidityToken__factory,
   RewardWallet__factory,
   VestingManagerFactory__factory,
@@ -63,10 +64,17 @@ async function VestingManagerFactoryFixtureFunction(this: Mocha.Context) {
 }
 
 async function RewardWalletFixtureFunction(this: Mocha.Context) {
-  const rewardWalletFactoryFactory = new RewardWallet__factory(this.signers.admin);
-  const rewardWallet = await rewardWalletFactoryFactory.deploy();
+  const rewardWalletFactory = new RewardWallet__factory(this.signers.admin);
+  const rewardWallet = await rewardWalletFactory.deploy();
 
   return rewardWallet;
+}
+
+async function hydraVaultFixtureFunction(this: Mocha.Context) {
+  const hydraVaultFactory = new HydraVault__factory(this.signers.admin);
+  const hydraVault = await hydraVaultFactory.deploy();
+
+  return hydraVault;
 }
 
 async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
@@ -105,6 +113,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const aprCalculator = await aprCalculatorFixtureFunction.bind(this)();
   const vestingManagerFactory = await VestingManagerFactoryFixtureFunction.bind(this)();
   const rewardWallet = await RewardWalletFixtureFunction.bind(this)();
+  const DAOIncentiveVault = await hydraVaultFixtureFunction.bind(this)();
 
   return {
     hydraChain,
@@ -116,6 +125,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
+    DAOIncentiveVault,
   };
 }
 
@@ -132,6 +142,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
+    DAOIncentiveVault,
   } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
   await mcl.init();
@@ -160,6 +171,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     this.signers.governance.address,
     hydraStaking.address,
     hydraDelegation.address,
+    aprCalculator.address,
+    rewardWallet.address,
+    DAOIncentiveVault.address,
     bls.address
   );
 
@@ -192,7 +206,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
 
-  await rewardWallet.connect(this.signers.system).initialize([hydraStaking.address, hydraDelegation.address]);
+  await rewardWallet
+    .connect(this.signers.system)
+    .initialize([hydraChain.address, hydraStaking.address, hydraDelegation.address]);
 
   await rewardWallet.fund({
     value: this.minStake.mul(5),
@@ -209,6 +225,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     validatorInit,
     vestingManagerFactory,
     rewardWallet,
+    DAOIncentiveVault,
   };
 }
 
@@ -225,6 +242,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     liquidToken,
     vestingManagerFactory,
     rewardWallet,
+    DAOIncentiveVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
   const epochId = hre.ethers.BigNumber.from(1);
@@ -253,6 +271,38 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     commitEpochTx,
     vestingManagerFactory,
     rewardWallet,
+    DAOIncentiveVault,
+  };
+}
+
+async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
+  } = await loadFixture(this.fixtures.commitEpochTxFixture);
+
+  const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeVaultFunds();
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    distributeVaultFundsTx,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
   };
 }
 
@@ -791,6 +841,7 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.presetHydraChainStateFixture = presetHydraChainStateFixtureFunction.bind(context);
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
+  context.fixtures.distributeVaultFundsFixture = distributeVaultFundsFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);

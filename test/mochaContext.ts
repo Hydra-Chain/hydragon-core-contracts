@@ -12,6 +12,7 @@ import {
   VestingManagerFactory,
   VestingManager,
   RewardWallet,
+  HydraVault,
 } from "../typechain-types";
 
 export interface Signers {
@@ -36,6 +37,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      DAOIncentiveVault: HydraVault;
     }>;
   };
   initializedHydraChainStateFixture: {
@@ -49,6 +51,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      DAOIncentiveVault: HydraVault;
       validatorInit: {
         addr: string;
         pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
@@ -69,6 +72,22 @@ export interface Fixtures {
       commitEpochTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
+      DAOIncentiveVault: HydraVault;
+    }>;
+  };
+  distributeVaultFundsFixture: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
+      liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      distributeVaultFundsTx: ContractTransaction;
+      vestingManagerFactory: VestingManagerFactory;
+      rewardWallet: RewardWallet;
+      DAOIncentiveVault: HydraVault;
     }>;
   };
   whitelistedValidatorsStateFixture: {

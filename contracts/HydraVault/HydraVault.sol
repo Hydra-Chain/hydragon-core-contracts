@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract FeeHandler is Initializable, OwnableUpgradeable {
+contract HydraVault is Initializable, OwnableUpgradeable {
     event FeeReceived(address indexed from, uint256 amount);
     event FeesRelocated(bool success, bytes data);
 
@@ -12,8 +12,8 @@ contract FeeHandler is Initializable, OwnableUpgradeable {
         _disableInitializers();
     }
 
-    function initialize(address owner) public initializer {
-        _transferOwnership(owner);
+    function initialize(address governer) public initializer {
+        _transferOwnership(governer);
     }
 
     /**
@@ -30,4 +30,7 @@ contract FeeHandler is Initializable, OwnableUpgradeable {
     receive() external payable {
         emit FeeReceived(msg.sender, msg.value);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }
