@@ -461,7 +461,7 @@ event VaultFunded(uint256 amount)
 ### VaultFundsDistributed
 
 ```solidity
-event VaultFundsDistributed(uint256 indexed epoch, uint256 amount)
+event VaultFundsDistributed(uint256 amount)
 ```
 
 
@@ -472,7 +472,6 @@ event VaultFundsDistributed(uint256 indexed epoch, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 

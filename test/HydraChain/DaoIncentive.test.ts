@@ -15,24 +15,15 @@ export function RunDaoIncentiveTests(): void {
         .withArgs(ERRORS.unauthorized.systemCallArg);
     });
 
-    it("should revert if if we try to distribute in the same epoch", async function () {
-      const { hydraChain } = await loadFixture(this.fixtures.distributeVaultFundsFixture);
-
-      await expect(hydraChain.connect(this.signers.system).distributeVaultFunds()).to.be.revertedWith(
-        "VAULT_FUNDS_ALREADY_DISTRIBUTED"
-      );
-    });
-
     it("should distribute funds to the vault", async function () {
       const { hydraChain, distributeVaultFundsTx, hydraStaking } = await loadFixture(
         this.fixtures.distributeVaultFundsFixture
       );
 
-      const currEpochId = await hydraChain.currentEpochId();
       const totalSupply = await hydraStaking.totalBalance();
       const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
 
-      await expect(distributeVaultFundsTx).to.emit(hydraChain, "VaultFundsDistributed").withArgs(currEpochId, reward);
+      await expect(distributeVaultFundsTx).to.emit(hydraChain, "VaultFundsDistributed").withArgs(reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(reward);
     });
 
