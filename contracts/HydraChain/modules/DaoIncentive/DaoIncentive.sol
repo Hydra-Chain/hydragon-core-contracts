@@ -19,7 +19,8 @@ abstract contract DaoIncentive is
 {
     address public hydraVault;
     uint256 public vaultDistribution;
-    mapping(uint256 => uint256) public vaultDistributionPerEpoch;
+
+    mapping(uint256 => bool) internal _isDistributionAvailable;
 
     // _______________ Initializer _______________
 
@@ -47,12 +48,9 @@ abstract contract DaoIncentive is
      * @inheritdoc IDaoIncentive
      */
     function distributeVaultFunds() external onlySystemCall {
-        uint256 currentEpochId = getCurrentEpochId();
-        require(vaultDistributionPerEpoch[currentEpochId] == 0, "VAULT_FUNDS_ALREADY_DISTRIBUTED");
-
+        uint256 currentEpochId = _checkDistributionAvailability();
         uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
             aprCalculatorContract.getEpochsPerYear();
-        vaultDistributionPerEpoch[currentEpochId] = reward;
         vaultDistribution += reward;
 
         emit VaultFundsDistributed(currentEpochId, reward);
@@ -68,15 +66,16 @@ abstract contract DaoIncentive is
         vaultDistribution = 0;
         rewardWalletContract.distributeReward(hydraVault, reward);
 
-        emit VaultFunded(getCurrentEpochId(), reward);
+        emit VaultFunded(reward);
     }
 
-    // _______________ Public functions _______________
+    // _______________ Internal functions _______________
 
     /**
-     * @inheritdoc IDaoIncentive
+     * @notice Check if in the current epoch the distribution is available
+     * @return The current epoch id
      */
-    function getCurrentEpochId() public view virtual override returns (uint256) {}
+    function _checkDistributionAvailability() internal virtual returns (uint256) {}
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;

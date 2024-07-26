@@ -32,23 +32,6 @@ Distribute vault funds
 *Only callable by the system*
 
 
-### getCurrentEpochId
-
-```solidity
-function getCurrentEpochId() external view returns (uint256)
-```
-
-Get current epoch ID
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 
 
 ## Events
@@ -56,7 +39,7 @@ Get current epoch ID
 ### VaultFunded
 
 ```solidity
-event VaultFunded(uint256 indexed epoch, uint256 amount)
+event VaultFunded(uint256 amount)
 ```
 
 
@@ -67,7 +50,6 @@ event VaultFunded(uint256 indexed epoch, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 ### VaultFundsDistributed

@@ -43,16 +43,6 @@ contract RewardWallet is IRewardWallet, System, Initializable {
         _;
     }
 
-    // _______________ External functions _______________
-
-    /**
-     * @notice Users can send HYDRA to the contract.
-     * @dev Sender will usually be the node, but anyone can send funds.
-     */
-    receive() external payable {
-        emit Received(msg.sender, msg.value);
-    }
-
     // _______________ Public functions _______________
 
     /**

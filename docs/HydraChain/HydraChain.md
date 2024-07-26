@@ -1028,28 +1028,6 @@ function vaultDistribution() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### vaultDistributionPerEpoch
-
-```solidity
-function vaultDistributionPerEpoch(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 
 
 ## Events
@@ -1191,7 +1169,7 @@ event ValidatorBanned(address indexed validator)
 ### VaultFunded
 
 ```solidity
-event VaultFunded(uint256 indexed epoch, uint256 amount)
+event VaultFunded(uint256 amount)
 ```
 
 
@@ -1202,7 +1180,6 @@ event VaultFunded(uint256 indexed epoch, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 ### VaultFundsDistributed

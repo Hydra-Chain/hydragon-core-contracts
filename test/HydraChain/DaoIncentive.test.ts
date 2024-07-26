@@ -33,8 +33,16 @@ export function RunDaoIncentiveTests(): void {
       const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
 
       await expect(distributeVaultFundsTx).to.emit(hydraChain, "VaultFundsDistributed").withArgs(currEpochId, reward);
-      expect(await hydraChain.vaultDistributionPerEpoch(currEpochId)).to.be.equal(reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(reward);
+    });
+
+    it("should have reward for 2 stakers with min stake", async function () {
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.distributeVaultFundsFixture);
+
+      const totalSupply = await hydraStaking.totalBalance();
+
+      expect(totalSupply).to.be.eq(this.minStake.mul(2));
+      expect(await hydraChain.vaultDistribution()).to.be.above(0);
     });
   });
 
@@ -48,12 +56,11 @@ export function RunDaoIncentiveTests(): void {
     it("should claim vault funds", async function () {
       const { hydraChain, hydraStaking, hydraVault } = await loadFixture(this.fixtures.distributeVaultFundsFixture);
 
-      const currEpochId = await hydraChain.currentEpochId();
       const totalSupply = await hydraStaking.totalBalance();
       const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
       const claimVaultFundsTx = await hydraChain.claimVaultFunds();
 
-      await expect(claimVaultFundsTx).to.emit(hydraChain, "VaultFunded").withArgs(currEpochId, reward);
+      await expect(claimVaultFundsTx).to.emit(hydraChain, "VaultFunded").withArgs(reward);
       expect(await ethers.provider.getBalance(hydraVault.address)).to.be.equal(reward);
       await expect(claimVaultFundsTx).to.changeEtherBalance(hydraVault, reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(0);

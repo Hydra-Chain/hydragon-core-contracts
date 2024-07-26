@@ -1,4 +1,4 @@
-# DaoInsentive
+# DaoIncentive
 
 
 
@@ -151,23 +151,6 @@ Distribute vault funds
 *Only callable by the system*
 
 
-### getCurrentEpochId
-
-```solidity
-function getCurrentEpochId() external view returns (uint256)
-```
-
-Get current epoch ID
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### hydraStakingContract
 
 ```solidity
@@ -236,28 +219,6 @@ function vaultDistribution() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### vaultDistributionPerEpoch
-
-```solidity
-function vaultDistributionPerEpoch(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 
 
 ## Events
@@ -281,7 +242,7 @@ event Initialized(uint8 version)
 ### VaultFunded
 
 ```solidity
-event VaultFunded(uint256 indexed epoch, uint256 amount)
+event VaultFunded(uint256 amount)
 ```
 
 
@@ -292,7 +253,6 @@ event VaultFunded(uint256 indexed epoch, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 ### VaultFundsDistributed

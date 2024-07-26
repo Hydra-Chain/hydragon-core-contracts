@@ -71,6 +71,13 @@ contract HydraChain is
     /**
      * @inheritdoc IHydraChain
      */
+    function getCurrentEpochId() external view returns (uint256) {
+        return currentEpochId;
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
     function totalBlocks(uint256 epochId) external view returns (uint256 length) {
         uint256 endBlock = epochs[epochId].endBlock;
         length = endBlock == 0 ? 0 : endBlock - epochs[epochId].startBlock + 1;
@@ -117,13 +124,6 @@ contract HydraChain is
     // _______________ Public functions _______________
 
     /**
-     * @inheritdoc IHydraChain
-     */
-    function getCurrentEpochId() public view override(DaoIncentive, IHydraChain) returns (uint256) {
-        return currentEpochId;
-    }
-
-    /**
      * @notice Returns if a given validator is subject to a ban
      * @dev Apply custom rules for ban eligibility
      * @param validator The address of the validator
@@ -137,6 +137,17 @@ contract HydraChain is
         }
 
         return true;
+    }
+
+    // _______________ Internal functions _______________
+
+    /**
+     * @inheritdoc DaoIncentive
+     */
+    function _checkDistributionAvailability() internal override returns (uint256 currentEpoch) {
+        currentEpoch = currentEpochId;
+        require(_isDistributionAvailable[currentEpoch] == false, "VAULT_FUNDS_ALREADY_DISTRIBUTED");
+        _isDistributionAvailable[currentEpoch] = true;
     }
 
     // slither-disable-next-line unused-state,naming-convention

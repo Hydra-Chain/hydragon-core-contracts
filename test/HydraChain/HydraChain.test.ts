@@ -25,7 +25,6 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.rewardWalletContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.hydraVault()).to.equal(hre.ethers.constants.AddressZero);
-        expect(await hydraChain.vaultDistributionPerEpoch([0])).to.equal(0);
         expect(await hydraChain.vaultDistribution()).to.equal(0);
 
         // Validator Manager

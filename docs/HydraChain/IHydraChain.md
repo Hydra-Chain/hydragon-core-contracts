@@ -445,7 +445,7 @@ event ValidatorBanned(address indexed validator)
 ### VaultFunded
 
 ```solidity
-event VaultFunded(uint256 indexed epoch, uint256 amount)
+event VaultFunded(uint256 amount)
 ```
 
 
@@ -456,7 +456,6 @@ event VaultFunded(uint256 indexed epoch, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| epoch `indexed` | uint256 | undefined |
 | amount  | uint256 | undefined |
 
 ### VaultFundsDistributed
