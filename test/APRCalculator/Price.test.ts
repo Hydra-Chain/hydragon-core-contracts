@@ -1,21 +1,9 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import {
-  DAY,
-  DENOMINATOR,
-  EPOCHS_YEAR,
-  ERRORS,
-  INITIAL_BASE_APR,
-  INITIAL_MACRO_FACTOR,
-  MAX_MACRO_FACTOR,
-  MAX_RSI_BONUS,
-  MIN_MACRO_FACTOR,
-  MIN_RSI_BONUS,
-} from "../constants";
-import { ethers, network } from "hardhat";
-import { applyMaxReward } from "../helper";
-import { price } from "../../typechain-types/contracts/APRCalculator/modules";
+import { DAY, ERRORS } from "../constants";
+import { ethers } from "hardhat";
+import { commitEpoch } from "../helper";
 
 export function RunPriceTests(): void {
   it("should revert quotePrice if not called by system", async function () {
@@ -48,7 +36,36 @@ export function RunPriceTests(): void {
   });
 
   it("should update price after a day", async function () {
-    const { aprCalculator, systemHydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+    const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+      this.fixtures.initializedHydraChainStateFixture
+    );
+
+    await aprCalculator.connect(this.signers.system).quotePrice(111);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize);
+
+    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold").to.equal(111);
+    expect(await aprCalculator.priceSumCounter(), "priceSumCounter").to.equal(1);
+
+    // Get timestamp & update time
+    const block = await ethers.provider.getBlock("latest");
+    const currentTimestamp = block.timestamp;
+    const updateTime = await aprCalculator.updateTime();
+    const dayBigNum = ethers.BigNumber.from(DAY);
+
+    await expect(aprCalculator.connect(this.signers.system).quotePrice(222))
+      .to.emit(aprCalculator, "PriceUpdated")
+      .withArgs(currentTimestamp + 1, 111);
+
+    expect(await aprCalculator.currentPrice(), "currentPrice").to.equal(111);
+    expect(await aprCalculator.priceSumThreshold()).to.equal(222);
+    expect(await aprCalculator.priceSumCounter()).to.equal(1);
+    expect(await aprCalculator.updateTime()).to.equal(updateTime.add(dayBigNum));
+  });
+
+  it("should calculate price correctly", async function () {
+    const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+      this.fixtures.initializedHydraChainStateFixture
+    );
 
     const price1 = 132;
     const price2 = 231;
@@ -56,27 +73,31 @@ export function RunPriceTests(): void {
     const price4 = 189;
 
     await aprCalculator.connect(this.signers.system).quotePrice(price1);
-    await systemHydraChain.commitEpoch(2, this.epoch, this.epochSize, this.uptime);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY / 3);
 
     await aprCalculator.connect(this.signers.system).quotePrice(price2);
-    await systemHydraChain.commitEpoch(3, this.epoch, this.epochSize, this.uptime);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY / 3);
 
     await aprCalculator.connect(this.signers.system).quotePrice(price3);
-    await systemHydraChain.commitEpoch(4, this.epoch, this.epochSize, this.uptime);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY / 3);
 
-    expect(await aprCalculator.priceSumThreshold()).to.equal(price1 + price2 + price3);
-    expect(await aprCalculator.priceSumCounter()).to.equal(3);
+    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold").to.equal(price1 + price2 + price3);
+    expect(await aprCalculator.priceSumCounter(), "priceSumCounter").to.equal(3);
 
-    // Increase time by a day
-    await network.provider.send("evm_increaseTime", [DAY]);
-    await network.provider.send("evm_mine");
+    // Get timestamp & update time
+    const block = await ethers.provider.getBlock("latest");
+    const currentTimestamp = block.timestamp;
+    const updateTime = await aprCalculator.updateTime();
+    const dayBigNum = ethers.BigNumber.from(DAY);
+    const updatedPrice = (price1 + price2 + price3) / 3;
 
     await expect(aprCalculator.connect(this.signers.system).quotePrice(price4))
       .to.emit(aprCalculator, "PriceUpdated")
-      .withArgs(price4);
+      .withArgs(currentTimestamp + 1, updatedPrice);
 
-    expect(await aprCalculator.currentPrice()).to.equal((price1 + price2 + price3 + price4) / 4);
-    expect(await aprCalculator.priceSumThreshold()).to.equal(0);
-    expect(await aprCalculator.priceSumCounter()).to.equal(0);
+    expect(await aprCalculator.currentPrice(), "currentPrice").to.equal(updatedPrice);
+    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold after").to.equal(price4);
+    expect(await aprCalculator.priceSumCounter(), "priceSumCounter after").to.equal(1);
+    expect(await aprCalculator.updateTime()).to.equal(updateTime.add(dayBigNum));
   });
 }

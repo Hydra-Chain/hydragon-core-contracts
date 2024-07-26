@@ -33,13 +33,15 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     function quotePrice(uint256 _price) external onlySystemCall {
         uint256 currentEpochId = hydraChainContract.getCurrentEpochId();
         require(pricePerEpoch[currentEpochId] == 0, "PRICE_FOR_EPOCH_ALREADY_QUOTED");
-
+        
         pricePerEpoch[currentEpochId] = _price;
-        priceSumThreshold += _price;
-        priceSumCounter++;
-
         if (block.timestamp > updateTime) {
             _updatePrice();
+            priceSumThreshold = _price;
+            priceSumCounter = 1;
+        } else {
+            priceSumThreshold += _price;
+            priceSumCounter++;
         }
 
         emit PriceQuoted(currentEpochId, _price);
@@ -49,9 +51,6 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     function _updatePrice() private {
         currentPrice = priceSumThreshold / priceSumCounter;
-
-        priceSumThreshold = 0;
-        priceSumCounter = 0;
         updateTime += 1 days;
 
         emit PriceUpdated(block.timestamp, currentPrice);

@@ -17,7 +17,7 @@ import { applyMaxReward } from "../helper";
 import { RunPriceTests } from "./Price.test";
 
 export function RunAPRCalculatorTests(): void {
-  describe.only("", function () {
+  describe("", function () {
     describe("Initialization", function () {
       it("should validate default values when AprCalculator deployed", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
