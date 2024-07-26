@@ -37,7 +37,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
-      hydraVault: HydraVault;
+      DAOIncentiveVault: HydraVault;
     }>;
   };
   initializedHydraChainStateFixture: {
@@ -51,7 +51,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
-      hydraVault: HydraVault;
+      DAOIncentiveVault: HydraVault;
       validatorInit: {
         addr: string;
         pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
@@ -72,7 +72,7 @@ export interface Fixtures {
       commitEpochTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
-      hydraVault: HydraVault;
+      DAOIncentiveVault: HydraVault;
     }>;
   };
   distributeVaultFundsFixture: {
@@ -87,7 +87,7 @@ export interface Fixtures {
       distributeVaultFundsTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
       rewardWallet: RewardWallet;
-      hydraVault: HydraVault;
+      DAOIncentiveVault: HydraVault;
     }>;
   };
   whitelistedValidatorsStateFixture: {

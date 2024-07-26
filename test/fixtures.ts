@@ -113,7 +113,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const aprCalculator = await aprCalculatorFixtureFunction.bind(this)();
   const vestingManagerFactory = await VestingManagerFactoryFixtureFunction.bind(this)();
   const rewardWallet = await RewardWalletFixtureFunction.bind(this)();
-  const hydraVault = await hydraVaultFixtureFunction.bind(this)();
+  const DAOIncentiveVault = await hydraVaultFixtureFunction.bind(this)();
 
   return {
     hydraChain,
@@ -125,7 +125,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   };
 }
 
@@ -142,7 +142,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
   await mcl.init();
@@ -173,7 +173,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     hydraDelegation.address,
     aprCalculator.address,
     rewardWallet.address,
-    hydraVault.address,
+    DAOIncentiveVault.address,
     bls.address
   );
 
@@ -225,7 +225,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     validatorInit,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   };
 }
 
@@ -242,7 +242,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     liquidToken,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
   const epochId = hre.ethers.BigNumber.from(1);
@@ -271,7 +271,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     commitEpochTx,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   };
 }
 
@@ -286,7 +286,7 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
     liquidToken,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
   const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeVaultFunds();
@@ -302,7 +302,7 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
     distributeVaultFundsTx,
     vestingManagerFactory,
     rewardWallet,
-    hydraVault,
+    DAOIncentiveVault,
   };
 }
 

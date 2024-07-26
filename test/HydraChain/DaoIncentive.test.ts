@@ -54,15 +54,17 @@ export function RunDaoIncentiveTests(): void {
     });
 
     it("should claim vault funds", async function () {
-      const { hydraChain, hydraStaking, hydraVault } = await loadFixture(this.fixtures.distributeVaultFundsFixture);
+      const { hydraChain, hydraStaking, DAOIncentiveVault } = await loadFixture(
+        this.fixtures.distributeVaultFundsFixture
+      );
 
       const totalSupply = await hydraStaking.totalBalance();
       const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
       const claimVaultFundsTx = await hydraChain.claimVaultFunds();
 
       await expect(claimVaultFundsTx).to.emit(hydraChain, "VaultFunded").withArgs(reward);
-      expect(await ethers.provider.getBalance(hydraVault.address)).to.be.equal(reward);
-      await expect(claimVaultFundsTx).to.changeEtherBalance(hydraVault, reward);
+      expect(await ethers.provider.getBalance(DAOIncentiveVault.address)).to.be.equal(reward);
+      await expect(claimVaultFundsTx).to.changeEtherBalance(DAOIncentiveVault, reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(0);
     });
   });

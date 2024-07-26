@@ -55,7 +55,7 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert when initialized without system call", async function () {
-        const { hydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, hydraVault } =
+        const { hydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, DAOIncentiveVault } =
           await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
@@ -67,7 +67,7 @@ export function RunHydraChainTests(): void {
             hydraDelegation.address,
             aprCalculator.address,
             rewardWallet.address,
-            hydraVault.address,
+            DAOIncentiveVault.address,
             bls.address
           )
         )
@@ -76,7 +76,7 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert with invalid signature when initializing", async function () {
-        const { systemHydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, hydraVault } =
+        const { systemHydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, DAOIncentiveVault } =
           await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         this.validatorSetSize = Math.floor(Math.random() * (5 - 1) + 5); // Randomly pick 5-9
@@ -91,7 +91,7 @@ export function RunHydraChainTests(): void {
             hydraDelegation.address,
             aprCalculator.address,
             rewardWallet.address,
-            hydraVault.address,
+            DAOIncentiveVault.address,
             bls.address
           )
         )
@@ -108,7 +108,7 @@ export function RunHydraChainTests(): void {
           validatorInit,
           aprCalculator,
           rewardWallet,
-          hydraVault,
+          DAOIncentiveVault,
         } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
         const adminAddress = this.signers.admin.address;
         const validator = await hydraChain.getValidator(adminAddress);
@@ -123,7 +123,7 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);
         expect(await hydraChain.aprCalculatorContract()).to.equal(aprCalculator.address);
         expect(await hydraChain.rewardWalletContract()).to.equal(rewardWallet.address);
-        expect(await hydraChain.hydraVault()).to.equal(hydraVault.address);
+        expect(await hydraChain.hydraVault()).to.equal(DAOIncentiveVault.address);
 
         // Validator Manager
         expect(await hydraChain.bls()).to.equal(bls.address);
@@ -162,7 +162,7 @@ export function RunHydraChainTests(): void {
           hydraDelegation,
           aprCalculator,
           rewardWallet,
-          hydraVault,
+          DAOIncentiveVault,
         } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
@@ -173,7 +173,7 @@ export function RunHydraChainTests(): void {
             hydraDelegation.address,
             aprCalculator.address,
             rewardWallet.address,
-            hydraVault.address,
+            DAOIncentiveVault.address,
             bls.address
           )
         ).to.be.revertedWith(ERRORS.initialized);
