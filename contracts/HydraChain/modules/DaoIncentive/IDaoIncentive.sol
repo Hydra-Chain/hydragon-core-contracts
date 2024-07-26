@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 interface IDaoIncentive {
-    event VaultFundsDistributed(uint256 indexed epoch, uint256 amount);
+    event VaultFundsDistributed(uint256 amount);
     event VaultFunded(uint256 amount);
 
     /**

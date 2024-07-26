@@ -141,15 +141,6 @@ contract HydraChain is
 
     // _______________ Internal functions _______________
 
-    /**
-     * @inheritdoc DaoIncentive
-     */
-    function _checkDistributionAvailability() internal override returns (uint256 currentEpoch) {
-        currentEpoch = currentEpochId;
-        require(_isDistributionAvailable[currentEpoch] == false, "VAULT_FUNDS_ALREADY_DISTRIBUTED");
-        _isDistributionAvailable[currentEpoch] = true;
-    }
-
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
 }

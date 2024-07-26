@@ -20,8 +20,6 @@ abstract contract DaoIncentive is
     address public hydraVault;
     uint256 public vaultDistribution;
 
-    mapping(uint256 => bool) internal _isDistributionAvailable;
-
     // _______________ Initializer _______________
 
     /**
@@ -48,12 +46,11 @@ abstract contract DaoIncentive is
      * @inheritdoc IDaoIncentive
      */
     function distributeVaultFunds() external onlySystemCall {
-        uint256 currentEpochId = _checkDistributionAvailability();
         uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
             aprCalculatorContract.getEpochsPerYear();
         vaultDistribution += reward;
 
-        emit VaultFundsDistributed(currentEpochId, reward);
+        emit VaultFundsDistributed(reward);
     }
 
     /**
@@ -68,14 +65,6 @@ abstract contract DaoIncentive is
 
         emit VaultFunded(reward);
     }
-
-    // _______________ Internal functions _______________
-
-    /**
-     * @notice Check if in the current epoch the distribution is available
-     * @return The current epoch id
-     */
-    function _checkDistributionAvailability() internal virtual returns (uint256) {}
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
