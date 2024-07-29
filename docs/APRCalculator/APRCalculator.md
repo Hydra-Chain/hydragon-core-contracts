@@ -594,7 +594,7 @@ function hydraChainContract() external view returns (contract IHydraChain)
 ### initialize
 
 ```solidity
-function initialize(address manager, address hydraChainAddr) external nonpayable
+function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external nonpayable
 ```
 
 
@@ -607,6 +607,7 @@ function initialize(address manager, address hydraChainAddr) external nonpayable
 |---|---|---|
 | manager | address | undefined |
 | hydraChainAddr | address | undefined |
+| initialPrice | uint256 | undefined |
 
 ### macroFactor
 
@@ -687,7 +688,7 @@ function priceSumThreshold() external view returns (uint256)
 function quotePrice(uint256 _price) external nonpayable
 ```
 
-quotes the price for the given epoch &amp; update price when the time is right
+Quotes the price for each epoch &amp; keeps the average price for each day
 
 *only the system can call this function*
 
@@ -984,6 +985,17 @@ error InvalidMacro()
 
 ```solidity
 error InvalidRSI()
+```
+
+
+
+
+
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
 ```
 
 

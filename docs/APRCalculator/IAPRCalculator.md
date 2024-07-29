@@ -212,7 +212,7 @@ returns the vesting bonus for the given weeks count
 function quotePrice(uint256 price) external nonpayable
 ```
 
-quotes the price for the given epoch &amp; update price when the time is right
+Quotes the price for each epoch &amp; keeps the average price for each day
 
 *only the system can call this function*
 
@@ -327,6 +327,17 @@ error InvalidMacro()
 
 ```solidity
 error InvalidRSI()
+```
+
+
+
+
+
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
 ```
 
 

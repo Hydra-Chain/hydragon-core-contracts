@@ -7,6 +7,7 @@ import {
   ERRORS,
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
+  INITIAL_PRICE,
   MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
   MIN_MACRO_FACTOR,
@@ -48,7 +49,7 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
-          aprCalculator.initialize(this.signers.governance.address, hydraChain.address)
+          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, INITIAL_PRICE)
         ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
       });
 
@@ -65,15 +66,16 @@ export function RunAPRCalculatorTests(): void {
 
         // Price
         expect(await aprCalculator.updateTime()).to.be.above(0);
+        expect(await aprCalculator.currentPrice()).to.be.equal(INITIAL_PRICE);
         expect(await aprCalculator.hydraChainContract()).to.equal(hydraChain.address);
       });
 
       it("should revert initialize if already initialized", async function () {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        await expect(aprCalculator.initialize(this.signers.system.address, hydraChain.address)).to.be.revertedWith(
-          ERRORS.initialized
-        );
+        await expect(
+          aprCalculator.initialize(this.signers.system.address, hydraChain.address, INITIAL_PRICE)
+        ).to.be.revertedWith(ERRORS.initialized);
       });
 
       it("should initialize vesting bonus", async function () {

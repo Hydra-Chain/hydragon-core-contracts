@@ -18,8 +18,9 @@ export function RunPriceTests(): void {
     const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
     await aprCalculator.connect(this.signers.system).quotePrice(100);
-    await expect(aprCalculator.connect(this.signers.system).quotePrice(111)).to.be.revertedWith(
-      "PRICE_FOR_EPOCH_ALREADY_QUOTED"
+    await expect(aprCalculator.connect(this.signers.system).quotePrice(111)).to.be.revertedWithCustomError(
+      aprCalculator,
+      "PriceAlreadyQuoted"
     );
   });
 

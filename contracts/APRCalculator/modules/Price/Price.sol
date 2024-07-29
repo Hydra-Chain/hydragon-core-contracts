@@ -16,14 +16,14 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     // _______________ Initializer _______________
 
-    function __Price_init(address _hydraChainAddr, uint256 _initalPrice) internal onlyInitializing {
+    function __Price_init(address _hydraChainAddr, uint256 _initialPrice) internal onlyInitializing {
         __HydraChainConnector_init(_hydraChainAddr);
-        __Price_init_unchained(_initalPrice);
+        __Price_init_unchained(_initialPrice);
     }
 
-    function __Price_init_unchained(uint256 _initalPrice) internal onlyInitializing {
+    function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
         updateTime = block.timestamp + 1 days;
-        currentPrice = _initalPrice;
+        currentPrice = _initialPrice;
     }
 
     // _______________ External functions _______________

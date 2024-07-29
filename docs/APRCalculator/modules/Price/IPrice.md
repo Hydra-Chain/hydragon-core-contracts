@@ -16,7 +16,7 @@
 function quotePrice(uint256 price) external nonpayable
 ```
 
-quotes the price for the given epoch &amp; update price when the time is right
+Quotes the price for each epoch &amp; keeps the average price for each day
 
 *only the system can call this function*
 
@@ -63,6 +63,20 @@ event PriceUpdated(uint256 time, uint256 price)
 |---|---|---|
 | time  | uint256 | undefined |
 | price  | uint256 | undefined |
+
+
+
+## Errors
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
+```
+
+
+
+
 
 
 

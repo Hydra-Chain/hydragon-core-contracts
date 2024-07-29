@@ -16,7 +16,16 @@ import {
   RewardWallet__factory,
   VestingManagerFactory__factory,
 } from "../typechain-types";
-import { CHAIN_ID, DOMAIN, INITIAL_COMMISSION, MIN_RSI_BONUS, SYSTEM, VESTING_DURATION_WEEKS, WEEK } from "./constants";
+import {
+  CHAIN_ID,
+  DOMAIN,
+  INITIAL_COMMISSION,
+  INITIAL_PRICE,
+  MIN_RSI_BONUS,
+  SYSTEM,
+  VESTING_DURATION_WEEKS,
+  WEEK,
+} from "./constants";
 import { commitEpochs, registerValidator, createNewVestManager, generateValidatorBls, commitEpoch } from "./helper";
 
 // --------------- Deploying Contracts ---------------
@@ -164,7 +173,9 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       hydraDelegation.address
     );
 
-  await aprCalculator.connect(this.signers.system).initialize(this.signers.governance.address, hydraChain.address);
+  await aprCalculator
+    .connect(this.signers.system)
+    .initialize(this.signers.governance.address, hydraChain.address, INITIAL_PRICE);
 
   await systemHydraChain.initialize(
     [validatorInit],
