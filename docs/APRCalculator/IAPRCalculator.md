@@ -238,22 +238,6 @@ sets new base APR
 |---|---|---|
 | newBase | uint256 | new base APR |
 
-### setMacro
-
-```solidity
-function setMacro(uint256 newMacroFactor) external nonpayable
-```
-
-sets new Macro factor
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newMacroFactor | uint256 | new macro factor |
-
 ### setRSI
 
 ```solidity
@@ -312,6 +296,7 @@ event PriceUpdated(uint256 time, uint256 price)
 
 ## Errors
 
+<<<<<<< HEAD
 ### InvalidMacro
 
 ```solidity
@@ -334,6 +319,8 @@ error InvalidPrice()
 
 
 
+=======
+>>>>>>> 118d8b0 (Macro update with tests)
 ### InvalidRSI
 
 ```solidity

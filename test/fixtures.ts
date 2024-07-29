@@ -18,6 +18,7 @@ import {
 } from "../typechain-types";
 import {
   CHAIN_ID,
+  DAY,
   DOMAIN,
   INITIAL_COMMISSION,
   INITIAL_PRICE,
@@ -311,6 +312,39 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     distributeVaultFundsTx,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
+  };
+}
+
+async function fullSmaSlowSumMacroFactor(this: Mocha.Context) {
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
+  } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+  for (let i = 0; i < 310; i++) {
+    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE + i * 3);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+  }
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
     vestingManagerFactory,
     rewardWallet,
     DAOIncentiveVault,
@@ -853,6 +887,7 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
   context.fixtures.distributeVaultFundsFixture = distributeVaultFundsFixtureFunction.bind(context);
+  context.fixtures.fullSmaSlowSumMacroFactorFixture = fullSmaSlowSumMacroFactor.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);

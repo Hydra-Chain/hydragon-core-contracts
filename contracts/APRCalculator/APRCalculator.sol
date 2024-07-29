@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "../common/Governed/Governed.sol";
-import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
+import {Price} from "./modules/Price/Price.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, Price, Governed {
+contract APRCalculator is IAPRCalculator, Price {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant MIN_RSI_BONUS = 10000;
     uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant EPOCHS_YEAR = 31500;
-    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
     uint256 public rsi;
     uint256 public base;
@@ -18,14 +16,14 @@ contract APRCalculator is IAPRCalculator, Price, Governed {
 
     // _______________ Initializer _______________
 
-    function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external initializer onlySystemCall {
-        __Governed_init(manager);
+    function initialize(address governance, address hydraChainAddr, uint256 initialPrice) external initializer onlySystemCall {
+        __Governed_init(governance);
         __Price_init(hydraChainAddr, initialPrice);
         base = INITIAL_BASE_APR;
 
         initializeVestingBonus();
 
-        _grantRole(MANAGER_ROLE, manager);
+        _grantRole(MANAGER_ROLE, governance);
     }
 
     // _______________ External functions _______________

@@ -8,14 +8,13 @@ import {
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
   INITIAL_PRICE,
-  MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
-  MIN_MACRO_FACTOR,
   MIN_RSI_BONUS,
 } from "../constants";
 import { ethers } from "hardhat";
 import { applyMaxReward } from "../helper";
 import { RunPriceTests } from "./Price.test";
+import { RunMacroFactorTests } from "./MacroFactor.test";
 
 export function RunAPRCalculatorTests(): void {
   describe("", function () {
@@ -30,12 +29,17 @@ export function RunAPRCalculatorTests(): void {
 
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.INITIAL_MACRO_FACTOR()).to.equal(INITIAL_MACRO_FACTOR);
-        expect(await aprCalculator.MIN_MACRO_FACTOR()).to.equal(MIN_MACRO_FACTOR);
-        expect(await aprCalculator.MAX_MACRO_FACTOR()).to.equal(MAX_MACRO_FACTOR);
         expect(await aprCalculator.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
+
+        // Macro Factor
+        expect(await aprCalculator.FAST_SMA()).to.equal(115);
+        expect(await aprCalculator.SLOW_SMA()).to.equal(230);
+        expect(await aprCalculator.macroFactor()).to.equal(0);
+        expect(await aprCalculator.smaFastSum()).to.equal(0);
+        expect(await aprCalculator.smaSlowSum()).to.equal(0);
 
         // Price
         expect(await aprCalculator.updateTime()).to.equal(0);
@@ -61,8 +65,11 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.hasRole(managerRole, this.signers.governance.address)).to.be.true;
         expect(await aprCalculator.hasRole(adminRole, this.signers.governance.address)).to.be.true;
         expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
-        expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
         expect(await aprCalculator.rsi()).to.be.equal(0);
+
+        // Macro Factor
+        expect(await aprCalculator.macroFactor()).to.equal(INITIAL_MACRO_FACTOR);
+        expect(await aprCalculator.disabledMacro()).to.equal(false);
 
         // Price
         const updateTime = await aprCalculator.updateTime();
@@ -143,43 +150,6 @@ export function RunAPRCalculatorTests(): void {
       });
     });
 
-    describe("Set macro", function () {
-      it("should revert when trying to set macro without manager role", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-        const managerRole = await aprCalculator.MANAGER_ROLE();
-
-        await expect(aprCalculator.setMacro(10000)).to.be.revertedWith(
-          ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
-        );
-      });
-
-      it("should revert when trying to set higher than max macro", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(aprCalculator.connect(this.signers.governance).setMacro(20000)).to.be.revertedWithCustomError(
-          aprCalculator,
-          "InvalidMacro"
-        );
-      });
-
-      it("should revert when trying to set lower than min macro", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(aprCalculator.connect(this.signers.governance).setMacro(1000)).to.be.revertedWithCustomError(
-          aprCalculator,
-          "InvalidMacro"
-        );
-      });
-
-      it("should set macro", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await aprCalculator.connect(this.signers.governance).setMacro(10000);
-
-        expect(await aprCalculator.macroFactor()).to.be.equal(10000);
-      });
-    });
-
     describe("Set RSI", function () {
       it("should revert when trying to set rsi without manager role", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
@@ -216,6 +186,9 @@ export function RunAPRCalculatorTests(): void {
       });
     });
 
+    describe("Macro Factor", function () {
+      RunMacroFactorTests();
+    });
     describe("Price", function () {
       RunPriceTests();
     });

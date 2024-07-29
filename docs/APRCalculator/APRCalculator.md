@@ -61,6 +61,23 @@ function EPOCHS_YEAR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### FAST_SMA
+
+```solidity
+function FAST_SMA() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### INITIAL_BASE_APR
 
 ```solidity
@@ -112,44 +129,10 @@ function MANAGER_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### MAX_MACRO_FACTOR
-
-```solidity
-function MAX_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MAX_RSI_BONUS
 
 ```solidity
 function MAX_RSI_BONUS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### MIN_MACRO_FACTOR
-
-```solidity
-function MIN_MACRO_FACTOR() external view returns (uint256)
 ```
 
 
@@ -218,6 +201,23 @@ function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
 
 ```solidity
 function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### SLOW_SMA
+
+```solidity
+function SLOW_SMA() external view returns (uint256)
 ```
 
 
@@ -382,6 +382,34 @@ function dailyPriceQuotesSum() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### disabledMacro
+
+```solidity
+function disabledMacro() external view returns (bool)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### gardMacroFactor
+
+```solidity
+function gardMacroFactor() external nonpayable
+```
+
+Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
 ### getBaseAPR
 
 ```solidity
@@ -454,6 +482,23 @@ returns the number of epochs per year
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### getMacroFactor
+
+```solidity
+function getMacroFactor() external view returns (uint256)
+```
+
+Get the macro factor
+
+*return the macro factor*
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | macro factor |
 
 ### getMaxAPR
 
@@ -594,7 +639,7 @@ function hydraChainContract() external view returns (contract IHydraChain)
 ### initialize
 
 ```solidity
-function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external nonpayable
+function initialize(address governance, address hydraChainAddr, uint256 initialPrice) external nonpayable
 ```
 
 
@@ -605,7 +650,7 @@ function initialize(address manager, address hydraChainAddr, uint256 initialPric
 
 | Name | Type | Description |
 |---|---|---|
-| manager | address | undefined |
+| governance | address | undefined |
 | hydraChainAddr | address | undefined |
 | initialPrice | uint256 | undefined |
 
@@ -765,22 +810,6 @@ sets new base APR
 |---|---|---|
 | newBase | uint256 | new base APR |
 
-### setMacro
-
-```solidity
-function setMacro(uint256 newMacroFactor) external nonpayable
-```
-
-sets new Macro factor
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newMacroFactor | uint256 | new macro factor |
-
 ### setRSI
 
 ```solidity
@@ -796,6 +825,40 @@ sets new RSI value
 | Name | Type | Description |
 |---|---|---|
 | newRSI | uint256 | new RSI value |
+
+### smaFastSum
+
+```solidity
+function smaFastSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### smaSlowSum
+
+```solidity
+function smaSlowSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### supportsInterface
 
@@ -829,6 +892,28 @@ function updateTime() external view returns (uint256)
 
 
 
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### updatedPrices
+
+```solidity
+function updatedPrices(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 #### Returns
 
@@ -877,6 +962,22 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### MacroFactorSet
+
+```solidity
+event MacroFactorSet(uint256 macroFactor)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| macroFactor  | uint256 | undefined |
 
 ### PriceQuoted
 
@@ -970,6 +1071,7 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 ## Errors
 
+<<<<<<< HEAD
 ### InvalidMacro
 
 ```solidity
@@ -992,6 +1094,8 @@ error InvalidPrice()
 
 
 
+=======
+>>>>>>> 118d8b0 (Macro update with tests)
 ### InvalidRSI
 
 ```solidity

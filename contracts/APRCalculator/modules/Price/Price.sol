@@ -5,9 +5,10 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {System} from "../../../common/System/System.sol";
+import {MacroFactor} from "../MacroFactor/MacroFactor.sol";
 import {IPrice} from "./IPrice.sol";
 
-abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
+abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
     uint256 public updateTime;
     uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
@@ -18,6 +19,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     function __Price_init(address _hydraChainAddr, uint256 _initialPrice) internal onlyInitializing {
         __HydraChainConnector_init(_hydraChainAddr);
+        __MacroFactor_init();
         __Price_init_unchained(_initialPrice);
     }
 
@@ -57,13 +59,39 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     // _______________ Private functions _______________
 
     /**
-     * @notice Update the daily price.
+     * @notice Update the price and time for the next update.
+     * @dev It also triggers the macro factor update if not disabled.
      */
     function _updatePrice() private {
-        latestDailyPrice = dailyPriceQuotesSum / priceSumCounter;
+        uint256 price = dailyPriceQuotesSum / priceSumCounter;
         updateTime = _calcNextMidnight();
+        latestDailyPrice = price;
 
-        emit PriceUpdated(block.timestamp, latestDailyPrice);
+        if (!disabledMacro) {
+            _triggerMacroUpdate(price);
+        }
+
+        emit PriceUpdated(block.timestamp, price);
+    }
+
+    /**
+     * @notice Trigger the macro factor update.
+     * @param _price The price to be used for the update.
+     */
+    function _triggerMacroUpdate(uint256 _price) private {
+        updatedPrices.push(_price);
+        smaFastSum += _price;
+        smaSlowSum += _price;
+
+        uint256 arrLenght = updatedPrices.length;
+        if (arrLenght > SLOW_SMA) {
+            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+            smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+        } else if (arrLenght > FAST_SMA) {
+            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+        }
+
+        _calcSMA();
     }
 
     /**

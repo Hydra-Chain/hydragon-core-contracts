@@ -4,14 +4,21 @@ pragma solidity 0.8.17;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "../../../common/System/System.sol";
-import {Price} from "../Price/Price.sol";
+import {Governed} from "../../../common/Governed/Governed.sol";
 import {IMacroFactor} from "./IMacroFactor.sol";
 
-abstract contract MacroFactor is IMacroFactor, Initializable, System, Price {
+abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
+    uint256 public constant FAST_SMA = 115;
+    uint256 public constant SLOW_SMA = 230;
     uint256 public constant DENOMINATOR = 10000;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
+    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
+    bool public disabledMacro;
+    uint256 public smaFastSum;
+    uint256 public smaSlowSum;
     uint256 public macroFactor;
+    uint256[] public updatedPrices;
 
     // _______________ Initializer _______________
 
@@ -28,11 +35,13 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Price {
     /**
      * @inheritdoc IMacroFactor
      */
-    function setMacroFactor() external onlySystemCall {
-        uint256 smaRatio = (smaFastSum * DENOMINATOR) / (smaSloweSum * DENOMINATOR);
-        _setMacroFactor(smaRatio);
-
-        emit MacroFactorSet(macroFactor);
+    function gardMacroFactor() external onlyRole(MANAGER_ROLE) {
+        if (!disabledMacro) {
+            disabledMacro = true;
+            macroFactor = INITIAL_MACRO_FACTOR;
+        } else {
+            disabledMacro = false;
+        }
     }
 
     // _______________ Public functions _______________
@@ -44,8 +53,38 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Price {
         return macroFactor;
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
+     */
+    function _calcSMA() internal {
+        uint256 arrLength = updatedPrices.length;
+        uint256 smaFast;
+        uint256 smaSlow;
+        if (arrLength > SLOW_SMA) {
+            smaSlow = smaSlowSum / SLOW_SMA;
+            smaFast = smaFastSum / FAST_SMA;
+        } else if (arrLength > FAST_SMA) {
+            smaSlow = smaSlowSum / arrLength;
+            smaFast = smaFastSum / FAST_SMA;
+        } else {
+            smaSlow = smaSlowSum / arrLength;
+            smaFast = smaFastSum / arrLength;
+        }
+
+        uint256 smaRatio = (smaFast * DENOMINATOR) / smaSlow;
+        _setMacroFactor(smaRatio);
+
+        emit MacroFactorSet(macroFactor);
+    }
+
     // _______________ Private functions _______________
 
+    /**
+     * @notice Set the macro factor based on the Simple Moving Average (SMA) ratio.
+     * @param smaRatio The Simple Moving Average (SMA) ratio
+     */
     function _setMacroFactor(uint256 smaRatio) private {
         if (smaRatio < 5000) {
             macroFactor = 1250;
