@@ -25,9 +25,9 @@ contract APRCalculator is IAPRCalculator, Initializable, Price, Governed {
 
     // _______________ Initializer _______________
 
-    function initialize(address manager, address hydraChainAddr) external initializer onlySystemCall {
+    function initialize(address manager, address hydraChainAddr, uint256 initalPrice) external initializer onlySystemCall {
         __Governed_init(manager);
-        __Price_init(hydraChainAddr);
+        __Price_init(hydraChainAddr, initalPrice);
         base = INITIAL_BASE_APR;
         macroFactor = INITIAL_MACRO_FACTOR;
 

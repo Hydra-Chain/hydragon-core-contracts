@@ -16,13 +16,14 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     // _______________ Initializer _______________
 
-    function __Price_init(address _hydraChainAddr) internal onlyInitializing {
+    function __Price_init(address _hydraChainAddr, uint256 _initalPrice) internal onlyInitializing {
         __HydraChainConnector_init(_hydraChainAddr);
-        __Price_init_unchained();
+        __Price_init_unchained(_initalPrice);
     }
 
-    function __Price_init_unchained() internal onlyInitializing {
+    function __Price_init_unchained(uint256 _initalPrice) internal onlyInitializing {
         updateTime = block.timestamp + 1 days;
+        currentPrice = _initalPrice;
     }
 
     // _______________ External functions _______________
@@ -32,7 +33,9 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
      */
     function quotePrice(uint256 _price) external onlySystemCall {
         uint256 currentEpochId = hydraChainContract.getCurrentEpochId();
-        require(pricePerEpoch[currentEpochId] == 0, "PRICE_FOR_EPOCH_ALREADY_QUOTED");
+        if (pricePerEpoch[currentEpochId] != 0) {
+            revert PriceAlreadyQuoted();
+        }
         
         pricePerEpoch[currentEpochId] = _price;
         if (block.timestamp > updateTime) {
