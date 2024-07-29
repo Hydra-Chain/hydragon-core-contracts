@@ -39,9 +39,9 @@ export function RunAPRCalculatorTests(): void {
 
         // Price
         expect(await aprCalculator.updateTime()).to.equal(0);
-        expect(await aprCalculator.currentPrice()).to.equal(0);
+        expect(await aprCalculator.latestDailyPrice()).to.equal(0);
         expect(await aprCalculator.priceSumCounter()).to.equal(0);
-        expect(await aprCalculator.priceSumThreshold()).to.equal(0);
+        expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(0);
         expect(await aprCalculator.hydraChainContract()).to.equal(ethers.constants.AddressZero);
       });
 
@@ -65,8 +65,12 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.rsi()).to.be.equal(0);
 
         // Price
-        expect(await aprCalculator.updateTime()).to.be.above(0);
-        expect(await aprCalculator.currentPrice()).to.be.equal(INITIAL_PRICE);
+        const updateTime = await aprCalculator.updateTime();
+        const updateTimeDate = new Date(updateTime.toNumber() * 1000); // Convert to milliseconds
+        expect(updateTimeDate.getUTCHours()).to.equal(0);
+        expect(updateTimeDate.getUTCMinutes()).to.equal(0);
+        expect(updateTimeDate.getUTCSeconds()).to.equal(0);
+        expect(await aprCalculator.latestDailyPrice()).to.be.equal(INITIAL_PRICE);
         expect(await aprCalculator.hydraChainContract()).to.equal(hydraChain.address);
       });
 

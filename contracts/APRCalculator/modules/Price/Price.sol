@@ -9,9 +9,9 @@ import {IPrice} from "./IPrice.sol";
 
 abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     uint256 public updateTime;
-    uint256 public currentPrice;
+    uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
-    uint256 public priceSumThreshold;
+    uint256 public dailyPriceQuotesSum;
     mapping(uint256 => uint256) public pricePerEpoch;
 
     // _______________ Initializer _______________
@@ -23,7 +23,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
         updateTime = block.timestamp + 1 days;
-        currentPrice = _initialPrice;
+        latestDailyPrice = _initialPrice;
     }
 
     // _______________ External functions _______________
@@ -40,10 +40,10 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
         pricePerEpoch[currentEpochId] = _price;
         if (block.timestamp > updateTime) {
             _updatePrice();
-            priceSumThreshold = _price;
+            dailyPriceQuotesSum = _price;
             priceSumCounter = 1;
         } else {
-            priceSumThreshold += _price;
+            dailyPriceQuotesSum += _price;
             priceSumCounter++;
         }
 
@@ -53,9 +53,9 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     // _______________ Private functions _______________
 
     function _updatePrice() private {
-        currentPrice = priceSumThreshold / priceSumCounter;
+        latestDailyPrice = dailyPriceQuotesSum / priceSumCounter;
         updateTime += 1 days;
 
-        emit PriceUpdated(block.timestamp, currentPrice);
+        emit PriceUpdated(block.timestamp, latestDailyPrice);
     }
 }

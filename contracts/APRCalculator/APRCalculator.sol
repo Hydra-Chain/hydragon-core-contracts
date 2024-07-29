@@ -7,7 +7,7 @@ import {Governed} from "../common/Governed/Governed.sol";
 import {Price} from "./modules/Price/Price.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, Initializable, Price, Governed {
+contract APRCalculator is IAPRCalculator, Price, Governed {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
     uint256 public constant MIN_MACRO_FACTOR = 1250;

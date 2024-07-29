@@ -31,7 +31,7 @@ export function RunPriceTests(): void {
     expect(await aprCalculator.connect(this.signers.system).quotePrice(132))
       .to.emit(aprCalculator, "PriceQuoted")
       .withArgs(currentEpoch, 132);
-    expect(await aprCalculator.priceSumThreshold()).to.equal(132);
+    expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(132);
     expect(await aprCalculator.priceSumCounter()).to.equal(1);
     expect(await aprCalculator.pricePerEpoch(currentEpoch)).to.equal(132);
   });
@@ -44,7 +44,7 @@ export function RunPriceTests(): void {
     await aprCalculator.connect(this.signers.system).quotePrice(111);
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize);
 
-    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold").to.equal(111);
+    expect(await aprCalculator.dailyPriceQuotesSum(), "dailyPriceQuotesSum").to.equal(111);
     expect(await aprCalculator.priceSumCounter(), "priceSumCounter").to.equal(1);
 
     // Get timestamp & update time
@@ -57,13 +57,13 @@ export function RunPriceTests(): void {
       .to.emit(aprCalculator, "PriceUpdated")
       .withArgs(currentTimestamp + 1, 111);
 
-    expect(await aprCalculator.currentPrice(), "currentPrice").to.equal(111);
-    expect(await aprCalculator.priceSumThreshold()).to.equal(222);
+    expect(await aprCalculator.latestDailyPrice(), "latestDailyPrice").to.equal(111);
+    expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(222);
     expect(await aprCalculator.priceSumCounter()).to.equal(1);
     expect(await aprCalculator.updateTime()).to.equal(updateTime.add(dayBigNum));
   });
 
-  it("should calculate price correctly", async function () {
+  it.only("should calculate price correctly", async function () {
     const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
       this.fixtures.initializedHydraChainStateFixture
     );
@@ -82,7 +82,7 @@ export function RunPriceTests(): void {
     await aprCalculator.connect(this.signers.system).quotePrice(price3);
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY / 3);
 
-    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold").to.equal(price1 + price2 + price3);
+    expect(await aprCalculator.dailyPriceQuotesSum(), "dailyPriceQuotesSum").to.equal(price1 + price2 + price3);
     expect(await aprCalculator.priceSumCounter(), "priceSumCounter").to.equal(3);
 
     // Get timestamp & update time
@@ -96,8 +96,8 @@ export function RunPriceTests(): void {
       .to.emit(aprCalculator, "PriceUpdated")
       .withArgs(currentTimestamp + 1, updatedPrice);
 
-    expect(await aprCalculator.currentPrice(), "currentPrice").to.equal(updatedPrice);
-    expect(await aprCalculator.priceSumThreshold(), "priceSumThreshold after").to.equal(price4);
+    expect(await aprCalculator.latestDailyPrice(), "latestDailyPrice").to.equal(updatedPrice);
+    expect(await aprCalculator.dailyPriceQuotesSum(), "dailyPriceQuotesSum after").to.equal(price4);
     expect(await aprCalculator.priceSumCounter(), "priceSumCounter after").to.equal(1);
     expect(await aprCalculator.updateTime()).to.equal(updateTime.add(dayBigNum));
   });

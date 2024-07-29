@@ -112,10 +112,10 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### currentPrice
+### dailyPriceQuotesSum
 
 ```solidity
-function currentPrice() external view returns (uint256)
+function dailyPriceQuotesSum() external view returns (uint256)
 ```
 
 
@@ -146,6 +146,23 @@ function hydraChainContract() external view returns (contract IHydraChain)
 |---|---|---|
 | _0 | contract IHydraChain | undefined |
 
+### latestDailyPrice
+
+```solidity
+function latestDailyPrice() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### pricePerEpoch
 
 ```solidity
@@ -172,23 +189,6 @@ function pricePerEpoch(uint256) external view returns (uint256)
 
 ```solidity
 function priceSumCounter() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### priceSumThreshold
-
-```solidity
-function priceSumThreshold() external view returns (uint256)
 ```
 
 
