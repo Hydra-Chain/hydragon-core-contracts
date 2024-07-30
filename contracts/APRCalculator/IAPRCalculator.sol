@@ -14,24 +14,12 @@ interface IAPRCalculator is IMacroFactor, IPrice {
      */
     function setBase(uint256 newBase) external;
 
-    /**
-     * @notice sets new RSI value
-     * @dev only owner can call this function
-     * @param newRSI new RSI value
-     */
-    function setRSI(uint256 newRSI) external;
-
     // _______________ Public functions _______________
 
     /**
      * @notice returns base APR
      */
     function getBaseAPR() external view returns (uint256);
-
-    /**
-     * @notice returns max reward
-     */
-    function getRSIBonus() external view returns (uint256);
 
     /**
      * @notice returns the denominator for the APR calculation

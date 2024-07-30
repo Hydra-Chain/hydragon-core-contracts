@@ -6,11 +6,8 @@ import {IAPRCalculator} from "./IAPRCalculator.sol";
 
 contract APRCalculator is IAPRCalculator, MacroFactor {
     uint256 public constant INITIAL_BASE_APR = 500;
-    uint256 public constant MIN_RSI_BONUS = 10000;
-    uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant EPOCHS_YEAR = 31500;
 
-    uint256 public rsi;
     uint256 public base;
     uint256[52] public vestingBonus;
 
@@ -38,17 +35,6 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
         base = newBase;
     }
 
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function setRSI(uint256 newRSI) external onlyRole(MANAGER_ROLE) {
-        if (newRSI > MAX_RSI_BONUS) revert InvalidRSI();
-
-        if (newRSI < MIN_RSI_BONUS) newRSI = 0;
-
-        rsi = newRSI;
-    }
-
     // _______________ Public functions _______________
 
     /**
@@ -56,13 +42,6 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
      */
     function getBaseAPR() public view returns (uint256) {
         return base;
-    }
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function getRSIBonus() public view returns (uint256) {
-        return rsi;
     }
 
     /**

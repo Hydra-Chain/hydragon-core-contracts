@@ -86,6 +86,10 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         latestDailyPrice = price;
         updatedPrices.push(price);
 
+        // if (!disableRSI) {
+        //     _triggerRSIUpdate();
+        // }
+
         emit PriceUpdated(block.timestamp, price);
 
         _onPriceUpdate(price);
@@ -97,6 +101,36 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     function _calcNextMidnight() private view returns (uint256) {
         return block.timestamp + (1 days - (block.timestamp % 1 days));
     }
+
+    // sami
+    // function _triggerRSIUpdate() private {
+    //     uint256 gain;
+    //     uint256 loss;
+    //     uint256 arrLenght = updatedPrices.length;
+    //     if (arrLenght > 14) {
+    //         if (updatedPrices[arrLenght - 1] > updatedPrices[arrLenght - 2]) {
+    //             averageGain = ((averageGain * 13) + (updatedPrices[arrLenght - 1] - updatedPrices[arrLenght - 2])) / 14;
+    //             averageLoss = (averageLoss * 13) / 14;
+    //         } else {
+    //             averageLoss = ((averageLoss * 13) + (updatedPrices[arrLenght - 2] - updatedPrices[arrLenght - 1])) / 14;
+    //             averageGain = (averageGain * 13) / 14;
+    //         }
+    //     } else if (arrLenght == 14) {
+    //         for (uint256 i = 1; i < arrLenght; i++) {
+    //             if (updatedPrices[i] > updatedPrices[i - 1]) {
+    //                 gain += updatedPrices[i] - updatedPrices[i - 1];
+    //             } else {
+    //                 loss += updatedPrices[i - 1] - updatedPrices[i];
+    //             }
+    //         }
+    //         averageGain = gain / 14;
+    //         averageLoss = loss / 14;
+    //     } else {
+    //         return;
+    //     }
+
+    //     _calcRSI();
+    // }
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
