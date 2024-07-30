@@ -296,18 +296,6 @@ event PriceUpdated(uint256 time, uint256 price)
 
 ## Errors
 
-<<<<<<< HEAD
-### InvalidMacro
-
-```solidity
-error InvalidMacro()
-```
-
-
-
-
-
-
 ### InvalidPrice
 
 ```solidity
@@ -319,8 +307,6 @@ error InvalidPrice()
 
 
 
-=======
->>>>>>> 118d8b0 (Macro update with tests)
 ### InvalidRSI
 
 ```solidity

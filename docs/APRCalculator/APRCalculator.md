@@ -1071,18 +1071,6 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 ## Errors
 
-<<<<<<< HEAD
-### InvalidMacro
-
-```solidity
-error InvalidMacro()
-```
-
-
-
-
-
-
 ### InvalidPrice
 
 ```solidity
@@ -1094,8 +1082,6 @@ error InvalidPrice()
 
 
 
-=======
->>>>>>> 118d8b0 (Macro update with tests)
 ### InvalidRSI
 
 ```solidity
