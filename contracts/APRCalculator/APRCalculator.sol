@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
 import {Governed} from "../common/Governed/Governed.sol";
 import {Price} from "./modules/Price/Price.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
