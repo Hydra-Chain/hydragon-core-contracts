@@ -22,7 +22,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     }
 
     function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
-        updateTime = block.timestamp + 1 days;
+        updateTime = block.timestamp + (86400 - (block.timestamp % 86400));
         latestDailyPrice = _initialPrice;
     }
 
@@ -32,13 +32,17 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
      * @inheritdoc IPrice
      */
     function quotePrice(uint256 _price) external onlySystemCall {
+        if (_price == 0) {
+            revert InvalidPrice();
+        }
+
         uint256 currentEpochId = hydraChainContract.getCurrentEpochId();
         if (pricePerEpoch[currentEpochId] != 0) {
             revert PriceAlreadyQuoted();
         }
-        
+
         pricePerEpoch[currentEpochId] = _price;
-        if (block.timestamp > updateTime) {
+        if (block.timestamp > updateTime && priceSumCounter != 0) {
             _updatePrice();
             dailyPriceQuotesSum = _price;
             priceSumCounter = 1;
@@ -54,7 +58,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     function _updatePrice() private {
         latestDailyPrice = dailyPriceQuotesSum / priceSumCounter;
-        updateTime += 1 days;
+        updateTime = block.timestamp + (86400 - (block.timestamp % 86400));
 
         emit PriceUpdated(block.timestamp, latestDailyPrice);
     }

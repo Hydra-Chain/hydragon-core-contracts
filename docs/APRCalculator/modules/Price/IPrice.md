@@ -68,6 +68,17 @@ event PriceUpdated(uint256 time, uint256 price)
 
 ## Errors
 
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
 ### PriceAlreadyQuoted
 
 ```solidity

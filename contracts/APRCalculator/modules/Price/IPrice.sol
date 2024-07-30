@@ -6,6 +6,7 @@ interface IPrice {
     event PriceUpdated(uint256 time,uint256 price);
 
     error PriceAlreadyQuoted();
+    error InvalidPrice();
 
     /**
      * @notice Quotes the price for each epoch & keeps the average price for each day

@@ -323,6 +323,17 @@ error InvalidMacro()
 
 
 
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
 ### InvalidRSI
 
 ```solidity
