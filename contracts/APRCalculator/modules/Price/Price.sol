@@ -22,7 +22,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
     }
 
     function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
-        updateTime = block.timestamp + (86400 - (block.timestamp % 86400));
+        updateTime = _calcNextMidnight();
         latestDailyPrice = _initialPrice;
     }
 
@@ -42,7 +42,7 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
         }
 
         pricePerEpoch[currentEpochId] = _price;
-        if (block.timestamp > updateTime && priceSumCounter != 0) {
+        if (block.timestamp >= updateTime && priceSumCounter != 0) {
             _updatePrice();
             dailyPriceQuotesSum = _price;
             priceSumCounter = 1;
@@ -56,10 +56,23 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
 
     // _______________ Private functions _______________
 
+    /**
+     * @notice Update the daily price.
+     */
     function _updatePrice() private {
         latestDailyPrice = dailyPriceQuotesSum / priceSumCounter;
-        updateTime = block.timestamp + (86400 - (block.timestamp % 86400));
+        updateTime = _calcNextMidnight();
 
         emit PriceUpdated(block.timestamp, latestDailyPrice);
     }
+
+    /**
+     * @notice Calculate the next midnight timestamp.
+     */
+    function _calcNextMidnight() private view returns (uint256) {
+        return block.timestamp + (1 days - (block.timestamp % 1 days));
+    }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }
