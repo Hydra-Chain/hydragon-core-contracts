@@ -24,8 +24,7 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
         __RSIndex_init_unchained();
     }
 
-    function __RSIndex_init_unchained() internal onlyInitializing {
-    }
+    function __RSIndex_init_unchained() internal onlyInitializing {}
 
     // _______________ External functions _______________
 
@@ -36,6 +35,8 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
         if (!disabledRSI) {
             disabledRSI = true;
             rsi = 0;
+
+            emit RSIBonusSet(0);
         } else {
             disabledRSI = false;
         }
@@ -53,36 +54,38 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
     // _______________ Internal functions _______________
 
     /**
-     * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
+     * @notice Calculate the Relative Strength, based on average gain and loss
      */
-    function _calcRSI() internal {
+    function _calcRSIndex() internal {
+        uint256 rsindex;
         uint256 avrGain = averageGain;
         uint256 avrLoss = averageLoss;
+
         if (avrGain == 0) {
-            avrGain = 1;
+            rsindex = 0;
+            _setRSI(rsindex);
+        } else if (avrLoss == 0) {
+            rsindex = 100 - (100 / (1 + avrGain));
+            _setRSI(rsindex);
+        } else {
+            console.log("avrGain: %s, avrLoss: %s", avrGain, avrLoss);
+            uint256 rs = (avrGain * DENOMINATOR1) / avrLoss;
+            console.log("rs: %s", rs);
+            rsindex = 100 - ((100 * DENOMINATOR1) / (1 + rs)); // sami: make sure it does not panic
+            console.log("rsindex: %s", rsindex);
+
+            _setRSI(rsindex);
         }
-
-        if (avrLoss == 0) {
-            avrLoss = 1;
-        }
-
-        console.log("avrGain", avrGain);
-
-        uint256 rs = (avrGain * DENOMINATOR1) / avrLoss;
-        console.log("rs", rs);
-        _setRSI(rs);
     }
 
     // _______________ Private functions _______________
 
     /**
-     * @notice Set the macro factor based on the Simple Moving Average (SMA) ratio.
-     * @param rs The Simple Moving Average (SMA) ratio
+     * @notice Set the Relative Strength Index (RSI) bonus based on the SMA ratio
+     * @param rsindex The relative strength
      */
-    function _setRSI(uint256 rs) private {
-        uint256 rsindex = 100 - ((100 * DENOMINATOR1) / (1 + rs));
-        uint256 newRsi = rsindex;
-        console.log("rsindex", rsindex);
+    function _setRSI(uint256 rsindex) private {
+        uint256 newRsi;
         if (rsindex > 39) {
             newRsi = 0;
         } else if (rsindex > 29 && rsindex < 40) {
@@ -92,9 +95,10 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
         } else if (rsindex < 20) {
             newRsi = MAX_RSI_BONUS;
         }
+
         rsi = newRsi;
-        console.log("rsi", rsi);
-        emit RSIndexSet(newRsi);
+
+        emit RSIBonusSet(newRsi);
     }
 
     // slither-disable-next-line unused-state,naming-convention

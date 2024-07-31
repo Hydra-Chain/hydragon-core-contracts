@@ -295,10 +295,10 @@ event Initialized(uint8 version)
 |---|---|---|
 | version  | uint8 | undefined |
 
-### RSIndexSet
+### RSIBonusSet
 
 ```solidity
-event RSIndexSet(uint256 RSIndex)
+event RSIBonusSet(uint256 RSIndex)
 ```
 
 

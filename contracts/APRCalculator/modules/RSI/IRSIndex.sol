@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 interface IRSIndex {
-    event RSIndexSet(uint256 RSIndex);
+    event RSIBonusSet(uint256 RSIndex);
 
     /**
      * @notice Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it

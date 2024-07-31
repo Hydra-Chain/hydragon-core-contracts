@@ -106,36 +106,38 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
      * @notice Trigger the RSI update.
      */
     function _triggerRSIUpdate() private {
-        console.log("updatedPrices");
         uint256 gain;
         uint256 loss;
         uint256 arrLenght = updatedPrices.length;
-        console.log("entering rsi update", arrLenght);
         if (arrLenght > 15) {
-            if (updatedPrices[arrLenght - 1] > updatedPrices[arrLenght - 2]) {
-                averageGain = ((averageGain * 13) + (updatedPrices[arrLenght - 1] - updatedPrices[arrLenght - 2])) / 14;
+            uint256 lastPrice = updatedPrices[arrLenght - 1];
+            uint256 secondLastPrice = updatedPrices[arrLenght - 2];
+            if (lastPrice > secondLastPrice) {
+                averageGain = ((averageGain * 13) + (lastPrice - secondLastPrice)) / 14;
                 averageLoss = (averageLoss * 13) / 14;
-            } else {
-                averageLoss = ((averageLoss * 13) + (updatedPrices[arrLenght - 2] - updatedPrices[arrLenght - 1])) / 14;
+                console.log("averageGain", averageGain);
+            } else if (lastPrice < secondLastPrice) {
+                averageLoss = ((averageLoss * 13) + (secondLastPrice - lastPrice)) / 14;
                 averageGain = (averageGain * 13) / 14;
+            } else {
+                return;
             }
         } else if (arrLenght == 15) {
             for (uint256 i = 1; i < arrLenght; i++) {
                 if (updatedPrices[i] > updatedPrices[i - 1]) {
-                    console.log("gain", updatedPrices[i], updatedPrices[i - 1]);
                     gain += updatedPrices[i] - updatedPrices[i - 1];
-                } else {
-                    console.log("loss", updatedPrices[i], updatedPrices[i - 1]);
+                } else if (updatedPrices[i] < updatedPrices[i - 1]) {
                     loss += updatedPrices[i - 1] - updatedPrices[i];
                 }
             }
+
             averageGain = gain / 14;
             averageLoss = loss / 14;
         } else {
             return;
         }
 
-        _calcRSI();
+        _calcRSIndex();
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -38,7 +38,7 @@ export function RunPriceTests(): void {
       const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
       const currentEpoch = await hydraChain.currentEpochId();
 
-      expect(await aprCalculator.connect(this.signers.system).quotePrice(132))
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(132))
         .to.emit(aprCalculator, "PriceQuoted")
         .withArgs(currentEpoch, 132);
       expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(132);

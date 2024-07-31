@@ -42,10 +42,10 @@ Get the rsi
 
 ## Events
 
-### RSIndexSet
+### RSIBonusSet
 
 ```solidity
-event RSIndexSet(uint256 RSIndex)
+event RSIBonusSet(uint256 RSIndex)
 ```
 
 

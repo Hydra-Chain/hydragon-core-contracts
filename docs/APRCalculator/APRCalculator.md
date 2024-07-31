@@ -1119,10 +1119,10 @@ event PriceUpdated(uint256 time, uint256 price)
 | time  | uint256 | undefined |
 | price  | uint256 | undefined |
 
-### RSIndexSet
+### RSIBonusSet
 
 ```solidity
-event RSIndexSet(uint256 RSIndex)
+event RSIBonusSet(uint256 RSIndex)
 ```
 
 
