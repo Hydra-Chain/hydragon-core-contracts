@@ -206,16 +206,16 @@ returns the max APR for 52 weeks
 function getRSIBonus() external view returns (uint256)
 ```
 
-returns max reward
+Get the rsi
 
-
+*return the rsi*
 
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | RSIndex |
 
 ### getVestingBonus
 
@@ -282,25 +282,25 @@ sets new base APR
 |---|---|---|
 | newBase | uint256 | new base APR |
 
-### setRSI
+
+
+## Events
+
+### MacroFactorSet
 
 ```solidity
-function setRSI(uint256 newRSI) external nonpayable
+event MacroFactorSet(uint256 macroFactor)
 ```
 
-sets new RSI value
 
-*only owner can call this function*
+
+
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newRSI | uint256 | new RSI value |
-
-
-
-## Events
+| macroFactor  | uint256 | undefined |
 
 ### DefaultMacroFactorChanged
 
@@ -367,6 +367,22 @@ event PriceUpdated(uint256 time, uint256 price)
 |---|---|---|
 | time  | uint256 | undefined |
 | price  | uint256 | undefined |
+
+### RSIndexSet
+
+```solidity
+event RSIndexSet(uint256 RSIndex)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| RSIndex  | uint256 | undefined |
 
 
 

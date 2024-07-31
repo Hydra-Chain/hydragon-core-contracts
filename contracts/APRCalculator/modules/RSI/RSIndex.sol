@@ -7,12 +7,13 @@ import {System} from "../../../common/System/System.sol";
 import {Governed} from "../../../common/Governed/Governed.sol";
 import {IRSIndex} from "./IRSIndex.sol";
 
+import "hardhat/console.sol";
+
 abstract contract RSIndex is IRSIndex, Initializable, Governed {
-    uint256 public constant MIN_RSI_BONUS = 10000;
     uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant DENOMINATOR1 = 10000;
 
-    bool public disableRSI;
+    bool public disabledRSI;
     uint256 public averageGain;
     uint256 public averageLoss;
     uint256 public rsi;
@@ -24,7 +25,6 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
     }
 
     function __RSIndex_init_unchained() internal onlyInitializing {
-        rsi = MIN_RSI_BONUS;
     }
 
     // _______________ External functions _______________
@@ -33,11 +33,11 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
      * @inheritdoc IRSIndex
      */
     function gardRSIndex() external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (!disableRSI) {
-            disableRSI = true;
-            rsi = MIN_RSI_BONUS;
+        if (!disabledRSI) {
+            disabledRSI = true;
+            rsi = 0;
         } else {
-            disableRSI = false;
+            disabledRSI = false;
         }
     }
 
@@ -56,7 +56,20 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
      * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
      */
     function _calcRSI() internal {
-        uint256 rs = (averageGain * DENOMINATOR1) / averageLoss;
+        uint256 avrGain = averageGain;
+        uint256 avrLoss = averageLoss;
+        if (avrGain == 0) {
+            avrGain = 1;
+        }
+
+        if (avrLoss == 0) {
+            avrLoss = 1;
+        }
+
+        console.log("avrGain", avrGain);
+
+        uint256 rs = (avrGain * DENOMINATOR1) / avrLoss;
+        console.log("rs", rs);
         _setRSI(rs);
     }
 
@@ -67,16 +80,21 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
      * @param rs The Simple Moving Average (SMA) ratio
      */
     function _setRSI(uint256 rs) private {
-        uint256 newRis = 100 * DENOMINATOR1 - (100 * DENOMINATOR1 / (1 + rs));
-        if (newRis < MIN_RSI_BONUS) {
-            rsi = MIN_RSI_BONUS;
-        } else if (newRis > MAX_RSI_BONUS) {
-            rsi = MAX_RSI_BONUS;
-        } else {
-            rsi = newRis;
+        uint256 rsindex = 100 - ((100 * DENOMINATOR1) / (1 + rs));
+        uint256 newRsi = rsindex;
+        console.log("rsindex", rsindex);
+        if (rsindex > 39) {
+            newRsi = 0;
+        } else if (rsindex > 29 && rsindex < 40) {
+            newRsi = 11500;
+        } else if (rsindex > 19 && rsindex < 30) {
+            newRsi = 12500;
+        } else if (rsindex < 20) {
+            newRsi = MAX_RSI_BONUS;
         }
-
-        emit RSIndexSet(newRis);
+        rsi = newRsi;
+        console.log("rsi", rsi);
+        emit RSIndexSet(newRsi);
     }
 
     // slither-disable-next-line unused-state,naming-convention
