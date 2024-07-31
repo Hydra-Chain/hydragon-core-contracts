@@ -365,6 +365,23 @@ function base() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### dailyPriceQuotesSum
+
+```solidity
+function dailyPriceQuotesSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getBaseAPR
 
 ```solidity
@@ -557,10 +574,27 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
+
 ### initialize
 
 ```solidity
-function initialize(address manager) external nonpayable
+function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external nonpayable
 ```
 
 
@@ -572,6 +606,25 @@ function initialize(address manager) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | manager | address | undefined |
+| hydraChainAddr | address | undefined |
+| initialPrice | uint256 | undefined |
+
+### latestDailyPrice
+
+```solidity
+function latestDailyPrice() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### macroFactor
 
@@ -589,6 +642,61 @@ function macroFactor() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### pricePerEpoch
+
+```solidity
+function pricePerEpoch(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### priceSumCounter
+
+```solidity
+function priceSumCounter() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### quotePrice
+
+```solidity
+function quotePrice(uint256 _price) external nonpayable
+```
+
+Quotes the price for each epoch &amp; keeps the average price for each day
+
+*only the system can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _price | uint256 | undefined |
 
 ### renounceRole
 
@@ -711,6 +819,23 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### updateTime
+
+```solidity
+function updateTime() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### vestingBonus
 
 ```solidity
@@ -752,6 +877,40 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### PriceQuoted
+
+```solidity
+event PriceQuoted(uint256 indexed epochId, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epochId `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+
+### PriceUpdated
+
+```solidity
+event PriceUpdated(uint256 time, uint256 price)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| time  | uint256 | undefined |
+| price  | uint256 | undefined |
 
 ### RoleAdminChanged
 
@@ -822,10 +981,32 @@ error InvalidMacro()
 
 
 
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
 ### InvalidRSI
 
 ```solidity
 error InvalidRSI()
+```
+
+
+
+
+
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
 ```
 
 

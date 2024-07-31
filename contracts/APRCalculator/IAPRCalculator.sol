@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface IAPRCalculator {
+import {IPrice} from "./modules/Price/IPrice.sol";
+
+interface IAPRCalculator is IPrice {
     error InvalidRSI();
     error InvalidMacro();
 

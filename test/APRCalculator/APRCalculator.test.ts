@@ -7,6 +7,7 @@ import {
   ERRORS,
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
+  INITIAL_PRICE,
   MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
   MIN_MACRO_FACTOR,
@@ -14,6 +15,7 @@ import {
 } from "../constants";
 import { ethers } from "hardhat";
 import { applyMaxReward } from "../helper";
+import { RunPriceTests } from "./Price.test";
 
 export function RunAPRCalculatorTests(): void {
   describe("", function () {
@@ -34,19 +36,25 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
+
+        // Price
+        expect(await aprCalculator.updateTime()).to.equal(0);
+        expect(await aprCalculator.latestDailyPrice()).to.equal(0);
+        expect(await aprCalculator.priceSumCounter()).to.equal(0);
+        expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(0);
+        expect(await aprCalculator.hydraChainContract()).to.equal(ethers.constants.AddressZero);
       });
 
       it("should revert initialize if not called by system", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
-        await expect(aprCalculator.initialize(this.signers.governance.address)).to.be.revertedWithCustomError(
-          aprCalculator,
-          ERRORS.unauthorized.name
-        );
+        await expect(
+          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, INITIAL_PRICE)
+        ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
       });
 
       it("should initialize correctly", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
         const managerRole = await aprCalculator.MANAGER_ROLE();
         const adminRole = await aprCalculator.DEFAULT_ADMIN_ROLE();
 
@@ -55,6 +63,23 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
         expect(await aprCalculator.rsi()).to.be.equal(0);
+
+        // Price
+        const updateTime = await aprCalculator.updateTime();
+        const updateTimeDate = new Date(updateTime.toNumber() * 1000); // Convert to milliseconds
+        expect(updateTimeDate.getUTCHours()).to.equal(0);
+        expect(updateTimeDate.getUTCMinutes()).to.equal(0);
+        expect(updateTimeDate.getUTCSeconds()).to.equal(0);
+        expect(await aprCalculator.latestDailyPrice()).to.be.equal(INITIAL_PRICE);
+        expect(await aprCalculator.hydraChainContract()).to.equal(hydraChain.address);
+      });
+
+      it("should revert initialize if already initialized", async function () {
+        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(
+          aprCalculator.initialize(this.signers.system.address, hydraChain.address, INITIAL_PRICE)
+        ).to.be.revertedWith(ERRORS.initialized);
       });
 
       it("should initialize vesting bonus", async function () {
@@ -189,6 +214,10 @@ export function RunAPRCalculatorTests(): void {
 
         expect(await aprCalculator.rsi()).to.be.equal(12000);
       });
+    });
+
+    describe("Price", function () {
+      RunPriceTests();
     });
   });
 }

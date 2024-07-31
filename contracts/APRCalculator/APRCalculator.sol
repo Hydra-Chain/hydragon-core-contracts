@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
-import {System} from "../common/System/System.sol";
 import {Governed} from "../common/Governed/Governed.sol";
+import {Price} from "./modules/Price/Price.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, Initializable, System, Governed {
+contract APRCalculator is IAPRCalculator, Price, Governed {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
     uint256 public constant MIN_MACRO_FACTOR = 1250;
@@ -25,8 +23,9 @@ contract APRCalculator is IAPRCalculator, Initializable, System, Governed {
 
     // _______________ Initializer _______________
 
-    function initialize(address manager) external initializer onlySystemCall {
+    function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external initializer onlySystemCall {
         __Governed_init(manager);
+        __Price_init(hydraChainAddr, initialPrice);
         base = INITIAL_BASE_APR;
         macroFactor = INITIAL_MACRO_FACTOR;
 
