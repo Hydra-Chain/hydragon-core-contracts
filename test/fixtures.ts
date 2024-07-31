@@ -23,6 +23,7 @@ import {
   INITIAL_COMMISSION,
   INITIAL_PRICE,
   MIN_RSI_BONUS,
+  SLOW_SMA,
   SYSTEM,
   VESTING_DURATION_WEEKS,
   WEEK,
@@ -332,7 +333,7 @@ async function fullSmaSlowSumMacroFactor(this: Mocha.Context) {
     DAOIncentiveVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-  for (let i = 0; i < 310; i++) {
+  for (let i = 0; i <= SLOW_SMA; i++) {
     await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE + i * 3);
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
   }

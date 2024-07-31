@@ -9,7 +9,7 @@ import {IMacroFactor} from "./IMacroFactor.sol";
 
 abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
     uint256 public constant FAST_SMA = 115;
-    uint256 public constant SLOW_SMA = 230;
+    uint256 public constant SLOW_SMA = 310;
     uint256 public constant DENOMINATOR = 10000;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
     bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
@@ -39,6 +39,8 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
         if (!disabledMacro) {
             disabledMacro = true;
             macroFactor = INITIAL_MACRO_FACTOR;
+
+            emit MacroFactorSet(INITIAL_MACRO_FACTOR);
         } else {
             disabledMacro = false;
         }
@@ -59,24 +61,10 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
      * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
      */
     function _calcSMA() internal {
-        uint256 arrLength = updatedPrices.length;
-        uint256 smaFast;
-        uint256 smaSlow;
-        if (arrLength > SLOW_SMA) {
-            smaSlow = smaSlowSum / SLOW_SMA;
-            smaFast = smaFastSum / FAST_SMA;
-        } else if (arrLength > FAST_SMA) {
-            smaSlow = smaSlowSum / arrLength;
-            smaFast = smaFastSum / FAST_SMA;
-        } else {
-            smaSlow = smaSlowSum / arrLength;
-            smaFast = smaFastSum / arrLength;
-        }
-
+        uint256 smaFast = smaFastSum / FAST_SMA;
+        uint256 smaSlow = smaSlowSum / SLOW_SMA;
         uint256 smaRatio = (smaFast * DENOMINATOR) / smaSlow;
         _setMacroFactor(smaRatio);
-
-        emit MacroFactorSet(macroFactor);
     }
 
     // _______________ Private functions _______________
@@ -86,20 +74,27 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
      * @param smaRatio The Simple Moving Average (SMA) ratio
      */
     function _setMacroFactor(uint256 smaRatio) private {
+        uint256 newMacroFactor;
         if (smaRatio < 5000) {
-            macroFactor = 1250;
+            newMacroFactor = 1250;
         } else if (smaRatio < 7500) {
-            macroFactor = 2500;
+            newMacroFactor = 2500;
         } else if (smaRatio < 9000) {
-            macroFactor = 5000;
+            newMacroFactor = 5000;
         } else if (smaRatio < 11000) {
-            macroFactor = 7500;
+            newMacroFactor = 7500;
         } else if (smaRatio < 12500) {
-            macroFactor = 10000;
+            newMacroFactor = 10000;
         } else if (smaRatio < 17500) {
-            macroFactor = 12500;
+            newMacroFactor = 12500;
         } else {
-            macroFactor = 17500;
+            newMacroFactor = 17500;
         }
+        macroFactor = newMacroFactor;
+
+        emit MacroFactorSet(newMacroFactor);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

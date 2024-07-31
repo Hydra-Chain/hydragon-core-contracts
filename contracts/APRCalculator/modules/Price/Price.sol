@@ -84,14 +84,14 @@ abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
         smaSlowSum += _price;
 
         uint256 arrLenght = updatedPrices.length;
-        if (arrLenght > SLOW_SMA) {
+        if (arrLenght >= SLOW_SMA) {
             smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
             smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+
+            _calcSMA();
         } else if (arrLenght > FAST_SMA) {
             smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
         }
-
-        _calcSMA();
     }
 
     /**

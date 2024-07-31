@@ -5,11 +5,13 @@ import {
   DENOMINATOR,
   EPOCHS_YEAR,
   ERRORS,
+  FAST_SMA,
   INITIAL_BASE_APR,
   INITIAL_MACRO_FACTOR,
   INITIAL_PRICE,
   MAX_RSI_BONUS,
   MIN_RSI_BONUS,
+  SLOW_SMA,
 } from "../constants";
 import { ethers } from "hardhat";
 import { applyMaxReward } from "../helper";
@@ -35,8 +37,9 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
 
         // Macro Factor
-        expect(await aprCalculator.FAST_SMA()).to.equal(115);
-        expect(await aprCalculator.SLOW_SMA()).to.equal(230);
+        expect(await aprCalculator.FAST_SMA()).to.equal(FAST_SMA);
+        expect(await aprCalculator.SLOW_SMA()).to.equal(SLOW_SMA);
+        expect(await aprCalculator.disabledMacro()).to.equal(false);
         expect(await aprCalculator.macroFactor()).to.equal(0);
         expect(await aprCalculator.smaFastSum()).to.equal(0);
         expect(await aprCalculator.smaSlowSum()).to.equal(0);
@@ -69,7 +72,6 @@ export function RunAPRCalculatorTests(): void {
 
         // Macro Factor
         expect(await aprCalculator.macroFactor()).to.equal(INITIAL_MACRO_FACTOR);
-        expect(await aprCalculator.disabledMacro()).to.equal(false);
 
         // Price
         const updateTime = await aprCalculator.updateTime();

@@ -12,7 +12,7 @@ export function RunMacroFactorTests(): void {
   });
 
   describe("Set Macro Factor", function () {
-    it("should update macro factor on price update", async function () {
+    it("should not update macro factor if slow SMA is not fulfilled", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
@@ -21,9 +21,10 @@ export function RunMacroFactorTests(): void {
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
       // need to quote price again to update the price we already quoted
-      expect(await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE))
-        .to.emit(aprCalculator, "MacroFactorSet")
-        .withArgs(INITIAL_MACRO_FACTOR);
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE)).to.not.emit(
+        aprCalculator,
+        "MacroFactorSet"
+      );
 
       expect(await aprCalculator.smaFastSum(), "SMA Fast Sum").to.equal(INITIAL_PRICE * 2);
       expect(await aprCalculator.smaSlowSum(), "SMA Slow Sum").to.equal(INITIAL_PRICE * 2);
@@ -31,11 +32,20 @@ export function RunMacroFactorTests(): void {
       expect(await aprCalculator.getMacroFactor()).to.equal(INITIAL_MACRO_FACTOR);
     });
 
-    it("should update macro factor on price update on different SMA", async function () {
+    it("should update macro factor on price update on different SMA when slow SMA is fulfilled", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
 
-      expect(await aprCalculator.updatedPrices([230]), "updated prices array").to.above(INITIAL_PRICE);
+      expect(await aprCalculator.updatedPrices([123]), "updated prices array").to.above(INITIAL_PRICE);
       expect(await aprCalculator.getMacroFactor()).to.above(INITIAL_MACRO_FACTOR);
+    });
+
+    it("should emit MacroFactorSet event on price update after slow SMA is fulfilled", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
+
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 2)).to.emit(
+        aprCalculator,
+        "MacroFactorSet"
+      );
     });
 
     it("should update properly change SMA sum on price update", async function () {
@@ -72,7 +82,10 @@ export function RunMacroFactorTests(): void {
       const oldMacroFactor = await aprCalculator.getMacroFactor();
       const oldSMASlowSum = await aprCalculator.smaSlowSum();
       const oldSMAFastSum = await aprCalculator.smaFastSum();
-      await aprCalculator.connect(this.signers.governance).gardMacroFactor();
+
+      await expect(aprCalculator.connect(this.signers.governance).gardMacroFactor())
+        .to.emit(aprCalculator, "MacroFactorSet")
+        .withArgs(INITIAL_MACRO_FACTOR);
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
@@ -94,11 +107,12 @@ export function RunMacroFactorTests(): void {
       expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
 
       await aprCalculator.connect(this.signers.governance).gardMacroFactor();
+      expect(await aprCalculator.disabledMacro()).to.be.false;
+
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,
         "MacroFactorSet"
       );
-      expect(await aprCalculator.disabledMacro()).to.be.false;
       expect(await aprCalculator.macroFactor()).to.be.above(INITIAL_MACRO_FACTOR);
     });
   });
