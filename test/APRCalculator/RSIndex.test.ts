@@ -64,15 +64,36 @@ export function RunRSIndexTests(): void {
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.system).quotePrice(1);
 
-      expect(await aprCalculator.averageGain()).to.be.above(averageGain);
+      const averageGainAfter = await aprCalculator.averageGain();
+      expect(averageGainAfter).to.be.above(averageGain);
       expect(await aprCalculator.averageLoss()).to.be.below(averageLoss);
 
       // quote price again to update the price we set to 0 and see if the average gain and loss are updated properly
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.system).quotePrice(1);
 
-      expect(await aprCalculator.averageGain()).to.be.below(averageGain);
+      expect(await aprCalculator.averageGain()).to.be.below(averageGainAfter);
       expect(await aprCalculator.averageLoss()).to.be.above(averageLoss);
+    });
+
+    it("should properly update RSI on price update", async function () {
+      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+        this.fixtures.rsiOverSoldConditionFixture
+      );
+      expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
+      const currentPrice = await aprCalculator.latestDailyPrice();
+      console.log("currentPrice", currentPrice);
+
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(14));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(14));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(20));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
   });
 

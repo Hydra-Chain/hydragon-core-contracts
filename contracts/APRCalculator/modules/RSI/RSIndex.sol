@@ -63,19 +63,16 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
 
         if (avrGain == 0) {
             rsindex = 0;
-            _setRSI(rsindex);
+            console.log("Enter gain = 0: %s", rsindex);
         } else if (avrLoss == 0) {
-            rsindex = 100 - (100 / (1 + avrGain));
-            _setRSI(rsindex);
+            rsindex = 100 * DENOMINATOR1 - ((100 * DENOMINATOR1) / (1 + avrGain));
+            console.log("Enter loss = 0: %s", rsindex);
         } else {
-            console.log("avrGain: %s, avrLoss: %s", avrGain, avrLoss);
             uint256 rs = (avrGain * DENOMINATOR1) / avrLoss;
-            console.log("rs: %s", rs);
-            rsindex = 100 - ((100 * DENOMINATOR1) / (1 + rs)); // sami: make sure it does not panic
-            console.log("rsindex: %s", rsindex);
-
-            _setRSI(rsindex);
+            rsindex = 100 * DENOMINATOR1 - (100 * (DENOMINATOR1 * 2)) / (DENOMINATOR1 + rs);
         }
+
+        _setRSI(rsindex / DENOMINATOR1);
     }
 
     // _______________ Private functions _______________
@@ -85,6 +82,8 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
      * @param rsindex The relative strength
      */
     function _setRSI(uint256 rsindex) private {
+        console.log("rsindex: %s", rsindex);
+
         uint256 newRsi;
         if (rsindex > 39) {
             newRsi = 0;

@@ -113,11 +113,11 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
             uint256 lastPrice = updatedPrices[arrLenght - 1];
             uint256 secondLastPrice = updatedPrices[arrLenght - 2];
             if (lastPrice > secondLastPrice) {
-                averageGain = ((averageGain * 13) + (lastPrice - secondLastPrice)) / 14;
+                averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
                 averageLoss = (averageLoss * 13) / 14;
                 console.log("averageGain", averageGain);
             } else if (lastPrice < secondLastPrice) {
-                averageLoss = ((averageLoss * 13) + (secondLastPrice - lastPrice)) / 14;
+                averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
                 averageGain = (averageGain * 13) / 14;
             } else {
                 return;
@@ -131,8 +131,8 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
                 }
             }
 
-            averageGain = gain / 14;
-            averageLoss = loss / 14;
+            averageGain = gain * DENOMINATOR / 14;
+            averageLoss = loss * DENOMINATOR / 14;
         } else {
             return;
         }
