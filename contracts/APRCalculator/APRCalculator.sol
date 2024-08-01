@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Price} from "./modules/Price/Price.sol";
+import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, Price {
+contract APRCalculator is IAPRCalculator, MacroFactor {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant MIN_RSI_BONUS = 10000;
     uint256 public constant MAX_RSI_BONUS = 17000;
@@ -16,14 +16,17 @@ contract APRCalculator is IAPRCalculator, Price {
 
     // _______________ Initializer _______________
 
-    function initialize(address governance, address hydraChainAddr, uint256 initialPrice) external initializer onlySystemCall {
-        __Governed_init(governance);
-        __Price_init(hydraChainAddr, initialPrice);
+    function initialize(
+        address governance,
+        address hydraChainAddr,
+        uint256 initialPrice
+    ) external initializer onlySystemCall {
+        __Price_init(hydraChainAddr, initialPrice, governance);
+        __MacroFactor_init();
+
         base = INITIAL_BASE_APR;
 
         initializeVestingBonus();
-
-        _grantRole(MANAGER_ROLE, governance);
     }
 
     // _______________ External functions _______________

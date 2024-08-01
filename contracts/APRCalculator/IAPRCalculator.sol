@@ -2,8 +2,9 @@
 pragma solidity 0.8.17;
 
 import {IPrice} from "./modules/Price/IPrice.sol";
+import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 
-interface IAPRCalculator is IPrice {
+interface IAPRCalculator is IMacroFactor, IPrice {
     error InvalidRSI();
 
     /**

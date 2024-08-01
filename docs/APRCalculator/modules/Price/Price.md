@@ -44,40 +44,6 @@ function DENOMINATOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### FAST_SMA
-
-```solidity
-function FAST_SMA() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### INITIAL_MACRO_FACTOR
-
-```solidity
-function INITIAL_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MANAGER_ROLE
 
 ```solidity
@@ -133,23 +99,6 @@ function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
 
 ```solidity
 function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### SLOW_SMA
-
-```solidity
-function SLOW_SMA() external view returns (uint256)
 ```
 
 
@@ -230,51 +179,6 @@ function dailyPriceQuotesSum() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### disabledMacro
-
-```solidity
-function disabledMacro() external view returns (bool)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
-### gardMacroFactor
-
-```solidity
-function gardMacroFactor() external nonpayable
-```
-
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
-### getMacroFactor
-
-```solidity
-function getMacroFactor() external view returns (uint256)
-```
-
-Get the macro factor
-
-*return the macro factor*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | macro factor |
 
 ### getRoleAdmin
 
@@ -359,23 +263,6 @@ function hydraChainContract() external view returns (contract IHydraChain)
 
 ```solidity
 function latestDailyPrice() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### macroFactor
-
-```solidity
-function macroFactor() external view returns (uint256)
 ```
 
 
@@ -478,40 +365,6 @@ function revokeRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
-### smaFastSum
-
-```solidity
-function smaFastSum() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### smaSlowSum
-
-```solidity
-function smaSlowSum() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### supportsInterface
 
 ```solidity
@@ -551,28 +404,6 @@ function updateTime() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### updatedPrices
-
-```solidity
-function updatedPrices(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 
 
 ## Events
@@ -592,22 +423,6 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
-
-### MacroFactorSet
-
-```solidity
-event MacroFactorSet(uint256 macroFactor)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| macroFactor  | uint256 | undefined |
 
 ### PriceQuoted
 

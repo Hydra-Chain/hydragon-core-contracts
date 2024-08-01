@@ -1,18 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
-import {System} from "../../../common/System/System.sol";
-import {Governed} from "../../../common/Governed/Governed.sol";
+import {Price} from "../Price/Price.sol";
 import {IMacroFactor} from "./IMacroFactor.sol";
 
-abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
+abstract contract MacroFactor is IMacroFactor, Price {
     uint256 public constant FAST_SMA = 115;
     uint256 public constant SLOW_SMA = 310;
-    uint256 public constant DENOMINATOR = 10000;
     uint256 public constant INITIAL_MACRO_FACTOR = 7500;
-    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
     bool public disabledMacro;
     uint256 public smaFastSum;
@@ -58,16 +53,47 @@ abstract contract MacroFactor is IMacroFactor, Initializable, System, Governed {
     // _______________ Internal functions _______________
 
     /**
+     * @inheritdoc Price
+     * @notice Update the macro factor based on the price update, if the needed conditions are met.
+     * @param _price The price to be used for the update.
+     */
+    function _onPriceUpdate(uint256 _price) internal override(Price) {
+        if (!disabledMacro) {
+            _triggerMacroUpdate(_price);
+        }
+    }
+
+    // _______________ Private functions _______________
+
+    /**
+     * @notice Trigger the macro factor update.
+     * @param _price The price to be used for the update.
+     */
+    function _triggerMacroUpdate(uint256 _price) private {
+        updatedPrices.push(_price);
+        smaFastSum += _price;
+        smaSlowSum += _price;
+
+        uint256 arrLenght = updatedPrices.length;
+        if (arrLenght >= SLOW_SMA) {
+            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+            smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+
+            _calcSMA();
+        } else if (arrLenght > FAST_SMA) {
+            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+        }
+    }
+
+    /**
      * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
      */
-    function _calcSMA() internal {
+    function _calcSMA() private {
         uint256 smaFast = smaFastSum / FAST_SMA;
         uint256 smaSlow = smaSlowSum / SLOW_SMA;
         uint256 smaRatio = (smaFast * DENOMINATOR) / smaSlow;
         _setMacroFactor(smaRatio);
     }
-
-    // _______________ Private functions _______________
 
     /**
      * @notice Set the macro factor based on the Simple Moving Average (SMA) ratio.

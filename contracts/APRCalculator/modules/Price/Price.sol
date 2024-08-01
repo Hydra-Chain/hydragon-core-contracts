@@ -5,10 +5,14 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {System} from "../../../common/System/System.sol";
+import {Governed} from "../../../common/Governed/Governed.sol";
 import {MacroFactor} from "../MacroFactor/MacroFactor.sol";
 import {IPrice} from "./IPrice.sol";
 
-abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
+abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector {
+    uint256 public constant DENOMINATOR = 10000;
+    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
+
     uint256 public updateTime;
     uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
@@ -17,10 +21,16 @@ abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
 
     // _______________ Initializer _______________
 
-    function __Price_init(address _hydraChainAddr, uint256 _initialPrice) internal onlyInitializing {
+    function __Price_init(
+        address _hydraChainAddr,
+        uint256 _initialPrice,
+        address _governance
+    ) internal onlyInitializing {
+        __Governed_init(_governance);
         __HydraChainConnector_init(_hydraChainAddr);
-        __MacroFactor_init();
         __Price_init_unchained(_initialPrice);
+
+        _grantRole(MANAGER_ROLE, _governance);
     }
 
     function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
@@ -56,6 +66,13 @@ abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
         emit PriceQuoted(currentEpochId, _price);
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @notice Triggers bonus updates based on the price.
+     */
+    function _onPriceUpdate(uint256 _price) internal virtual {}
+
     // _______________ Private functions _______________
 
     /**
@@ -66,32 +83,9 @@ abstract contract Price is IPrice, HydraChainConnector, MacroFactor {
         uint256 price = dailyPriceQuotesSum / priceSumCounter;
         updateTime = _calcNextMidnight();
         latestDailyPrice = price;
-
-        if (!disabledMacro) {
-            _triggerMacroUpdate(price);
-        }
+        _onPriceUpdate(price);
 
         emit PriceUpdated(block.timestamp, price);
-    }
-
-    /**
-     * @notice Trigger the macro factor update.
-     * @param _price The price to be used for the update.
-     */
-    function _triggerMacroUpdate(uint256 _price) private {
-        updatedPrices.push(_price);
-        smaFastSum += _price;
-        smaSlowSum += _price;
-
-        uint256 arrLenght = updatedPrices.length;
-        if (arrLenght >= SLOW_SMA) {
-            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-            smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
-
-            _calcSMA();
-        } else if (arrLenght > FAST_SMA) {
-            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-        }
     }
 
     /**

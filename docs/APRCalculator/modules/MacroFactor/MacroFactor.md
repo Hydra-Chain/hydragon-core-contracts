@@ -214,6 +214,23 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### dailyPriceQuotesSum
+
+```solidity
+function dailyPriceQuotesSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### disabledMacro
 
 ```solidity
@@ -321,6 +338,40 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
+
+### latestDailyPrice
+
+```solidity
+function latestDailyPrice() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### macroFactor
 
 ```solidity
@@ -337,6 +388,61 @@ function macroFactor() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### pricePerEpoch
+
+```solidity
+function pricePerEpoch(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### priceSumCounter
+
+```solidity
+function priceSumCounter() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### quotePrice
+
+```solidity
+function quotePrice(uint256 _price) external nonpayable
+```
+
+Quotes the price for each epoch &amp; keeps the average price for each day
+
+*only the system can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _price | uint256 | undefined |
 
 ### renounceRole
 
@@ -428,6 +534,23 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### updateTime
+
+```solidity
+function updateTime() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### updatedPrices
 
 ```solidity
@@ -486,6 +609,40 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
+### PriceQuoted
+
+```solidity
+event PriceQuoted(uint256 indexed epochId, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epochId `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+
+### PriceUpdated
+
+```solidity
+event PriceUpdated(uint256 time, uint256 price)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| time  | uint256 | undefined |
+| price  | uint256 | undefined |
+
 ### RoleAdminChanged
 
 ```solidity
@@ -540,5 +697,46 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 | account `indexed` | address | undefined |
 | sender `indexed` | address | undefined |
 
+
+
+## Errors
+
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
+```
+
+
+
+
+
+
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
 
 
