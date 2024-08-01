@@ -1011,6 +1011,28 @@ function updatedPrices(uint256) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### updatedPricesRSI
+
+```solidity
+function updatedPricesRSI(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### vestingBonus
 
 ```solidity
@@ -1193,6 +1215,11 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 ## Errors
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> d8ec9c2 (restructure after rebase)
 ### InvalidMacroFactor
 
 ```solidity
@@ -1204,6 +1231,29 @@ error InvalidMacroFactor()
 
 
 
+<<<<<<< HEAD
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> e67ae0a (Macro update with tests)
+### InvalidPrice
+=======
+<<<<<<< HEAD
+### InvalidMacro
+>>>>>>> a02b7ab (Macro update with tests)
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
+=======
+>>>>>>> 09d26c5 (restructure after rebase)
+>>>>>>> d8ec9c2 (restructure after rebase)
 ### InvalidPrice
 
 ```solidity

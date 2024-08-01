@@ -5,7 +5,7 @@ import {IPrice} from "./modules/Price/IPrice.sol";
 import {IRSIndex} from "./modules/RSI/IRSIndex.sol";
 import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 
-interface IAPRCalculator is IPrice, IRSIndex, IMacroFactor {
+interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     error InvalidRSI();
 
     /**

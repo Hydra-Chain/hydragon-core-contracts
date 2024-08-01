@@ -2,9 +2,10 @@
 pragma solidity 0.8.17;
 
 import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
+import {RSIndex} from "./modules/RSI/RSIndex.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, MacroFactor {
+contract APRCalculator is IAPRCalculator, RSIndex, MacroFactor {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant EPOCHS_YEAR = 31500;
 
@@ -112,6 +113,12 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
      */
     function applyBaseAPR(uint256 amount) public view returns (uint256) {
         return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
+    }
+
+    // _______________ Internal functions _______________
+
+    function _onPriceUpdate(uint256 _price) internal override(MacroFactor, RSIndex) {
+        super._onPriceUpdate(_price);
     }
 
     // _______________ Private functions _______________

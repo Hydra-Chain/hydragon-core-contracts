@@ -13,7 +13,6 @@ import {
   MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
   MIN_MACRO_FACTOR,
-  MIN_RSI_BONUS,
   SLOW_SMA,
 } from "../constants";
 import { ethers } from "hardhat";

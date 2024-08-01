@@ -86,10 +86,6 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         latestDailyPrice = price;
         updatedPrices.push(price);
 
-        // if (!disableRSI) {
-        //     _triggerRSIUpdate();
-        // }
-
         emit PriceUpdated(block.timestamp, price);
 
         _onPriceUpdate(price);
@@ -100,44 +96,6 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
      */
     function _calcNextMidnight() private view returns (uint256) {
         return block.timestamp + (1 days - (block.timestamp % 1 days));
-    }
-
-    /**
-     * @notice Trigger the RSI update.
-     */
-    function _triggerRSIUpdate() private {
-        uint256 gain;
-        uint256 loss;
-        uint256 arrLenght = updatedPrices.length;
-        if (arrLenght > 15) {
-            uint256 lastPrice = updatedPrices[arrLenght - 1];
-            uint256 secondLastPrice = updatedPrices[arrLenght - 2];
-            if (lastPrice > secondLastPrice) {
-                averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
-                averageLoss = (averageLoss * 13) / 14;
-                console.log("averageGain", averageGain);
-            } else if (lastPrice < secondLastPrice) {
-                averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
-                averageGain = (averageGain * 13) / 14;
-            } else {
-                return;
-            }
-        } else if (arrLenght == 15) {
-            for (uint256 i = 1; i < arrLenght; i++) {
-                if (updatedPrices[i] > updatedPrices[i - 1]) {
-                    gain += updatedPrices[i] - updatedPrices[i - 1];
-                } else if (updatedPrices[i] < updatedPrices[i - 1]) {
-                    loss += updatedPrices[i - 1] - updatedPrices[i];
-                }
-            }
-
-            averageGain = gain * DENOMINATOR / 14;
-            averageLoss = loss * DENOMINATOR / 14;
-        } else {
-            return;
-        }
-
-        _calcRSIndex();
     }
 
     // slither-disable-next-line unused-state,naming-convention

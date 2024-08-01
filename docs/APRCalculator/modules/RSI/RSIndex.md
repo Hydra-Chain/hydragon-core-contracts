@@ -27,6 +27,23 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### DENOMINATOR
+
+```solidity
+function DENOMINATOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### DENOMINATOR1
 
 ```solidity
@@ -44,10 +61,129 @@ function DENOMINATOR1() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MANAGER_ROLE
+
+```solidity
+function MANAGER_ROLE() external view returns (bytes32)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bytes32 | undefined |
+
 ### MAX_RSI_BONUS
 
 ```solidity
 function MAX_RSI_BONUS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### NATIVE_TOKEN_CONTRACT
+
+```solidity
+function NATIVE_TOKEN_CONTRACT() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### NATIVE_TRANSFER_PRECOMPILE_GAS
+
+```solidity
+function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### SYSTEM
+
+```solidity
+function SYSTEM() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### VALIDATOR_PKCHECK_PRECOMPILE_GAS
+
+```solidity
+function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 ```
 
 
@@ -82,6 +218,23 @@ function averageGain() external view returns (uint256)
 
 ```solidity
 function averageLoss() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### dailyPriceQuotesSum
+
+```solidity
+function dailyPriceQuotesSum() external view returns (uint256)
 ```
 
 
@@ -202,6 +355,95 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### hydraChainContract
+
+```solidity
+function hydraChainContract() external view returns (contract IHydraChain)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IHydraChain | undefined |
+
+### latestDailyPrice
+
+```solidity
+function latestDailyPrice() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### pricePerEpoch
+
+```solidity
+function pricePerEpoch(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### priceSumCounter
+
+```solidity
+function priceSumCounter() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### quotePrice
+
+```solidity
+function quotePrice(uint256 _price) external nonpayable
+```
+
+Quotes the price for each epoch &amp; keeps the average price for each day
+
+*only the system can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _price | uint256 | undefined |
+
 ### renounceRole
 
 ```solidity
@@ -275,6 +517,45 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### updateTime
+
+```solidity
+function updateTime() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### updatedPricesRSI
+
+```solidity
+function updatedPricesRSI(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 
 
 ## Events
@@ -294,6 +575,40 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### PriceQuoted
+
+```solidity
+event PriceQuoted(uint256 indexed epochId, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| epochId `indexed` | uint256 | undefined |
+| amount  | uint256 | undefined |
+
+### PriceUpdated
+
+```solidity
+event PriceUpdated(uint256 time, uint256 price)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| time  | uint256 | undefined |
+| price  | uint256 | undefined |
 
 ### RSIBonusSet
 
@@ -365,5 +680,46 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 | account `indexed` | address | undefined |
 | sender `indexed` | address | undefined |
 
+
+
+## Errors
+
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
+### PriceAlreadyQuoted
+
+```solidity
+error PriceAlreadyQuoted()
+```
+
+
+
+
+
+
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
 
 

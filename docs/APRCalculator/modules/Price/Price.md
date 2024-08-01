@@ -61,23 +61,6 @@ function MANAGER_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### MAX_RSI_BONUS
-
-```solidity
-function MAX_RSI_BONUS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -167,40 +150,6 @@ function VALIDATOR_PKCHECK_PRECOMPILE() external view returns (address)
 
 ```solidity
 function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### averageGain
-
-```solidity
-function averageGain() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### averageLoss
-
-```solidity
-function averageLoss() external view returns (uint256)
 ```
 
 
@@ -455,28 +404,6 @@ function updateTime() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### updatedPrices
-
-```solidity
-function updatedPrices(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 
 
 ## Events
@@ -530,22 +457,6 @@ event PriceUpdated(uint256 time, uint256 price)
 |---|---|---|
 | time  | uint256 | undefined |
 | price  | uint256 | undefined |
-
-### RSIBonusSet
-
-```solidity
-event RSIBonusSet(uint256 RSIndex)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| RSIndex  | uint256 | undefined |
 
 ### RoleAdminChanged
 

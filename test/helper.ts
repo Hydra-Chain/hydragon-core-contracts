@@ -348,6 +348,9 @@ export async function calculateExpectedReward(
   reward: BigNumber
 ) {
   // calculate expected reward based on the given apr factors
+  if (rsi.isZero()) {
+    rsi = DENOMINATOR;
+  }
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 

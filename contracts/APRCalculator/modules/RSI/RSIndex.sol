@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
-import {System} from "../../../common/System/System.sol";
-import {Governed} from "../../../common/Governed/Governed.sol";
+import {Price} from "../Price/Price.sol";
 import {IRSIndex} from "./IRSIndex.sol";
 
 import "hardhat/console.sol";
 
-abstract contract RSIndex is IRSIndex, Initializable, Governed {
+abstract contract RSIndex is IRSIndex, Price {
     uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant DENOMINATOR1 = 10000;
 
@@ -17,6 +14,7 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
     uint256 public averageGain;
     uint256 public averageLoss;
     uint256 public rsi;
+    uint256[] public updatedPricesRSI;
 
     // _______________ Initializer _______________
 
@@ -54,9 +52,61 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
     // _______________ Internal functions _______________
 
     /**
+     * @inheritdoc Price
+     * @notice Update the RSI based on the price update, if the needed conditions are met.
+     * @param _price The price to be used for the update.
+     */
+    function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
+        if (!disabledRSI) {
+            updatedPricesRSI.push(_price);
+            _triggerRSIUpdate();
+        }
+    }
+
+    // _______________ Private functions _______________
+
+    /**
+     * @notice Calculate the average gain and loss based on the updated prices
+     */
+    function _triggerRSIUpdate() private {
+        uint256 gain;
+        uint256 loss;
+        uint256 arrLenght = updatedPricesRSI.length;
+        if (arrLenght > 15) {
+            uint256 lastPrice = updatedPricesRSI[arrLenght - 1];
+            uint256 secondLastPrice = updatedPricesRSI[arrLenght - 2];
+            if (lastPrice > secondLastPrice) {
+                averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
+                averageLoss = (averageLoss * 13) / 14;
+                console.log("averageGain", averageGain);
+            } else if (lastPrice < secondLastPrice) {
+                averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
+                averageGain = (averageGain * 13) / 14;
+            } else {
+                return;
+            }
+        } else if (arrLenght == 15) {
+            for (uint256 i = 1; i < arrLenght; i++) {
+                if (updatedPricesRSI[i] > updatedPricesRSI[i - 1]) {
+                    gain += updatedPricesRSI[i] - updatedPricesRSI[i - 1];
+                } else if (updatedPricesRSI[i] < updatedPricesRSI[i - 1]) {
+                    loss += updatedPricesRSI[i - 1] - updatedPricesRSI[i];
+                }
+            }
+
+            averageGain = (gain * DENOMINATOR) / 14;
+            averageLoss = (loss * DENOMINATOR) / 14;
+        } else {
+            return;
+        }
+
+        _calcRSIndex();
+    }
+
+    /**
      * @notice Calculate the Relative Strength, based on average gain and loss
      */
-    function _calcRSIndex() internal {
+    function _calcRSIndex() private {
         uint256 rsindex;
         uint256 avrGain = averageGain;
         uint256 avrLoss = averageLoss;
@@ -74,8 +124,6 @@ abstract contract RSIndex is IRSIndex, Initializable, Governed {
 
         _setRSI(rsindex / DENOMINATOR1);
     }
-
-    // _______________ Private functions _______________
 
     /**
      * @notice Set the Relative Strength Index (RSI) bonus based on the SMA ratio

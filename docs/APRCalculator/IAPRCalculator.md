@@ -92,6 +92,17 @@ Change the default macro factor
 |---|---|---|
 | _macroFactor | uint256 | The new default macro factor |
 
+### gardRSIndex
+
+```solidity
+function gardRSIndex() external nonpayable
+```
+
+Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
 ### getBaseAPR
 
 ```solidity
@@ -302,6 +313,7 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
+<<<<<<< HEAD
 ### DefaultMacroFactorChanged
 
 ```solidity
@@ -334,6 +346,8 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
+=======
+>>>>>>> 09d26c5 (restructure after rebase)
 ### PriceQuoted
 
 ```solidity
@@ -388,6 +402,11 @@ event RSIBonusSet(uint256 RSIndex)
 
 ## Errors
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> d8ec9c2 (restructure after rebase)
 ### InvalidMacroFactor
 
 ```solidity
@@ -399,6 +418,29 @@ error InvalidMacroFactor()
 
 
 
+<<<<<<< HEAD
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> e67ae0a (Macro update with tests)
+### InvalidPrice
+=======
+<<<<<<< HEAD
+### InvalidMacro
+>>>>>>> a02b7ab (Macro update with tests)
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
+=======
+>>>>>>> 09d26c5 (restructure after rebase)
+>>>>>>> d8ec9c2 (restructure after rebase)
 ### InvalidPrice
 
 ```solidity
