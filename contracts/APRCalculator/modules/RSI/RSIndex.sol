@@ -57,6 +57,7 @@ abstract contract RSIndex is IRSIndex, Price {
      * @param _price The price to be used for the update.
      */
     function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
+        console.log("Enter RSI: %s", _price);
         if (!disabledRSI) {
             updatedPricesRSI.push(_price);
             _triggerRSIUpdate();
@@ -99,6 +100,8 @@ abstract contract RSIndex is IRSIndex, Price {
         } else {
             return;
         }
+        console.log("averageGain", averageGain);
+        console.log("averageLoss", averageLoss);
 
         _calcRSIndex();
     }

@@ -5,7 +5,7 @@ import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
 import {RSIndex} from "./modules/RSI/RSIndex.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, RSIndex, MacroFactor {
+contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     uint256 public constant INITIAL_BASE_APR = 500;
     uint256 public constant EPOCHS_YEAR = 31500;
 
@@ -118,7 +118,8 @@ contract APRCalculator is IAPRCalculator, RSIndex, MacroFactor {
     // _______________ Internal functions _______________
 
     function _onPriceUpdate(uint256 _price) internal override(MacroFactor, RSIndex) {
-        super._onPriceUpdate(_price);
+        MacroFactor._onPriceUpdate(_price);
+        RSIndex._onPriceUpdate(_price);
     }
 
     // _______________ Private functions _______________
