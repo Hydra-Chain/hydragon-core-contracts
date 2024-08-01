@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { DAY, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
+import { DAY, ERRORS, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
 import { commitEpoch } from "../helper";
 
 export function RunRSIndexTests(): void {
@@ -76,7 +76,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.averageLoss()).to.be.above(averageLoss);
     });
 
-    it("should properly update RSI on price update", async function () {
+    it("should properly update RSI on slowly moving the price", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
@@ -84,63 +84,76 @@ export function RunRSIndexTests(): void {
       const currentPrice = await aprCalculator.latestDailyPrice();
       console.log("currentPrice", currentPrice);
 
-      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(14));
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(100));
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(14));
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(100));
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(20));
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(100));
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(1000));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(10));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(10));
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      expect(await aprCalculator.rsi()).to.be.equal(0);
     });
   });
 
-  // describe("Gard RSIndex", function () {
-  //   it("should revert if not called by governance", async function () {
-  //     const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+  describe("Gard RSIndex", function () {
+    it("should revert if not called by governance", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-  //     const adminRole = await aprCalculator.DEFAULT_ADMIN_ROLE();
+      const managerRole = await aprCalculator.MANAGER_ROLE();
 
-  //     await expect(aprCalculator.gardRSIndex()).to.be.revertedWith(
-  //       ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), adminRole)
-  //     );
-  //   });
+      await expect(aprCalculator.gardRSIndex()).to.be.revertedWith(
+        ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
+      );
+    });
 
-  //   it("should successfully gard RSI & disable updates", async function () {
-  //     const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
-  //     const oldMacroFactor = await aprCalculator.getMacroFactor();
-  //     const oldSMASlowSum = await aprCalculator.smaSlowSum();
-  //     const oldSMAFastSum = await aprCalculator.smaFastSum();
-  //     await aprCalculator.connect(this.signers.governance).gardMacroFactor();
+    it("should successfully gard RSI & disable updates", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.rsiOverSoldConditionFixture);
+      const oldRSI = await aprCalculator.getRSIBonus();
+      await aprCalculator.connect(this.signers.governance).gardRSIndex();
 
-  //     await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
-  //       aprCalculator,
-  //       "MacroFactorSet"
-  //     );
-  //     const currentMacroFactor = await aprCalculator.getMacroFactor();
-  //     expect(currentMacroFactor).to.equal(MIN_RSI_BONUS);
-  //     expect(currentMacroFactor).to.below(oldMacroFactor);
-  //     expect(await aprCalculator.disabledMacro()).to.be.true;
-  //     expect(await aprCalculator.smaSlowSum()).to.equal(oldSMASlowSum);
-  //     expect(await aprCalculator.smaFastSum()).to.equal(oldSMAFastSum);
-  //   });
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
+        aprCalculator,
+        "RSIBonusSet"
+      );
+      const currentRSI = await aprCalculator.getRSIBonus();
+      expect(currentRSI).to.equal(0);
+      expect(currentRSI).to.below(oldRSI);
+      expect(await aprCalculator.disabledRSI()).to.be.true;
+    });
 
-  //   it("should disable gard and enable RSI updates after calling the function again", async function () {
-  //     const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
+    it("should disable gard and enable RSI updates after calling the function again", async function () {
+      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+        this.fixtures.rsiOverSoldConditionFixture
+      );
+      await aprCalculator.connect(this.signers.governance).gardRSIndex();
 
-  //     await aprCalculator.connect(this.signers.governance).gardMacroFactor();
-  //     expect(await aprCalculator.disabledMacro()).to.be.true;
-  //     expect(await aprCalculator.macroFactor()).to.be.equal(MIN_RSI_BONUS);
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
+        aprCalculator,
+        "RSIBonusSet"
+      );
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-  //     await aprCalculator.connect(this.signers.governance).gardMacroFactor();
-  //     await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
-  //       aprCalculator,
-  //       "MacroFactorSet"
-  //     );
-  //     expect(await aprCalculator.disabledMacro()).to.be.false;
-  //     expect(await aprCalculator.macroFactor()).to.be.above(MIN_RSI_BONUS);
-  //   });
-  // });
+      expect(await aprCalculator.disabledRSI()).to.be.true;
+
+      await aprCalculator.connect(this.signers.governance).gardRSIndex();
+
+      expect(await aprCalculator.disabledRSI()).to.be.false;
+
+      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
+        aprCalculator,
+        "RSIBonusSet"
+      );
+    });
+  });
 }

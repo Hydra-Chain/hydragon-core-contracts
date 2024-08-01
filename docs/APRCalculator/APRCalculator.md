@@ -44,23 +44,6 @@ function DENOMINATOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### DENOMINATOR1
-
-```solidity
-function DENOMINATOR1() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### EPOCHS_YEAR
 
 ```solidity

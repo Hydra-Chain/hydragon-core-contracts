@@ -8,7 +8,6 @@ import "hardhat/console.sol";
 
 abstract contract RSIndex is IRSIndex, Price {
     uint256 public constant MAX_RSI_BONUS = 17000;
-    uint256 public constant DENOMINATOR1 = 10000;
 
     bool public disabledRSI;
     uint256 public averageGain;
@@ -29,7 +28,7 @@ abstract contract RSIndex is IRSIndex, Price {
     /**
      * @inheritdoc IRSIndex
      */
-    function gardRSIndex() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function gardRSIndex() external onlyRole(MANAGER_ROLE) {
         if (!disabledRSI) {
             disabledRSI = true;
             rsi = 0;
@@ -57,7 +56,6 @@ abstract contract RSIndex is IRSIndex, Price {
      * @param _price The price to be used for the update.
      */
     function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
-        console.log("Enter RSI: %s", _price);
         if (!disabledRSI) {
             updatedPricesRSI.push(_price);
             _triggerRSIUpdate();
@@ -79,7 +77,6 @@ abstract contract RSIndex is IRSIndex, Price {
             if (lastPrice > secondLastPrice) {
                 averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
                 averageLoss = (averageLoss * 13) / 14;
-                console.log("averageGain", averageGain);
             } else if (lastPrice < secondLastPrice) {
                 averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
                 averageGain = (averageGain * 13) / 14;
@@ -100,8 +97,6 @@ abstract contract RSIndex is IRSIndex, Price {
         } else {
             return;
         }
-        console.log("averageGain", averageGain);
-        console.log("averageLoss", averageLoss);
 
         _calcRSIndex();
     }
@@ -116,16 +111,20 @@ abstract contract RSIndex is IRSIndex, Price {
 
         if (avrGain == 0) {
             rsindex = 0;
-            console.log("Enter gain = 0: %s", rsindex);
         } else if (avrLoss == 0) {
-            rsindex = 100 * DENOMINATOR1 - ((100 * DENOMINATOR1) / (1 + avrGain));
-            console.log("Enter loss = 0: %s", rsindex);
+            rsindex = 100 * DENOMINATOR;
         } else {
-            uint256 rs = (avrGain * DENOMINATOR1) / avrLoss;
-            rsindex = 100 * DENOMINATOR1 - (100 * (DENOMINATOR1 * 2)) / (DENOMINATOR1 + rs);
+            uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
+            rsindex = 100 * DENOMINATOR - (100 * DENOMINATOR) / (1 + rs);
         }
-
-        _setRSI(rsindex / DENOMINATOR1);
+        console.log("RSI before: ", rsindex);
+        console.log("RSI DENOMINATOR: ", DENOMINATOR * 100 - 100);
+        if (rsindex > DENOMINATOR * 100 - 100) {
+            rsindex -= DENOMINATOR * 100 - 100;
+        } else {
+            rsindex = 0;
+        }
+        _setRSI(rsindex);
     }
 
     /**
@@ -133,8 +132,7 @@ abstract contract RSIndex is IRSIndex, Price {
      * @param rsindex The relative strength
      */
     function _setRSI(uint256 rsindex) private {
-        console.log("rsindex: %s", rsindex);
-
+        console.log("RSI: ", rsindex);
         uint256 newRsi;
         if (rsindex > 39) {
             newRsi = 0;

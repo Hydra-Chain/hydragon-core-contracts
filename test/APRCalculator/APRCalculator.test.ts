@@ -167,7 +167,7 @@ export function RunAPRCalculatorTests(): void {
     describe("Price", function () {
       RunPriceTests();
     });
-    describe("RSIndex", function () {
+    describe.only("RSIndex", function () {
       RunRSIndexTests();
     });
     describe("Macro Factor", function () {
