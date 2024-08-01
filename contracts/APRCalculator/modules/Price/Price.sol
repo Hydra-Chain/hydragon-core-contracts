@@ -3,10 +3,9 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {System} from "../../../common/System/System.sol";
 import {Governed} from "../../../common/Governed/Governed.sol";
-import {MacroFactor} from "../MacroFactor/MacroFactor.sol";
+import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {IPrice} from "./IPrice.sol";
 
 abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector {
