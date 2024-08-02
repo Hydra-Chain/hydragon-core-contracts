@@ -76,6 +76,22 @@ applies the max reward for the given amount - 52 weeks
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### changeDefaultMacroFactor
+
+```solidity
+function changeDefaultMacroFactor(uint256 _macroFactor) external nonpayable
+```
+
+Change the default macro factor
+
+*only governance can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _macroFactor | uint256 | The new default macro factor |
+
 ### getBaseAPR
 
 ```solidity
@@ -149,6 +165,23 @@ returns the number of epochs per year
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### getMacroFactor
+
+```solidity
+function getMacroFactor() external view returns (uint256)
+```
+
+Get the macro factor
+
+*return the macro factor*
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | macro factor |
+
 ### getMaxAPR
 
 ```solidity
@@ -206,6 +239,17 @@ returns the vesting bonus for the given weeks count
 |---|---|---|
 | nominator | uint256 | undefined |
 
+### guardMacroFactor
+
+```solidity
+function guardMacroFactor() external nonpayable
+```
+
+Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
 ### quotePrice
 
 ```solidity
@@ -238,22 +282,6 @@ sets new base APR
 |---|---|---|
 | newBase | uint256 | new base APR |
 
-### setMacro
-
-```solidity
-function setMacro(uint256 newMacroFactor) external nonpayable
-```
-
-sets new Macro factor
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newMacroFactor | uint256 | new macro factor |
-
 ### setRSI
 
 ```solidity
@@ -273,6 +301,38 @@ sets new RSI value
 
 
 ## Events
+
+### DefaultMacroFactorChanged
+
+```solidity
+event DefaultMacroFactorChanged(uint256 macroFactor)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| macroFactor  | uint256 | undefined |
+
+### MacroFactorSet
+
+```solidity
+event MacroFactorSet(uint256 macroFactor)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| macroFactor  | uint256 | undefined |
 
 ### PriceQuoted
 
@@ -312,10 +372,10 @@ event PriceUpdated(uint256 time, uint256 price)
 
 ## Errors
 
-### InvalidMacro
+### InvalidMacroFactor
 
 ```solidity
-error InvalidMacro()
+error InvalidMacroFactor()
 ```
 
 

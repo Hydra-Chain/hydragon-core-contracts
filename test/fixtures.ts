@@ -22,6 +22,7 @@ import {
   INITIAL_COMMISSION,
   INITIAL_PRICE,
   MIN_RSI_BONUS,
+  SLOW_SMA,
   SYSTEM,
   VESTING_DURATION_WEEKS,
   WEEK,
@@ -173,9 +174,17 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       hydraDelegation.address
     );
 
+  const prices: number[] = [];
+  for (let i = 0; i < SLOW_SMA - 1; i++) {
+    // Generate a random number between 300 and 600
+    const randomPrice = Math.floor(Math.random() * (600 - 300 + 1)) + 300;
+    prices.push(randomPrice);
+  }
+  prices.push(INITIAL_PRICE);
+
   await aprCalculator
     .connect(this.signers.system)
-    .initialize(this.signers.governance.address, hydraChain.address, INITIAL_PRICE);
+    .initialize(this.signers.governance.address, hydraChain.address, prices);
 
   await systemHydraChain.initialize(
     [validatorInit],

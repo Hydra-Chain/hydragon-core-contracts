@@ -15,7 +15,7 @@ export const WEEK = DAY * 7;
 export const VESTING_DURATION_WEEKS = 10; // in weeks
 export const EPOCHS_YEAR = ethers.BigNumber.from(31500);
 export const INITIAL_BASE_APR = ethers.BigNumber.from(500);
-export const INITIAL_MACRO_FACTOR = ethers.BigNumber.from(7500);
+export const INITIAL_DEFAULT_MACRO_FACTOR = ethers.BigNumber.from(7500);
 export const MIN_MACRO_FACTOR = ethers.BigNumber.from(1250);
 export const MAX_MACRO_FACTOR = ethers.BigNumber.from(17500);
 export const MIN_RSI_BONUS = ethers.BigNumber.from(10000);
@@ -24,6 +24,9 @@ export const DENOMINATOR = ethers.BigNumber.from(10000);
 export const DEADLINE = ethers.constants.MaxUint256.toString();
 export const MAX_ACTIVE_VALIDATORS = 150;
 export const INITIAL_PRICE = 500;
+export const FAST_SMA = 115;
+export const SLOW_SMA = 310;
+export const ARRAY_310_ELEMENTS: number[] = Array(310).fill(INITIAL_PRICE);
 /* eslint-disable no-unused-vars */
 export enum VALIDATOR_STATUS {
   None = 0,

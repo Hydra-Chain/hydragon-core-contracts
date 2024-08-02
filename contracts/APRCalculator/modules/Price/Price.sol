@@ -3,27 +3,40 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {System} from "../../../common/System/System.sol";
+import {Governed} from "../../../common/Governed/Governed.sol";
+import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {IPrice} from "./IPrice.sol";
 
-abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
+abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector {
+    uint256 public constant DENOMINATOR = 10000;
+    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
+
     uint256 public updateTime;
     uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
     uint256 public dailyPriceQuotesSum;
+    uint256[] public updatedPrices;
     mapping(uint256 => uint256) public pricePerEpoch;
 
     // _______________ Initializer _______________
 
-    function __Price_init(address _hydraChainAddr, uint256 _initialPrice) internal onlyInitializing {
+    function __Price_init(
+        address _hydraChainAddr,
+        address _governance,
+        uint256[310] memory _prices
+    ) internal onlyInitializing {
+        __Governed_init(_governance);
         __HydraChainConnector_init(_hydraChainAddr);
-        __Price_init_unchained(_initialPrice);
+        __Price_init_unchained(_prices);
+
+        _grantRole(MANAGER_ROLE, _governance);
     }
 
-    function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
+    function __Price_init_unchained(uint256[310] memory _prices) internal onlyInitializing {
         updateTime = _calcNextMidnight();
-        latestDailyPrice = _initialPrice;
+        updatedPrices = _prices;
+        latestDailyPrice = _prices[309];
     }
 
     // _______________ External functions _______________
@@ -54,16 +67,28 @@ abstract contract Price is IPrice, Initializable, System, HydraChainConnector {
         emit PriceQuoted(currentEpochId, _price);
     }
 
+    // _______________ Internal functions _______________
+
+    /**
+     * @notice Triggers bonus updates based on the price.
+     */
+    function _onPriceUpdate(uint256 _price) internal virtual;
+
     // _______________ Private functions _______________
 
     /**
-     * @notice Update the daily price.
+     * @notice Update the price and time for the next update.
+     * @dev It also triggers the macro factor update if not disabled.
      */
     function _updatePrice() private {
-        latestDailyPrice = dailyPriceQuotesSum / priceSumCounter;
+        uint256 price = dailyPriceQuotesSum / priceSumCounter;
         updateTime = _calcNextMidnight();
+        latestDailyPrice = price;
+        updatedPrices.push(price);
 
-        emit PriceUpdated(block.timestamp, latestDailyPrice);
+        emit PriceUpdated(block.timestamp, price);
+
+        _onPriceUpdate(price);
     }
 
     /**

@@ -1,4 +1,4 @@
-# APRCalculator
+# MacroFactor
 
 
 
@@ -44,44 +44,10 @@ function DENOMINATOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### EPOCHS_YEAR
-
-```solidity
-function EPOCHS_YEAR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### FAST_SMA
 
 ```solidity
 function FAST_SMA() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### INITIAL_BASE_APR
-
-```solidity
-function INITIAL_BASE_APR() external view returns (uint256)
 ```
 
 
@@ -129,44 +95,10 @@ function MAX_MACRO_FACTOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### MAX_RSI_BONUS
-
-```solidity
-function MAX_RSI_BONUS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MIN_MACRO_FACTOR
 
 ```solidity
 function MIN_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### MIN_RSI_BONUS
-
-```solidity
-function MIN_RSI_BONUS() external view returns (uint256)
 ```
 
 
@@ -299,89 +231,6 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### applyBaseAPR
-
-```solidity
-function applyBaseAPR(uint256 amount) external view returns (uint256)
-```
-
-applies the base APR for the given amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| amount | uint256 | the amount to apply the APR to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### applyMacro
-
-```solidity
-function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
-```
-
-applies macro factor for the given total staked amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| totalStaked | uint256 | the total staked amount to apply the macro factor to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | undefined |
-
-### applyMaxReward
-
-```solidity
-function applyMaxReward(uint256 reward) external view returns (uint256)
-```
-
-applies the max reward for the given amount - 52 weeks
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | the reward to apply the max reward to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### base
-
-```solidity
-function base() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### changeDefaultMacroFactor
 
 ```solidity
@@ -449,79 +298,6 @@ function disabledMacro() external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### getBaseAPR
-
-```solidity
-function getBaseAPR() external view returns (uint256)
-```
-
-returns base APR
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### getDENOMINATOR
-
-```solidity
-function getDENOMINATOR() external pure returns (uint256)
-```
-
-returns the denominator for the APR calculation
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### getEpochMaxReward
-
-```solidity
-function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward)
-```
-
-returns the epoch max reward for the given total staked amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| totalStaked | uint256 | the total staked amount to apply the max epoch reward to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | undefined |
-
-### getEpochsPerYear
-
-```solidity
-function getEpochsPerYear() external pure returns (uint256)
-```
-
-returns the number of epochs per year
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### getMacroFactor
 
 ```solidity
@@ -538,41 +314,6 @@ Get the macro factor
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | macro factor |
-
-### getMaxAPR
-
-```solidity
-function getMaxAPR() external view returns (uint256 nominator, uint256 denominator)
-```
-
-returns the max APR for 52 weeks
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | the nominator for the max APR |
-| denominator | uint256 | the denominator for the max APR |
-
-### getRSIBonus
-
-```solidity
-function getRSIBonus() external view returns (uint256)
-```
-
-returns max reward
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 ### getRoleAdmin
 
@@ -595,28 +336,6 @@ function getRoleAdmin(bytes32 role) external view returns (bytes32)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes32 | undefined |
-
-### getVestingBonus
-
-```solidity
-function getVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
-```
-
-returns the vesting bonus for the given weeks count
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| weeksCount | uint256 | the amount of weeks to calculate the bonus for |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| nominator | uint256 | undefined |
 
 ### grantRole
 
@@ -685,24 +404,6 @@ function hydraChainContract() external view returns (contract IHydraChain)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IHydraChain | undefined |
-
-### initialize
-
-```solidity
-function initialize(address governance, address hydraChainAddr, uint256[310] prices) external nonpayable
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| governance | address | undefined |
-| hydraChainAddr | address | undefined |
-| prices | uint256[310] | undefined |
 
 ### latestDailyPrice
 
@@ -827,55 +528,6 @@ function revokeRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
-### rsi
-
-```solidity
-function rsi() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### setBase
-
-```solidity
-function setBase(uint256 newBase) external nonpayable
-```
-
-sets new base APR
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newBase | uint256 | new base APR |
-
-### setRSI
-
-```solidity
-function setRSI(uint256 newRSI) external nonpayable
-```
-
-sets new RSI value
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newRSI | uint256 | new RSI value |
-
 ### smaFastSum
 
 ```solidity
@@ -953,28 +605,6 @@ function updateTime() external view returns (uint256)
 
 ```solidity
 function updatedPrices(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### vestingBonus
-
-```solidity
-function vestingBonus(uint256) external view returns (uint256)
 ```
 
 
@@ -1152,17 +782,6 @@ error InvalidMacroFactor()
 
 ```solidity
 error InvalidPrice()
-```
-
-
-
-
-
-
-### InvalidRSI
-
-```solidity
-error InvalidRSI()
 ```
 
 

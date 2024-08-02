@@ -2,10 +2,10 @@
 pragma solidity 0.8.17;
 
 import {IPrice} from "./modules/Price/IPrice.sol";
+import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 
-interface IAPRCalculator is IPrice {
+interface IAPRCalculator is IMacroFactor, IPrice {
     error InvalidRSI();
-    error InvalidMacro();
 
     /**
      * @notice sets new base APR
@@ -13,13 +13,6 @@ interface IAPRCalculator is IPrice {
      * @param newBase new base APR
      */
     function setBase(uint256 newBase) external;
-
-    /**
-     * @notice sets new Macro factor
-     * @dev only owner can call this function
-     * @param newMacroFactor new macro factor
-     */
-    function setMacro(uint256 newMacroFactor) external;
 
     /**
      * @notice sets new RSI value

@@ -22,10 +22,6 @@ abstract contract DaoIncentive is
 
     // _______________ Initializer _______________
 
-    /**
-     * @notice Initializer function for genesis contract, called by the Hydra client at genesis to set up the initial state.
-     * @dev only callable by client, can only be called once
-     */
     function __DaoIncentive_init(
         address aprCalculatorAddr,
         address rewardWalletAddr,

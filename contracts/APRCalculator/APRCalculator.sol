@@ -1,37 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "../common/Governed/Governed.sol";
-import {Price} from "./modules/Price/Price.sol";
+import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, Price, Governed {
+contract APRCalculator is IAPRCalculator, MacroFactor {
     uint256 public constant INITIAL_BASE_APR = 500;
-    uint256 public constant INITIAL_MACRO_FACTOR = 7500;
-    uint256 public constant MIN_MACRO_FACTOR = 1250;
-    uint256 public constant MAX_MACRO_FACTOR = 17500;
     uint256 public constant MIN_RSI_BONUS = 10000;
     uint256 public constant MAX_RSI_BONUS = 17000;
-    uint256 public constant DENOMINATOR = 10000;
     uint256 public constant EPOCHS_YEAR = 31500;
-    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
     uint256 public rsi;
     uint256 public base;
-    uint256 public macroFactor;
     uint256[52] public vestingBonus;
 
     // _______________ Initializer _______________
 
-    function initialize(address manager, address hydraChainAddr, uint256 initialPrice) external initializer onlySystemCall {
-        __Governed_init(manager);
-        __Price_init(hydraChainAddr, initialPrice);
+    function initialize(
+        address governance,
+        address hydraChainAddr,
+        uint256[310] memory prices
+    ) external initializer onlySystemCall {
+        __Price_init(hydraChainAddr, governance, prices);
+        __MacroFactor_init();
+
         base = INITIAL_BASE_APR;
-        macroFactor = INITIAL_MACRO_FACTOR;
 
         initializeVestingBonus();
-
-        _grantRole(MANAGER_ROLE, manager);
     }
 
     // _______________ External functions _______________
@@ -41,14 +36,6 @@ contract APRCalculator is IAPRCalculator, Price, Governed {
      */
     function setBase(uint256 newBase) external onlyRole(MANAGER_ROLE) {
         base = newBase;
-    }
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function setMacro(uint256 newMacroFactor) external onlyRole(MANAGER_ROLE) {
-        if (newMacroFactor < MIN_MACRO_FACTOR || newMacroFactor > MAX_MACRO_FACTOR) revert InvalidMacro();
-        macroFactor = newMacroFactor;
     }
 
     /**
