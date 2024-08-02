@@ -22,7 +22,7 @@ import { RunRSIndexTests } from "./RSIndex.test";
 import { RunMacroFactorTests } from "./MacroFactor.test";
 
 export function RunAPRCalculatorTests(): void {
-  describe("", function () {
+  describe.only("", function () {
     describe("Initialization", function () {
       it("should validate default values when AprCalculator deployed", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
@@ -167,7 +167,7 @@ export function RunAPRCalculatorTests(): void {
     describe("Price", function () {
       RunPriceTests();
     });
-    describe.only("RSIndex", function () {
+    describe("RSIndex", function () {
       RunRSIndexTests();
     });
     describe("Macro Factor", function () {

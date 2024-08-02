@@ -248,17 +248,6 @@ function disabledRSI() external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### gardRSIndex
-
-```solidity
-function gardRSIndex() external nonpayable
-```
-
-Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
 ### getRSIBonus
 
 ```solidity
@@ -314,6 +303,17 @@ function grantRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### guardRSIndex
+
+```solidity
+function guardRSIndex() external nonpayable
+```
+
+Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
 
 ### hasRole
 
@@ -517,10 +517,10 @@ function updateTime() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### updatedPricesRSI
+### updatedPrices
 
 ```solidity
-function updatedPricesRSI(uint256) external view returns (uint256)
+function updatedPrices(uint256) external view returns (uint256)
 ```
 
 

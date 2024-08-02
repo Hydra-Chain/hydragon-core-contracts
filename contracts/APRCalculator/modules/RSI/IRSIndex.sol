@@ -8,7 +8,7 @@ interface IRSIndex {
      * @notice Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
      * @dev only governance can call this function in case of emergency or price manipulation
      */
-    function gardRSIndex() external;
+    function guardRSIndex() external;
 
     // _______________ Public functions _______________
 

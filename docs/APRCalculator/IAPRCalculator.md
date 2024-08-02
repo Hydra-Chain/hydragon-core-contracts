@@ -92,17 +92,6 @@ Change the default macro factor
 |---|---|---|
 | _macroFactor | uint256 | The new default macro factor |
 
-### gardRSIndex
-
-```solidity
-function gardRSIndex() external nonpayable
-```
-
-Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
 ### getBaseAPR
 
 ```solidity
@@ -261,6 +250,17 @@ Guard the macro factor, so it cannot be changed from price and put it to inital 
 *only governance can call this function in case of emergency or price manipulation*
 
 
+### guardRSIndex
+
+```solidity
+function guardRSIndex() external nonpayable
+```
+
+Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
 ### quotePrice
 
 ```solidity
@@ -297,23 +297,6 @@ sets new base APR
 
 ## Events
 
-### MacroFactorSet
-
-```solidity
-event MacroFactorSet(uint256 macroFactor)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| macroFactor  | uint256 | undefined |
-
-<<<<<<< HEAD
 ### DefaultMacroFactorChanged
 
 ```solidity
@@ -346,8 +329,6 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
-=======
->>>>>>> 09d26c5 (restructure after rebase)
 ### PriceQuoted
 
 ```solidity
@@ -403,10 +384,13 @@ event RSIBonusSet(uint256 RSIndex)
 ## Errors
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> d8ec9c2 (restructure after rebase)
+=======
+>>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidMacroFactor
 
 ```solidity
@@ -418,6 +402,7 @@ error InvalidMacroFactor()
 
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 =======
@@ -441,6 +426,8 @@ error InvalidPrice()
 =======
 >>>>>>> 09d26c5 (restructure after rebase)
 >>>>>>> d8ec9c2 (restructure after rebase)
+=======
+>>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidPrice
 
 ```solidity

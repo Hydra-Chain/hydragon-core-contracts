@@ -146,6 +146,23 @@ function MAX_RSI_BONUS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MIN_MACRO_FACTOR
+
+```solidity
+function MIN_MACRO_FACTOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -466,28 +483,6 @@ function disabledRSI() external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### gardMacroFactor
-
-```solidity
-function gardMacroFactor() external nonpayable
-```
-
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
-### gardRSIndex
-
-```solidity
-function gardRSIndex() external nonpayable
-```
-
-Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
 ### getBaseAPR
 
 ```solidity
@@ -681,6 +676,17 @@ function guardMacroFactor() external nonpayable
 ```
 
 Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
+### guardRSIndex
+
+```solidity
+function guardRSIndex() external nonpayable
+```
+
+Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
 
 *only governance can call this function in case of emergency or price manipulation*
 
@@ -994,28 +1000,6 @@ function updatedPrices(uint256) external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### updatedPricesRSI
-
-```solidity
-function updatedPricesRSI(uint256) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### vestingBonus
 
 ```solidity
@@ -1199,10 +1183,13 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 ## Errors
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> d8ec9c2 (restructure after rebase)
+=======
+>>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidMacroFactor
 
 ```solidity
@@ -1214,6 +1201,7 @@ error InvalidMacroFactor()
 
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 =======
@@ -1237,6 +1225,8 @@ error InvalidPrice()
 =======
 >>>>>>> 09d26c5 (restructure after rebase)
 >>>>>>> d8ec9c2 (restructure after rebase)
+=======
+>>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidPrice
 
 ```solidity

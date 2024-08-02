@@ -13,7 +13,6 @@ abstract contract RSIndex is IRSIndex, Price {
     uint256 public averageGain;
     uint256 public averageLoss;
     uint256 public rsi;
-    uint256[] public updatedPricesRSI;
 
     // _______________ Initializer _______________
 
@@ -28,7 +27,7 @@ abstract contract RSIndex is IRSIndex, Price {
     /**
      * @inheritdoc IRSIndex
      */
-    function gardRSIndex() external onlyRole(MANAGER_ROLE) {
+    function guardRSIndex() external onlyRole(MANAGER_ROLE) {
         if (!disabledRSI) {
             disabledRSI = true;
             rsi = 0;
@@ -53,11 +52,9 @@ abstract contract RSIndex is IRSIndex, Price {
     /**
      * @inheritdoc Price
      * @notice Update the RSI based on the price update, if the needed conditions are met.
-     * @param _price The price to be used for the update.
      */
-    function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
+    function _onPriceUpdate(uint256 /* _price */) internal virtual override(Price) {
         if (!disabledRSI) {
-            updatedPricesRSI.push(_price);
             _triggerRSIUpdate();
         }
     }
@@ -70,10 +67,10 @@ abstract contract RSIndex is IRSIndex, Price {
     function _triggerRSIUpdate() private {
         uint256 gain;
         uint256 loss;
-        uint256 arrLenght = updatedPricesRSI.length;
+        uint256 arrLenght = updatedPrices.length;
         if (arrLenght > 15) {
-            uint256 lastPrice = updatedPricesRSI[arrLenght - 1];
-            uint256 secondLastPrice = updatedPricesRSI[arrLenght - 2];
+            uint256 lastPrice = updatedPrices[arrLenght - 1];
+            uint256 secondLastPrice = updatedPrices[arrLenght - 2];
             if (lastPrice > secondLastPrice) {
                 averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
                 averageLoss = (averageLoss * 13) / 14;
@@ -85,10 +82,10 @@ abstract contract RSIndex is IRSIndex, Price {
             }
         } else if (arrLenght == 15) {
             for (uint256 i = 1; i < arrLenght; i++) {
-                if (updatedPricesRSI[i] > updatedPricesRSI[i - 1]) {
-                    gain += updatedPricesRSI[i] - updatedPricesRSI[i - 1];
-                } else if (updatedPricesRSI[i] < updatedPricesRSI[i - 1]) {
-                    loss += updatedPricesRSI[i - 1] - updatedPricesRSI[i];
+                if (updatedPrices[i] > updatedPrices[i - 1]) {
+                    gain += updatedPrices[i] - updatedPrices[i - 1];
+                } else if (updatedPrices[i] < updatedPrices[i - 1]) {
+                    loss += updatedPrices[i - 1] - updatedPrices[i];
                 }
             }
 
@@ -98,14 +95,14 @@ abstract contract RSIndex is IRSIndex, Price {
             return;
         }
 
-        _calcRSIndex();
+        uint256 rsindex = _calcRSIndex();
+        _setRSI(rsindex);
     }
 
     /**
      * @notice Calculate the Relative Strength, based on average gain and loss
      */
-    function _calcRSIndex() private {
-        uint256 rsindex;
+    function _calcRSIndex() private view returns (uint256 rsindex) {
         uint256 avrGain = averageGain;
         uint256 avrLoss = averageLoss;
 
@@ -124,7 +121,6 @@ abstract contract RSIndex is IRSIndex, Price {
         } else {
             rsindex = 0;
         }
-        _setRSI(rsindex);
     }
 
     /**

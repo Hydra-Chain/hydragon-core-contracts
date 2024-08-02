@@ -10,17 +10,6 @@
 
 ## Methods
 
-### gardRSIndex
-
-```solidity
-function gardRSIndex() external nonpayable
-```
-
-Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
 ### getRSIBonus
 
 ```solidity
@@ -37,6 +26,17 @@ Get the rsi
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | RSIndex |
+
+### guardRSIndex
+
+```solidity
+function guardRSIndex() external nonpayable
+```
+
+Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
 
 
 

@@ -112,7 +112,7 @@ export function RunRSIndexTests(): void {
 
       const managerRole = await aprCalculator.MANAGER_ROLE();
 
-      await expect(aprCalculator.gardRSIndex()).to.be.revertedWith(
+      await expect(aprCalculator.guardRSIndex()).to.be.revertedWith(
         ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
       );
     });
@@ -120,7 +120,7 @@ export function RunRSIndexTests(): void {
     it("should successfully gard RSI & disable updates", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.rsiOverSoldConditionFixture);
       const oldRSI = await aprCalculator.getRSIBonus();
-      await aprCalculator.connect(this.signers.governance).gardRSIndex();
+      await aprCalculator.connect(this.signers.governance).guardRSIndex();
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
@@ -136,7 +136,7 @@ export function RunRSIndexTests(): void {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
-      await aprCalculator.connect(this.signers.governance).gardRSIndex();
+      await aprCalculator.connect(this.signers.governance).guardRSIndex();
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
@@ -146,7 +146,7 @@ export function RunRSIndexTests(): void {
 
       expect(await aprCalculator.disabledRSI()).to.be.true;
 
-      await aprCalculator.connect(this.signers.governance).gardRSIndex();
+      await aprCalculator.connect(this.signers.governance).guardRSIndex();
 
       expect(await aprCalculator.disabledRSI()).to.be.false;
 
