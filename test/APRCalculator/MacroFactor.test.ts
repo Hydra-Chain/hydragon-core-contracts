@@ -1,46 +1,33 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { DAY, ERRORS, INITIAL_MACRO_FACTOR, INITIAL_PRICE } from "../constants";
+import {
+  DAY,
+  ERRORS,
+  INITIAL_DEFAULT_MACRO_FACTOR,
+  INITIAL_PRICE,
+  MAX_MACRO_FACTOR,
+  MIN_MACRO_FACTOR,
+} from "../constants";
 import { commitEpoch } from "../helper";
 
 export function RunMacroFactorTests(): void {
   it("should get macro factor", async function () {
     const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-    expect(await aprCalculator.getMacroFactor()).to.equal(INITIAL_MACRO_FACTOR);
+    expect(await aprCalculator.getMacroFactor())
+      .to.above(MIN_MACRO_FACTOR)
+      .and.below(MAX_MACRO_FACTOR);
   });
 
   describe("Set Macro Factor", function () {
-    it("should not update macro factor if slow SMA is not fulfilled", async function () {
+    it("should emit MacroFactorSet event on price update", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
-
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 2);
+      // need to quote price before updating it
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
-
-      // need to quote price again to update the price we already quoted
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE)).to.not.emit(
-        aprCalculator,
-        "MacroFactorSet"
-      );
-
-      expect(await aprCalculator.smaFastSum(), "SMA Fast Sum").to.equal(INITIAL_PRICE * 2);
-      expect(await aprCalculator.smaSlowSum(), "SMA Slow Sum").to.equal(INITIAL_PRICE * 2);
-      expect(await aprCalculator.updatedPrices([0]), "updated prices array").to.equal(INITIAL_PRICE * 2);
-      expect(await aprCalculator.getMacroFactor()).to.equal(INITIAL_MACRO_FACTOR);
-    });
-
-    it("should update macro factor on price update on different SMA when slow SMA is fulfilled", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
-
-      expect(await aprCalculator.updatedPrices([123]), "updated prices array").to.above(INITIAL_PRICE);
-      expect(await aprCalculator.getMacroFactor()).to.above(INITIAL_MACRO_FACTOR);
-    });
-
-    it("should emit MacroFactorSet event on price update after slow SMA is fulfilled", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 2)).to.emit(
         aprCalculator,
@@ -50,7 +37,7 @@ export function RunMacroFactorTests(): void {
 
     it("should update properly change SMA sum on price update", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.fullSmaSlowSumMacroFactorFixture
+        this.fixtures.initializedHydraChainStateFixture
       );
 
       await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
@@ -72,48 +59,85 @@ export function RunMacroFactorTests(): void {
 
       const managerRole = await aprCalculator.MANAGER_ROLE();
 
-      await expect(aprCalculator.gardMacroFactor()).to.be.revertedWith(
+      await expect(aprCalculator.guardMacroFactor()).to.be.revertedWith(
         ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
       );
     });
 
     it("should successfully gard macro factor & disable updates", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
-      const oldMacroFactor = await aprCalculator.getMacroFactor();
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
       const oldSMASlowSum = await aprCalculator.smaSlowSum();
       const oldSMAFastSum = await aprCalculator.smaFastSum();
 
-      await expect(aprCalculator.connect(this.signers.governance).gardMacroFactor())
+      await expect(aprCalculator.connect(this.signers.governance).guardMacroFactor())
         .to.emit(aprCalculator, "MacroFactorSet")
-        .withArgs(INITIAL_MACRO_FACTOR);
+        .withArgs(INITIAL_DEFAULT_MACRO_FACTOR);
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
         "MacroFactorSet"
       );
       const currentMacroFactor = await aprCalculator.getMacroFactor();
-      expect(currentMacroFactor).to.equal(INITIAL_MACRO_FACTOR);
-      expect(currentMacroFactor).to.below(oldMacroFactor);
+      expect(currentMacroFactor).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
       expect(await aprCalculator.disabledMacro()).to.be.true;
       expect(await aprCalculator.smaSlowSum()).to.equal(oldSMASlowSum);
       expect(await aprCalculator.smaFastSum()).to.equal(oldSMAFastSum);
     });
 
     it("should disable gard and enable macro factor updates after calling the function again", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.fullSmaSlowSumMacroFactorFixture);
+      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+        this.fixtures.initializedHydraChainStateFixture
+      );
 
-      await aprCalculator.connect(this.signers.governance).gardMacroFactor();
+      // need to quote price before updating it
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+
+      await aprCalculator.connect(this.signers.governance).guardMacroFactor();
       expect(await aprCalculator.disabledMacro()).to.be.true;
-      expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_MACRO_FACTOR);
+      expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_DEFAULT_MACRO_FACTOR);
 
-      await aprCalculator.connect(this.signers.governance).gardMacroFactor();
+      await aprCalculator.connect(this.signers.governance).guardMacroFactor();
       expect(await aprCalculator.disabledMacro()).to.be.false;
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,
         "MacroFactorSet"
       );
-      expect(await aprCalculator.macroFactor()).to.be.above(INITIAL_MACRO_FACTOR);
+    });
+  });
+
+  describe("Change default macro factor", function () {
+    it("should revert if not called by governance", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      const managerRole = await aprCalculator.MANAGER_ROLE();
+
+      await expect(aprCalculator.changeDefaultMacroFactor(10)).to.be.revertedWith(
+        ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
+      );
+    });
+
+    it("should revert if new default macro factor is not between min and max macro factor", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(
+        aprCalculator.connect(this.signers.governance).changeDefaultMacroFactor(MIN_MACRO_FACTOR.sub(1))
+      ).to.be.revertedWithCustomError(aprCalculator, "InvalidMacroFactor");
+
+      await expect(
+        aprCalculator.connect(this.signers.governance).changeDefaultMacroFactor(MAX_MACRO_FACTOR.add(1))
+      ).to.be.revertedWithCustomError(aprCalculator, "InvalidMacroFactor");
+    });
+
+    it("should successfully change default macro factor", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(aprCalculator.connect(this.signers.governance).changeDefaultMacroFactor(MIN_MACRO_FACTOR))
+        .to.emit(aprCalculator, "DefaultMacroFactorChanged")
+        .withArgs(MIN_MACRO_FACTOR);
+
+      expect(await aprCalculator.defaultMacroFactor()).to.equal(MIN_MACRO_FACTOR);
     });
   });
 }

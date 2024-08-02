@@ -61,23 +61,6 @@ function FAST_SMA() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### INITIAL_MACRO_FACTOR
-
-```solidity
-function INITIAL_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MANAGER_ROLE
 
 ```solidity
@@ -94,6 +77,40 @@ function MANAGER_ROLE() external view returns (bytes32)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes32 | undefined |
+
+### MAX_MACRO_FACTOR
+
+```solidity
+function MAX_MACRO_FACTOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### MIN_MACRO_FACTOR
+
+```solidity
+function MIN_MACRO_FACTOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### NATIVE_TOKEN_CONTRACT
 
@@ -214,10 +231,43 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### changeDefaultMacroFactor
+
+```solidity
+function changeDefaultMacroFactor(uint256 _macroFactor) external nonpayable
+```
+
+Change the default macro factor
+
+*only governance can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _macroFactor | uint256 | The new default macro factor |
+
 ### dailyPriceQuotesSum
 
 ```solidity
 function dailyPriceQuotesSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### defaultMacroFactor
+
+```solidity
+function defaultMacroFactor() external view returns (uint256)
 ```
 
 
@@ -247,17 +297,6 @@ function disabledMacro() external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
-
-### gardMacroFactor
-
-```solidity
-function gardMacroFactor() external nonpayable
-```
-
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
 
 ### getMacroFactor
 
@@ -314,6 +353,17 @@ function grantRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### guardMacroFactor
+
+```solidity
+function guardMacroFactor() external nonpayable
+```
+
+Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
 
 ### hasRole
 
@@ -577,6 +627,22 @@ function updatedPrices(uint256) external view returns (uint256)
 
 ## Events
 
+### DefaultMacroFactorChanged
+
+```solidity
+event DefaultMacroFactorChanged(uint256 macroFactor)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| macroFactor  | uint256 | undefined |
+
 ### Initialized
 
 ```solidity
@@ -700,6 +766,17 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
+
+### InvalidMacroFactor
+
+```solidity
+error InvalidMacroFactor()
+```
+
+
+
+
+
 
 ### InvalidPrice
 

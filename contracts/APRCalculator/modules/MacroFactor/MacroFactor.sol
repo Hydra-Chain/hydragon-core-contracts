@@ -7,13 +7,14 @@ import {IMacroFactor} from "./IMacroFactor.sol";
 abstract contract MacroFactor is IMacroFactor, Price {
     uint256 public constant FAST_SMA = 115;
     uint256 public constant SLOW_SMA = 310;
-    uint256 public constant INITIAL_MACRO_FACTOR = 7500;
+    uint256 public constant MIN_MACRO_FACTOR = 1250;
+    uint256 public constant MAX_MACRO_FACTOR = 17500;
 
     bool public disabledMacro;
     uint256 public smaFastSum;
     uint256 public smaSlowSum;
     uint256 public macroFactor;
-    uint256[] public updatedPrices;
+    uint256 public defaultMacroFactor;
 
     // _______________ Initializer _______________
 
@@ -22,7 +23,8 @@ abstract contract MacroFactor is IMacroFactor, Price {
     }
 
     function __MacroFactor_init_unchained() internal onlyInitializing {
-        macroFactor = INITIAL_MACRO_FACTOR;
+        defaultMacroFactor = 7500;
+        _initializeMacroFactor();
     }
 
     // _______________ External functions _______________
@@ -30,15 +32,27 @@ abstract contract MacroFactor is IMacroFactor, Price {
     /**
      * @inheritdoc IMacroFactor
      */
-    function gardMacroFactor() external onlyRole(MANAGER_ROLE) {
+    function guardMacroFactor() external onlyRole(MANAGER_ROLE) {
         if (!disabledMacro) {
             disabledMacro = true;
-            macroFactor = INITIAL_MACRO_FACTOR;
+            uint256 newMacroFactor = defaultMacroFactor;
+            macroFactor = newMacroFactor;
 
-            emit MacroFactorSet(INITIAL_MACRO_FACTOR);
+            emit MacroFactorSet(newMacroFactor);
         } else {
             disabledMacro = false;
         }
+    }
+
+    /**
+     * @inheritdoc IMacroFactor
+     */
+    function changeDefaultMacroFactor(uint256 _macroFactor) external onlyRole(MANAGER_ROLE) {
+        if (_macroFactor < MIN_MACRO_FACTOR || _macroFactor > MAX_MACRO_FACTOR) {
+            revert InvalidMacroFactor();
+        }
+        defaultMacroFactor = _macroFactor;
+        emit DefaultMacroFactorChanged(_macroFactor);
     }
 
     // _______________ Public functions _______________
@@ -57,7 +71,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @notice Update the macro factor based on the price update, if the needed conditions are met.
      * @param _price The price to be used for the update.
      */
-    function _onPriceUpdate(uint256 _price) internal override(Price) {
+    function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
         if (!disabledMacro) {
             _triggerMacroUpdate(_price);
         }
@@ -70,29 +84,25 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @param _price The price to be used for the update.
      */
     function _triggerMacroUpdate(uint256 _price) private {
-        updatedPrices.push(_price);
         smaFastSum += _price;
         smaSlowSum += _price;
 
         uint256 arrLenght = updatedPrices.length;
-        if (arrLenght >= SLOW_SMA) {
-            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-            smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
 
-            _calcSMA();
-        } else if (arrLenght > FAST_SMA) {
-            smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-        }
+        smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+        smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+
+        uint256 smaRatio = _calcSMA();
+        _setMacroFactor(smaRatio);
     }
 
     /**
      * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
      */
-    function _calcSMA() private {
+    function _calcSMA() private view returns (uint256 smaRatio) {
         uint256 smaFast = smaFastSum / FAST_SMA;
         uint256 smaSlow = smaSlowSum / SLOW_SMA;
-        uint256 smaRatio = (smaFast * DENOMINATOR) / smaSlow;
-        _setMacroFactor(smaRatio);
+        smaRatio = (smaFast * DENOMINATOR) / smaSlow;
     }
 
     /**
@@ -102,7 +112,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
     function _setMacroFactor(uint256 smaRatio) private {
         uint256 newMacroFactor;
         if (smaRatio < 5000) {
-            newMacroFactor = 1250;
+            newMacroFactor = MIN_MACRO_FACTOR;
         } else if (smaRatio < 7500) {
             newMacroFactor = 2500;
         } else if (smaRatio < 9000) {
@@ -114,11 +124,31 @@ abstract contract MacroFactor is IMacroFactor, Price {
         } else if (smaRatio < 17500) {
             newMacroFactor = 12500;
         } else {
-            newMacroFactor = 17500;
+            newMacroFactor = MAX_MACRO_FACTOR;
         }
         macroFactor = newMacroFactor;
 
         emit MacroFactorSet(newMacroFactor);
+    }
+
+    /**
+     * @notice Initialize the macro factor based on the historical prices.
+     */
+    function _initializeMacroFactor() private {
+        uint256 arrLenght = updatedPrices.length;
+        assert(arrLenght > SLOW_SMA);
+        for (uint256 i = 0; i < arrLenght; i++) {
+            smaFastSum += updatedPrices[i];
+            smaSlowSum += updatedPrices[i];
+            if (i > SLOW_SMA) {
+                smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+                smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+            } else if (i > FAST_SMA) {
+                smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+            }
+        }
+        uint256 smaRatio = _calcSMA();
+        _setMacroFactor(smaRatio);
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -16,25 +16,27 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
     uint256 public dailyPriceQuotesSum;
+    uint256[] public updatedPrices;
     mapping(uint256 => uint256) public pricePerEpoch;
 
     // _______________ Initializer _______________
 
     function __Price_init(
         address _hydraChainAddr,
-        uint256 _initialPrice,
-        address _governance
+        address _governance,
+        uint256[] memory _prices
     ) internal onlyInitializing {
         __Governed_init(_governance);
         __HydraChainConnector_init(_hydraChainAddr);
-        __Price_init_unchained(_initialPrice);
+        __Price_init_unchained(_prices);
 
         _grantRole(MANAGER_ROLE, _governance);
     }
 
-    function __Price_init_unchained(uint256 _initialPrice) internal onlyInitializing {
+    function __Price_init_unchained(uint256[] memory _prices) internal onlyInitializing {
         updateTime = _calcNextMidnight();
-        latestDailyPrice = _initialPrice;
+        updatedPrices = _prices;
+        latestDailyPrice = _prices[_prices.length - 1];
     }
 
     // _______________ External functions _______________
@@ -53,7 +55,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         }
 
         pricePerEpoch[currentEpochId] = _price;
-        if (block.timestamp >= updateTime && priceSumCounter != 0) {
+        if (block.timestamp > updateTime && priceSumCounter != 0) {
             _updatePrice();
             dailyPriceQuotesSum = _price;
             priceSumCounter = 1;
@@ -70,7 +72,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @notice Triggers bonus updates based on the price.
      */
-    function _onPriceUpdate(uint256 _price) internal virtual {}
+    function _onPriceUpdate(uint256 _price) internal virtual;
 
     // _______________ Private functions _______________
 
@@ -82,9 +84,11 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         uint256 price = dailyPriceQuotesSum / priceSumCounter;
         updateTime = _calcNextMidnight();
         latestDailyPrice = price;
-        _onPriceUpdate(price);
+        updatedPrices.push(price);
 
         emit PriceUpdated(block.timestamp, price);
+
+        _onPriceUpdate(price);
     }
 
     /**

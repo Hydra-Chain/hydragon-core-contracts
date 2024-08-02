@@ -90,20 +90,6 @@ export interface Fixtures {
       DAOIncentiveVault: HydraVault;
     }>;
   };
-  fullSmaSlowSumMacroFactorFixture: {
-    (): Promise<{
-      hydraChain: HydraChain;
-      systemHydraChain: HydraChain;
-      bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
-      liquidToken: LiquidityToken;
-      aprCalculator: APRCalculator;
-      vestingManagerFactory: VestingManagerFactory;
-      rewardWallet: RewardWallet;
-      DAOIncentiveVault: HydraVault;
-    }>;
-  };
   whitelistedValidatorsStateFixture: {
     (): Promise<{
       hydraChain: HydraChain;

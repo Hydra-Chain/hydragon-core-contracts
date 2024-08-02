@@ -95,23 +95,6 @@ function INITIAL_BASE_APR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### INITIAL_MACRO_FACTOR
-
-```solidity
-function INITIAL_MACRO_FACTOR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MANAGER_ROLE
 
 ```solidity
@@ -129,10 +112,44 @@ function MANAGER_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### MAX_MACRO_FACTOR
+
+```solidity
+function MAX_MACRO_FACTOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MAX_RSI_BONUS
 
 ```solidity
 function MAX_RSI_BONUS() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### MIN_MACRO_FACTOR
+
+```solidity
+function MIN_MACRO_FACTOR() external view returns (uint256)
 ```
 
 
@@ -365,10 +382,43 @@ function base() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### changeDefaultMacroFactor
+
+```solidity
+function changeDefaultMacroFactor(uint256 _macroFactor) external nonpayable
+```
+
+Change the default macro factor
+
+*only governance can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _macroFactor | uint256 | The new default macro factor |
+
 ### dailyPriceQuotesSum
 
 ```solidity
 function dailyPriceQuotesSum() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### defaultMacroFactor
+
+```solidity
+function defaultMacroFactor() external view returns (uint256)
 ```
 
 
@@ -398,17 +448,6 @@ function disabledMacro() external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
-
-### gardMacroFactor
-
-```solidity
-function gardMacroFactor() external nonpayable
-```
-
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
 
 ### getBaseAPR
 
@@ -596,6 +635,17 @@ function grantRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
+### guardMacroFactor
+
+```solidity
+function guardMacroFactor() external nonpayable
+```
+
+Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+
+*only governance can call this function in case of emergency or price manipulation*
+
+
 ### hasRole
 
 ```solidity
@@ -639,7 +689,7 @@ function hydraChainContract() external view returns (contract IHydraChain)
 ### initialize
 
 ```solidity
-function initialize(address governance, address hydraChainAddr, uint256 initialPrice) external nonpayable
+function initialize(address governance, address hydraChainAddr, uint256[] prices) external nonpayable
 ```
 
 
@@ -652,7 +702,7 @@ function initialize(address governance, address hydraChainAddr, uint256 initialP
 |---|---|---|
 | governance | address | undefined |
 | hydraChainAddr | address | undefined |
-| initialPrice | uint256 | undefined |
+| prices | uint256[] | undefined |
 
 ### latestDailyPrice
 
@@ -947,6 +997,22 @@ function vestingBonus(uint256) external view returns (uint256)
 
 ## Events
 
+### DefaultMacroFactorChanged
+
+```solidity
+event DefaultMacroFactorChanged(uint256 macroFactor)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| macroFactor  | uint256 | undefined |
+
 ### Initialized
 
 ```solidity
@@ -1070,6 +1136,17 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
+
+### InvalidMacroFactor
+
+```solidity
+error InvalidMacroFactor()
+```
+
+
+
+
+
 
 ### InvalidPrice
 

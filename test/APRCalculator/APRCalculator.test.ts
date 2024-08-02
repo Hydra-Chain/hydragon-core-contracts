@@ -7,9 +7,11 @@ import {
   ERRORS,
   FAST_SMA,
   INITIAL_BASE_APR,
-  INITIAL_MACRO_FACTOR,
+  INITIAL_DEFAULT_MACRO_FACTOR,
   INITIAL_PRICE,
+  MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
+  MIN_MACRO_FACTOR,
   MIN_RSI_BONUS,
   SLOW_SMA,
 } from "../constants";
@@ -30,17 +32,19 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.rsi()).to.equal(0);
 
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
-        expect(await aprCalculator.INITIAL_MACRO_FACTOR()).to.equal(INITIAL_MACRO_FACTOR);
         expect(await aprCalculator.MIN_RSI_BONUS()).to.be.equal(MIN_RSI_BONUS);
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
 
         // Macro Factor
+        expect(await aprCalculator.MIN_MACRO_FACTOR()).to.equal(MIN_MACRO_FACTOR);
+        expect(await aprCalculator.MAX_MACRO_FACTOR()).to.equal(MAX_MACRO_FACTOR);
         expect(await aprCalculator.FAST_SMA()).to.equal(FAST_SMA);
         expect(await aprCalculator.SLOW_SMA()).to.equal(SLOW_SMA);
         expect(await aprCalculator.disabledMacro()).to.equal(false);
         expect(await aprCalculator.macroFactor()).to.equal(0);
+        expect(await aprCalculator.defaultMacroFactor()).to.equal(0);
         expect(await aprCalculator.smaFastSum()).to.equal(0);
         expect(await aprCalculator.smaSlowSum()).to.equal(0);
 
@@ -56,7 +60,17 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
-          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, INITIAL_PRICE)
+          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, [INITIAL_PRICE])
+        ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
+      });
+
+      it("should revert initialize if not given array longer than 310", async function () {
+        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+        await expect(
+          aprCalculator
+            .connect(this.signers.governance)
+            .initialize(this.signers.governance.address, hydraChain.address, [INITIAL_PRICE])
         ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
       });
 
@@ -71,11 +85,14 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.rsi()).to.be.equal(0);
 
         // Macro Factor
-        expect(await aprCalculator.macroFactor()).to.equal(INITIAL_MACRO_FACTOR);
+        expect(await aprCalculator.defaultMacroFactor()).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
+        expect(await aprCalculator.macroFactor()).to.above(0);
+        expect(await aprCalculator.smaFastSum()).to.above(0);
+        expect(await aprCalculator.smaSlowSum()).to.above(0);
 
         // Price
         const updateTime = await aprCalculator.updateTime();
-        const updateTimeDate = new Date(updateTime.toNumber() * 1000); // Convert to milliseconds
+        const updateTimeDate = new Date(updateTime.toNumber() * 1000);
         expect(updateTimeDate.getUTCHours()).to.equal(0);
         expect(updateTimeDate.getUTCMinutes()).to.equal(0);
         expect(updateTimeDate.getUTCSeconds()).to.equal(0);
@@ -87,7 +104,7 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
-          aprCalculator.initialize(this.signers.system.address, hydraChain.address, INITIAL_PRICE)
+          aprCalculator.initialize(this.signers.system.address, hydraChain.address, [INITIAL_PRICE])
         ).to.be.revertedWith(ERRORS.initialized);
       });
 
