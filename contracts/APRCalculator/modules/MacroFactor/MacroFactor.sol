@@ -138,11 +138,10 @@ abstract contract MacroFactor is IMacroFactor, Price {
         uint256 arrLenght = updatedPrices.length;
         assert(arrLenght == SLOW_SMA);
         for (uint256 i = 0; i < arrLenght; i++) {
-            smaFastSum += updatedPrices[i];
             smaSlowSum += updatedPrices[i];
 
-            if (i >= FAST_SMA) {
-                smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
+            if (i >= SLOW_SMA - FAST_SMA) {
+                smaFastSum += updatedPrices[i];
             }
         }
         uint256 smaRatio = _calcSMA();
