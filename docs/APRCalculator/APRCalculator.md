@@ -689,7 +689,7 @@ function hydraChainContract() external view returns (contract IHydraChain)
 ### initialize
 
 ```solidity
-function initialize(address governance, address hydraChainAddr, uint256[] prices) external nonpayable
+function initialize(address governance, address hydraChainAddr, uint256[310] prices) external nonpayable
 ```
 
 
@@ -702,7 +702,7 @@ function initialize(address governance, address hydraChainAddr, uint256[] prices
 |---|---|---|
 | governance | address | undefined |
 | hydraChainAddr | address | undefined |
-| prices | uint256[] | undefined |
+| prices | uint256[310] | undefined |
 
 ### latestDailyPrice
 

@@ -26,6 +26,7 @@ export const MAX_ACTIVE_VALIDATORS = 150;
 export const INITIAL_PRICE = 500;
 export const FAST_SMA = 115;
 export const SLOW_SMA = 310;
+export const ARRAY_310_ELEMENTS: number[] = Array(310).fill(INITIAL_PRICE);
 /* eslint-disable no-unused-vars */
 export enum VALIDATOR_STATUS {
   None = 0,

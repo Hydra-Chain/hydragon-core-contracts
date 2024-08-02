@@ -24,7 +24,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     function __Price_init(
         address _hydraChainAddr,
         address _governance,
-        uint256[] memory _prices
+        uint256[310] memory _prices
     ) internal onlyInitializing {
         __Governed_init(_governance);
         __HydraChainConnector_init(_hydraChainAddr);
@@ -33,10 +33,10 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         _grantRole(MANAGER_ROLE, _governance);
     }
 
-    function __Price_init_unchained(uint256[] memory _prices) internal onlyInitializing {
+    function __Price_init_unchained(uint256[310] memory _prices) internal onlyInitializing {
         updateTime = _calcNextMidnight();
         updatedPrices = _prices;
-        latestDailyPrice = _prices[_prices.length - 1];
+        latestDailyPrice = _prices[309];
     }
 
     // _______________ External functions _______________
@@ -55,7 +55,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         }
 
         pricePerEpoch[currentEpochId] = _price;
-        if (block.timestamp > updateTime && priceSumCounter != 0) {
+        if (block.timestamp >= updateTime && priceSumCounter != 0) {
             _updatePrice();
             dailyPriceQuotesSum = _price;
             priceSumCounter = 1;

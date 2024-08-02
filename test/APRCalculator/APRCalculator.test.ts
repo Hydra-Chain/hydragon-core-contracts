@@ -2,6 +2,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import {
+  ARRAY_310_ELEMENTS,
   DENOMINATOR,
   EPOCHS_YEAR,
   ERRORS,
@@ -60,17 +61,7 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         await expect(
-          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, [INITIAL_PRICE])
-        ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
-      });
-
-      it("should revert initialize if not given array longer than 310", async function () {
-        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
-
-        await expect(
-          aprCalculator
-            .connect(this.signers.governance)
-            .initialize(this.signers.governance.address, hydraChain.address, [INITIAL_PRICE])
+          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, ARRAY_310_ELEMENTS)
         ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
       });
 
@@ -106,7 +97,7 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
-          aprCalculator.initialize(this.signers.system.address, hydraChain.address, [INITIAL_PRICE])
+          aprCalculator.initialize(this.signers.system.address, hydraChain.address, ARRAY_310_ELEMENTS)
         ).to.be.revertedWith(ERRORS.initialized);
       });
 

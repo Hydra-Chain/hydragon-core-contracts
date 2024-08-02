@@ -136,14 +136,12 @@ abstract contract MacroFactor is IMacroFactor, Price {
      */
     function _initializeMacroFactor() private {
         uint256 arrLenght = updatedPrices.length;
-        assert(arrLenght > SLOW_SMA);
+        assert(arrLenght == SLOW_SMA);
         for (uint256 i = 0; i < arrLenght; i++) {
             smaFastSum += updatedPrices[i];
             smaSlowSum += updatedPrices[i];
-            if (i > SLOW_SMA) {
-                smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-                smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
-            } else if (i > FAST_SMA) {
+
+            if (i >= FAST_SMA) {
                 smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
             }
         }

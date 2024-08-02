@@ -22,6 +22,7 @@ import {
   INITIAL_COMMISSION,
   INITIAL_PRICE,
   MIN_RSI_BONUS,
+  SLOW_SMA,
   SYSTEM,
   VESTING_DURATION_WEEKS,
   WEEK,
@@ -174,7 +175,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     );
 
   const prices: number[] = [];
-  for (let i = 0; i < 313; i++) {
+  for (let i = 0; i < SLOW_SMA - 1; i++) {
     // Generate a random number between 300 and 600
     const randomPrice = Math.floor(Math.random() * (600 - 300 + 1)) + 300;
     prices.push(randomPrice);
