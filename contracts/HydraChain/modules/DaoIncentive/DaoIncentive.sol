@@ -17,23 +17,23 @@ abstract contract DaoIncentive is
     RewardWalletConnector,
     HydraStakingConnector
 {
-    address public hydraVault;
+    address public daoIncentiveVaultAddr;
     uint256 public vaultDistribution;
 
     // _______________ Initializer _______________
 
     function __DaoIncentive_init(
-        address aprCalculatorAddr,
-        address rewardWalletAddr,
-        address hydraVaultAddr
+        address _aprCalculatorAddr,
+        address _rewardWalletAddr,
+        address _daoIncentiveVaultAddr
     ) internal onlyInitializing {
-        __APRCalculatorConnector_init(aprCalculatorAddr);
-        __RewardWalletConnector_init(rewardWalletAddr);
-        __DaoIncentive_init_unchained(hydraVaultAddr);
+        __APRCalculatorConnector_init(_aprCalculatorAddr);
+        __RewardWalletConnector_init(_rewardWalletAddr);
+        __DaoIncentive_init_unchained(_daoIncentiveVaultAddr);
     }
 
-    function __DaoIncentive_init_unchained(address hydraVaultAddr) internal {
-        hydraVault = hydraVaultAddr;
+    function __DaoIncentive_init_unchained(address _daoIncentiveVaultAddr) internal {
+        daoIncentiveVaultAddr = _daoIncentiveVaultAddr;
     }
 
     // _______________ External functions _______________
@@ -41,7 +41,7 @@ abstract contract DaoIncentive is
     /**
      * @inheritdoc IDaoIncentive
      */
-    function distributeVaultFunds() external onlySystemCall {
+    function distributeDAOIncentive() external onlySystemCall {
         uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
             aprCalculatorContract.getEpochsPerYear();
         vaultDistribution += reward;
@@ -57,7 +57,7 @@ abstract contract DaoIncentive is
         require(reward != 0, "NO_VAULT_FUNDS_TO_CLAIM");
 
         vaultDistribution = 0;
-        rewardWalletContract.distributeReward(hydraVault, reward);
+        rewardWalletContract.distributeReward(daoIncentiveVaultAddr, reward);
 
         emit VaultFunded(reward);
     }

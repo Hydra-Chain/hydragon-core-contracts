@@ -399,7 +399,7 @@ function increaseAllowance(address spender, uint256 addedValue) external nonpaya
 ### initialize
 
 ```solidity
-function initialize(string name_, string symbol_, address governer, address hydraStakingAddr, address hydraDelegationAddr) external nonpayable
+function initialize(string name_, string symbol_, address governance, address hydraStakingAddr, address hydraDelegationAddr) external nonpayable
 ```
 
 
@@ -412,7 +412,7 @@ function initialize(string name_, string symbol_, address governer, address hydr
 |---|---|---|
 | name_ | string | The name of the token. |
 | symbol_ | string | The symbol of the token. |
-| governer | address | The address that has rights to change the SUPPLY_CONTROLLERs. |
+| governance | address | The address that has rights to change the SUPPLY_CONTROLLERs. |
 | hydraStakingAddr | address | The address assigned for controlling the supply (mint/burn) of the token. (HydraStaking.sol) |
 | hydraDelegationAddr | address | The address assigned for controlling the supply (mint/burn) of the token. (HydraDelegation.sol) |
 

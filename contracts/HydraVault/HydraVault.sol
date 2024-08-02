@@ -12,8 +12,8 @@ contract HydraVault is Initializable, OwnableUpgradeable {
         _disableInitializers();
     }
 
-    function initialize(address governer) public initializer {
-        _transferOwnership(governer);
+    function initialize(address governance) public initializer {
+        _transferOwnership(governance);
     }
 
     /**

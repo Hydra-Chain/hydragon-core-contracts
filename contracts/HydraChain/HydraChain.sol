@@ -48,12 +48,12 @@ contract HydraChain is
         address hydraDelegationAddr,
         address aprCalculatorAddr,
         address rewardWalletAddr,
-        address hydraVaultAddr,
+        address daoIncentiveVaultAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
         __Ownable2Step_init();
         __HydraStakingConnector_init(hydraStakingAddr);
-        __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, hydraVaultAddr);
+        __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, daoIncentiveVaultAddr);
         __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);
         __Inspector_init();
         __PowerExponent_init();

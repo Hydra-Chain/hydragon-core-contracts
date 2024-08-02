@@ -145,7 +145,7 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     function _distributeStakingReward(address account, uint256 rewardIndex) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[account];
         if (position.isActive()) {
-            uint256 reward = _applyVestingAPR(position, rewardIndex, true);
+            uint256 reward = _applyVestingAPR(position, rewardIndex);
             stakingRewards[account].total += reward;
 
             emit StakingRewardDistributed(account, reward);

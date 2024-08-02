@@ -6,11 +6,11 @@ import { expect } from "chai";
 import { EPOCHS_YEAR, ERRORS } from "../constants";
 
 export function RunDaoIncentiveTests(): void {
-  describe("distributeVaultFunds", function () {
+  describe("distributeDAOIncentive", function () {
     it("should revert if not called by system", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(hydraChain.connect(this.signers.validators[0]).distributeVaultFunds(), "setIncentive")
+      await expect(hydraChain.connect(this.signers.validators[0]).distributeDAOIncentive(), "setIncentive")
         .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
         .withArgs(ERRORS.unauthorized.systemCallArg);
     });

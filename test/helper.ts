@@ -95,7 +95,7 @@ export async function commitEpoch(
 
   const commitEpochTx = await systemHydraChain.commitEpoch(currEpochId, newEpoch, epochSize, validatorsUptime);
 
-  const distributeVaultFundsTx = await systemHydraChain.distributeVaultFunds();
+  const distributeVaultFundsTx = await systemHydraChain.distributeDAOIncentive();
 
   const distributeRewardsTx = await hydraStaking
     .connect(systemHydraChain.signer)

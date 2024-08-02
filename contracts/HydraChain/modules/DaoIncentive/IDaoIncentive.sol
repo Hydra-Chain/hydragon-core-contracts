@@ -9,7 +9,7 @@ interface IDaoIncentive {
      * @notice Distribute vault funds
      * @dev Only callable by the system
      */
-    function distributeVaultFunds() external;
+    function distributeDAOIncentive() external;
 
     /**
      * @notice Claim distributed vault funds

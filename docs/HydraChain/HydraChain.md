@@ -248,7 +248,7 @@ function banValidator(address validator) external nonpayable
 
 Method used to ban a validator, if the ban threshold is reached
 
-*This function will validate the threshold only if the executor is not the governor, otherwise will forcely ban the validator*
+*This function will validate the threshold only if the executor is not the governance, otherwise will forcely ban the validator*
 
 #### Parameters
 
@@ -320,6 +320,23 @@ function currentEpochId() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### daoIncentiveVaultAddr
+
+```solidity
+function daoIncentiveVaultAddr() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### deactivateValidator
 
 ```solidity
@@ -336,10 +353,10 @@ Deactivates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
-### distributeVaultFunds
+### distributeDAOIncentive
 
 ```solidity
-function distributeVaultFunds() external nonpayable
+function distributeDAOIncentive() external nonpayable
 ```
 
 Distribute vault funds
@@ -545,27 +562,10 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
-### hydraVault
-
-```solidity
-function hydraVault() external view returns (address)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address aprCalculatorAddr, address rewardWalletAddr, address hydraVaultAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address aprCalculatorAddr, address rewardWalletAddr, address daoIncentiveVaultAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -582,7 +582,7 @@ function initialize(ValidatorInit[] newValidators, address governance, address h
 | hydraDelegationAddr | address | undefined |
 | aprCalculatorAddr | address | undefined |
 | rewardWalletAddr | address | undefined |
-| hydraVaultAddr | address | undefined |
+| daoIncentiveVaultAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
 ### isSubjectToBan
