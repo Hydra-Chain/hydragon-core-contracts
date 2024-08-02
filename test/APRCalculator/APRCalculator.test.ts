@@ -86,7 +86,9 @@ export function RunAPRCalculatorTests(): void {
 
         // Macro Factor
         expect(await aprCalculator.defaultMacroFactor()).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
-        expect(await aprCalculator.macroFactor()).to.above(0);
+        expect(await aprCalculator.macroFactor())
+          .to.least(MIN_MACRO_FACTOR)
+          .and.to.be.most(MAX_MACRO_FACTOR);
         expect(await aprCalculator.smaFastSum()).to.above(0);
         expect(await aprCalculator.smaSlowSum()).to.above(0);
 

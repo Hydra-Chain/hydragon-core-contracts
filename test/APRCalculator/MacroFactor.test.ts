@@ -16,8 +16,8 @@ export function RunMacroFactorTests(): void {
     const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
     expect(await aprCalculator.getMacroFactor())
-      .to.above(MIN_MACRO_FACTOR)
-      .and.below(MAX_MACRO_FACTOR);
+      .to.least(MIN_MACRO_FACTOR)
+      .and.to.be.most(MAX_MACRO_FACTOR);
   });
 
   describe("Set Macro Factor", function () {
