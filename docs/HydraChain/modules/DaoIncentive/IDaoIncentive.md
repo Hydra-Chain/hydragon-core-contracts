@@ -21,10 +21,10 @@ Claim distributed vault funds
 
 
 
-### distributeVaultFunds
+### distributeDAOIncentive
 
 ```solidity
-function distributeVaultFunds() external nonpayable
+function distributeDAOIncentive() external nonpayable
 ```
 
 Distribute vault funds

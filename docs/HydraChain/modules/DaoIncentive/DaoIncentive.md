@@ -140,10 +140,27 @@ Claim distributed vault funds
 
 
 
-### distributeVaultFunds
+### daoIncentiveVaultAddr
 
 ```solidity
-function distributeVaultFunds() external nonpayable
+function daoIncentiveVaultAddr() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### distributeDAOIncentive
+
+```solidity
+function distributeDAOIncentive() external nonpayable
 ```
 
 Distribute vault funds
@@ -167,23 +184,6 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
-
-### hydraVault
-
-```solidity
-function hydraVault() external view returns (address)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
 
 ### rewardWalletContract
 

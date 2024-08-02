@@ -24,7 +24,7 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.rewardWalletContract()).to.equal(hre.ethers.constants.AddressZero);
-        expect(await hydraChain.hydraVault()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraChain.daoIncentiveVaultAddr()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.vaultDistribution()).to.equal(0);
 
         // Validator Manager
@@ -123,7 +123,7 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);
         expect(await hydraChain.aprCalculatorContract()).to.equal(aprCalculator.address);
         expect(await hydraChain.rewardWalletContract()).to.equal(rewardWallet.address);
-        expect(await hydraChain.hydraVault()).to.equal(DAOIncentiveVault.address);
+        expect(await hydraChain.daoIncentiveVaultAddr()).to.equal(DAOIncentiveVault.address);
 
         // Validator Manager
         expect(await hydraChain.bls()).to.equal(bls.address);

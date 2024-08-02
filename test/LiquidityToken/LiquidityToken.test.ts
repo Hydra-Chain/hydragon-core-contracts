@@ -13,14 +13,14 @@ export function RunLiquidityTokenTests(): void {
     let accounts: SignerWithAddress[],
       governorRole: string,
       supplyControllerRole: string,
-      governor: SignerWithAddress,
+      governance: SignerWithAddress,
       supplyController: SignerWithAddress;
 
     this.beforeAll(async () => {
       accounts = await ethers.getSigners();
       governorRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
       supplyControllerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("SUPPLY_CONTROLLER_ROLE"));
-      governor = accounts[1];
+      governance = accounts[1];
       supplyController = accounts[2];
     });
 
@@ -37,7 +37,7 @@ export function RunLiquidityTokenTests(): void {
       const system = await ethers.getSigner(SYSTEM);
       await token
         .connect(system)
-        .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address);
+        .initialize(tokenName, tokenSymbol, governance.address, supplyController.address, supplyController.address);
 
       return { token };
     }
@@ -57,8 +57,8 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(deployFixture);
         await expect(
           token
-            .connect(governor)
-            .initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
+            .connect(governance)
+            .initialize(tokenName, tokenSymbol, governance.address, supplyController.address, supplyController.address)
         ).to.be.revertedWithCustomError(token, ERRORS.unauthorized.name);
       });
 
@@ -67,7 +67,7 @@ export function RunLiquidityTokenTests(): void {
 
         expect(await token.name()).to.be.equal(tokenName);
         expect(await token.symbol()).to.be.equal(tokenSymbol);
-        expect(await token.hasRole(governorRole, governor.address)).to.be.equal(true);
+        expect(await token.hasRole(governorRole, governance.address)).to.be.equal(true);
         expect(await token.hasRole(supplyControllerRole, supplyController.address)).to.be.equal(true);
       });
 
@@ -75,7 +75,13 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(initializeFixture);
 
         await expect(
-          token.initialize(tokenName, tokenSymbol, governor.address, supplyController.address, supplyController.address)
+          token.initialize(
+            tokenName,
+            tokenSymbol,
+            governance.address,
+            supplyController.address,
+            supplyController.address
+          )
         ).to.be.revertedWith(ERRORS.initialized);
       });
     });
@@ -131,8 +137,8 @@ export function RunLiquidityTokenTests(): void {
       it("Should properly update the role", async () => {
         const { token } = await loadFixture(initializeFixture);
 
-        await token.connect(governor).revokeRole(supplyControllerRole, supplyController.address);
-        await token.connect(governor).grantRole(supplyControllerRole, accounts[5].address);
+        await token.connect(governance).revokeRole(supplyControllerRole, supplyController.address);
+        await token.connect(governance).grantRole(supplyControllerRole, accounts[5].address);
 
         expect(await token.hasRole(supplyControllerRole, supplyController.address)).to.be.equal(false);
         expect(await token.hasRole(supplyControllerRole, accounts[5].address)).to.be.equal(true);

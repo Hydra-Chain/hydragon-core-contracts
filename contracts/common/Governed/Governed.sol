@@ -4,13 +4,13 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 abstract contract Governed is AccessControlUpgradeable {
-    function __Governed_init(address governer) internal onlyInitializing {
+    function __Governed_init(address governance) internal onlyInitializing {
         __AccessControl_init();
-        __Governed_init_unchained(governer);
+        __Governed_init_unchained(governance);
     }
 
-    function __Governed_init_unchained(address governer) internal onlyInitializing {
-        _grantRole(DEFAULT_ADMIN_ROLE, governer);
+    function __Governed_init_unchained(address governance) internal onlyInitializing {
+        _grantRole(DEFAULT_ADMIN_ROLE, governance);
     }
 
     // slither-disable-next-line unused-state,naming-convention

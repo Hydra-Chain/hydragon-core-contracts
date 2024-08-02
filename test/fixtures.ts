@@ -82,9 +82,9 @@ async function RewardWalletFixtureFunction(this: Mocha.Context) {
 
 async function hydraVaultFixtureFunction(this: Mocha.Context) {
   const hydraVaultFactory = new HydraVault__factory(this.signers.admin);
-  const hydraVault = await hydraVaultFactory.deploy();
+  const daoIncentiveVaultAddr = await hydraVaultFactory.deploy();
 
-  return hydraVault;
+  return daoIncentiveVaultAddr;
 }
 
 async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
@@ -309,7 +309,7 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
     DAOIncentiveVault,
   } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
-  const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeVaultFunds();
+  const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeDAOIncentive();
 
   return {
     hydraChain,

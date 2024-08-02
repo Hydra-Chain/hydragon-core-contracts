@@ -13,7 +13,7 @@
 ### initialize
 
 ```solidity
-function initialize(address governer) external nonpayable
+function initialize(address governance) external nonpayable
 ```
 
 
@@ -24,7 +24,7 @@ function initialize(address governer) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| governer | address | undefined |
+| governance | address | undefined |
 
 ### owner
 

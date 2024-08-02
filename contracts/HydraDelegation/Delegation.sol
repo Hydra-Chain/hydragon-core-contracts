@@ -34,9 +34,9 @@ contract Delegation is
 
     // _______________ Initializer _______________
 
-    function __Delegation_init(address _governace, address _rewardWalletAddr) internal onlyInitializing {
-        __Governed_init(_governace);
-        __Withdrawal_init(_governace);
+    function __Delegation_init(address _governance, address _rewardWalletAddr) internal onlyInitializing {
+        __Governed_init(_governance);
+        __Withdrawal_init(_governance);
         __RewardWalletConnector_init(_rewardWalletAddr);
         __Delegation_init_unchained();
     }

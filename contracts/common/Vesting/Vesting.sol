@@ -44,17 +44,15 @@ abstract contract Vesting is APRCalculatorConnector {
      * @dev Denominator is used because we should work with floating-point numbers
      * @param position The vesting position of the staker
      * @param reward index The reward to which we gonna apply the custom APR
-     * @param rsi If the RSI bonus should be applied
      * @return The reward with the applied APR
      */
     function _applyVestingAPR(
         VestingPosition memory position,
-        uint256 reward,
-        bool rsi
+        uint256 reward
     ) internal view returns (uint256) {
         uint256 bonus = (position.base + position.vestBonus);
         uint256 divider = aprCalculatorContract.getDENOMINATOR();
-        if (rsi && position.rsiBonus != 0) {
+        if (position.rsiBonus != 0) {
             bonus = bonus * position.rsiBonus;
             divider *= divider;
         }
