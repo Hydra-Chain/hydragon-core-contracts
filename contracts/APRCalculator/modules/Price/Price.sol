@@ -12,6 +12,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     uint256 public constant DENOMINATOR = 10000;
     bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
+    bool public disableBonusesUpdates;
     uint256 public updateTime;
     uint256 public latestDailyPrice;
     uint256 public priceSumCounter;
@@ -67,12 +68,32 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         emit PriceQuoted(currentEpochId, _price);
     }
 
+    /**
+     * @inheritdoc IPrice
+     */
+    function guardBonuses() external onlyRole(MANAGER_ROLE) {
+        disableBonusesUpdates = true;
+        _resetBonuses();
+    }
+
+    /**
+     * @inheritdoc IPrice
+     */
+    function disableGuard() external onlyRole(MANAGER_ROLE) {
+        disableBonusesUpdates = false;
+    }
+
     // _______________ Internal functions _______________
 
     /**
      * @notice Triggers bonus updates based on the price.
      */
     function _onPriceUpdate(uint256 _price) internal virtual;
+
+    /**
+     * @notice Reset bonuses to their default values.
+     */
+    function _resetBonuses() internal virtual;
 
     // _______________ Private functions _______________
 
@@ -84,11 +105,13 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         uint256 price = dailyPriceQuotesSum / priceSumCounter;
         updateTime = _calcNextMidnight();
         latestDailyPrice = price;
-        updatedPrices.push(price);
 
         emit PriceUpdated(block.timestamp, price);
 
-        _onPriceUpdate(price);
+        if (!disableBonusesUpdates) {
+            updatedPrices.push(price);
+            _onPriceUpdate(price);
+        }
     }
 
     /**

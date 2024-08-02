@@ -180,6 +180,34 @@ function dailyPriceQuotesSum() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### disableBonusesUpdates
+
+```solidity
+function disableBonusesUpdates() external view returns (bool)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### disableGuard
+
+```solidity
+function disableGuard() external nonpayable
+```
+
+anables the RSI bonus and Macro factor updates again
+
+*only governance can call this function*
+
+
 ### getRoleAdmin
 
 ```solidity
@@ -218,6 +246,17 @@ function grantRole(bytes32 role, address account) external nonpayable
 |---|---|---|
 | role | bytes32 | undefined |
 | account | address | undefined |
+
+### guardBonuses
+
+```solidity
+function guardBonuses() external nonpayable
+```
+
+protects RSI bonus and Macro factor updates and set them to defult values
+
+*only governance can call this function*
+
 
 ### hasRole
 

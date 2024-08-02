@@ -4,12 +4,9 @@ pragma solidity 0.8.17;
 import {Price} from "../Price/Price.sol";
 import {IRSIndex} from "./IRSIndex.sol";
 
-import "hardhat/console.sol";
-
 abstract contract RSIndex is IRSIndex, Price {
     uint256 public constant MAX_RSI_BONUS = 17000;
 
-    bool public disabledRSI;
     uint256 public averageGain;
     uint256 public averageLoss;
     uint256 public rsi;
@@ -21,22 +18,6 @@ abstract contract RSIndex is IRSIndex, Price {
     }
 
     function __RSIndex_init_unchained() internal onlyInitializing {}
-
-    // _______________ External functions _______________
-
-    /**
-     * @inheritdoc IRSIndex
-     */
-    function guardRSIndex() external onlyRole(MANAGER_ROLE) {
-        if (!disabledRSI) {
-            disabledRSI = true;
-            rsi = 0;
-
-            emit RSIBonusSet(0);
-        } else {
-            disabledRSI = false;
-        }
-    }
 
     // _______________ Public functions _______________
 
@@ -54,9 +35,16 @@ abstract contract RSIndex is IRSIndex, Price {
      * @notice Update the RSI based on the price update, if the needed conditions are met.
      */
     function _onPriceUpdate(uint256 /* _price */) internal virtual override(Price) {
-        if (!disabledRSI) {
-            _triggerRSIUpdate();
-        }
+        _triggerRSIUpdate();
+    }
+
+    /**
+     * @inheritdoc Price
+     * @notice Reset the rsi to have no bonus.
+     */
+    function _resetBonuses() internal virtual override(Price) {
+        rsi = 0;
+        emit RSIBonusSet(0);
     }
 
     // _______________ Private functions _______________
@@ -114,8 +102,7 @@ abstract contract RSIndex is IRSIndex, Price {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
             rsindex = 100 * DENOMINATOR - (100 * DENOMINATOR) / (1 + rs);
         }
-        console.log("RSI before: ", rsindex);
-        console.log("RSI DENOMINATOR: ", DENOMINATOR * 100 - 100);
+
         if (rsindex > DENOMINATOR * 100 - 100) {
             rsindex -= DENOMINATOR * 100 - 100;
         } else {
@@ -128,7 +115,6 @@ abstract contract RSIndex is IRSIndex, Price {
      * @param rsindex The relative strength
      */
     function _setRSI(uint256 rsindex) private {
-        console.log("RSI: ", rsindex);
         uint256 newRsi;
         if (rsindex > 39) {
             newRsi = 0;

@@ -281,10 +281,10 @@ function defaultMacroFactor() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### disabledMacro
+### disableBonusesUpdates
 
 ```solidity
-function disabledMacro() external view returns (bool)
+function disableBonusesUpdates() external view returns (bool)
 ```
 
 
@@ -297,6 +297,17 @@ function disabledMacro() external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### disableGuard
+
+```solidity
+function disableGuard() external nonpayable
+```
+
+anables the RSI bonus and Macro factor updates again
+
+*only governance can call this function*
+
 
 ### getMacroFactor
 
@@ -354,15 +365,15 @@ function grantRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
-### guardMacroFactor
+### guardBonuses
 
 ```solidity
-function guardMacroFactor() external nonpayable
+function guardBonuses() external nonpayable
 ```
 
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+protects RSI bonus and Macro factor updates and set them to defult values
 
-*only governance can call this function in case of emergency or price manipulation*
+*only governance can call this function*
 
 
 ### hasRole

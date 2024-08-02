@@ -8,12 +8,6 @@ interface IMacroFactor {
     error InvalidMacroFactor();
 
     /**
-     * @notice Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-     * @dev only governance can call this function in case of emergency or price manipulation
-     */
-    function guardMacroFactor() external;
-
-    /**
      * @notice Change the default macro factor
      * @param _macroFactor The new default macro factor
      * @dev only governance can call this function

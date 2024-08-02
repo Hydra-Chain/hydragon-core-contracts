@@ -22,13 +22,14 @@ import { RunRSIndexTests } from "./RSIndex.test";
 import { RunMacroFactorTests } from "./MacroFactor.test";
 
 export function RunAPRCalculatorTests(): void {
-  describe.only("", function () {
+  describe("", function () {
     describe("Initialization", function () {
       it("should validate default values when AprCalculator deployed", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.base()).to.equal(0);
+        expect(await aprCalculator.disableBonusesUpdates()).to.equal(false);
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
@@ -36,7 +37,6 @@ export function RunAPRCalculatorTests(): void {
         // RSIndex
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
         expect(await aprCalculator.rsi()).to.be.equal(0);
-        expect(await aprCalculator.disabledRSI()).to.be.false;
         expect(await aprCalculator.averageGain()).to.be.equal(0);
         expect(await aprCalculator.averageLoss()).to.be.equal(0);
 
@@ -45,7 +45,6 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.MAX_MACRO_FACTOR()).to.equal(MAX_MACRO_FACTOR);
         expect(await aprCalculator.FAST_SMA()).to.equal(FAST_SMA);
         expect(await aprCalculator.SLOW_SMA()).to.equal(SLOW_SMA);
-        expect(await aprCalculator.disabledMacro()).to.equal(false);
         expect(await aprCalculator.macroFactor()).to.equal(0);
         expect(await aprCalculator.defaultMacroFactor()).to.equal(0);
         expect(await aprCalculator.smaFastSum()).to.equal(0);

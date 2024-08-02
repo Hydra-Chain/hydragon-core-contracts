@@ -54,22 +54,12 @@ export function RunMacroFactorTests(): void {
   });
 
   describe("Gard Macro Factor", function () {
-    it("should revert if not called by governance", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-      const managerRole = await aprCalculator.MANAGER_ROLE();
-
-      await expect(aprCalculator.guardMacroFactor()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
-      );
-    });
-
-    it("should successfully gard macro factor & disable updates", async function () {
+    it("should successfully guard macro factor & disable updates", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
       const oldSMASlowSum = await aprCalculator.smaSlowSum();
       const oldSMAFastSum = await aprCalculator.smaFastSum();
 
-      await expect(aprCalculator.connect(this.signers.governance).guardMacroFactor())
+      await expect(aprCalculator.connect(this.signers.governance).guardBonuses())
         .to.emit(aprCalculator, "MacroFactorSet")
         .withArgs(INITIAL_DEFAULT_MACRO_FACTOR);
 
@@ -79,12 +69,12 @@ export function RunMacroFactorTests(): void {
       );
       const currentMacroFactor = await aprCalculator.getMacroFactor();
       expect(currentMacroFactor).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
-      expect(await aprCalculator.disabledMacro()).to.be.true;
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
       expect(await aprCalculator.smaSlowSum()).to.equal(oldSMASlowSum);
       expect(await aprCalculator.smaFastSum()).to.equal(oldSMAFastSum);
     });
 
-    it("should disable gard and enable macro factor updates after calling the function again", async function () {
+    it("should disable guard and enable macro factor updates after calling the function again", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
@@ -93,12 +83,12 @@ export function RunMacroFactorTests(): void {
       await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      await aprCalculator.connect(this.signers.governance).guardMacroFactor();
-      expect(await aprCalculator.disabledMacro()).to.be.true;
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
       expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_DEFAULT_MACRO_FACTOR);
 
-      await aprCalculator.connect(this.signers.governance).guardMacroFactor();
-      expect(await aprCalculator.disabledMacro()).to.be.false;
+      await aprCalculator.connect(this.signers.governance).disableGuard();
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.false;
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,

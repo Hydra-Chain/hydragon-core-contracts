@@ -122,6 +122,11 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
         RSIndex._onPriceUpdate(_price);
     }
 
+    function _resetBonuses() internal override(MacroFactor, RSIndex) {
+        MacroFactor._resetBonuses();
+        RSIndex._resetBonuses();
+    }
+
     // _______________ Private functions _______________
 
     /**

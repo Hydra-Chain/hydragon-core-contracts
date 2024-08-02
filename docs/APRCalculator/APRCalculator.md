@@ -449,10 +449,10 @@ function defaultMacroFactor() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### disabledMacro
+### disableBonusesUpdates
 
 ```solidity
-function disabledMacro() external view returns (bool)
+function disableBonusesUpdates() external view returns (bool)
 ```
 
 
@@ -466,22 +466,16 @@ function disabledMacro() external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### disabledRSI
+### disableGuard
 
 ```solidity
-function disabledRSI() external view returns (bool)
+function disableGuard() external nonpayable
 ```
 
+anables the RSI bonus and Macro factor updates again
 
+*only governance can call this function*
 
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
 
 ### getBaseAPR
 
@@ -669,26 +663,15 @@ function grantRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
-### guardMacroFactor
+### guardBonuses
 
 ```solidity
-function guardMacroFactor() external nonpayable
+function guardBonuses() external nonpayable
 ```
 
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+protects RSI bonus and Macro factor updates and set them to defult values
 
-*only governance can call this function in case of emergency or price manipulation*
-
-
-### guardRSIndex
-
-```solidity
-function guardRSIndex() external nonpayable
-```
-
-Guard the RSI, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
+*only governance can call this function*
 
 
 ### hasRole
@@ -1182,14 +1165,6 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 ## Errors
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> d8ec9c2 (restructure after rebase)
-=======
->>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidMacroFactor
 
 ```solidity
@@ -1201,32 +1176,6 @@ error InvalidMacroFactor()
 
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
-<<<<<<< HEAD
->>>>>>> e67ae0a (Macro update with tests)
-### InvalidPrice
-=======
-<<<<<<< HEAD
-### InvalidMacro
->>>>>>> a02b7ab (Macro update with tests)
-
-```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
-=======
->>>>>>> 09d26c5 (restructure after rebase)
->>>>>>> d8ec9c2 (restructure after rebase)
-=======
->>>>>>> 17ee93f (some adjustments to functions)
 ### InvalidPrice
 
 ```solidity

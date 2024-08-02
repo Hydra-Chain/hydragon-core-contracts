@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 interface IPrice {
     event PriceQuoted(uint256 indexed epochId, uint256 amount);
-    event PriceUpdated(uint256 time,uint256 price);
+    event PriceUpdated(uint256 time, uint256 price);
 
     error PriceAlreadyQuoted();
     error InvalidPrice();
@@ -14,4 +14,16 @@ interface IPrice {
      * @param price the amount to quote
      */
     function quotePrice(uint256 price) external;
+
+    /**
+     * @notice protects RSI bonus and Macro factor updates and set them to defult values
+     * @dev only governance can call this function
+     */
+    function guardBonuses() external;
+
+    /**
+     * @notice anables the RSI bonus and Macro factor updates again
+     * @dev only governance can call this function
+     */
+    function disableGuard() external;
 }

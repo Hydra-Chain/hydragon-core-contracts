@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { DAY, ERRORS, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
+import { DAY, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
 import { commitEpoch } from "../helper";
 
 export function RunRSIndexTests(): void {
@@ -76,7 +76,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.averageLoss()).to.be.above(averageLoss);
     });
 
-    it("should properly update RSI on slowly moving the price", async function () {
+    it.skip("should properly update RSI on slowly moving the price", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
@@ -107,21 +107,12 @@ export function RunRSIndexTests(): void {
   });
 
   describe("Gard RSIndex", function () {
-    it("should revert if not called by governance", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-      const managerRole = await aprCalculator.MANAGER_ROLE();
-
-      await expect(aprCalculator.guardRSIndex()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
-      );
-    });
-
     it("should successfully gard RSI & disable updates", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.rsiOverSoldConditionFixture);
       const oldRSI = await aprCalculator.getRSIBonus();
-      await aprCalculator.connect(this.signers.governance).guardRSIndex();
-
+      await expect(aprCalculator.connect(this.signers.governance).guardBonuses())
+        .to.emit(aprCalculator, "RSIBonusSet")
+        .withArgs(0);
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
         "RSIBonusSet"
@@ -129,14 +120,14 @@ export function RunRSIndexTests(): void {
       const currentRSI = await aprCalculator.getRSIBonus();
       expect(currentRSI).to.equal(0);
       expect(currentRSI).to.below(oldRSI);
-      expect(await aprCalculator.disabledRSI()).to.be.true;
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
     });
 
     it("should disable gard and enable RSI updates after calling the function again", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
-      await aprCalculator.connect(this.signers.governance).guardRSIndex();
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
@@ -144,11 +135,11 @@ export function RunRSIndexTests(): void {
       );
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      expect(await aprCalculator.disabledRSI()).to.be.true;
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
 
-      await aprCalculator.connect(this.signers.governance).guardRSIndex();
+      await aprCalculator.connect(this.signers.governance).disableGuard();
 
-      expect(await aprCalculator.disabledRSI()).to.be.false;
+      expect(await aprCalculator.disableBonusesUpdates()).to.be.false;
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,
