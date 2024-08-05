@@ -115,7 +115,7 @@ abstract contract RSIndex is IRSIndex, Price {
     }
 
     /**
-     * @notice Initialize the RSI based on the historical prices.
+     * @notice Initialize the RSI based on the last 15 days of historical prices.
      */
     function _initializeRSI() private {
         uint256 arrLenght = updatedPrices.length;
