@@ -124,11 +124,15 @@ abstract contract RSIndex is IRSIndex, Price {
         assert(arrLenght > 14);
         uint256 gain;
         uint256 loss;
+        uint256 currentPrice;
+        uint256 previousPrice;
         for (uint256 i = arrLenght - 14; i < arrLenght; i++) {
-            if (updatedPrices[i] > updatedPrices[i - 1]) {
-                gain += updatedPrices[i] - updatedPrices[i - 1];
-            } else if (updatedPrices[i] < updatedPrices[i - 1]) {
-                loss += updatedPrices[i - 1] - updatedPrices[i];
+            currentPrice = updatedPrices[i];
+            previousPrice = updatedPrices[i - 1];
+            if (currentPrice > previousPrice) {
+                gain += currentPrice - previousPrice;
+            } else if (currentPrice < previousPrice) {
+                loss += previousPrice - currentPrice;
             }
         }
 
