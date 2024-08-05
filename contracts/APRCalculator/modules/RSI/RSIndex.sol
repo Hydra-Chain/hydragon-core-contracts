@@ -65,6 +65,8 @@ abstract contract RSIndex is IRSIndex, Price {
             averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
             averageGain = (averageGain * 13) / 14;
         } else {
+            averageGain = (averageGain * 13) / 14;
+            averageLoss = (averageLoss * 13) / 14;
             return;
         }
 
@@ -79,19 +81,15 @@ abstract contract RSIndex is IRSIndex, Price {
         uint256 avrGain = averageGain;
         uint256 avrLoss = averageLoss;
 
-        if (avrGain == 0) {
-            rsindex = 0;
-        } else if (avrLoss == 0) {
-            rsindex = 100 * DENOMINATOR;
-        } else {
+        if (avrGain != 0 && avrLoss != 0) {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
-            rsindex = 100 * DENOMINATOR - (100 * DENOMINATOR) / (1 + rs);
-        }
-
-        if (rsindex > DENOMINATOR * 100 - 100) {
-            rsindex -= DENOMINATOR * 100 - 100;
-        } else {
+            rsindex = 100 - (100 * DENOMINATOR) / (DENOMINATOR + rs);
+        } else if (avrLoss != 0) {
+            // If the average gain is 0 but avarage loss is not, the RS index is = 0 and the rsindex is = 0
             rsindex = 0;
+        } else {
+            // If the average loss is 0 or both are 0, the RS index is 100 and there is no bonus
+            rsindex = 100;
         }
     }
 
@@ -103,9 +101,9 @@ abstract contract RSIndex is IRSIndex, Price {
         uint256 newRsi;
         if (rsindex > 39) {
             newRsi = 0;
-        } else if (rsindex > 29 && rsindex < 40) {
+        } else if (rsindex > 29) {
             newRsi = 11500;
-        } else if (rsindex > 19 && rsindex < 30) {
+        } else if (rsindex > 19) {
             newRsi = 12500;
         } else if (rsindex < 20) {
             newRsi = MAX_RSI_BONUS;

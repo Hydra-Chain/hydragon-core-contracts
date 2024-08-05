@@ -340,8 +340,8 @@ async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
     DAOIncentiveVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-  for (let i = 0; i <= 15; i++) {
-    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE - i * 2);
+  for (let i = 0; i !== 15; i++) {
+    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE - i * 35);
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
   }
 
