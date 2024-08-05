@@ -98,7 +98,7 @@ Change the default macro factor
 function disableGuard() external nonpayable
 ```
 
-anables the RSI bonus and Macro factor updates again
+Enables the RSI bonus and Macro factor updates again
 
 *only governance can call this function*
 
@@ -256,7 +256,7 @@ returns the vesting bonus for the given weeks count
 function guardBonuses() external nonpayable
 ```
 
-protects RSI bonus and Macro factor updates and set them to defult values
+Protects RSI bonus and Macro factor updates and set them to default values
 
 *only governance can call this function*
 
@@ -382,6 +382,28 @@ event RSIBonusSet(uint256 RSIndex)
 
 
 ## Errors
+
+### GuardAlreadyDisabled
+
+```solidity
+error GuardAlreadyDisabled()
+```
+
+
+
+
+
+
+### GuardAlreadyEnabled
+
+```solidity
+error GuardAlreadyEnabled()
+```
+
+
+
+
+
 
 ### InvalidMacroFactor
 

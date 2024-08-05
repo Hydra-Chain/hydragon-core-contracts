@@ -29,7 +29,7 @@ export function RunAPRCalculatorTests(): void {
 
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.base()).to.equal(0);
-        expect(await aprCalculator.disableBonusesUpdates()).to.equal(false);
+        expect(await aprCalculator.disabledBonusesUpdates()).to.equal(false);
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);

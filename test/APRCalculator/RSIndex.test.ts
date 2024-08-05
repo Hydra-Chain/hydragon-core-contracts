@@ -120,7 +120,7 @@ export function RunRSIndexTests(): void {
       const currentRSI = await aprCalculator.getRSIBonus();
       expect(currentRSI).to.equal(0);
       expect(currentRSI).to.below(oldRSI);
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
     });
 
     it("should disable gard and enable RSI updates after calling the function again", async function () {
@@ -135,11 +135,11 @@ export function RunRSIndexTests(): void {
       );
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
 
       await aprCalculator.connect(this.signers.governance).disableGuard();
 
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.false;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,

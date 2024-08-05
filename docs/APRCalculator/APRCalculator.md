@@ -449,10 +449,21 @@ function defaultMacroFactor() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### disableBonusesUpdates
+### disableGuard
 
 ```solidity
-function disableBonusesUpdates() external view returns (bool)
+function disableGuard() external nonpayable
+```
+
+Enables the RSI bonus and Macro factor updates again
+
+*only governance can call this function*
+
+
+### disabledBonusesUpdates
+
+```solidity
+function disabledBonusesUpdates() external view returns (bool)
 ```
 
 
@@ -465,17 +476,6 @@ function disableBonusesUpdates() external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
-
-### disableGuard
-
-```solidity
-function disableGuard() external nonpayable
-```
-
-anables the RSI bonus and Macro factor updates again
-
-*only governance can call this function*
-
 
 ### getBaseAPR
 
@@ -669,7 +669,7 @@ function grantRole(bytes32 role, address account) external nonpayable
 function guardBonuses() external nonpayable
 ```
 
-protects RSI bonus and Macro factor updates and set them to defult values
+Protects RSI bonus and Macro factor updates and set them to default values
 
 *only governance can call this function*
 
@@ -1164,6 +1164,28 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
+
+### GuardAlreadyDisabled
+
+```solidity
+error GuardAlreadyDisabled()
+```
+
+
+
+
+
+
+### GuardAlreadyEnabled
+
+```solidity
+error GuardAlreadyEnabled()
+```
+
+
+
+
+
 
 ### InvalidMacroFactor
 

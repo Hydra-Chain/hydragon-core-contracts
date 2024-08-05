@@ -69,7 +69,7 @@ export function RunMacroFactorTests(): void {
       );
       const currentMacroFactor = await aprCalculator.getMacroFactor();
       expect(currentMacroFactor).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
       expect(await aprCalculator.smaSlowSum()).to.equal(oldSMASlowSum);
       expect(await aprCalculator.smaFastSum()).to.equal(oldSMAFastSum);
     });
@@ -84,11 +84,11 @@ export function RunMacroFactorTests(): void {
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
       await aprCalculator.connect(this.signers.governance).guardBonuses();
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.true;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
       expect(await aprCalculator.macroFactor()).to.be.equal(INITIAL_DEFAULT_MACRO_FACTOR);
 
       await aprCalculator.connect(this.signers.governance).disableGuard();
-      expect(await aprCalculator.disableBonusesUpdates()).to.be.false;
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
 
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,

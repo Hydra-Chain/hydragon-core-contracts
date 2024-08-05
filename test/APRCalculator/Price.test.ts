@@ -162,4 +162,59 @@ export function RunPriceTests(): void {
       expect(await aprCalculator.updateTime()).to.equal(updateTime.add(dayBigNum));
     });
   });
+
+  describe("Guard Bonuses", function () {
+    it("should revert guardBonuses if not called by governance", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(aprCalculator.connect(this.signers.system).guardBonuses()).to.be.revertedWith(
+        ERRORS.accessControl(this.signers.system.address, await aprCalculator.MANAGER_ROLE())
+      );
+    });
+
+    it("should revert guardBonuses if already guarded", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
+
+      await expect(aprCalculator.connect(this.signers.governance).guardBonuses()).to.be.revertedWithCustomError(
+        aprCalculator,
+        "GuardAlreadyEnabled"
+      );
+    });
+
+    it("should guard bonuses", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
+
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
+    });
+
+    it("should revert guard disable if not called by governance", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(aprCalculator.connect(this.signers.accounts[4]).disableGuard()).to.be.revertedWith(
+        ERRORS.accessControl(this.signers.accounts[4].address, await aprCalculator.MANAGER_ROLE())
+      );
+    });
+
+    it("should revert guard disable if not guarded", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(aprCalculator.connect(this.signers.governance).disableGuard()).to.be.revertedWithCustomError(
+        aprCalculator,
+        "GuardAlreadyDisabled"
+      );
+    });
+
+    it("should disable guard", async function () {
+      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
+      await aprCalculator.connect(this.signers.governance).disableGuard();
+      expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
+    });
+  });
 }

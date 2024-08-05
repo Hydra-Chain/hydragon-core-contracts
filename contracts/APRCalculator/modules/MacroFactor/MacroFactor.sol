@@ -35,7 +35,9 @@ abstract contract MacroFactor is IMacroFactor, Price {
         if (_macroFactor < MIN_MACRO_FACTOR || _macroFactor > MAX_MACRO_FACTOR) {
             revert InvalidMacroFactor();
         }
+
         defaultMacroFactor = _macroFactor;
+        
         emit DefaultMacroFactorChanged(_macroFactor);
     }
 
