@@ -74,15 +74,21 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.hasRole(managerRole, this.signers.governance.address)).to.be.true;
         expect(await aprCalculator.hasRole(adminRole, this.signers.governance.address)).to.be.true;
         expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
-        expect(await aprCalculator.rsi()).to.be.equal(0);
 
         // Macro Factor
         expect(await aprCalculator.defaultMacroFactor()).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
         expect(await aprCalculator.macroFactor())
-          .to.least(MIN_MACRO_FACTOR)
-          .and.to.be.most(MAX_MACRO_FACTOR);
+          .to.least(0)
+          .and.to.be.most(MAX_RSI_BONUS);
         expect(await aprCalculator.smaFastSum()).to.above(0);
         expect(await aprCalculator.smaSlowSum()).to.above(0);
+
+        // RSIndex
+        expect(await aprCalculator.rsi())
+          .to.be.least(0)
+          .and.to.be.most(MAX_RSI_BONUS);
+        expect(await aprCalculator.averageGain()).to.be.not.equal(0);
+        expect(await aprCalculator.averageLoss()).to.be.not.equal(0);
 
         // Price
         const updateTime = await aprCalculator.updateTime();

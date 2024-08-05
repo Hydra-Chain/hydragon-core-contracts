@@ -8,22 +8,11 @@ export function RunRSIndexTests(): void {
   it("should get RSI", async function () {
     const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-    expect(await aprCalculator.getRSIBonus()).to.equal(0);
+    expect(await aprCalculator.getRSIBonus())
+      .to.be.least(0)
+      .and.to.be.most(MAX_RSI_BONUS);
   });
   describe("Set RSIndex", function () {
-    it("should not update RSI on price update if we do not have the data for more than 2 weeks", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.commitEpochTxFixture);
-
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 2)).to.not.emit(
-        aprCalculator,
-        "RSIBonusSet"
-      );
-
-      expect(await aprCalculator.averageGain()).to.equal(0);
-      expect(await aprCalculator.averageLoss()).to.equal(0);
-      expect(await aprCalculator.getRSIBonus()).to.equal(0);
-    });
-
     it("should update RSI on price update after 14 updates on price on oversold condition", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.rsiOverSoldConditionFixture);
 
@@ -36,7 +25,7 @@ export function RunRSIndexTests(): void {
       );
 
       for (let i = 0; i <= 15; i++) {
-        await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE + i * 30));
+        await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE + i * 30);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       }
 

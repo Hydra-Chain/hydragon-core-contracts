@@ -21,6 +21,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     ) external initializer onlySystemCall {
         __Price_init(hydraChainAddr, governance, prices);
         __MacroFactor_init();
+        __RSIndex_init();
 
         base = INITIAL_BASE_APR;
 

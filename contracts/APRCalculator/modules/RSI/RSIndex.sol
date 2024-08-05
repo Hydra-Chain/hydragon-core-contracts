@@ -17,7 +17,9 @@ abstract contract RSIndex is IRSIndex, Price {
         __RSIndex_init_unchained();
     }
 
-    function __RSIndex_init_unchained() internal onlyInitializing {}
+    function __RSIndex_init_unchained() internal onlyInitializing {
+        _initializeRSI();
+    }
 
     // _______________ Public functions _______________
 
@@ -53,32 +55,15 @@ abstract contract RSIndex is IRSIndex, Price {
      * @notice Calculate the average gain and loss based on the updated prices
      */
     function _triggerRSIUpdate() private {
-        uint256 gain;
-        uint256 loss;
         uint256 arrLenght = updatedPrices.length;
-        if (arrLenght > 15) {
-            uint256 lastPrice = updatedPrices[arrLenght - 1];
-            uint256 secondLastPrice = updatedPrices[arrLenght - 2];
-            if (lastPrice > secondLastPrice) {
-                averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
-                averageLoss = (averageLoss * 13) / 14;
-            } else if (lastPrice < secondLastPrice) {
-                averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
-                averageGain = (averageGain * 13) / 14;
-            } else {
-                return;
-            }
-        } else if (arrLenght == 15) {
-            for (uint256 i = 1; i < arrLenght; i++) {
-                if (updatedPrices[i] > updatedPrices[i - 1]) {
-                    gain += updatedPrices[i] - updatedPrices[i - 1];
-                } else if (updatedPrices[i] < updatedPrices[i - 1]) {
-                    loss += updatedPrices[i - 1] - updatedPrices[i];
-                }
-            }
-
-            averageGain = (gain * DENOMINATOR) / 14;
-            averageLoss = (loss * DENOMINATOR) / 14;
+        uint256 lastPrice = updatedPrices[arrLenght - 1];
+        uint256 secondLastPrice = updatedPrices[arrLenght - 2];
+        if (lastPrice > secondLastPrice) {
+            averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
+            averageLoss = (averageLoss * 13) / 14;
+        } else if (lastPrice < secondLastPrice) {
+            averageLoss = ((averageLoss * 13) + ((secondLastPrice - lastPrice) * DENOMINATOR)) / 14;
+            averageGain = (averageGain * 13) / 14;
         } else {
             return;
         }
@@ -129,6 +114,29 @@ abstract contract RSIndex is IRSIndex, Price {
         rsi = newRsi;
 
         emit RSIBonusSet(newRsi);
+    }
+
+    /**
+     * @notice Initialize the RSI based on the historical prices.
+     */
+    function _initializeRSI() private {
+        uint256 arrLenght = updatedPrices.length;
+        assert(arrLenght > 14);
+        uint256 gain;
+        uint256 loss;
+        for (uint256 i = arrLenght - 14; i < arrLenght; i++) {
+            if (updatedPrices[i] > updatedPrices[i - 1]) {
+                gain += updatedPrices[i] - updatedPrices[i - 1];
+            } else if (updatedPrices[i] < updatedPrices[i - 1]) {
+                loss += updatedPrices[i - 1] - updatedPrices[i];
+            }
+        }
+
+        averageGain = (gain * DENOMINATOR) / 14;
+        averageLoss = (loss * DENOMINATOR) / 14;
+
+        uint256 rsindex = _calcRSIndex();
+        _setRSI(rsindex);
     }
 
     // slither-disable-next-line unused-state,naming-convention
