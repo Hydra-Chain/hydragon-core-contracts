@@ -348,6 +348,22 @@ Set the penalty amount for the banned validators
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
 
+### syncValidatorsData
+
+```solidity
+function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validatorsPower | ValidatorPower[] | undefined |
+
 ### totalBlocks
 
 ```solidity

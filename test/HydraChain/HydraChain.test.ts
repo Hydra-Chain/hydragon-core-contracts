@@ -9,6 +9,7 @@ import { RunAccessControlTests } from "./AccessControl.test";
 import { RunPowerExponentTests } from "./PowerExponent.test";
 import { RunValidatorManagerTests } from "./ValidatorManager.test";
 import { RunDaoIncentiveTests } from "./DaoIncentive.test";
+import { RunValidatorsDataTests } from "./ValidatrosData.test";
 
 export function RunHydraChainTests(): void {
   describe("", function () {
@@ -297,6 +298,9 @@ export function RunHydraChainTests(): void {
     });
     describe("Validator Manager", function () {
       RunValidatorManagerTests();
+    });
+    describe("Validators Data", function () {
+      RunValidatorsDataTests();
     });
   });
 }

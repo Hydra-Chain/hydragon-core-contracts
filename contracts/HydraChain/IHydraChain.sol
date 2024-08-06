@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {IInspector} from "./modules/Inspector/IInspector.sol";
 import {IPowerExponent} from "./modules/PowerExponent/IPowerExponent.sol";
 import {IDaoIncentive} from "./modules/DaoIncentive/IDaoIncentive.sol";
+import {IValidatorsData} from "./modules/ValidatorsData/IValidatorsData.sol";
 import {IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
@@ -13,7 +14,7 @@ struct Epoch {
     bytes32 epochRoot;
 }
 
-interface IHydraChain is IInspector, IValidatorManager, IPowerExponent, IDaoIncentive {
+interface IHydraChain is IInspector, IValidatorManager, IPowerExponent, IDaoIncentive, IValidatorsData {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
 
     /**

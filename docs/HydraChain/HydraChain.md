@@ -873,6 +873,22 @@ Set the penalty amount for the banned validators
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
 
+### syncValidatorsData
+
+```solidity
+function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validatorsPower | ValidatorPower[] | undefined |
+
 ### totalBlocks
 
 ```solidity
@@ -937,6 +953,28 @@ The penalty that will be taken and burned from the bad valiator&#39;s staked amo
 
 
 
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### validatorPower
+
+```solidity
+function validatorPower(address) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
 
 #### Returns
 
