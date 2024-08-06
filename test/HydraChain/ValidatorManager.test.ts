@@ -236,5 +236,42 @@ export function RunValidatorManagerTests(): void {
         .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
         .withArgs("ALREADY_REGISTERED");
     });
+
+    it("should revert when trying to register active validator", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await hydraChain.isValidatorActive(this.signers.validators[0].address)).to.be.equal(true);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.validators[0].address,
+        keyPair.secret
+      ).signature;
+
+      await expect(
+        hydraChain.connect(this.signers.validators[0]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+        "register"
+      )
+        .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+        .withArgs("ALREADY_REGISTERED");
+    });
+
+    it("should revert when trying to register banned validator", async function () {
+      const { hydraChain, bannedValidator } = await loadFixture(this.fixtures.bannedValidatorFixture);
+
+      expect(await hydraChain.isValidatorBanned(bannedValidator.address)).to.be.equal(true);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, bannedValidator.address, keyPair.secret).signature;
+
+      await expect(
+        hydraChain.connect(bannedValidator).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+        "register"
+      )
+        .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
+        .withArgs("ALREADY_REGISTERED");
+    });
   });
 }

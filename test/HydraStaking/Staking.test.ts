@@ -130,6 +130,17 @@ export function RunStakingTests(): void {
       await expect(tx).to.emit(hydraStaking, "Unstaked").withArgs(validator.address, this.minStake.mul(2));
     });
 
+    it("should change status to Registered after active validator unstake all", async function () {
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await hydraChain.isValidatorActive(this.signers.validators[0].address)).to.be.equal(true);
+
+      await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+      expect(await hydraChain.isValidatorActive(this.signers.validators[0].address)).to.be.equal(false);
+      expect(await hydraChain.isValidatorRegistered(this.signers.validators[0].address)).to.be.equal(true);
+    });
+
     it("should place in withdrawal queue", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
       const validator = this.signers.validators[0];
