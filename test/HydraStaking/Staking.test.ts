@@ -7,11 +7,19 @@ import { ERRORS } from "../constants";
 
 export function RunStakingTests(): void {
   describe("Stake", function () {
-    it("should allow only registered validators to stake", async function () {
+    it("should allow only registered & active validators to stake", async function () {
       // * Only the first three validators are being registered
       const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
       await expect(hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake }))
+        .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.mustBeRegistered);
+    });
+
+    it("should revert banned validator to stake again", async function () {
+      const { hydraStaking, bannedValidator } = await loadFixture(this.fixtures.bannedValidatorFixture);
+
+      await expect(hydraStaking.connect(bannedValidator).stake({ value: this.minStake }))
         .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
         .withArgs(ERRORS.mustBeRegistered);
     });
@@ -128,6 +136,17 @@ export function RunStakingTests(): void {
 
       const tx = hydraStaking.connect(validator).unstake(this.minStake.mul(2));
       await expect(tx).to.emit(hydraStaking, "Unstaked").withArgs(validator.address, this.minStake.mul(2));
+    });
+
+    it("should change status to Registered after active validator unstake all", async function () {
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      expect(await hydraChain.isValidatorActive(this.signers.validators[0].address)).to.be.equal(true);
+
+      await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.mul(2));
+
+      expect(await hydraChain.isValidatorActive(this.signers.validators[0].address)).to.be.equal(false);
+      expect(await hydraChain.isValidatorRegistered(this.signers.validators[0].address)).to.be.equal(true);
     });
 
     it("should place in withdrawal queue", async function () {
