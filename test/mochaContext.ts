@@ -13,6 +13,7 @@ import {
   VestingManager,
   RewardWallet,
   HydraVault,
+  PriceOracle,
 } from "../typechain-types";
 
 export interface Signers {
@@ -36,6 +37,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
       DAOIncentiveVault: HydraVault;
     }>;
@@ -50,6 +52,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
       DAOIncentiveVault: HydraVault;
       validatorInit: {
@@ -71,6 +74,7 @@ export interface Fixtures {
       aprCalculator: APRCalculator;
       commitEpochTx: ContractTransaction;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
       DAOIncentiveVault: HydraVault;
     }>;
@@ -114,6 +118,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
     }>;
   };
@@ -127,7 +132,20 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
+    }>;
+  };
+  validatorsDataFixtureStateFixture: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
+      liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      priceOracle: PriceOracle;
     }>;
   };
   stakedValidatorsStateFixture: {

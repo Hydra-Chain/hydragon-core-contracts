@@ -163,10 +163,32 @@ function initialize(address _hydraChainAddr, address _aprCalculatorAddr) externa
 | _hydraChainAddr | address | undefined |
 | _aprCalculatorAddr | address | undefined |
 
+### pricePerDay
+
+```solidity
+function pricePerDay(uint256) external view returns (uint256)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256, uint256) external view returns (uint256)
+function priceVotesForDay(uint256, uint256) external view returns (uint256 price, address validator)
 ```
 
 
@@ -184,12 +206,13 @@ function priceVotesForDay(uint256, uint256) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| price | uint256 | undefined |
+| validator | address | undefined |
 
-### validatorVotedForDay
+### validatorLastVotedDay
 
 ```solidity
-function validatorVotedForDay(address) external view returns (uint256)
+function validatorLastVotedDay(address) external view returns (uint256)
 ```
 
 
@@ -214,15 +237,15 @@ function validatorVotedForDay(address) external view returns (uint256)
 function vote(uint256 _price) external nonpayable
 ```
 
+Allows active validators to vote on the price
 
-
-
+*it automatically updates the price if all conditions are met*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _price | uint256 | undefined |
+| _price | uint256 | Price to vote |
 
 
 
@@ -244,9 +267,66 @@ event Initialized(uint8 version)
 |---|---|---|
 | version  | uint8 | undefined |
 
+### PriceUpdated
+
+```solidity
+event PriceUpdated(uint256 price, uint256 day)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| price  | uint256 | undefined |
+| day  | uint256 | undefined |
+
+### PriceVoted
+
+```solidity
+event PriceVoted(uint256 price, address validator, uint256 day)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| price  | uint256 | undefined |
+| validator  | address | undefined |
+| day  | uint256 | undefined |
+
 
 
 ## Errors
+
+### AlreadyVoted
+
+```solidity
+error AlreadyVoted()
+```
+
+
+
+
+
+
+### PriceAlreadySet
+
+```solidity
+error PriceAlreadySet()
+```
+
+
+
+
+
 
 ### Unauthorized
 

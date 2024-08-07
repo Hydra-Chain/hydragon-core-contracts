@@ -7,7 +7,7 @@ import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {IPriceOracle} from "./IPriceOracle.sol";
+import {IPriceOracle, PriceForValidator} from "./IPriceOracle.sol";
 
 /**
  * @title PriceOracle
@@ -15,8 +15,9 @@ import {IPriceOracle} from "./IPriceOracle.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    mapping(address => uint256) public validatorVotedForDay;
-    mapping(uint256 => uint256[]) public priceVotesForDay;
+    mapping(uint256 => PriceForValidator[]) public priceVotesForDay;
+    mapping(address => uint256) public validatorLastVotedDay;
+    mapping(uint256 => uint256) public pricePerDay;
 
     // _______________ Initializer _______________
 
@@ -28,53 +29,115 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
     function _initialize() private onlyInitializing {}
 
-    // _______________ External functions _______________
+    // _______________ Modifers _______________
 
-    function vote(uint256 _price) external {
+    modifier onlyActiveValidator() {
         if (hydraChainContract.isValidatorActive(msg.sender) == false) {
             revert Unauthorized("ONLY_ACTIVE_VALIDATOR");
         }
+        _;
+    }
 
-        _vote(_price);
+    // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function vote(uint256 _price) external onlyActiveValidator {
+        uint256 day = _getCurrentDay();
+        if (validatorLastVotedDay[msg.sender] == day) {
+            revert AlreadyVoted();
+        }
+
+        if (pricePerDay[day] != 0) {
+            revert PriceAlreadySet();
+        }
+
+        validatorLastVotedDay[msg.sender] = day;
+
+        PriceForValidator memory pricePower = PriceForValidator({price: _price, validator: msg.sender});
+        priceVotesForDay[day].push(pricePower);
+
+        emit PriceVoted(_price, msg.sender, day);
+
+        uint256 price = _checkPriceUpdateAvaibility(day);
+
+        if (price != 0) {
+            _updatePrice(price, day);
+        }
     }
 
     // _______________ Internal functions _______________
 
-    function _vote(uint256 _price) internal {
-        uint256 day = _getCurrentDay();
-        if (validatorVotedForDay[msg.sender] == day) {
-            revert Unauthorized("ALREADY_VOTED");
+    /**
+     * @notice Check if the price update is available for the given day
+     * @param _day Day to check
+     * @return uint256 Price if available, 0 otherwise
+     */
+    function _checkPriceUpdateAvaibility(uint256 _day) internal view returns (uint256) {
+        PriceForValidator[] memory prices = priceVotesForDay[_day];
+        uint256 len = prices.length;
+
+        if (len < 4) {
+            return 0; // Not enough votes to determine
         }
 
-        validatorVotedForDay[msg.sender] = day;
-        priceVotesForDay[day].push(_price);
+        uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * 61) / 100;
 
-        if (priceVotesForDay[day].length != 4 || /** quorum < 0.61 */ true) {
-            return;
-        } else {
-            _updatePrice(day);
+        // Sort prices in ascending order
+        for (uint256 i = 0; i < len - 1; i++) {
+            for (uint256 j = i + 1; j < len; j++) {
+                if (prices[i].price > prices[j].price) {
+                    PriceForValidator memory temp = prices[i];
+                    prices[i] = prices[j];
+                    prices[j] = temp;
+                }
+            }
         }
 
-        aprCalculatorContract.quotePrice(_price);
+        // Check for suitable price
+        uint256 basePrice = 0;
+        uint256 totalPrice = 0;
+        uint256 count = 0;
+        uint256 powerSum = 0;
+        for (uint256 i = 0; i < len; i++) {
+            if (i > 0 && prices[i].price > (basePrice * 101) / 100) {
+                // Price is outside 1% range, start a new group
+                basePrice = prices[i].price;
+                totalPrice = prices[i].price;
+                count = 1;
+                powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
+            } else {
+                totalPrice += prices[i].price;
+                count++;
+                powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
+            }
+
+            if (powerSum >= neededVotingPower) {
+                return totalPrice / count; // Return the average price of the group
+            }
+        }
+
+        return 0; // No price meets the requirement
     }
 
     // _______________ Private functions _______________
 
-    function _updatePrice(uint256 _day) private {
-        uint256[] memory prices = priceVotesForDay[_day];
-        uint256 sum = 0;
-        for (uint256 i = 0; i < prices.length; i++) {
-            sum += prices[i];
-        }
+    /**
+     * @notice Updates the price for the given day by sending it to the APRCalculator
+     * @param _price Price to be updated
+     */
+    function _updatePrice(uint256 _price, uint256 _day) private {
+        pricePerDay[_day] = _price;
+        aprCalculatorContract.quotePrice(_price); // TODO: would be update, after RSI is merged
 
-        uint256 price = sum / prices.length;
-        if (price * 100 > prices[0] * 101 || price * 100 < prices[0] * 99) {
-            revert Unauthorized("PRICE_MISMATCH");
-        }
-
-        aprCalculatorContract.quotePrice(price);
+        emit PriceUpdated(_price, _day);
     }
 
+    /**
+     * @notice Get the current day
+     * @return uint256 Current day
+     */
     function _getCurrentDay() private view returns (uint256) {
         return block.timestamp / 1 days;
     }
