@@ -911,6 +911,23 @@ Total amount of blocks in a given epoch
 |---|---|---|
 | length | uint256 | Total blocks for an epoch |
 
+### totalVotingPower
+
+```solidity
+function totalVotingPower() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### transferOwnership
 
 ```solidity

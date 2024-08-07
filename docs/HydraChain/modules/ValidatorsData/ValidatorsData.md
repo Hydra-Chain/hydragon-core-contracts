@@ -128,6 +128,23 @@ function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayabl
 |---|---|---|
 | validatorsPower | ValidatorPower[] | undefined |
 
+### totalVotingPower
+
+```solidity
+function totalVotingPower() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### validatorPower
 
 ```solidity

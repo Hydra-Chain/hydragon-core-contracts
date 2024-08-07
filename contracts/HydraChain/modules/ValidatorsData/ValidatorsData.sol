@@ -9,6 +9,7 @@ import {IValidatorsData, ValidatorPower} from "./IValidatorsData.sol";
 
 abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     mapping(address => uint256) public validatorPower;
+    uint256 public totalVotingPower;
 
     // _______________ Initializer _______________
 
@@ -24,7 +25,13 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     function syncValidatorsData(ValidatorPower[] calldata validatorsPower) external onlySystemCall {
         uint256 arrLength = validatorsPower.length;
         for (uint i = 0; i < arrLength; i++) {
+            uint256 oldPower = validatorPower[validatorsPower[i].validator];
             validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
+            if (oldPower != 0) {
+                totalVotingPower = totalVotingPower - oldPower + validatorsPower[i].votingPower;
+            } else {
+                totalVotingPower += validatorsPower[i].votingPower;
+            }
         }
     }
 
