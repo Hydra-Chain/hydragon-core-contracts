@@ -138,7 +138,7 @@ export function RunRSIndexTests(): void {
       );
     });
 
-    it("should correctly handle calculations after gard up and then disabled", async function () {
+    it("should correctly handle calculations after guard up and then disabled", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
