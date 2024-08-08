@@ -10,6 +10,7 @@ import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
+import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
@@ -23,7 +24,8 @@ contract HydraChain is
     ValidatorManager,
     Inspector,
     PowerExponent,
-    DaoIncentive
+    DaoIncentive,
+    ValidatorsData
 {
     using ArraysUpgradeable for uint256[];
 
