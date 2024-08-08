@@ -33,7 +33,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
     modifier onlyActiveValidator() {
         if (hydraChainContract.isValidatorActive(msg.sender) == false) {
-            revert Unauthorized("ONLY_ACTIVE_VALIDATOR");
+            revert Unauthorized("INACTIVE_STAKER");
         }
         _;
     }
@@ -45,18 +45,22 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      */
     function vote(uint256 _price) external onlyActiveValidator {
         uint256 day = _getCurrentDay();
-        if (validatorLastVotedDay[msg.sender] == day) {
-            revert AlreadyVoted();
+        if (_price == 0) {
+            revert InvalidPrice();
         }
 
         if (pricePerDay[day] != 0) {
             revert PriceAlreadySet();
         }
 
+        if (validatorLastVotedDay[msg.sender] == day) {
+            revert AlreadyVoted();
+        }
+
         validatorLastVotedDay[msg.sender] = day;
 
-        PriceForValidator memory pricePower = PriceForValidator({price: _price, validator: msg.sender});
-        priceVotesForDay[day].push(pricePower);
+        PriceForValidator memory priceForValidator = PriceForValidator({price: _price, validator: msg.sender});
+        priceVotesForDay[day].push(priceForValidator);
 
         emit PriceVoted(_price, msg.sender, day);
 
@@ -101,15 +105,15 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         uint256 count = 0;
         uint256 powerSum = 0;
         for (uint256 i = 0; i < len; i++) {
-            if (i > 0 && prices[i].price > (basePrice * 101) / 100) {
-                // Price is outside 1% range, start a new group
+            if (prices[i].price > (basePrice * 101) / 100) {
+                // If price is outside 1% range, start a new group
+                count = 1;
                 basePrice = prices[i].price;
                 totalPrice = prices[i].price;
-                count = 1;
                 powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
             } else {
-                totalPrice += prices[i].price;
                 count++;
+                totalPrice += prices[i].price;
                 powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
             }
 
@@ -129,9 +133,13 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      */
     function _updatePrice(uint256 _price, uint256 _day) private {
         pricePerDay[_day] = _price;
-        aprCalculatorContract.quotePrice(_price); // TODO: would be update, after RSI is merged
-
-        emit PriceUpdated(_price, _day);
+        // sami: should update price, not quote
+        try aprCalculatorContract.quotePrice(_price) {
+            emit PriceUpdated(_price, _day);
+        } catch (bytes memory error) {
+            emit PriceUpdated(_price, _day); // sami: remove this line when finish Price module update
+            emit PriceUpdateFailed(_price, _day, error);
+        }
     }
 
     /**

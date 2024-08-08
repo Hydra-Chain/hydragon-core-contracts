@@ -487,18 +487,16 @@ async function validatorsDataFixtureStateFixtureFunction(this: Mocha.Context) {
   const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
     await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-  // set the rsi to the minimum value
-  await aprCalculator.connect(this.signers.governance).setRSI(MIN_RSI_BONUS);
   await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake.mul(2) });
 
   const validatorsData = [
-    { validator: this.signers.validators[0].address, votingPower: 12 },
-    { validator: this.signers.validators[1].address, votingPower: 8 },
-    { validator: this.signers.validators[2].address, votingPower: 6 },
-    { validator: this.signers.validators[3].address, votingPower: 14 },
+    { validator: this.signers.validators[0].address, votingPower: 24 },
+    { validator: this.signers.validators[1].address, votingPower: 18 },
+    { validator: this.signers.validators[2].address, votingPower: 22 },
+    { validator: this.signers.validators[3].address, votingPower: 26 },
   ];
   await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
 
@@ -586,6 +584,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
@@ -602,6 +601,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   };
 }

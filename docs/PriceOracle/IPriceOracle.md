@@ -30,6 +30,24 @@ Allows active validators to vote on the price
 
 ## Events
 
+### PriceUpdateFailed
+
+```solidity
+event PriceUpdateFailed(uint256 price, uint256 day, bytes data)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| price  | uint256 | undefined |
+| day  | uint256 | undefined |
+| data  | bytes | undefined |
+
 ### PriceUpdated
 
 ```solidity
@@ -73,6 +91,17 @@ event PriceVoted(uint256 price, address validator, uint256 day)
 
 ```solidity
 error AlreadyVoted()
+```
+
+
+
+
+
+
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
 ```
 
 

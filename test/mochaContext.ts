@@ -158,6 +158,7 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
       rewardWallet: RewardWallet;
     }>;
   };
