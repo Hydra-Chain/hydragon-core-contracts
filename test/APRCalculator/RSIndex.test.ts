@@ -142,18 +142,22 @@ export function RunRSIndexTests(): void {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
+
       const averageGain = await aprCalculator.averageGain();
       const averageLoss = await aprCalculator.averageLoss();
+      // we quote a price that could be corrupted & guard (should not be included in the calculation)
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 1000);
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.governance).guardBonuses();
-      // this should not include in the calculation
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 100);
+      // here we pass a price that is correct and should be included in the calculation & disable guard
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 100);
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.governance).disableGuard();
-      // this should include in the calculation
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 100);
+      // quote any price to update last quoted price
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE);
 
-      expect(await aprCalculator.averageLoss(), "gain").to.be.below(averageGain);
-      expect(await aprCalculator.averageGain(), "loss").to.be.above(averageLoss);
+      expect(await aprCalculator.averageGain(), "gain").to.be.below(averageGain);
+      expect(await aprCalculator.averageLoss(), "loss").to.be.above(averageLoss);
     });
   });
 }
