@@ -2,7 +2,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { DAY, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
-import { commitEpoch } from "../helper";
+import { calculateRSIBonus, commitEpoch } from "../helper";
 
 export function RunRSIndexTests(): void {
   it("should get RSI", async function () {
@@ -76,6 +76,10 @@ export function RunRSIndexTests(): void {
       for (let i = 0; i !== 21; i++) {
         await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(1000000));
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+        const averageGain = (await aprCalculator.averageGain()).toNumber();
+        const averageLoss = (await aprCalculator.averageLoss()).toNumber();
+        const rsi = await calculateRSIBonus(averageGain, averageLoss);
+        expect(await aprCalculator.rsi()).to.be.equal(rsi);
       }
 
       expect(await aprCalculator.rsi()).to.be.equal(0);
@@ -83,28 +87,34 @@ export function RunRSIndexTests(): void {
       for (let i = 0; i !== 3; i++) {
         await aprCalculator.connect(this.signers.system).quotePrice(currentPrice);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+        const averageGain = (await aprCalculator.averageGain()).toNumber();
+        const averageLoss = (await aprCalculator.averageLoss()).toNumber();
+        const rsi = await calculateRSIBonus(averageGain, averageLoss);
+        expect(await aprCalculator.rsi()).to.be.equal(rsi);
       }
 
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
   });
 
-  describe("Gard RSIndex", function () {
-    it("should successfully gard RSI & disable updates", async function () {
+  describe("Guard RSIndex", function () {
+    it("should successfully guard RSI & disable updates", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
       await expect(aprCalculator.connect(this.signers.governance).guardBonuses())
         .to.emit(aprCalculator, "RSIBonusSet")
         .withArgs(0);
+
       await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
         aprCalculator,
         "RSIBonusSet"
       );
+
       const currentRSI = await aprCalculator.getRSIBonus();
       expect(currentRSI).to.equal(0);
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
     });
 
-    it("should disable gard and enable RSI updates after calling the function again", async function () {
+    it("should disable guard and enable RSI updates", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );
@@ -126,6 +136,24 @@ export function RunRSIndexTests(): void {
         aprCalculator,
         "RSIBonusSet"
       );
+    });
+
+    it("should correctly handle calculations after gard up and then disabled", async function () {
+      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+        this.fixtures.initializedHydraChainStateFixture
+      );
+      const averageGain = await aprCalculator.averageGain();
+      const averageLoss = await aprCalculator.averageLoss();
+      await aprCalculator.connect(this.signers.governance).guardBonuses();
+      // this should not include in the calculation
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 100);
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+      await aprCalculator.connect(this.signers.governance).disableGuard();
+      // this should include in the calculation
+      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 100);
+
+      expect(await aprCalculator.averageLoss(), "gain").to.be.below(averageGain);
+      expect(await aprCalculator.averageGain(), "loss").to.be.above(averageLoss);
     });
   });
 }

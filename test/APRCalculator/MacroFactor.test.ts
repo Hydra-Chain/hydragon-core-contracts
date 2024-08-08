@@ -53,7 +53,7 @@ export function RunMacroFactorTests(): void {
     });
   });
 
-  describe("Gard Macro Factor", function () {
+  describe("Guard Macro Factor", function () {
     it("should successfully guard macro factor & disable updates", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
       const oldSMASlowSum = await aprCalculator.smaSlowSum();
@@ -74,7 +74,7 @@ export function RunMacroFactorTests(): void {
       expect(await aprCalculator.smaFastSum()).to.equal(oldSMAFastSum);
     });
 
-    it("should disable guard and enable macro factor updates after calling the function again", async function () {
+    it("should disable guard and enable macro factor updates", async function () {
       const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
         this.fixtures.initializedHydraChainStateFixture
       );

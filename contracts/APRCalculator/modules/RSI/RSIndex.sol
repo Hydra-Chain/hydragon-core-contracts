@@ -36,7 +36,7 @@ abstract contract RSIndex is IRSIndex, Price {
      * @inheritdoc Price
      * @notice Update the RSI based on the price update, if the needed conditions are met.
      */
-    function _onPriceUpdate(uint256 /* _price */) internal virtual override(Price) {
+    function _onPriceUpdate(uint256 /* _price */) internal virtual override {
         _triggerRSIUpdate();
     }
 
@@ -44,7 +44,7 @@ abstract contract RSIndex is IRSIndex, Price {
      * @inheritdoc Price
      * @notice Reset the rsi to have no bonus.
      */
-    function _resetBonuses() internal virtual override(Price) {
+    function _resetBonuses() internal virtual override {
         rsi = 0;
         emit RSIBonusSet(0);
     }
@@ -85,7 +85,7 @@ abstract contract RSIndex is IRSIndex, Price {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
             rsindex = 100 - (100 * DENOMINATOR) / (DENOMINATOR + rs);
         } else if (avrLoss != 0) {
-            // If the average gain is 0 but avarage loss is not, the RS index is = 0 and the rsindex is = 0
+            // If the average gain is 0 but average loss is not, the RS index is = 0 and we apply max bonus
             rsindex = 0;
         } else {
             // If the average loss is 0 or both are 0, the RS index is 100 and there is no bonus
@@ -105,7 +105,7 @@ abstract contract RSIndex is IRSIndex, Price {
             newRsi = 11500;
         } else if (rsindex > 19) {
             newRsi = 12500;
-        } else if (rsindex < 20) {
+        } else {
             newRsi = MAX_RSI_BONUS;
         }
 

@@ -37,7 +37,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
         }
 
         defaultMacroFactor = _macroFactor;
-        
+
         emit DefaultMacroFactorChanged(_macroFactor);
     }
 
@@ -57,7 +57,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @notice Update the macro factor based on the price update, if the needed conditions are met.
      * @param _price The price to be used for the update.
      */
-    function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
+    function _onPriceUpdate(uint256 _price) internal virtual override {
         _triggerMacroUpdate(_price);
     }
 
@@ -65,7 +65,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @inheritdoc Price
      * @notice Reset the macro factor to the default value.
      */
-    function _resetBonuses() internal virtual override(Price) {
+    function _resetBonuses() internal virtual override {
         macroFactor = defaultMacroFactor;
         emit MacroFactorSet(defaultMacroFactor);
     }
