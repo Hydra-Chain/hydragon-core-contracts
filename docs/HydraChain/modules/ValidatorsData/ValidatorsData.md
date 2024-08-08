@@ -2,11 +2,11 @@
 
 
 
+> ValidatorsData
 
 
 
-
-
+*This module will be responsible for updating the validators voting power in real-time (for each epoch). We need it because the ValidatorsManager shows updates that are not applied on core consensus level yet.*
 
 ## Methods
 
@@ -111,6 +111,45 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### getTotalVotingPower
+
+```solidity
+function getTotalVotingPower() external view returns (uint256)
+```
+
+Returns the total voting power of the validators
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | uint256 Total voting power of the validators |
+
+### getValidatorPower
+
+```solidity
+function getValidatorPower(address validator) external view returns (uint256)
+```
+
+Returns the voting power of the validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | uint256 Voting power of the validator |
 
 ### syncValidatorsData
 

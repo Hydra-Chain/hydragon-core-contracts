@@ -7,6 +7,11 @@ import {System} from "../../../common/System/System.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
 import {IValidatorsData, ValidatorPower} from "./IValidatorsData.sol";
 
+/**
+ * @title ValidatorsData
+ * @dev This module will be responsible for updating the validators voting power in real-time (for each epoch).
+ * We need it because the ValidatorsManager shows updates that are not applied on core consensus level yet.
+ */
 abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     mapping(address => uint256) public validatorPower;
     uint256 public totalVotingPower;
@@ -18,6 +23,20 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     function __ValidatorData_init_unchained() internal onlyInitializing {}
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IValidatorsData
+     */
+    function getValidatorPower(address validator) external view returns (uint256) {
+        return validatorPower[validator];
+    }
+
+    /**
+     * @inheritdoc IValidatorsData
+     */
+    function getTotalVotingPower() external view returns (uint256) {
+        return totalVotingPower;
+    }
 
     /**
      * @inheritdoc IValidatorsData
