@@ -2,15 +2,13 @@
 pragma solidity 0.8.17;
 
 import {MacroFactor} from "./modules/MacroFactor/MacroFactor.sol";
+import {RSIndex} from "./modules/RSI/RSIndex.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
-contract APRCalculator is IAPRCalculator, MacroFactor {
+contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     uint256 public constant INITIAL_BASE_APR = 500;
-    uint256 public constant MIN_RSI_BONUS = 10000;
-    uint256 public constant MAX_RSI_BONUS = 17000;
     uint256 public constant EPOCHS_YEAR = 31500;
 
-    uint256 public rsi;
     uint256 public base;
     uint256[52] public vestingBonus;
 
@@ -23,6 +21,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
     ) external initializer onlySystemCall {
         __Price_init(hydraChainAddr, governance, prices);
         __MacroFactor_init();
+        __RSIndex_init();
 
         base = INITIAL_BASE_APR;
 
@@ -38,17 +37,6 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
         base = newBase;
     }
 
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function setRSI(uint256 newRSI) external onlyRole(MANAGER_ROLE) {
-        if (newRSI > MAX_RSI_BONUS) revert InvalidRSI();
-
-        if (newRSI < MIN_RSI_BONUS) newRSI = 0;
-
-        rsi = newRSI;
-    }
-
     // _______________ Public functions _______________
 
     /**
@@ -56,13 +44,6 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
      */
     function getBaseAPR() public view returns (uint256) {
         return base;
-    }
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function getRSIBonus() public view returns (uint256) {
-        return rsi;
     }
 
     /**
@@ -133,6 +114,18 @@ contract APRCalculator is IAPRCalculator, MacroFactor {
      */
     function applyBaseAPR(uint256 amount) public view returns (uint256) {
         return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
+    }
+
+    // _______________ Internal functions _______________
+
+    function _onPriceUpdate(uint256 _price) internal override(MacroFactor, RSIndex) {
+        MacroFactor._onPriceUpdate(_price);
+        RSIndex._onPriceUpdate(_price);
+    }
+
+    function _resetBonuses() internal override(MacroFactor, RSIndex) {
+        MacroFactor._resetBonuses();
+        RSIndex._resetBonuses();
     }
 
     // _______________ Private functions _______________

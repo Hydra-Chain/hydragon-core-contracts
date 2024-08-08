@@ -348,6 +348,9 @@ export async function calculateExpectedReward(
   reward: BigNumber
 ) {
   // calculate expected reward based on the given apr factors
+  if (rsi.isZero()) {
+    rsi = DENOMINATOR;
+  }
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
@@ -358,6 +361,25 @@ export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNu
 
   // calculate expected reward
   return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
+}
+
+export async function calculateRSIBonus(averageGain: number, averageLoss: number) {
+  if (averageGain === 0 && averageLoss === 0) {
+    return 100;
+  }
+
+  const rs = averageGain / averageLoss;
+  const RSIndex = 100 - 100 / (1 + rs);
+
+  if (RSIndex > 39) {
+    return 0;
+  } else if (RSIndex > 29) {
+    return 11500;
+  } else if (RSIndex > 19) {
+    return 12500;
+  } else {
+    return 17000;
+  }
 }
 
 export async function applyCustomReward(

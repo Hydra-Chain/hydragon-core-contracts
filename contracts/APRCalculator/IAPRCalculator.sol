@@ -2,9 +2,10 @@
 pragma solidity 0.8.17;
 
 import {IPrice} from "./modules/Price/IPrice.sol";
+import {IRSIndex} from "./modules/RSI/IRSIndex.sol";
 import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 
-interface IAPRCalculator is IMacroFactor, IPrice {
+interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     error InvalidRSI();
 
     /**
@@ -14,24 +15,12 @@ interface IAPRCalculator is IMacroFactor, IPrice {
      */
     function setBase(uint256 newBase) external;
 
-    /**
-     * @notice sets new RSI value
-     * @dev only owner can call this function
-     * @param newRSI new RSI value
-     */
-    function setRSI(uint256 newRSI) external;
-
     // _______________ Public functions _______________
 
     /**
      * @notice returns base APR
      */
     function getBaseAPR() external view returns (uint256);
-
-    /**
-     * @notice returns max reward
-     */
-    function getRSIBonus() external view returns (uint256);
 
     /**
      * @notice returns the denominator for the APR calculation

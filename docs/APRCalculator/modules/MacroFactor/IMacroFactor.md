@@ -43,17 +43,6 @@ Get the macro factor
 |---|---|---|
 | _0 | uint256 | macro factor |
 
-### guardMacroFactor
-
-```solidity
-function guardMacroFactor() external nonpayable
-```
-
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
-
-*only governance can call this function in case of emergency or price manipulation*
-
-
 
 
 ## Events

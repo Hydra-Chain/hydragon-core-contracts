@@ -10,7 +10,6 @@ abstract contract MacroFactor is IMacroFactor, Price {
     uint256 public constant MIN_MACRO_FACTOR = 1250;
     uint256 public constant MAX_MACRO_FACTOR = 17500;
 
-    bool public disabledMacro;
     uint256 public smaFastSum;
     uint256 public smaSlowSum;
     uint256 public macroFactor;
@@ -32,26 +31,13 @@ abstract contract MacroFactor is IMacroFactor, Price {
     /**
      * @inheritdoc IMacroFactor
      */
-    function guardMacroFactor() external onlyRole(MANAGER_ROLE) {
-        if (!disabledMacro) {
-            disabledMacro = true;
-            uint256 newMacroFactor = defaultMacroFactor;
-            macroFactor = newMacroFactor;
-
-            emit MacroFactorSet(newMacroFactor);
-        } else {
-            disabledMacro = false;
-        }
-    }
-
-    /**
-     * @inheritdoc IMacroFactor
-     */
     function changeDefaultMacroFactor(uint256 _macroFactor) external onlyRole(MANAGER_ROLE) {
         if (_macroFactor < MIN_MACRO_FACTOR || _macroFactor > MAX_MACRO_FACTOR) {
             revert InvalidMacroFactor();
         }
+
         defaultMacroFactor = _macroFactor;
+
         emit DefaultMacroFactorChanged(_macroFactor);
     }
 
@@ -71,10 +57,17 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @notice Update the macro factor based on the price update, if the needed conditions are met.
      * @param _price The price to be used for the update.
      */
-    function _onPriceUpdate(uint256 _price) internal virtual override(Price) {
-        if (!disabledMacro) {
-            _triggerMacroUpdate(_price);
-        }
+    function _onPriceUpdate(uint256 _price) internal virtual override {
+        _triggerMacroUpdate(_price);
+    }
+
+    /**
+     * @inheritdoc Price
+     * @notice Reset the macro factor to the default value.
+     */
+    function _resetBonuses() internal virtual override {
+        macroFactor = defaultMacroFactor;
+        emit MacroFactorSet(defaultMacroFactor);
     }
 
     // _______________ Private functions _______________

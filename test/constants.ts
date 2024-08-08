@@ -62,6 +62,6 @@ export const ERRORS = {
     invalidParamsIndex: "INVALID_PARAMS_INDEX",
   },
   accessControl: (account: string, role: string) => {
-    return `AccessControl: account ${account} is missing role ${role}`;
+    return `AccessControl: account ${account.toLowerCase()} is missing role ${role}`;
   },
 };

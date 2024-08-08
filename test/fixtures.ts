@@ -18,10 +18,10 @@ import {
 } from "../typechain-types";
 import {
   CHAIN_ID,
+  DAY,
   DOMAIN,
   INITIAL_COMMISSION,
   INITIAL_PRICE,
-  MIN_RSI_BONUS,
   SLOW_SMA,
   SYSTEM,
   VESTING_DURATION_WEEKS,
@@ -326,6 +326,38 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
   };
 }
 
+async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
+  } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+  for (let i = 0; i !== 15; i++) {
+    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE - i * 35);
+    await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+  }
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    aprCalculator,
+    liquidToken,
+    vestingManagerFactory,
+    rewardWallet,
+    DAOIncentiveVault,
+  };
+}
 // --------------- Validators Fixtures ---------------
 
 async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
@@ -497,7 +529,6 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
   } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
   // set the rsi to the minimum value
-  await aprCalculator.connect(this.signers.governance).setRSI(MIN_RSI_BONUS);
   await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
 
@@ -862,6 +893,7 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
   context.fixtures.distributeVaultFundsFixture = distributeVaultFundsFixtureFunction.bind(context);
+  context.fixtures.rsiOverSoldConditionFixture = rsiOverSoldConditionFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);

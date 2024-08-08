@@ -10,6 +10,28 @@
 
 ## Methods
 
+### disableGuard
+
+```solidity
+function disableGuard() external nonpayable
+```
+
+Enables the RSI bonus and Macro factor updates again
+
+*only governance can call this function*
+
+
+### guardBonuses
+
+```solidity
+function guardBonuses() external nonpayable
+```
+
+Protects RSI bonus and Macro factor updates and set them to default values
+
+*only governance can call this function*
+
+
 ### quotePrice
 
 ```solidity
@@ -67,6 +89,28 @@ event PriceUpdated(uint256 time, uint256 price)
 
 
 ## Errors
+
+### GuardAlreadyDisabled
+
+```solidity
+error GuardAlreadyDisabled()
+```
+
+
+
+
+
+
+### GuardAlreadyEnabled
+
+```solidity
+error GuardAlreadyEnabled()
+```
+
+
+
+
+
 
 ### InvalidPrice
 

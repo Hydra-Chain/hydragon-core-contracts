@@ -92,6 +92,17 @@ Change the default macro factor
 |---|---|---|
 | _macroFactor | uint256 | The new default macro factor |
 
+### disableGuard
+
+```solidity
+function disableGuard() external nonpayable
+```
+
+Enables the RSI bonus and Macro factor updates again
+
+*only governance can call this function*
+
+
 ### getBaseAPR
 
 ```solidity
@@ -206,16 +217,16 @@ returns the max APR for 52 weeks
 function getRSIBonus() external view returns (uint256)
 ```
 
-returns max reward
+Get the rsi
 
-
+*return the rsi*
 
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | RSIndex |
 
 ### getVestingBonus
 
@@ -239,15 +250,15 @@ returns the vesting bonus for the given weeks count
 |---|---|---|
 | nominator | uint256 | undefined |
 
-### guardMacroFactor
+### guardBonuses
 
 ```solidity
-function guardMacroFactor() external nonpayable
+function guardBonuses() external nonpayable
 ```
 
-Guard the macro factor, so it cannot be changed from price and put it to inital value, or if disabled, it anables it
+Protects RSI bonus and Macro factor updates and set them to default values
 
-*only governance can call this function in case of emergency or price manipulation*
+*only governance can call this function*
 
 
 ### quotePrice
@@ -281,22 +292,6 @@ sets new base APR
 | Name | Type | Description |
 |---|---|---|
 | newBase | uint256 | new base APR |
-
-### setRSI
-
-```solidity
-function setRSI(uint256 newRSI) external nonpayable
-```
-
-sets new RSI value
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newRSI | uint256 | new RSI value |
 
 
 
@@ -368,9 +363,47 @@ event PriceUpdated(uint256 time, uint256 price)
 | time  | uint256 | undefined |
 | price  | uint256 | undefined |
 
+### RSIBonusSet
+
+```solidity
+event RSIBonusSet(uint256 RSIndex)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| RSIndex  | uint256 | undefined |
+
 
 
 ## Errors
+
+### GuardAlreadyDisabled
+
+```solidity
+error GuardAlreadyDisabled()
+```
+
+
+
+
+
+
+### GuardAlreadyEnabled
+
+```solidity
+error GuardAlreadyEnabled()
+```
+
+
+
+
+
 
 ### InvalidMacroFactor
 
