@@ -9,7 +9,7 @@ import {IValidatorsData, ValidatorPower} from "./IValidatorsData.sol";
 
 /**
  * @title ValidatorsData
- * @dev This module will be responsible for updating the validators voting power in real-time (for each epoch).
+ * @dev This module will be responsible for giving access to the validators voting power in real-time (for each epoch).
  * We need it because the ValidatorsManager shows updates that are not applied on core consensus level yet.
  */
 abstract contract ValidatorsData is IValidatorsData, System, Initializable {
