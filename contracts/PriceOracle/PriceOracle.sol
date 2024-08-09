@@ -24,10 +24,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     function initialize(address _hydraChainAddr, address _aprCalculatorAddr) external initializer onlySystemCall {
         __HydraChainConnector_init(_hydraChainAddr);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
-        _initialize();
     }
-
-    function _initialize() private onlyInitializing {}
 
     // _______________ Modifers _______________
 
@@ -132,12 +129,10 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @param _price Price to be updated
      */
     function _updatePrice(uint256 _price, uint256 _day) private {
-        pricePerDay[_day] = _price;
-        // sami: should update price, not quote
-        try aprCalculatorContract.quotePrice(_price) {
+        try aprCalculatorContract.updatePrice(_price, _day) {
+            pricePerDay[_day] = _price;
             emit PriceUpdated(_price, _day);
         } catch (bytes memory error) {
-            emit PriceUpdated(_price, _day); // sami: remove this line when finish Price module update
             emit PriceUpdateFailed(_price, _day, error);
         }
     }

@@ -87,7 +87,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should revert vote when price for the day is updated", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
       await priceOracle.connect(this.signers.validators[1]).vote(21);
@@ -103,7 +103,7 @@ export function RunPriceOracleTests(): void {
 
   describe("Price update", function () {
     it("should not update price if votes are less than 4, even if they have enough power", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
       await priceOracle.connect(this.signers.validators[1]).vote(21);
@@ -111,7 +111,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should not update price, if there is is not enough power for a price (rounding to 1%)", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await priceOracle.connect(this.signers.validators[0]).vote(10);
       await priceOracle.connect(this.signers.validators[1]).vote(14);
@@ -120,7 +120,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should update price successfully", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const currentDay = await getCurrentDay();
 
       await priceOracle.connect(this.signers.validators[0]).vote(221);
@@ -129,10 +129,11 @@ export function RunPriceOracleTests(): void {
       await expect(priceOracle.connect(this.signers.validators[3]).vote(221))
         .to.emit(priceOracle, "PriceUpdated")
         .withArgs(221, currentDay);
+      expect(await priceOracle.pricePerDay(currentDay)).to.equal(221);
     });
 
     it("should update price if 61% power agrees on price (rounding to 1%), even if other validators voted for different price", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const currentDay = await getCurrentDay();
 
       await priceOracle.connect(this.signers.validators[0]).vote(142);
@@ -144,7 +145,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should update the average price of votes (if they are all around the same value to 1%)", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const currentDay = await getCurrentDay();
 
       const price1 = 222222221;
@@ -161,19 +162,20 @@ export function RunPriceOracleTests(): void {
         .withArgs(expectedPrice, currentDay);
     });
 
-    it("should not revert call if APRCalculator priceUpdate fails, it emit event for fail", async function () {
-      const { hydraChain } = await loadFixture(this.fixtures.validatorsDataFixtureStateFixture);
+    it("should not revert vote if APRCalculator priceUpdate fails, it does not update the price & emit event for fail", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
+      const currentDay = await getCurrentDay();
       const newPriceOracleContract = await (await ethers.getContractFactory("PriceOracle")).deploy();
       await newPriceOracleContract.connect(this.signers.system).initialize(hydraChain.address, hydraChain.address);
 
-      await newPriceOracleContract.connect(this.signers.validators[0]).vote(142);
+      await newPriceOracleContract.connect(this.signers.validators[0]).vote(56);
       await newPriceOracleContract.connect(this.signers.validators[1]).vote(56);
       await newPriceOracleContract.connect(this.signers.validators[2]).vote(56);
-      await expect(newPriceOracleContract.connect(this.signers.validators[3]).vote(56)).to.emit(
-        newPriceOracleContract,
-        "PriceUpdateFailed"
-      );
+      const lastVote = await newPriceOracleContract.connect(this.signers.validators[3]).vote(56);
+      await expect(lastVote).to.emit(newPriceOracleContract, "PriceUpdateFailed");
+      await expect(lastVote).to.not.emit(newPriceOracleContract, "PriceUpdated");
+      expect(await newPriceOracleContract.pricePerDay(currentDay)).to.equal(0);
     });
   });
 }

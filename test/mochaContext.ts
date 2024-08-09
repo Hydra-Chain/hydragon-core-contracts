@@ -103,9 +103,7 @@ export interface Fixtures {
       hydraStaking: HydraStaking;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
-      vestingManagerFactory: VestingManagerFactory;
-      rewardWallet: RewardWallet;
-      DAOIncentiveVault: HydraVault;
+      priceOracle: PriceOracle;
     }>;
   };
   whitelistedValidatorsStateFixture: {
@@ -136,7 +134,7 @@ export interface Fixtures {
       rewardWallet: RewardWallet;
     }>;
   };
-  validatorsDataFixtureStateFixture: {
+  validatorsDataStateFixture: {
     (): Promise<{
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
@@ -146,6 +144,20 @@ export interface Fixtures {
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       priceOracle: PriceOracle;
+    }>;
+  };
+  votedValidatorsStateFixture: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
+      liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      priceOracle: PriceOracle;
+      priceToVote: number;
+      validatorToVote: SignerWithAddress;
     }>;
   };
   stakedValidatorsStateFixture: {

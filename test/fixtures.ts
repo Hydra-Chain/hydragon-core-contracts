@@ -195,7 +195,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await aprCalculator
     .connect(this.signers.system)
-    .initialize(this.signers.governance.address, hydraChain.address, prices);
+    .initialize(this.signers.governance.address, hydraChain.address, priceOracle.address, prices);
 
   await systemHydraChain.initialize(
     [validatorInit],
@@ -343,21 +343,13 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
 }
 
 async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
-  const {
-    hydraChain,
-    systemHydraChain,
-    bls,
-    hydraDelegation,
-    hydraStaking,
-    aprCalculator,
-    liquidToken,
-    vestingManagerFactory,
-    rewardWallet,
-    DAOIncentiveVault,
-  } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
+    await loadFixture(this.fixtures.validatorsDataStateFixture);
 
   for (let i = 0; i !== 15; i++) {
-    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE - i * 35);
+    for (let j = 0; j !== 4; j++) {
+      await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE - i * 35);
+    }
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
   }
 
@@ -365,13 +357,11 @@ async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
     hydraChain,
     systemHydraChain,
     bls,
-    hydraDelegation,
     hydraStaking,
-    aprCalculator,
+    hydraDelegation,
     liquidToken,
-    vestingManagerFactory,
-    rewardWallet,
-    DAOIncentiveVault,
+    aprCalculator,
+    priceOracle,
   };
 }
 // --------------- Validators Fixtures ---------------
@@ -483,12 +473,10 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
   };
 }
 
-async function validatorsDataFixtureStateFixtureFunction(this: Mocha.Context) {
+async function validatorsDataStateFixtureFunction(this: Mocha.Context) {
   const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
-    await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+    await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-  await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake.mul(2) });
-  await hydraStaking.connect(this.signers.validators[1]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
   await hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake.mul(2) });
 
@@ -509,6 +497,29 @@ async function validatorsDataFixtureStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     priceOracle,
+  };
+}
+
+async function votedValidatorsStateFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
+    await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+  const priceToVote = INITIAL_PRICE * 2;
+  await priceOracle.connect(this.signers.validators[0]).vote(priceToVote);
+  await priceOracle.connect(this.signers.validators[1]).vote(priceToVote);
+  await priceOracle.connect(this.signers.validators[2]).vote(priceToVote);
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    aprCalculator,
+    priceOracle,
+    priceToVote,
+    validatorToVote: this.signers.validators[3],
   };
 }
 
@@ -957,7 +968,8 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.rsiOverSoldConditionFixture = rsiOverSoldConditionFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
-  context.fixtures.validatorsDataFixtureStateFixture = validatorsDataFixtureStateFixtureFunction.bind(context);
+  context.fixtures.validatorsDataStateFixture = validatorsDataStateFixtureFunction.bind(context);
+  context.fixtures.votedValidatorsStateFixture = votedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.newVestingValidatorFixture = newVestingValidatorFixtureFunction.bind(context);
   context.fixtures.vestingRewardsFixture = vestingRewardsFixtureFunction.bind(context);

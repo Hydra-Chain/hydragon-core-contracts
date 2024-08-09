@@ -6,36 +6,35 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {System} from "../../../common/System/System.sol";
 import {Governed} from "../../../common/Governed/Governed.sol";
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
+import {PriceOracleConnector} from "../../../PriceOracle/PriceOracleConnector.sol";
 import {IPrice} from "./IPrice.sol";
 
-abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector {
+abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector, PriceOracleConnector {
     uint256 public constant DENOMINATOR = 10000;
     bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
     bool public disabledBonusesUpdates;
-    uint256 public updateTime;
     uint256 public latestDailyPrice;
-    uint256 public priceSumCounter;
-    uint256 public dailyPriceQuotesSum;
     uint256[] public updatedPrices;
-    mapping(uint256 => uint256) public pricePerEpoch;
+    mapping(uint256 => uint256) public pricePerDay;
 
     // _______________ Initializer _______________
 
     function __Price_init(
         address _hydraChainAddr,
+        address _priceOracleAddr,
         address _governance,
         uint256[310] memory _prices
     ) internal onlyInitializing {
         __Governed_init(_governance);
         __HydraChainConnector_init(_hydraChainAddr);
+        __PriceOracleConnector_init(_priceOracleAddr);
         __Price_init_unchained(_prices);
 
         _grantRole(MANAGER_ROLE, _governance);
     }
 
     function __Price_init_unchained(uint256[310] memory _prices) internal onlyInitializing {
-        updateTime = _calcNextMidnight();
         updatedPrices = _prices;
         latestDailyPrice = _prices[309];
     }
@@ -45,27 +44,19 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @inheritdoc IPrice
      */
-    function quotePrice(uint256 _price) external onlySystemCall {
-        if (_price == 0) {
-            revert InvalidPrice();
-        }
+    function updatePrice(uint256 _price, uint256 _day) external onlyPriceOracle {
+        assert(_price != 0);
+        assert(pricePerDay[_day] == 0);
+        assert(_day == block.timestamp / 1 days);
 
-        uint256 currentEpochId = hydraChainContract.getCurrentEpochId();
-        if (pricePerEpoch[currentEpochId] != 0) {
-            revert PriceAlreadyQuoted();
-        }
+        latestDailyPrice = _price;
+        pricePerDay[_day] = _price;
 
-        pricePerEpoch[currentEpochId] = _price;
-        if (block.timestamp >= updateTime && priceSumCounter != 0) {
-            _updatePrice();
-            dailyPriceQuotesSum = _price;
-            priceSumCounter = 1;
-        } else {
-            dailyPriceQuotesSum += _price;
-            priceSumCounter++;
-        }
+        emit PriceUpdated(_day, _price);
 
-        emit PriceQuoted(currentEpochId, _price);
+        if (!disabledBonusesUpdates) {
+            _updateBonuses(_price);
+        }
     }
 
     /**
@@ -109,24 +100,9 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
      * @notice Update the price and time for the next update.
      * @dev It also triggers the macro factor update if not disabled.
      */
-    function _updatePrice() private {
-        uint256 price = dailyPriceQuotesSum / priceSumCounter;
-        updateTime = _calcNextMidnight();
-        latestDailyPrice = price;
-
-        emit PriceUpdated(block.timestamp, price);
-
-        if (!disabledBonusesUpdates) {
-            updatedPrices.push(price);
-            _onPriceUpdate(price);
-        }
-    }
-
-    /**
-     * @notice Calculate the next midnight timestamp.
-     */
-    function _calcNextMidnight() private view returns (uint256) {
-        return block.timestamp + (1 days - (block.timestamp % 1 days));
+    function _updateBonuses(uint256 _price) private {
+        updatedPrices.push(_price);
+        _onPriceUpdate(_price);
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -247,23 +247,6 @@ Change the default macro factor
 |---|---|---|
 | _macroFactor | uint256 | The new default macro factor |
 
-### dailyPriceQuotesSum
-
-```solidity
-function dailyPriceQuotesSum() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### defaultMacroFactor
 
 ```solidity
@@ -450,10 +433,27 @@ function macroFactor() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### pricePerEpoch
+### priceOracleContract
 
 ```solidity
-function pricePerEpoch(uint256) external view returns (uint256)
+function priceOracleContract() external view returns (contract IPriceOracle)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IPriceOracle | undefined |
+
+### pricePerDay
+
+```solidity
+function pricePerDay(uint256) external view returns (uint256)
 ```
 
 
@@ -471,39 +471,6 @@ function pricePerEpoch(uint256) external view returns (uint256)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### priceSumCounter
-
-```solidity
-function priceSumCounter() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### quotePrice
-
-```solidity
-function quotePrice(uint256 _price) external nonpayable
-```
-
-Quotes the price for each epoch &amp; keeps the average price for each day
-
-*only the system can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _price | uint256 | undefined |
 
 ### renounceRole
 
@@ -595,22 +562,22 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### updateTime
+### updatePrice
 
 ```solidity
-function updateTime() external view returns (uint256)
+function updatePrice(uint256 _price, uint256 _day) external nonpayable
 ```
 
+Updates the price for the last day
 
+*only the PriceOracle can call this function*
 
-
-
-
-#### Returns
+#### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _price | uint256 | undefined |
+| _day | uint256 | undefined |
 
 ### updatedPrices
 
@@ -686,27 +653,10 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
-### PriceQuoted
-
-```solidity
-event PriceQuoted(uint256 indexed epochId, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| epochId `indexed` | uint256 | undefined |
-| amount  | uint256 | undefined |
-
 ### PriceUpdated
 
 ```solidity
-event PriceUpdated(uint256 time, uint256 price)
+event PriceUpdated(uint256 day, uint256 price)
 ```
 
 
@@ -717,7 +667,7 @@ event PriceUpdated(uint256 time, uint256 price)
 
 | Name | Type | Description |
 |---|---|---|
-| time  | uint256 | undefined |
+| day  | uint256 | undefined |
 | price  | uint256 | undefined |
 
 ### RoleAdminChanged
@@ -811,21 +761,10 @@ error InvalidMacroFactor()
 
 
 
-### InvalidPrice
+### PriceAlreadySet
 
 ```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
-### PriceAlreadyQuoted
-
-```solidity
-error PriceAlreadyQuoted()
+error PriceAlreadySet()
 ```
 
 
