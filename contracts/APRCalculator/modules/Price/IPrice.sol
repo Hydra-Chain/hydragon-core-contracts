@@ -2,20 +2,19 @@
 pragma solidity 0.8.17;
 
 interface IPrice {
-    event PriceQuoted(uint256 indexed epochId, uint256 amount);
-    event PriceUpdated(uint256 time, uint256 price);
+    event PriceUpdated(uint256 day, uint256 price);
 
     error GuardAlreadyDisabled();
     error GuardAlreadyEnabled();
-    error PriceAlreadyQuoted();
-    error InvalidPrice();
+    error PriceAlreadySet();
 
     /**
-     * @notice Quotes the price for each epoch & keeps the average price for each day
-     * @dev only the system can call this function
-     * @param price the amount to quote
+     * @notice Updates the price for the last day
+     * @dev only the PriceOracle can call this function
+     * @param price the price to be updated
+     * @param day the day to be updated
      */
-    function quotePrice(uint256 price) external;
+    function updatePrice(uint256 price, uint256 day) external;
 
     /**
      * @notice Protects RSI bonus and Macro factor updates and set them to default values

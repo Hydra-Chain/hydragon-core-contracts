@@ -20,12 +20,14 @@ export function RunRSIndexTests(): void {
     });
 
     it("should update RSI on price update on overbought condition", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+      const { aprCalculator, systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
 
       for (let i = 0; i <= 15; i++) {
-        await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE + i * 30);
+        for (let j = 0; j !== 4; j++) {
+          await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE + i * 35);
+        }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       }
 
@@ -33,48 +35,51 @@ export function RunRSIndexTests(): void {
     });
 
     it("should emit event on RSI update", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.rsiOverSoldConditionFixture);
-
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE)).to.emit(
-        aprCalculator,
-        "RSIBonusSet"
+      const { aprCalculator, priceOracle, validatorToVote, priceToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
       );
+
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.emit(aprCalculator, "RSIBonusSet");
     });
 
     it("should properly update average gain or loss", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+      const { aprCalculator, systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
 
       const averageGain = await aprCalculator.averageGain();
       const averageLoss = await aprCalculator.averageLoss();
 
-      // quote price 5 times to update the average gain and loss and then quote again to update the price
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 5);
-      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
-      await aprCalculator.connect(this.signers.system).quotePrice(1);
+      // vote price 5 times bigger to update the average gain and loss
+      for (let j = 0; j !== 4; j++) {
+        await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE * 5);
+      }
 
       const averageGainAfter = await aprCalculator.averageGain();
       expect(averageGainAfter).to.be.above(averageGain);
       expect(await aprCalculator.averageLoss()).to.be.below(averageLoss);
 
-      // quote price again to update the price we set to 0 and see if the average gain and loss are updated properly
+      // vote price again and see if the average gain and loss are updated properly
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
-      await aprCalculator.connect(this.signers.system).quotePrice(1);
+      for (let j = 0; j !== 4; j++) {
+        await priceOracle.connect(this.signers.validators[j]).vote(1);
+      }
 
       expect(await aprCalculator.averageGain()).to.be.below(averageGainAfter);
       expect(await aprCalculator.averageLoss()).to.be.above(averageLoss);
     });
 
     it("should properly update RSI on slowly moving the price", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
+      const { aprCalculator, systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
         this.fixtures.rsiOverSoldConditionFixture
       );
       expect(await aprCalculator.rsi()).to.be.above(0);
       const currentPrice = await aprCalculator.latestDailyPrice();
 
       for (let i = 0; i !== 21; i++) {
-        await aprCalculator.connect(this.signers.system).quotePrice(currentPrice.add(1000000));
+        for (let j = 0; j !== 4; j++) {
+          await priceOracle.connect(this.signers.validators[j]).vote(currentPrice.add(1000000));
+        }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
         const averageGain = (await aprCalculator.averageGain()).toNumber();
         const averageLoss = (await aprCalculator.averageLoss()).toNumber();
@@ -85,7 +90,9 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(0);
 
       for (let i = 0; i !== 3; i++) {
-        await aprCalculator.connect(this.signers.system).quotePrice(currentPrice);
+        for (let j = 0; j !== 4; j++) {
+          await priceOracle.connect(this.signers.validators[j]).vote(currentPrice);
+        }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
         const averageGain = (await aprCalculator.averageGain()).toNumber();
         const averageLoss = (await aprCalculator.averageLoss()).toNumber();
@@ -99,15 +106,14 @@ export function RunRSIndexTests(): void {
 
   describe("Guard RSIndex", function () {
     it("should successfully guard RSI & disable updates", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+      const { aprCalculator, priceOracle, validatorToVote, priceToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
+      );
       await expect(aprCalculator.connect(this.signers.governance).guardBonuses())
         .to.emit(aprCalculator, "RSIBonusSet")
         .withArgs(0);
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
-        aprCalculator,
-        "RSIBonusSet"
-      );
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.not.emit(aprCalculator, "RSIBonusSet");
 
       const currentRSI = await aprCalculator.getRSIBonus();
       expect(currentRSI).to.equal(0);
@@ -115,15 +121,12 @@ export function RunRSIndexTests(): void {
     });
 
     it("should disable guard and enable RSI updates", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.initializedHydraChainStateFixture
-      );
+      const { aprCalculator, systemHydraChain, hydraStaking, priceOracle, validatorToVote, priceToVote } =
+        await loadFixture(this.fixtures.votedValidatorsStateFixture);
       await aprCalculator.connect(this.signers.governance).guardBonuses();
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
-        aprCalculator,
-        "RSIBonusSet"
-      );
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.not.emit(aprCalculator, "RSIBonusSet");
+
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
@@ -132,29 +135,30 @@ export function RunRSIndexTests(): void {
 
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
+      await priceOracle.connect(this.signers.validators[0]).vote(INITIAL_PRICE / 2);
+      await priceOracle.connect(this.signers.validators[1]).vote(INITIAL_PRICE / 2);
+      await priceOracle.connect(this.signers.validators[2]).vote(INITIAL_PRICE / 2);
+      await expect(priceOracle.connect(this.signers.validators[3]).vote(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,
         "RSIBonusSet"
       );
     });
 
     it("should correctly handle calculations after guard up and then disabled", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.initializedHydraChainStateFixture
-      );
+      const { aprCalculator, systemHydraChain, hydraStaking, priceOracle, priceToVote, validatorToVote } =
+        await loadFixture(this.fixtures.votedValidatorsStateFixture);
 
       const averageGain = await aprCalculator.averageGain();
       const averageLoss = await aprCalculator.averageLoss();
-      // we quote a price that could be corrupted & guard (should not be included in the calculation)
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 1000);
-      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.governance).guardBonuses();
-      // here we pass a price that is correct and should be included in the calculation & disable guard
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 100);
+      // the price is updated when the guard is up (bigger than the current price), so it will not be included in the calculation
+      await priceOracle.connect(validatorToVote).vote(priceToVote);
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.governance).disableGuard();
-      // quote any price to update last quoted price
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE);
+      // update the price again (smaller than the current price) to update the average gain and loss
+      for (let j = 0; j !== 4; j++) {
+        await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE / 2);
+      }
 
       expect(await aprCalculator.averageGain(), "gain").to.be.below(averageGain);
       expect(await aprCalculator.averageLoss(), "loss").to.be.above(averageLoss);

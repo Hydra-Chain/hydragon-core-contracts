@@ -382,6 +382,11 @@ export async function calculateRSIBonus(averageGain: number, averageLoss: number
   }
 }
 
+export async function getCurrentDay() {
+  const block = await hre.ethers.provider.getBlock("latest");
+  return Math.floor(block.timestamp / DAY);
+}
+
 export async function applyCustomReward(
   hydraDelegation: HydraDelegation,
   validator: string,

@@ -32,47 +32,31 @@ Protects RSI bonus and Macro factor updates and set them to default values
 *only governance can call this function*
 
 
-### quotePrice
+### updatePrice
 
 ```solidity
-function quotePrice(uint256 price) external nonpayable
+function updatePrice(uint256 price, uint256 day) external nonpayable
 ```
 
-Quotes the price for each epoch &amp; keeps the average price for each day
+Updates the price for the last day
 
-*only the system can call this function*
+*only the PriceOracle can call this function*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| price | uint256 | the amount to quote |
+| price | uint256 | the price to be updated |
+| day | uint256 | the day to be updated |
 
 
 
 ## Events
 
-### PriceQuoted
-
-```solidity
-event PriceQuoted(uint256 indexed epochId, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| epochId `indexed` | uint256 | undefined |
-| amount  | uint256 | undefined |
-
 ### PriceUpdated
 
 ```solidity
-event PriceUpdated(uint256 time, uint256 price)
+event PriceUpdated(uint256 day, uint256 price)
 ```
 
 
@@ -83,7 +67,7 @@ event PriceUpdated(uint256 time, uint256 price)
 
 | Name | Type | Description |
 |---|---|---|
-| time  | uint256 | undefined |
+| day  | uint256 | undefined |
 | price  | uint256 | undefined |
 
 
@@ -112,21 +96,10 @@ error GuardAlreadyEnabled()
 
 
 
-### InvalidPrice
+### PriceAlreadySet
 
 ```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
-### PriceAlreadyQuoted
-
-```solidity
-error PriceAlreadyQuoted()
+error PriceAlreadySet()
 ```
 
 

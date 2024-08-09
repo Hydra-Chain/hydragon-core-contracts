@@ -7,11 +7,12 @@ import { ERRORS } from "../constants";
 
 export function RunStakingTests(): void {
   describe("Stake", function () {
-    it("should allow only registered & active validators to stake", async function () {
-      // * Only the first three validators are being registered
-      const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+    it("should allow only registered or active validators to stake", async function () {
+      const { hydraStaking, hydraChain } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-      await expect(hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake }))
+      const newValidator = this.signers.accounts[10];
+      await hydraChain.connect(this.signers.governance).addToWhitelist([newValidator.address]);
+      await expect(hydraStaking.connect(newValidator).stake({ value: this.minStake }))
         .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
         .withArgs(ERRORS.mustBeRegistered);
     });

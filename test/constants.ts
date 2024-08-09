@@ -51,6 +51,7 @@ export const ERRORS = {
     onlyHydraStakingArg: "ONLY_HYDRA_STAKING",
     onlyHydraDelegationArg: "ONLY_HYDRA_DELEGATION",
     inactiveStakerArg: "INACTIVE_STAKER",
+    priceOracleArg: "ONLY_PRICE_ORACLE",
   },
   inactiveValidator: "INACTIVE_VALIDATOR",
   invalidValidator: "INVALID_VALIDATOR",
