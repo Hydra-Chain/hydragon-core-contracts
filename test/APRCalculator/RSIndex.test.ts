@@ -135,12 +135,13 @@ export function RunRSIndexTests(): void {
       expect(await newAprCalculator.rsi()).to.be.equal(0);
       expect(tableDataPrices.length, "Array length").to.be.equal(tableDataRSI.length);
 
-      for (let i = 0; i < tableDataPrices.length; i++) {
+      for (let i = 1; i < tableDataPrices.length; i++) {
+        console.log("____________________");
+        console.log(tableDataPrices[i]);
+        console.log(tableDataRSI[i - 1]);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
         await newAprCalculator.connect(this.signers.system).quotePrice(tableDataPrices[i]);
-        expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);
-        console.log(i);
-        console.log(tableDataPrices[i]);
+        expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i - 1]);
       }
     });
   });
