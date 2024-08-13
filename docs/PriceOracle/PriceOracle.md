@@ -129,6 +129,28 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
+### getTodayIfVoteAvailable
+
+```solidity
+function getTodayIfVoteAvailable(uint256 _price) external view returns (uint256 day)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _price | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | undefined |
+
 ### hydraChainContract
 
 ```solidity

@@ -40,8 +40,26 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     /**
      * @inheritdoc IPriceOracle
      */
-    function vote(uint256 _price) external onlyActiveValidator {
-        uint256 day = _getCurrentDay();
+    function vote(uint256 _price) external {
+        uint256 day = getTodayIfVoteAvailable(_price);
+        validatorLastVotedDay[msg.sender] = day;
+
+        PriceForValidator memory priceForValidator = PriceForValidator({price: _price, validator: msg.sender});
+        priceVotesForDay[day].push(priceForValidator);
+
+        emit PriceVoted(_price, msg.sender, day);
+
+        uint256 price = _checkPriceUpdateAvailability(day);
+
+        if (price != 0) {
+            _updatePrice(price, day);
+        }
+    }
+
+    // _______________ Public functions _______________
+
+    function getTodayIfVoteAvailable(uint256 _price) public view onlyActiveValidator returns (uint256 day) {
+        day = _getCurrentDay();
         if (_price == 0) {
             revert InvalidPrice();
         }
@@ -53,19 +71,6 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         if (validatorLastVotedDay[msg.sender] == day) {
             revert AlreadyVoted();
         }
-
-        validatorLastVotedDay[msg.sender] = day;
-
-        PriceForValidator memory priceForValidator = PriceForValidator({price: _price, validator: msg.sender});
-        priceVotesForDay[day].push(priceForValidator);
-
-        emit PriceVoted(_price, msg.sender, day);
-
-        uint256 price = _checkPriceUpdateAvaibility(day);
-
-        if (price != 0) {
-            _updatePrice(price, day);
-        }
     }
 
     // _______________ Internal functions _______________
@@ -75,7 +80,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @param _day Day to check
      * @return uint256 Price if available, 0 otherwise
      */
-    function _checkPriceUpdateAvaibility(uint256 _day) internal view returns (uint256) {
+    function _checkPriceUpdateAvailability(uint256 _day) internal view returns (uint256) {
         PriceForValidator[] memory prices = priceVotesForDay[_day];
         uint256 len = prices.length;
 
