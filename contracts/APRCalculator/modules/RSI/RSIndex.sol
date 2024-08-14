@@ -101,12 +101,11 @@ abstract contract RSIndex is IRSIndex, Price {
      */
     function _setRSI(uint256 rsindex) private {
         uint256 newRsi;
-        console.log("rsindex: ", rsindex);
-        if (rsindex > 3999999) {
+        if (rsindex > 3999) {
             newRsi = 0;
-        } else if (rsindex > 2999999) {
+        } else if (rsindex > 2999) {
             newRsi = 11500;
-        } else if (rsindex > 1999999) {
+        } else if (rsindex > 1999) {
             newRsi = 12500;
         } else {
             newRsi = MAX_RSI_BONUS;

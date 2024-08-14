@@ -53,7 +53,7 @@ abstract contract Vesting is APRCalculatorConnector {
         uint256 bonus = (position.base + position.vestBonus);
         uint256 divider = aprCalculatorContract.getDENOMINATOR();
         if (position.rsiBonus != 0) {
-            bonus = bonus * position.rsiBonus;
+            bonus *= position.rsiBonus;
             divider *= divider;
         }
 

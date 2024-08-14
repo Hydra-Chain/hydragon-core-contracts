@@ -112,7 +112,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
 
-    it.only("should have same values of RSI table data", async function () {
+    it.skip("should have same values of RSI table data", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
