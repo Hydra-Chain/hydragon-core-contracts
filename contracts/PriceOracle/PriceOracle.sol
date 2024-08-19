@@ -19,20 +19,18 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
+    uint256 public voltingPowerPercentageNeeded;
+
     // _______________ Initializer _______________
 
     function initialize(address _hydraChainAddr, address _aprCalculatorAddr) external initializer onlySystemCall {
         __HydraChainConnector_init(_hydraChainAddr);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
+        _initialize();
     }
 
-    // _______________ Modifers _______________
-
-    modifier onlyActiveValidator() {
-        if (hydraChainContract.isValidatorActive(msg.sender) == false) {
-            revert Unauthorized("INACTIVE_STAKER");
-        }
-        _;
+    function _initialize() private onlyInitializing {
+        voltingPowerPercentageNeeded = 61;
     }
 
     // _______________ External functions _______________
@@ -40,55 +38,66 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     /**
      * @inheritdoc IPriceOracle
      */
-    function vote(uint256 _price) external {
-        uint256 day = getTodayIfVoteAvailable(_price);
+    function vote(uint256 price) external {
+        if (price == 0) {
+            revert InvalidPrice();
+        }
+
+        uint256 day = _getCurrentDay();
+
+        assert(isValidValidatorVote(day) == true);
+
         validatorLastVotedDay[msg.sender] = day;
 
-        PriceForValidator memory priceForValidator = PriceForValidator({price: _price, validator: msg.sender});
+        PriceForValidator memory priceForValidator = PriceForValidator({price: price, validator: msg.sender});
         priceVotesForDay[day].push(priceForValidator);
 
-        emit PriceVoted(_price, msg.sender, day);
+        emit PriceVoted(price, msg.sender, day);
 
-        uint256 price = _checkPriceUpdateAvailability(day);
+        uint256 availablePrice = _checkPriceUpdateAvailability(day);
 
-        if (price != 0) {
-            _updatePrice(price, day);
+        if (availablePrice != 0) {
+            _updatePrice(availablePrice, day);
         }
     }
 
     // _______________ Public functions _______________
 
-    function getTodayIfVoteAvailable(uint256 _price) public view onlyActiveValidator returns (uint256 day) {
-        day = _getCurrentDay();
-        if (_price == 0) {
-            revert InvalidPrice();
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function isValidValidatorVote(uint256 day) public view returns (bool) {
+        if (hydraChainContract.isValidatorActive(msg.sender) == false) {
+            revert Unauthorized("INACTIVE_STAKER");
+        }
+
+        if (validatorLastVotedDay[msg.sender] == day) {
+            revert AlreadyVoted();
         }
 
         if (pricePerDay[day] != 0) {
             revert PriceAlreadySet();
         }
 
-        if (validatorLastVotedDay[msg.sender] == day) {
-            revert AlreadyVoted();
-        }
+        return true;
     }
 
     // _______________ Internal functions _______________
 
     /**
      * @notice Check if the price update is available for the given day
-     * @param _day Day to check
+     * @param day Day to check
      * @return uint256 Price if available, 0 otherwise
      */
-    function _checkPriceUpdateAvailability(uint256 _day) internal view returns (uint256) {
-        PriceForValidator[] memory prices = priceVotesForDay[_day];
+    function _checkPriceUpdateAvailability(uint256 day) internal view returns (uint256) {
+        PriceForValidator[] memory prices = priceVotesForDay[day];
         uint256 len = prices.length;
 
         if (len < 4) {
             return 0; // Not enough votes to determine
         }
 
-        uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * 61) / 100;
+        uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * voltingPowerPercentageNeeded) / 100;
 
         // Sort prices in ascending order
         for (uint256 i = 0; i < len - 1; i++) {
@@ -131,14 +140,14 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
     /**
      * @notice Updates the price for the given day by sending it to the APRCalculator
-     * @param _price Price to be updated
+     * @param price Price to be updated
      */
-    function _updatePrice(uint256 _price, uint256 _day) private {
-        try aprCalculatorContract.updatePrice(_price, _day) {
-            pricePerDay[_day] = _price;
-            emit PriceUpdated(_price, _day);
+    function _updatePrice(uint256 price, uint256 day) private {
+        try aprCalculatorContract.updatePrice(price, day) {
+            pricePerDay[day] = price;
+            emit PriceUpdated(price, day);
         } catch (bytes memory error) {
-            emit PriceUpdateFailed(_price, _day, error);
+            emit PriceUpdateFailed(price, day, error);
         }
     }
 

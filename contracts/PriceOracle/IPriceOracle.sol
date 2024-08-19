@@ -18,7 +18,16 @@ interface IPriceOracle {
     /**
      * @notice Allows active validators to vote on the price
      * @dev it automatically updates the price if all conditions are met
-     * @param _price Price to vote
+     * @param price Price to vote
      */
-    function vote(uint256 _price) external;
+    function vote(uint256 price) external;
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Returns true if the validator can vote for the provided day
+     * @param day The day to check
+     * @return true if the validator can vote
+     */
+    function isValidValidatorVote(uint256 day) external view returns (bool);
 }
