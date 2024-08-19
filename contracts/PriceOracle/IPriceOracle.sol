@@ -12,8 +12,7 @@ interface IPriceOracle {
     event PriceUpdated(uint256 price, uint256 day);
 
     error InvalidPrice();
-    error AlreadyVoted();
-    error PriceAlreadySet();
+    error InvalidVote(string message);
 
     /**
      * @notice Allows active validators to vote on the price
@@ -28,6 +27,7 @@ interface IPriceOracle {
      * @notice Returns true if the validator can vote for the provided day
      * @param day The day to check
      * @return true if the validator can vote
+     * @return error message if the validator cannot vote
      */
-    function shouldVote(uint256 day) external view returns (bool);
+    function shouldVote(uint256 day) external view returns (bool, string memory);
 }

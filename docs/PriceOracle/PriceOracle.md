@@ -212,7 +212,7 @@ function priceVotesForDay(uint256, uint256) external view returns (uint256 price
 ### shouldVote
 
 ```solidity
-function shouldVote(uint256 day) external view returns (bool)
+function shouldVote(uint256 day) external view returns (bool, string)
 ```
 
 Returns true if the validator can vote for the provided day
@@ -230,6 +230,7 @@ Returns true if the validator can vote for the provided day
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | true if the validator can vote |
+| _1 | string | error message if the validator cannot vote |
 
 ### validatorLastVotedDay
 
@@ -363,17 +364,6 @@ event PriceVoted(uint256 price, address validator, uint256 day)
 
 ## Errors
 
-### AlreadyVoted
-
-```solidity
-error AlreadyVoted()
-```
-
-
-
-
-
-
 ### InvalidPrice
 
 ```solidity
@@ -385,16 +375,21 @@ error InvalidPrice()
 
 
 
-### PriceAlreadySet
+### InvalidVote
 
 ```solidity
-error PriceAlreadySet()
+error InvalidVote(string message)
 ```
 
 
 
 
 
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| message | string | undefined |
 
 ### Unauthorized
 

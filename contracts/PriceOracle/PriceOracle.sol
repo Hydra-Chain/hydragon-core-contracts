@@ -45,7 +45,10 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         uint256 day = _getCurrentDay();
 
-        assert(shouldVote(day) == true);
+        (bool canVote, string memory errMsg) = shouldVote(day);
+        if (!canVote) {
+            revert InvalidVote(errMsg);
+        }
 
         validatorLastVotedDay[msg.sender] = day;
 
@@ -66,20 +69,20 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     /**
      * @inheritdoc IPriceOracle
      */
-    function shouldVote(uint256 day) public view returns (bool) {
+    function shouldVote(uint256 day) public view returns (bool, string memory) {
         if (hydraChainContract.isValidatorActive(msg.sender) == false) {
-            revert Unauthorized("INACTIVE_STAKER");
+            return (false, "INACTIVE_STAKER");
         }
 
         if (pricePerDay[day] != 0) {
-            revert PriceAlreadySet();
+            return (false, "PRICE_ALREADY_SET");
         }
 
         if (validatorLastVotedDay[msg.sender] == day) {
-            revert AlreadyVoted();
+            return (false, "ALREADY_VOTED");
         }
 
-        return true;
+        return (true, "");
     }
 
     // _______________ Internal functions _______________

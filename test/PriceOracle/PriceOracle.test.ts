@@ -48,8 +48,8 @@ export function RunPriceOracleTests(): void {
       const { priceOracle } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21))
-        .to.be.revertedWithCustomError(priceOracle, ERRORS.unauthorized.name)
-        .withArgs(ERRORS.unauthorized.inactiveStakerArg);
+        .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
+        .withArgs("INACTIVE_STAKER");
     });
 
     it("should revert vote with 0 price", async function () {
@@ -80,10 +80,9 @@ export function RunPriceOracleTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
 
-      await expect(priceOracle.connect(this.signers.validators[0]).vote(25)).to.be.revertedWithCustomError(
-        priceOracle,
-        "AlreadyVoted"
-      );
+      await expect(priceOracle.connect(this.signers.validators[0]).vote(25))
+        .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
+        .withArgs("ALREADY_VOTED");
     });
 
     it("should revert vote when price for the day is updated", async function () {
@@ -94,10 +93,9 @@ export function RunPriceOracleTests(): void {
       await priceOracle.connect(this.signers.validators[2]).vote(21);
       await priceOracle.connect(this.signers.validators[3]).vote(21);
 
-      await expect(priceOracle.connect(this.signers.validators[1]).vote(25)).to.be.revertedWithCustomError(
-        priceOracle,
-        "PriceAlreadySet"
-      );
+      await expect(priceOracle.connect(this.signers.validators[1]).vote(25))
+        .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
+        .withArgs("PRICE_ALREADY_SET");
     });
   });
 
