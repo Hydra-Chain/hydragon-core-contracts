@@ -19,7 +19,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
-    uint256 public voltingPowerPercentageNeeded;
+    uint256 public votingPowerPercentageNeeded;
 
     // _______________ Initializer _______________
 
@@ -30,7 +30,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     }
 
     function _initialize() private onlyInitializing {
-        voltingPowerPercentageNeeded = 61;
+        votingPowerPercentageNeeded = 61;
     }
 
     // _______________ External functions _______________
@@ -45,7 +45,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         uint256 day = _getCurrentDay();
 
-        assert(isValidValidatorVote(day) == true);
+        assert(shouldVote(day) == true);
 
         validatorLastVotedDay[msg.sender] = day;
 
@@ -66,17 +66,17 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     /**
      * @inheritdoc IPriceOracle
      */
-    function isValidValidatorVote(uint256 day) public view returns (bool) {
+    function shouldVote(uint256 day) public view returns (bool) {
         if (hydraChainContract.isValidatorActive(msg.sender) == false) {
             revert Unauthorized("INACTIVE_STAKER");
         }
 
-        if (validatorLastVotedDay[msg.sender] == day) {
-            revert AlreadyVoted();
-        }
-
         if (pricePerDay[day] != 0) {
             revert PriceAlreadySet();
+        }
+
+        if (validatorLastVotedDay[msg.sender] == day) {
+            revert AlreadyVoted();
         }
 
         return true;
@@ -97,7 +97,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             return 0; // Not enough votes to determine
         }
 
-        uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * voltingPowerPercentageNeeded) / 100;
+        uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * votingPowerPercentageNeeded) / 100;
 
         // Sort prices in ascending order
         for (uint256 i = 0; i < len - 1; i++) {
@@ -111,20 +111,42 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         }
 
         // Check for suitable price
+        uint256 baseIndex = 0;
         uint256 basePrice = 0;
         uint256 totalPrice = 0;
         uint256 count = 0;
         uint256 powerSum = 0;
         for (uint256 i = 0; i < len; i++) {
-            if (prices[i].price > (basePrice * 101) / 100) {
-                // If price is outside 1% range, start a new group
-                count = 1;
-                basePrice = prices[i].price;
-                totalPrice = prices[i].price;
-                powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
+            uint256 currentPriceIndex = prices[i].price;
+            if (currentPriceIndex > (basePrice * 101) / 100) {
+                bool prevousIndexFound = false;
+                // Check if there is a previous index that is within 1% range with the current price index
+                if (count > 2) {
+                    for (uint256 j = baseIndex + 1; j < i; j++) {
+                        if (currentPriceIndex <= (prices[j].price * 101) / 100) {
+                            prevousIndexFound = true;
+                            count = 1;
+                            baseIndex = j;
+                            basePrice = prices[j].price;
+                            totalPrice = prices[j].price;
+                            powerSum = hydraChainContract.getValidatorPower(prices[j].validator);
+                            break;
+                        }
+                    }
+                }
+
+                if (!prevousIndexFound) {
+                    // If price all previous prices are outside 1% range, start a new group
+                    count = 1;
+                    baseIndex = i;
+                    basePrice = currentPriceIndex;
+                    totalPrice = currentPriceIndex;
+                    powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
+                }
             } else {
+                // If price is within 1% range, add it to the group
                 count++;
-                totalPrice += prices[i].price;
+                totalPrice += currentPriceIndex;
                 powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
             }
 

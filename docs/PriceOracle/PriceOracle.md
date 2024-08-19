@@ -129,28 +129,6 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
-### getTodayIfVoteAvailable
-
-```solidity
-function getTodayIfVoteAvailable(uint256 _price) external view returns (uint256 day)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _price | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| day | uint256 | undefined |
-
 ### hydraChainContract
 
 ```solidity
@@ -231,6 +209,28 @@ function priceVotesForDay(uint256, uint256) external view returns (uint256 price
 | price | uint256 | undefined |
 | validator | address | undefined |
 
+### shouldVote
+
+```solidity
+function shouldVote(uint256 day) external view returns (bool)
+```
+
+Returns true if the validator can vote for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to check |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | true if the validator can vote |
+
 ### validatorLastVotedDay
 
 ```solidity
@@ -256,7 +256,7 @@ function validatorLastVotedDay(address) external view returns (uint256)
 ### vote
 
 ```solidity
-function vote(uint256 _price) external nonpayable
+function vote(uint256 price) external nonpayable
 ```
 
 Allows active validators to vote on the price
@@ -267,7 +267,24 @@ Allows active validators to vote on the price
 
 | Name | Type | Description |
 |---|---|---|
-| _price | uint256 | Price to vote |
+| price | uint256 | Price to vote |
+
+### votingPowerPercentageNeeded
+
+```solidity
+function votingPowerPercentageNeeded() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 
 

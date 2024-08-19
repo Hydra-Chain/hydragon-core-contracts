@@ -29,5 +29,5 @@ interface IPriceOracle {
      * @param day The day to check
      * @return true if the validator can vote
      */
-    function isValidValidatorVote(uint256 day) external view returns (bool);
+    function shouldVote(uint256 day) external view returns (bool);
 }
