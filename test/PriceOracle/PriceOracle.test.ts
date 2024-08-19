@@ -11,6 +11,7 @@ export function RunPriceOracleTests(): void {
     it("should validate default values when PriceOracle is deployed", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
+      expect(await priceOracle.VOTING_POWER_PERCENTAGE_NEEDED()).to.equal(61);
       expect(await priceOracle.hydraChainContract()).to.equal(ethers.constants.AddressZero);
       expect(await priceOracle.aprCalculatorContract()).to.equal(ethers.constants.AddressZero);
     });
@@ -49,7 +50,7 @@ export function RunPriceOracleTests(): void {
 
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21))
         .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
-        .withArgs("INACTIVE_STAKER");
+        .withArgs("VALIDATOR_WITHOUT_POWER");
     });
 
     it("should revert vote with 0 price", async function () {
@@ -62,7 +63,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should vote successfully", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const currentDay = await getCurrentDay();
 
       await expect(priceOracle.connect(this.signers.validators[0]).vote(21))
@@ -76,7 +77,7 @@ export function RunPriceOracleTests(): void {
     });
 
     it("should revert double voting in the same day", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
 
@@ -142,14 +143,14 @@ export function RunPriceOracleTests(): void {
         .withArgs(56, currentDay);
     });
 
-    it("should update the average price of votes (if they are all around the same value to 1%)", async function () {
+    it("should update the average price of votes (if they are all around the same value to 1% one after another)", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const currentDay = await getCurrentDay();
 
       const price1 = 222222221;
       const price2 = 222222222;
       const price3 = 222222228;
-      const expectedPrice = Math.floor((price1 + price2 + price3) / 3);
+      const expectedPrice = Math.floor(((price1 + price2) / 2 + price3) / 2);
 
       await priceOracle.connect(this.signers.validators[0]).vote(price1);
       await priceOracle.connect(this.signers.validators[1]).vote(price2);

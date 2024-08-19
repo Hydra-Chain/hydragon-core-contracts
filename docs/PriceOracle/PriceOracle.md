@@ -112,6 +112,23 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### VOTING_POWER_PERCENTAGE_NEEDED
+
+```solidity
+function VOTING_POWER_PERCENTAGE_NEEDED() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### aprCalculatorContract
 
 ```solidity
@@ -269,23 +286,6 @@ Allows active validators to vote on the price
 | Name | Type | Description |
 |---|---|---|
 | price | uint256 | Price to vote |
-
-### votingPowerPercentageNeeded
-
-```solidity
-function votingPowerPercentageNeeded() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 
 
