@@ -112,7 +112,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
 
-    it.skip("should have same values of RSI table data", async function () {
+    it("should have same values of RSI table data for 300+ elements", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
@@ -136,9 +136,6 @@ export function RunRSIndexTests(): void {
       expect(tableDataPrices.length, "Array length").to.be.equal(tableDataRSI.length);
 
       for (let i = 1; i < tableDataPrices.length; i++) {
-        console.log("____________________");
-        console.log(tableDataPrices[i]);
-        console.log(tableDataRSI[i - 1]);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
         await newAprCalculator.connect(this.signers.system).quotePrice(tableDataPrices[i]);
         expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i - 1]);

@@ -4,8 +4,6 @@ pragma solidity 0.8.17;
 import {Price} from "../Price/Price.sol";
 import {IRSIndex} from "./IRSIndex.sol";
 
-import "hardhat/console.sol";
-
 abstract contract RSIndex is IRSIndex, Price {
     uint256 public constant MAX_RSI_BONUS = 17000;
 
@@ -85,6 +83,7 @@ abstract contract RSIndex is IRSIndex, Price {
 
         if (avrGain != 0 && avrLoss != 0) {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
+            // index = 100 - (100 / (1 + RS))
             rsindex = DENOMINATOR - (DENOMINATOR * DENOMINATOR) / (DENOMINATOR + rs);
         } else if (avrLoss != 0) {
             // If the average gain is 0 but average loss is not, the RS index is = 0 and we apply max bonus
