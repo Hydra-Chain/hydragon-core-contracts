@@ -50,7 +50,7 @@ export function RunPriceOracleTests(): void {
 
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21))
         .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
-        .withArgs("VALIDATOR_WITHOUT_POWER");
+        .withArgs("NOT_VALIDATOR");
     });
 
     it("should revert vote with 0 price", async function () {
@@ -150,7 +150,7 @@ export function RunPriceOracleTests(): void {
       const price1 = 222222221;
       const price2 = 222222222;
       const price3 = 222222228;
-      const expectedPrice = Math.floor(((price1 + price2) / 2 + price3) / 2);
+      const expectedPrice = Math.floor((price1 + price2 + price3) / 3);
 
       await priceOracle.connect(this.signers.validators[0]).vote(price1);
       await priceOracle.connect(this.signers.validators[1]).vote(price2);

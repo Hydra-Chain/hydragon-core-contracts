@@ -65,7 +65,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      */
     function shouldVote(uint256 day) public view returns (bool, string memory) {
         if (hydraChainContract.getValidatorPower(msg.sender) == 0) {
-            return (false, "VALIDATOR_WITHOUT_POWER");
+            return (false, "NOT_VALIDATOR");
         }
 
         if (pricePerDay[day] != 0) {
@@ -108,22 +108,25 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         }
 
         // Check for suitable price
-        uint256 avrPrice = 0;
+        uint256 count = 1; // set to 1 to avoid division by 0
+        uint256 sumPrice = 0;
         uint256 powerSum = 0;
         for (uint256 i = 0; i < len; i++) {
             uint256 currentPriceIndex = prices[i].price;
-            if (currentPriceIndex > (avrPrice * 101) / 100) {
+            if (currentPriceIndex > ((sumPrice / count) * 101) / 100) {
                 // If price is outside 1% range, start a new group
-                avrPrice = currentPriceIndex;
+                count = 1;
+                sumPrice = currentPriceIndex;
                 powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
             } else {
                 // If price is within 1% range, add it to the group
-                avrPrice = (avrPrice + currentPriceIndex) / 2;
+                count++;
+                sumPrice += currentPriceIndex;
                 powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
             }
 
             if (powerSum >= neededVotingPower) {
-                return avrPrice; // Return the average price of the group
+                return sumPrice / count; // Return the average price of the group
             }
         }
 
