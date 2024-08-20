@@ -17,9 +17,10 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     function initialize(
         address governance,
         address hydraChainAddr,
+        address priceOracleAddr,
         uint256[310] memory prices
     ) external initializer onlySystemCall {
-        __Price_init(hydraChainAddr, governance, prices);
+        __Price_init(hydraChainAddr, priceOracleAddr, governance, prices);
         __MacroFactor_init();
         __RSIndex_init();
 

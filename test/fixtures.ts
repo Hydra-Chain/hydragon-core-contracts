@@ -13,6 +13,7 @@ import {
   HydraStaking__factory,
   HydraVault__factory,
   LiquidityToken__factory,
+  PriceOracle__factory,
   RewardWallet__factory,
   VestingManagerFactory__factory,
 } from "../typechain-types";
@@ -73,6 +74,13 @@ async function VestingManagerFactoryFixtureFunction(this: Mocha.Context) {
   return vestingManagerFactory;
 }
 
+async function PriceOracleFixtureFunction(this: Mocha.Context) {
+  const priceOracleFactory = new PriceOracle__factory(this.signers.admin);
+  const priceOracle = await priceOracleFactory.deploy();
+
+  return priceOracle;
+}
+
 async function RewardWalletFixtureFunction(this: Mocha.Context) {
   const rewardWalletFactory = new RewardWallet__factory(this.signers.admin);
   const rewardWallet = await rewardWalletFactory.deploy();
@@ -122,6 +130,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
   const hydraStaking = await HydraStakingFixtureFunction.bind(this)();
   const aprCalculator = await aprCalculatorFixtureFunction.bind(this)();
   const vestingManagerFactory = await VestingManagerFactoryFixtureFunction.bind(this)();
+  const priceOracle = await PriceOracleFixtureFunction.bind(this)();
   const rewardWallet = await RewardWalletFixtureFunction.bind(this)();
   const DAOIncentiveVault = await hydraVaultFixtureFunction.bind(this)();
 
@@ -134,6 +143,7 @@ async function presetHydraChainStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
     DAOIncentiveVault,
   };
@@ -151,6 +161,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
     DAOIncentiveVault,
   } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
@@ -184,7 +195,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await aprCalculator
     .connect(this.signers.system)
-    .initialize(this.signers.governance.address, hydraChain.address, prices);
+    .initialize(this.signers.governance.address, hydraChain.address, priceOracle.address, prices);
 
   await systemHydraChain.initialize(
     [validatorInit],
@@ -226,6 +237,8 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
 
+  await priceOracle.connect(this.signers.system).initialize(hydraChain.address, aprCalculator.address);
+
   await rewardWallet
     .connect(this.signers.system)
     .initialize([hydraChain.address, hydraStaking.address, hydraDelegation.address]);
@@ -244,6 +257,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     validatorInit,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
     DAOIncentiveVault,
   };
@@ -261,6 +275,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
     DAOIncentiveVault,
   } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
@@ -290,6 +305,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     liquidToken,
     commitEpochTx,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
     DAOIncentiveVault,
   };
@@ -327,21 +343,13 @@ async function distributeVaultFundsFixtureFunction(this: Mocha.Context) {
 }
 
 async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
-  const {
-    hydraChain,
-    systemHydraChain,
-    bls,
-    hydraDelegation,
-    hydraStaking,
-    aprCalculator,
-    liquidToken,
-    vestingManagerFactory,
-    rewardWallet,
-    DAOIncentiveVault,
-  } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
+    await loadFixture(this.fixtures.validatorsDataStateFixture);
 
   for (let i = 0; i !== 15; i++) {
-    await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE - i * 35);
+    for (let j = 0; j !== 4; j++) {
+      await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE - i * 35);
+    }
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
   }
 
@@ -349,13 +357,11 @@ async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
     hydraChain,
     systemHydraChain,
     bls,
-    hydraDelegation,
     hydraStaking,
-    aprCalculator,
+    hydraDelegation,
     liquidToken,
-    vestingManagerFactory,
-    rewardWallet,
-    DAOIncentiveVault,
+    aprCalculator,
+    priceOracle,
   };
 }
 // --------------- Validators Fixtures ---------------
@@ -370,6 +376,7 @@ async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
@@ -391,6 +398,7 @@ async function whitelistedValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   };
 }
@@ -405,6 +413,7 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
@@ -430,6 +439,13 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     keyPair.secret
   ).signature;
 
+  const validator4signature = mcl.signValidatorMessage(
+    DOMAIN,
+    CHAIN_ID,
+    this.signers.validators[3].address,
+    keyPair.secret
+  ).signature;
+
   await hydraChain
     .connect(this.signers.validators[0])
     .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
@@ -439,6 +455,9 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
   await hydraChain
     .connect(this.signers.validators[2])
     .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
+  await hydraChain
+    .connect(this.signers.validators[3])
+    .register(mcl.g1ToHex(validator4signature), mcl.g2ToHex(keyPair.pubkey));
 
   return {
     hydraChain,
@@ -449,7 +468,58 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
+  };
+}
+
+async function validatorsDataStateFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
+    await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+  await hydraStaking.connect(this.signers.validators[2]).stake({ value: this.minStake.mul(2) });
+  await hydraStaking.connect(this.signers.validators[3]).stake({ value: this.minStake.mul(2) });
+
+  const validatorsData = [
+    { validator: this.signers.validators[0].address, votingPower: 24 },
+    { validator: this.signers.validators[1].address, votingPower: 18 },
+    { validator: this.signers.validators[2].address, votingPower: 22 },
+    { validator: this.signers.validators[3].address, votingPower: 26 },
+  ];
+  await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    aprCalculator,
+    priceOracle,
+  };
+}
+
+async function votedValidatorsStateFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
+    await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+  const priceToVote = INITIAL_PRICE * 2;
+  await priceOracle.connect(this.signers.validators[0]).vote(priceToVote);
+  await priceOracle.connect(this.signers.validators[1]).vote(priceToVote);
+  await priceOracle.connect(this.signers.validators[2]).vote(priceToVote);
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    aprCalculator,
+    priceOracle,
+    priceToVote,
+    validatorToVote: this.signers.validators[3],
   };
 }
 
@@ -525,6 +595,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     aprCalculator,
     liquidToken,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
@@ -541,6 +612,7 @@ async function stakedValidatorsStateFixtureFunction(this: Mocha.Context) {
     liquidToken,
     aprCalculator,
     vestingManagerFactory,
+    priceOracle,
     rewardWallet,
   };
 }
@@ -896,6 +968,8 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.rsiOverSoldConditionFixture = rsiOverSoldConditionFixtureFunction.bind(context);
   context.fixtures.whitelistedValidatorsStateFixture = whitelistedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.registeredValidatorsStateFixture = registeredValidatorsStateFixtureFunction.bind(context);
+  context.fixtures.validatorsDataStateFixture = validatorsDataStateFixtureFunction.bind(context);
+  context.fixtures.votedValidatorsStateFixture = votedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.newVestingValidatorFixture = newVestingValidatorFixtureFunction.bind(context);
   context.fixtures.vestingRewardsFixture = vestingRewardsFixtureFunction.bind(context);

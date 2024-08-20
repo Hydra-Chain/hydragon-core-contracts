@@ -29,7 +29,6 @@ export function RunAPRCalculatorTests(): void {
 
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.base()).to.equal(0);
-        expect(await aprCalculator.disabledBonusesUpdates()).to.equal(false);
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
@@ -51,23 +50,31 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.smaSlowSum()).to.equal(0);
 
         // Price
-        expect(await aprCalculator.updateTime()).to.equal(0);
         expect(await aprCalculator.latestDailyPrice()).to.equal(0);
-        expect(await aprCalculator.priceSumCounter()).to.equal(0);
-        expect(await aprCalculator.dailyPriceQuotesSum()).to.equal(0);
+        expect(await aprCalculator.disabledBonusesUpdates()).to.equal(false);
         expect(await aprCalculator.hydraChainContract()).to.equal(ethers.constants.AddressZero);
+        expect(await aprCalculator.priceOracleContract()).to.equal(ethers.constants.AddressZero);
       });
 
       it("should revert initialize if not called by system", async function () {
-        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const { aprCalculator, hydraChain, priceOracle } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
 
         await expect(
-          aprCalculator.initialize(this.signers.governance.address, hydraChain.address, ARRAY_310_ELEMENTS)
+          aprCalculator.initialize(
+            this.signers.governance.address,
+            hydraChain.address,
+            priceOracle.address,
+            ARRAY_310_ELEMENTS
+          )
         ).to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name);
       });
 
       it("should initialize correctly", async function () {
-        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { aprCalculator, hydraChain, priceOracle } = await loadFixture(
+          this.fixtures.initializedHydraChainStateFixture
+        );
         const managerRole = await aprCalculator.MANAGER_ROLE();
         const adminRole = await aprCalculator.DEFAULT_ADMIN_ROLE();
 
@@ -91,20 +98,23 @@ export function RunAPRCalculatorTests(): void {
         expect(await aprCalculator.averageLoss()).to.be.not.equal(0);
 
         // Price
-        const updateTime = await aprCalculator.updateTime();
-        const updateTimeDate = new Date(updateTime.toNumber() * 1000);
-        expect(updateTimeDate.getUTCHours()).to.equal(0);
-        expect(updateTimeDate.getUTCMinutes()).to.equal(0);
-        expect(updateTimeDate.getUTCSeconds()).to.equal(0);
         expect(await aprCalculator.latestDailyPrice()).to.be.equal(INITIAL_PRICE);
         expect(await aprCalculator.hydraChainContract()).to.equal(hydraChain.address);
+        expect(await aprCalculator.priceOracleContract()).to.equal(priceOracle.address);
       });
 
       it("should revert initialize if already initialized", async function () {
-        const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { aprCalculator, hydraChain, priceOracle } = await loadFixture(
+          this.fixtures.initializedHydraChainStateFixture
+        );
 
         await expect(
-          aprCalculator.initialize(this.signers.system.address, hydraChain.address, ARRAY_310_ELEMENTS)
+          aprCalculator.initialize(
+            this.signers.system.address,
+            hydraChain.address,
+            priceOracle.address,
+            ARRAY_310_ELEMENTS
+          )
         ).to.be.revertedWith(ERRORS.initialized);
       });
 

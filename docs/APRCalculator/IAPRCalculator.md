@@ -261,22 +261,6 @@ Protects RSI bonus and Macro factor updates and set them to default values
 *only governance can call this function*
 
 
-### quotePrice
-
-```solidity
-function quotePrice(uint256 price) external nonpayable
-```
-
-Quotes the price for each epoch &amp; keeps the average price for each day
-
-*only the system can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| price | uint256 | the amount to quote |
-
 ### setBase
 
 ```solidity
@@ -292,6 +276,23 @@ sets new base APR
 | Name | Type | Description |
 |---|---|---|
 | newBase | uint256 | new base APR |
+
+### updatePrice
+
+```solidity
+function updatePrice(uint256 price, uint256 day) external nonpayable
+```
+
+Updates the price for the last day
+
+*only the PriceOracle can call this function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| price | uint256 | the price to be updated |
+| day | uint256 | the day to be updated |
 
 
 
@@ -329,27 +330,10 @@ event MacroFactorSet(uint256 macroFactor)
 |---|---|---|
 | macroFactor  | uint256 | undefined |
 
-### PriceQuoted
-
-```solidity
-event PriceQuoted(uint256 indexed epochId, uint256 amount)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| epochId `indexed` | uint256 | undefined |
-| amount  | uint256 | undefined |
-
 ### PriceUpdated
 
 ```solidity
-event PriceUpdated(uint256 time, uint256 price)
+event PriceUpdated(uint256 day, uint256 price)
 ```
 
 
@@ -360,7 +344,7 @@ event PriceUpdated(uint256 time, uint256 price)
 
 | Name | Type | Description |
 |---|---|---|
-| time  | uint256 | undefined |
+| day  | uint256 | undefined |
 | price  | uint256 | undefined |
 
 ### RSIBonusSet
@@ -416,17 +400,6 @@ error InvalidMacroFactor()
 
 
 
-### InvalidPrice
-
-```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
 ### InvalidRSI
 
 ```solidity
@@ -438,10 +411,10 @@ error InvalidRSI()
 
 
 
-### PriceAlreadyQuoted
+### PriceAlreadySet
 
 ```solidity
-error PriceAlreadyQuoted()
+error PriceAlreadySet()
 ```
 
 

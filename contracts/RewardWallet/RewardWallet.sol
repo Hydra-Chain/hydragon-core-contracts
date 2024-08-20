@@ -27,7 +27,7 @@ contract RewardWallet is IRewardWallet, System, Initializable {
         _initialize(managers);
     }
 
-    function _initialize(address[] calldata managers) internal onlyInitializing {
+    function _initialize(address[] calldata managers) private onlyInitializing {
         for (uint256 i = 0; i < managers.length; i++) {
             rewardManagers[managers[i]] = true;
         }

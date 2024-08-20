@@ -1,15 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import {
-  DAY,
-  ERRORS,
-  INITIAL_DEFAULT_MACRO_FACTOR,
-  INITIAL_PRICE,
-  MAX_MACRO_FACTOR,
-  MIN_MACRO_FACTOR,
-} from "../constants";
-import { commitEpoch } from "../helper";
+import { ERRORS, INITIAL_DEFAULT_MACRO_FACTOR, MAX_MACRO_FACTOR, MIN_MACRO_FACTOR } from "../constants";
 
 export function RunMacroFactorTests(): void {
   it("should get macro factor", async function () {
@@ -22,40 +14,32 @@ export function RunMacroFactorTests(): void {
 
   describe("Set Macro Factor", function () {
     it("should emit MacroFactorSet event on price update", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.initializedHydraChainStateFixture
+      const { aprCalculator, priceOracle, priceToVote, validatorToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
       );
-      // need to quote price before updating it
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
-      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 2)).to.emit(
-        aprCalculator,
-        "MacroFactorSet"
-      );
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.emit(aprCalculator, "MacroFactorSet");
     });
 
     it("should update properly change SMA sum on price update", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.initializedHydraChainStateFixture
+      const { aprCalculator, priceToVote, priceOracle, validatorToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
       );
-
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
-      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
       const smaFastSum = await aprCalculator.smaFastSum();
       const smaSlowSum = await aprCalculator.smaSlowSum();
-      // need to quote price again to update the price we already quoted above
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE * 3);
+      await priceOracle.connect(validatorToVote).vote(priceToVote);
 
-      expect(await aprCalculator.smaFastSum(), "SMA Fast Sum").to.below(smaFastSum);
-      expect(await aprCalculator.smaSlowSum(), "SMA Slow Sum").to.below(smaSlowSum);
+      expect(await aprCalculator.smaFastSum(), "SMA Fast Sum").to.above(smaFastSum);
+      expect(await aprCalculator.smaSlowSum(), "SMA Slow Sum").to.above(smaSlowSum);
     });
   });
 
   describe("Guard Macro Factor", function () {
     it("should successfully guard macro factor & disable updates", async function () {
-      const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+      const { aprCalculator, priceOracle, priceToVote, validatorToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
+      );
       const oldSMASlowSum = await aprCalculator.smaSlowSum();
       const oldSMAFastSum = await aprCalculator.smaFastSum();
 
@@ -63,10 +47,7 @@ export function RunMacroFactorTests(): void {
         .to.emit(aprCalculator, "MacroFactorSet")
         .withArgs(INITIAL_DEFAULT_MACRO_FACTOR);
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.not.emit(
-        aprCalculator,
-        "MacroFactorSet"
-      );
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.not.emit(aprCalculator, "MacroFactorSet");
       const currentMacroFactor = await aprCalculator.getMacroFactor();
       expect(currentMacroFactor).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
@@ -75,13 +56,9 @@ export function RunMacroFactorTests(): void {
     });
 
     it("should disable guard and enable macro factor updates", async function () {
-      const { aprCalculator, systemHydraChain, hydraStaking } = await loadFixture(
-        this.fixtures.initializedHydraChainStateFixture
+      const { aprCalculator, priceOracle, priceToVote, validatorToVote } = await loadFixture(
+        this.fixtures.votedValidatorsStateFixture
       );
-
-      // need to quote price before updating it
-      await aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2);
-      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
 
       await aprCalculator.connect(this.signers.governance).guardBonuses();
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.true;
@@ -90,10 +67,7 @@ export function RunMacroFactorTests(): void {
       await aprCalculator.connect(this.signers.governance).disableGuard();
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
 
-      await expect(aprCalculator.connect(this.signers.system).quotePrice(INITIAL_PRICE / 2)).to.emit(
-        aprCalculator,
-        "MacroFactorSet"
-      );
+      await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.emit(aprCalculator, "MacroFactorSet");
     });
   });
 
