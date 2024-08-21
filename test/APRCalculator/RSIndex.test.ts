@@ -113,8 +113,9 @@ export function RunRSIndexTests(): void {
     });
 
     it("should have same values of RSI table data for 300+ elements", async function () {
-      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
+      const newPriceOracleContract = await (await ethers.getContractFactory("PriceOracle")).deploy();
       const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
       const prices: number[] = [];
       for (let i = 0; i < SLOW_SMA - initialDataPrices.length; i++) {
@@ -127,18 +128,25 @@ export function RunRSIndexTests(): void {
         prices.push(initialDataPrices[i]);
       }
 
+      // Initialize the new contracts
       await newAprCalculator
         .connect(this.signers.system)
-        .initialize(this.signers.governance.address, systemHydraChain.address, prices);
+        .initialize(this.signers.governance.address, systemHydraChain.address, newPriceOracleContract.address, prices);
+      await newPriceOracleContract
+        .connect(this.signers.system)
+        .initialize(systemHydraChain.address, newAprCalculator.address);
 
       expect(await newAprCalculator.latestDailyPrice()).to.be.equal(initialDataPrices[initialDataPrices.length - 1]);
       expect(await newAprCalculator.rsi()).to.be.equal(0);
       expect(tableDataPrices.length, "Array length").to.be.equal(tableDataRSI.length);
 
       for (let i = 1; i < tableDataPrices.length; i++) {
+        for (let j = 0; j !== 4; j++) {
+          await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
+        }
+        expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);
+        expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
-        await newAprCalculator.connect(this.signers.system).quotePrice(tableDataPrices[i]);
-        expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i - 1]);
       }
     });
   });
