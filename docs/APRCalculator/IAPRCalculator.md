@@ -389,6 +389,17 @@ error GuardAlreadyEnabled()
 
 
 
+### InvalidDay
+
+```solidity
+error InvalidDay()
+```
+
+
+
+
+
+
 ### InvalidMacroFactor
 
 ```solidity

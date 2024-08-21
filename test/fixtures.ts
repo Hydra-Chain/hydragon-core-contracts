@@ -28,7 +28,14 @@ import {
   VESTING_DURATION_WEEKS,
   WEEK,
 } from "./constants";
-import { commitEpochs, registerValidator, createNewVestManager, generateValidatorBls, commitEpoch } from "./helper";
+import {
+  commitEpochs,
+  registerValidator,
+  createNewVestManager,
+  generateValidatorBls,
+  commitEpoch,
+  getCorrectVotingTimestamp,
+} from "./helper";
 
 // --------------- Deploying Contracts ---------------
 
@@ -346,6 +353,11 @@ async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
   const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
     await loadFixture(this.fixtures.validatorsDataStateFixture);
 
+  // set the correct voting time
+  const correctVotingTime = getCorrectVotingTimestamp();
+
+  await time.setNextBlockTimestamp(correctVotingTime);
+
   for (let i = 0; i !== 15; i++) {
     for (let j = 0; j !== 4; j++) {
       await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE - i * 35);
@@ -503,6 +515,11 @@ async function validatorsDataStateFixtureFunction(this: Mocha.Context) {
 async function votedValidatorsStateFixtureFunction(this: Mocha.Context) {
   const { hydraChain, systemHydraChain, bls, hydraStaking, hydraDelegation, liquidToken, aprCalculator, priceOracle } =
     await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+  // set the correct voting time
+  const correctVotingTime = getCorrectVotingTimestamp();
+
+  await time.setNextBlockTimestamp(correctVotingTime);
 
   const priceToVote = INITIAL_PRICE * 2;
   await priceOracle.connect(this.signers.validators[0]).vote(priceToVote);

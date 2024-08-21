@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {Unauthorized} from "../common/Errors.sol";
+import {Unauthorized, InvalidPrice} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
@@ -20,6 +20,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     mapping(uint256 => uint256) public pricePerDay;
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
+    uint256 public constant DAILY_VOTING_START_TIME = 36 * 1 minutes; // 36 minutes in seconds
+    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + (3 * 1 hours); // + 3 hours in seconds
 
     // _______________ Initializer _______________
 
@@ -36,6 +38,11 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     function vote(uint256 price) external {
         if (price == 0) {
             revert InvalidPrice();
+        }
+
+        uint256 secondsInADay = _getCurrentTimeInSeconds();
+        if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
+            revert InvalidVote("NOT_VOTING_TIME");
         }
 
         uint256 day = _getCurrentDay();
@@ -154,6 +161,14 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      */
     function _getCurrentDay() private view returns (uint256) {
         return block.timestamp / 1 days;
+    }
+
+    /**
+     * @notice Get the current time in seconds
+     * @return uint256 Current time
+     */
+    function _getCurrentTimeInSeconds() private view returns (uint256) {
+        return block.timestamp % 1 days;
     }
 
     // slither-disable-next-line unused-state,naming-convention

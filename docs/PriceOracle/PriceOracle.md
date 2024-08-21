@@ -10,6 +10,40 @@
 
 ## Methods
 
+### DAILY_VOTING_END_TIME
+
+```solidity
+function DAILY_VOTING_END_TIME() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### DAILY_VOTING_START_TIME
+
+```solidity
+function DAILY_VOTING_START_TIME() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity

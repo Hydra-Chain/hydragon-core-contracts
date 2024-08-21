@@ -96,6 +96,17 @@ error GuardAlreadyEnabled()
 
 
 
+### InvalidDay
+
+```solidity
+error InvalidDay()
+```
+
+
+
+
+
+
 ### PriceAlreadySet
 
 ```solidity

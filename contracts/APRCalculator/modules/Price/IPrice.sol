@@ -7,6 +7,7 @@ interface IPrice {
     error GuardAlreadyDisabled();
     error GuardAlreadyEnabled();
     error PriceAlreadySet();
+    error InvalidDay();
 
     /**
      * @notice Updates the price for the last day
