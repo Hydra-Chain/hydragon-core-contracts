@@ -164,8 +164,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     }
 
     /**
-     * @notice Get the current time in seconds
-     * @return uint256 Current time
+     * @notice Get the passed seconds for the current day
+     * @return uint256 Passed seconds
      */
     function _secondsPassedToday() private view returns (uint256) {
         return block.timestamp % 1 days;
