@@ -66,8 +66,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @inheritdoc IPriceOracle
      */
     function shouldVote(uint256 day) public view returns (bool, string memory) {
-        uint256 secondsInADay = _secondsPassedToday();
-        if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
+        uint256 secondsPassed = _secondsPassedToday();
+        if (secondsPassed < DAILY_VOTING_START_TIME || secondsPassed > DAILY_VOTING_END_TIME) {
             return (false, "NOT_VOTING_TIME");
         }
 
