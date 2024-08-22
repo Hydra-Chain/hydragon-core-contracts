@@ -21,7 +21,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
     uint256 public constant DAILY_VOTING_START_TIME = 36 * 1 minutes; // 36 minutes in seconds
-    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + (3 * 1 hours); // + 3 hours in seconds
+    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + (3 hours); // + 3 hours in seconds
 
     // _______________ Initializer _______________
 
@@ -38,11 +38,6 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     function vote(uint256 price) external {
         if (price == 0) {
             revert InvalidPrice();
-        }
-
-        uint256 secondsInADay = _getCurrentTimeInSeconds();
-        if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
-            revert InvalidVote("NOT_VOTING_TIME");
         }
 
         uint256 day = _getCurrentDay();
@@ -71,6 +66,11 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @inheritdoc IPriceOracle
      */
     function shouldVote(uint256 day) public view returns (bool, string memory) {
+        uint256 secondsInADay = _getDailySeconds();
+        if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
+            return (false, "NOT_VOTING_TIME");
+        }
+
         if (hydraChainContract.getValidatorPower(msg.sender) == 0) {
             return (false, "NOT_VALIDATOR");
         }
@@ -167,7 +167,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @notice Get the current time in seconds
      * @return uint256 Current time
      */
-    function _getCurrentTimeInSeconds() private view returns (uint256) {
+    function _getDailySeconds() private view returns (uint256) {
         return block.timestamp % 1 days;
     }
 
