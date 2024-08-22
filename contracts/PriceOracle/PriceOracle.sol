@@ -7,7 +7,8 @@ import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {IPriceOracle, PriceForValidator} from "./IPriceOracle.sol";
+import {IPriceOracle} from "./IPriceOracle.sol";
+import {SortedList} from "./SortedList.sol";
 
 /**
  * @title PriceOracle
@@ -15,7 +16,8 @@ import {IPriceOracle, PriceForValidator} from "./IPriceOracle.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    mapping(uint256 => PriceForValidator[]) public priceVotesForDay;
+    using SortedList for SortedList.List;
+    mapping(uint256 => SortedList.List) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -48,8 +50,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         validatorLastVotedDay[msg.sender] = day;
 
-        PriceForValidator memory priceForValidator = PriceForValidator({price: price, validator: msg.sender});
-        priceVotesForDay[day].push(priceForValidator);
+        priceVotesForDay[day].insert(msg.sender, price);
 
         emit PriceVoted(price, msg.sender, day);
 
@@ -94,47 +95,40 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        PriceForValidator[] memory prices = priceVotesForDay[day];
-        uint256 len = prices.length;
+        SortedList.List storage priceList = priceVotesForDay[day];
 
-        if (len < 4) {
+        if (priceList.size < 4) {
             return 0; // Not enough votes to determine
         }
 
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
 
-        // Sort prices in ascending order
-        for (uint256 i = 0; i < len - 1; i++) {
-            for (uint256 j = i + 1; j < len; j++) {
-                if (prices[i].price > prices[j].price) {
-                    PriceForValidator memory temp = prices[i];
-                    prices[i] = prices[j];
-                    prices[j] = temp;
-                }
-            }
-        }
-
-        // Check for suitable price
-        uint256 count = 1; // set to 1 to avoid division by 0
+        // Iterate through the sorted list directly
+        address current = priceList.head;
+        uint256 count = 1;
         uint256 sumPrice = 0;
         uint256 powerSum = 0;
-        for (uint256 i = 0; i < len; i++) {
-            uint256 currentPriceIndex = prices[i].price;
-            if (currentPriceIndex > ((sumPrice / count) * 101) / 100) {
-                // If price is outside 1% range, start a new group
+
+        while (current != address(0)) {
+            uint256 currentPrice = priceList.nodes[current].price;
+
+            // Check if price is outside 1% range and start a new group
+            if (currentPrice > ((sumPrice / count) * 101) / 100) {
                 count = 1;
-                sumPrice = currentPriceIndex;
-                powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
+                sumPrice = currentPrice;
+                powerSum = hydraChainContract.getValidatorPower(current);
             } else {
-                // If price is within 1% range, add it to the group
                 count++;
-                sumPrice += currentPriceIndex;
-                powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
+                sumPrice += currentPrice;
+                powerSum += hydraChainContract.getValidatorPower(current);
             }
 
+            // Check if quorum is reached
             if (powerSum >= neededVotingPower) {
-                return sumPrice / count; // Return the average price of the group
+                return sumPrice / count;
             }
+
+            current = priceList.nodes[current].next;
         }
 
         return 0; // No price meets the requirement

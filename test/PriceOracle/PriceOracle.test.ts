@@ -92,9 +92,9 @@ export function RunPriceOracleTests(): void {
         .withArgs(21, this.signers.validators[0].address, nextBlockDay);
       expect(await priceOracle.validatorLastVotedDay(this.signers.validators[0].address)).to.equal(nextBlockDay);
 
-      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay, [0]);
-      expect(pricesForDay.price).to.equal(21);
-      expect(pricesForDay.validator).to.equal(this.signers.validators[0].address);
+      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
+      expect(pricesForDay.size).to.equal(1);
+      expect(pricesForDay.head).to.equal(this.signers.validators[0].address);
     });
 
     it("should revert vote when price for the day is updated", async function () {

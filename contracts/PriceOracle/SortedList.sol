@@ -10,33 +10,33 @@ library SortedList {
     struct List {
         mapping(address => Node) nodes;
         address head;
-        uint256 size;  // Store the size of the list
+        uint256 size;
     }
 
-    struct UserPrice {
-        address user;
+    struct ValidatorPrice {
+        address validator;
         uint256 price;
     }
 
-    function insert(List storage self, address user, uint256 price) internal {
-        require(user != address(0), "Invalid address");
+    function insert(List storage self, address validator, uint256 price) internal {
+        require(validator != address(0), "Invalid address");
 
         // Create a new node
         Node memory newNode = Node(price, address(0));
 
         // If the list is empty, insert at the head
-        if (self.head == address(0)) {
-            self.head = user;
-            self.nodes[user] = newNode;
+        if (self.size == 0) {
+            self.head = validator;
+            self.nodes[validator] = newNode;
             self.size++;
             return;
         }
 
-        // If the new price is smaller than the head, insert at the head
-        if (price < self.nodes[self.head].price) {
+        // If the new price is smaller or equal to the head, insert at the head
+        if (price <= self.nodes[self.head].price) {
             newNode.next = self.head;
-            self.head = user;
-            self.nodes[user] = newNode;
+            self.head = validator;
+            self.nodes[validator] = newNode;
             self.size++;
             return;
         }
@@ -49,22 +49,22 @@ library SortedList {
 
         // Insert the new node
         newNode.next = self.nodes[current].next;
-        self.nodes[current].next = user;
-        self.nodes[user] = newNode;
+        self.nodes[current].next = validator;
+        self.nodes[validator] = newNode;
         self.size++;
     }
 
-    function getAll(List storage self) internal view returns (UserPrice[] memory) {
-        UserPrice[] memory userPrices = new UserPrice[](self.size);
+    function getAll(List storage self) internal view returns (ValidatorPrice[] memory validatorPrices) {
+        validatorPrices = new ValidatorPrice[](self.size);
         address current = self.head;
         uint256 index = 0;
 
         while (current != address(0)) {
-            userPrices[index] = UserPrice(current, self.nodes[current].price);
+            validatorPrices[index] = ValidatorPrice(current, self.nodes[current].price);
             current = self.nodes[current].next;
             index++;
         }
 
-        return userPrices;
+        return validatorPrices;
     }
 }
