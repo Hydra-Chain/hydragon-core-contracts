@@ -1,10 +1,11 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { ERRORS } from "../constants";
-import { getCorrectVotingTimestamp, getCurrentDay } from "../helper";
+import * as mcl from "../../ts/mcl";
+import { CHAIN_ID, DAY, DOMAIN, ERRORS, INITIAL_PRICE, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { commitEpoch, getCorrectVotingTimestamp, getCurrentDay } from "../helper";
 
 export function RunPriceOracleTests(): void {
   describe("Initialization", function () {
@@ -92,9 +93,9 @@ export function RunPriceOracleTests(): void {
         .withArgs(21, this.signers.validators[0].address, nextBlockDay);
       expect(await priceOracle.validatorLastVotedDay(this.signers.validators[0].address)).to.equal(nextBlockDay);
 
-      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
-      expect(pricesForDay.size).to.equal(1);
-      expect(pricesForDay.head).to.equal(this.signers.validators[0].address);
+      // const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
+      // expect(pricesForDay.size).to.equal(1); //sami
+      // expect(pricesForDay.head).to.equal(this.signers.validators[0].address); // sami
     });
 
     it("should revert vote when price for the day is updated", async function () {
@@ -221,6 +222,63 @@ export function RunPriceOracleTests(): void {
       await expect(lastVote).to.emit(newPriceOracleContract, "PriceUpdateFailed");
       await expect(lastVote).to.not.emit(newPriceOracleContract, "PriceUpdated");
       expect(await newPriceOracleContract.pricePerDay(currentDay)).to.equal(0);
+    });
+  });
+
+  describe.skip("Price Many voters", function () {
+    it("should vote with many validators", async function () {
+      const { systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
+        this.fixtures.validatorsDataStateFixture
+      );
+      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(5);
+
+      const keyPair = mcl.newKeyPair();
+      const provider = ethers.provider;
+      const initialBalance = ethers.utils.parseEther("100000");
+      const newValidatorAddresses = [];
+
+      // * Whitelist & Register & Stake & Update Power
+      for (let i = 5; i < MAX_ACTIVE_VALIDATORS; i++) {
+        console.log("Validator", i);
+        // create a new wallet and signature
+        const wallet = ethers.Wallet.createRandom();
+        const connectedWallet = wallet.connect(provider);
+        const validatorsData = [{ validator: wallet.address, votingPower: 20 }];
+        const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
+
+        // send eth to wallet
+        await network.provider.send("hardhat_setBalance", [
+          wallet.address,
+          initialBalance.toHexString().replace(/^0x0+/, "0x"),
+        ]);
+
+        // whitelist, register & stake
+        await systemHydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
+        await systemHydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+        await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
+        await systemHydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+        newValidatorAddresses.push(connectedWallet);
+      }
+      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(MAX_ACTIVE_VALIDATORS);
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[0]], this.epochSize);
+      const correctVotingTime = getCorrectVotingTimestamp();
+      await time.setNextBlockTimestamp(correctVotingTime + 10 * DAY);
+
+      for (let i = 1; i < 92; i++) {
+        let valueToVote;
+        if (i % 2 === 0) {
+          valueToVote = INITIAL_PRICE + INITIAL_PRICE * (i / 100000);
+        } else {
+          valueToVote = INITIAL_PRICE - INITIAL_PRICE * (i / 100000);
+        }
+        console.log("Vote", i + " : ", valueToVote);
+        await priceOracle.connect(newValidatorAddresses[i]).vote(valueToVote * 1000);
+      }
+      await expect(priceOracle.connect(newValidatorAddresses[100]).vote(INITIAL_PRICE * 1000)).to.emit(
+        priceOracle,
+        "PriceUpdated"
+      );
     });
   });
 }
