@@ -110,6 +110,17 @@ event PriceVoted(uint256 price, address validator, uint256 day)
 
 ## Errors
 
+### InvalidPrice
+
+```solidity
+error InvalidPrice()
+```
+
+
+
+
+
+
 ### InvalidVote
 
 ```solidity

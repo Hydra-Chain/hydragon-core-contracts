@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {Unauthorized, InvalidPrice} from "../common/Errors.sol";
+import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";

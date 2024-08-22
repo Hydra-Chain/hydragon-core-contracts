@@ -12,6 +12,7 @@ interface IPriceOracle {
     event PriceUpdated(uint256 price, uint256 day);
 
     error InvalidVote(string message);
+    error InvalidPrice();
 
     /**
      * @notice Allows active validators to vote on the price

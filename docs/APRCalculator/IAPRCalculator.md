@@ -389,17 +389,6 @@ error GuardAlreadyEnabled()
 
 
 
-### InvalidDay
-
-```solidity
-error InvalidDay()
-```
-
-
-
-
-
-
 ### InvalidMacroFactor
 
 ```solidity
@@ -415,17 +404,6 @@ error InvalidMacroFactor()
 
 ```solidity
 error InvalidRSI()
-```
-
-
-
-
-
-
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
 ```
 
 

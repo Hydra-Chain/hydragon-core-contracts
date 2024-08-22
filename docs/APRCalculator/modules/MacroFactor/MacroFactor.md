@@ -750,43 +750,10 @@ error GuardAlreadyEnabled()
 
 
 
-### InvalidDay
-
-```solidity
-error InvalidDay()
-```
-
-
-
-
-
-
 ### InvalidMacroFactor
 
 ```solidity
 error InvalidMacroFactor()
-```
-
-
-
-
-
-
-### InvalidPrice
-
-```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
 ```
 
 

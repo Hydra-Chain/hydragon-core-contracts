@@ -549,39 +549,6 @@ error GuardAlreadyEnabled()
 
 
 
-### InvalidDay
-
-```solidity
-error InvalidDay()
-```
-
-
-
-
-
-
-### InvalidPrice
-
-```solidity
-error InvalidPrice()
-```
-
-
-
-
-
-
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 ### Unauthorized
 
 ```solidity

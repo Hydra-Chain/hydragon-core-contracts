@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {InvalidPrice} from "../../../common/Errors.sol";
 import {System} from "../../../common/System/System.sol";
 import {Governed} from "../../../common/Governed/Governed.sol";
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
@@ -46,10 +45,6 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
      * @inheritdoc IPrice
      */
     function updatePrice(uint256 _price, uint256 _day) external onlyPriceOracle {
-        if (_price == 0) revert InvalidPrice();
-        if (pricePerDay[_day] != 0) revert PriceAlreadySet();
-        if (_day != block.timestamp / 1 days) revert InvalidDay();
-
         latestDailyPrice = _price;
         pricePerDay[_day] = _price;
 
