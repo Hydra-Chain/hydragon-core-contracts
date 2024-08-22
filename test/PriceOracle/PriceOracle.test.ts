@@ -59,8 +59,9 @@ export function RunPriceOracleTests(): void {
     it("should revert when not in voting time", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      const specificDay = new Date("2024-08-21T15:00:00Z"); // Set incorrect time
-      const incorrectTimestamp = Math.floor(specificDay.getTime() / 1000);
+      const now = new Date();
+      let incorrectTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 0, 0, 0);
+      incorrectTimestamp = Math.floor(incorrectTimestamp / 1000);
       await time.setNextBlockTimestamp(incorrectTimestamp);
 
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21))
