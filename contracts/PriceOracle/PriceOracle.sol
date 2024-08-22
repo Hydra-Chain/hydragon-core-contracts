@@ -66,7 +66,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @inheritdoc IPriceOracle
      */
     function shouldVote(uint256 day) public view returns (bool, string memory) {
-        uint256 secondsInADay = _getDailySeconds();
+        uint256 secondsInADay = _secondsPassedToday();
         if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
             return (false, "NOT_VOTING_TIME");
         }
@@ -167,7 +167,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @notice Get the current time in seconds
      * @return uint256 Current time
      */
-    function _getDailySeconds() private view returns (uint256) {
+    function _secondsPassedToday() private view returns (uint256) {
         return block.timestamp % 1 days;
     }
 
