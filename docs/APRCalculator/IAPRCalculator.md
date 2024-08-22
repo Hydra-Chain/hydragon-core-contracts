@@ -411,15 +411,4 @@ error InvalidRSI()
 
 
 
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 

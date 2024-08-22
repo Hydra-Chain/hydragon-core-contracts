@@ -1160,17 +1160,6 @@ error InvalidRSI()
 
 
 
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 ### Unauthorized
 
 ```solidity

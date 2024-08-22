@@ -650,17 +650,6 @@ error GuardAlreadyEnabled()
 
 
 
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 ### Unauthorized
 
 ```solidity

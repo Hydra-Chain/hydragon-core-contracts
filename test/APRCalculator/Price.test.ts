@@ -1,6 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
+
 import { ERRORS } from "../constants";
 import { getCurrentDay } from "../helper";
 
@@ -18,6 +19,7 @@ export function RunPriceTests(): void {
       const { aprCalculator, priceOracle, priceToVote, validatorToVote } = await loadFixture(
         this.fixtures.votedValidatorsStateFixture
       );
+
       const currentDay = await getCurrentDay();
 
       await expect(priceOracle.connect(validatorToVote).vote(priceToVote))

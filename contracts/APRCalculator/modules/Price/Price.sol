@@ -45,10 +45,6 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
      * @inheritdoc IPrice
      */
     function updatePrice(uint256 _price, uint256 _day) external onlyPriceOracle {
-        assert(_price != 0);
-        assert(pricePerDay[_day] == 0);
-        assert(_day == block.timestamp / 1 days);
-
         latestDailyPrice = _price;
         pricePerDay[_day] = _price;
 

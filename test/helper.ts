@@ -383,8 +383,8 @@ export async function calculateRSIBonus(averageGain: number, averageLoss: number
 }
 
 export async function getCurrentDay() {
-  const block = await hre.ethers.provider.getBlock("latest");
-  return Math.floor(block.timestamp / DAY);
+  const timestamp = await time.latest();
+  return Math.floor(timestamp / DAY);
 }
 
 export async function applyCustomReward(
@@ -519,4 +519,11 @@ export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, del
   const denominator = 10000;
 
   return delegateAmount.sub(delegateAmount.mul(decrease).div(denominator));
+}
+
+export function getCorrectVotingTimestamp() {
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 1, 0, 0, 0);
+  // increase one day because hardhat returns error for past time
+  return Math.floor(today / 1000) + DAY;
 }

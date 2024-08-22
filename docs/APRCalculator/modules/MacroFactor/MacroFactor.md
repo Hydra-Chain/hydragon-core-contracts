@@ -761,17 +761,6 @@ error InvalidMacroFactor()
 
 
 
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 ### Unauthorized
 
 ```solidity

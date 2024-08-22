@@ -96,15 +96,4 @@ error GuardAlreadyEnabled()
 
 
 
-### PriceAlreadySet
-
-```solidity
-error PriceAlreadySet()
-```
-
-
-
-
-
-
 
