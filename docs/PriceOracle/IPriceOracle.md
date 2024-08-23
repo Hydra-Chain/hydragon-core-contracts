@@ -10,13 +10,13 @@
 
 ## Methods
 
-### getVotesForDay
+### getGroupVotesForDay
 
 ```solidity
-function getVotesForDay(uint256 day) external view returns (struct PriceGroup[])
+function getGroupVotesForDay(uint256 day) external view returns (struct PriceGroup[])
 ```
 
-Returns the votes for the provided day
+Returns the group of validators and their prices they agreed on for the provided day
 
 
 
@@ -30,7 +30,7 @@ Returns the votes for the provided day
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | PriceGroup[] | ValidatorPrice[] The votes for the provided day |
+| _0 | PriceGroup[] | PriceGroup[] The group of validators and their agreed prices |
 
 ### shouldVote
 

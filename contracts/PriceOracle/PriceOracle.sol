@@ -8,7 +8,7 @@ import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-import {SortedPriceList, PriceGroup} from "./SortedPriceList.sol";
+import {PriceConsensusList, PriceGroup} from "./PriceConsensusList.sol";
 
 /**
  * @title PriceOracle
@@ -16,8 +16,8 @@ import {SortedPriceList, PriceGroup} from "./SortedPriceList.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    using SortedPriceList for SortedPriceList.List;
-    mapping(uint256 => SortedPriceList.List) public priceVotesForDay;
+    using PriceConsensusList for PriceConsensusList.List;
+    mapping(uint256 => PriceConsensusList.List) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -63,7 +63,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     /**
      * @inheritdoc IPriceOracle
      */
-    function getVotesForDay(uint256 day) external view returns (PriceGroup[] memory) {
+    function getGroupVotesForDay(uint256 day) external view returns (PriceGroup[] memory) {
         return priceVotesForDay[day].getAllGroups();
     }
 
@@ -101,7 +101,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        SortedPriceList.List storage priceList = priceVotesForDay[day];
+        PriceConsensusList.List storage priceList = priceVotesForDay[day];
 
         // If there are fewer than 4 validators, there isn't enough data to determine a price
         if (priceList.size < 4) {
@@ -110,14 +110,16 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         // Calculate the needed voting power to reach quorum
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
+        uint256 groupLength = priceList.groups.length;
 
         // Iterate through the price groups to find one that meets the quorum
-        for (uint256 i = 0; i < priceList.groups.length; i++) {
+        for (uint256 i = 0; i < groupLength; i++) {
             PriceGroup storage group = priceList.groups[i];
             uint256 powerSum = 0;
+            uint256 groupValidatorsLength = group.validators.length;
 
             // Sum the voting power of all validators in the group
-            for (uint256 j = 0; j < group.validators.length; j++) {
+            for (uint256 j = 0; j < groupValidatorsLength; j++) {
                 powerSum += hydraChainContract.getValidatorPower(group.validators[j]);
             }
 
