@@ -6,7 +6,12 @@ struct ValidatorPrice {
     uint256 price;
 }
 
-library SortedList {
+/**
+ * @title SortedPriceList Library
+ * @author Samuil Borisov
+ * @notice library for inserting a validator with a price in a sorted list
+ */
+library SortedPriceList {
     struct Node {
         uint256 price;
         address next;
@@ -18,8 +23,17 @@ library SortedList {
         uint256 size;
     }
 
+    /**
+     * @notice Inserts a new validator with a price in the sorted list
+     * @param self The list to insert the validator in
+     * @param validator The validator to insert
+     * @param price The price to insert
+     * @dev The list is sorted in ascending order
+     */
     function insert(List storage self, address validator, uint256 price) internal {
-        require(validator != address(0), "Invalid address");
+        assert(price != 0);
+        assert(validator != address(0));
+        assert(self.nodes[validator].price == 0);
 
         // Create a new node
         Node memory newNode = Node(price, address(0));
@@ -46,6 +60,11 @@ library SortedList {
         self.size++;
     }
 
+    /**
+     * @notice Returns all validators with their prices in the list
+     * @param self The list to get the validators from
+     * @return validatorPrices An array of ValidatorPrice structs
+     */
     function getAll(List storage self) internal view returns (ValidatorPrice[] memory validatorPrices) {
         validatorPrices = new ValidatorPrice[](self.size);
         address current = self.head;

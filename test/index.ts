@@ -68,7 +68,7 @@ describe("Hydra Contracts", function () {
     RunVestingManagerTests();
   });
 
-  describe.only("PriceOracle", function () {
+  describe("PriceOracle", function () {
     RunPriceOracleTests();
   });
 
