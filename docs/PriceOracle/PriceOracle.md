@@ -44,23 +44,6 @@ function DAILY_VOTING_START_TIME() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### LEGACY_VERSION
-
-```solidity
-function LEGACY_VERSION() external view returns (uint8)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint8 | undefined |
-
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -197,6 +180,28 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
+### getVotesForDay
+
+```solidity
+function getVotesForDay(uint256 day) external view returns (struct ValidatorPrice[])
+```
+
+Returns the votes for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to get the votes |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | ValidatorPrice[] | ValidatorPrice[] The votes for the provided day |
+
 ### hydraChainContract
 
 ```solidity
@@ -275,30 +280,6 @@ function priceVotesForDay(uint256) external view returns (address head, uint256 
 |---|---|---|
 | head | address | undefined |
 | size | uint256 | undefined |
-
-### priceVotesForDayLegacy
-
-```solidity
-function priceVotesForDayLegacy(uint256, uint256) external view returns (address validator, uint256 price)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-| _1 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | undefined |
-| price | uint256 | undefined |
 
 ### shouldVote
 

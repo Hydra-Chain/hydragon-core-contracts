@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {ValidatorPrice} from "./SortedPriceList.sol";
+
 interface IPriceOracle {
     event PriceVoted(uint256 price, address validator, uint256 day);
     event PriceUpdateFailed(uint256 price, uint256 day, bytes data);
@@ -15,6 +17,13 @@ interface IPriceOracle {
      * @param price Price to vote
      */
     function vote(uint256 price) external;
+
+    /**
+     * @notice Returns the votes for the provided day
+     * @param day The day to get the votes
+     * @return ValidatorPrice[] The votes for the provided day
+     */
+    function getVotesForDay(uint256 day) external view returns (ValidatorPrice[] memory);
 
     // _______________ Public functions _______________
 

@@ -10,6 +10,28 @@
 
 ## Methods
 
+### getVotesForDay
+
+```solidity
+function getVotesForDay(uint256 day) external view returns (struct ValidatorPrice[])
+```
+
+Returns the votes for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to get the votes |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | ValidatorPrice[] | ValidatorPrice[] The votes for the provided day |
+
 ### shouldVote
 
 ```solidity
