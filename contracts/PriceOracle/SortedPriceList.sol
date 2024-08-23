@@ -1,26 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-struct ValidatorPrice {
-    address validator;
-    uint256 price;
+struct PriceGroup {
+    uint256 sumPrice;
+    uint256 count;
+    address[] validators;
 }
 
 /**
  * @title SortedPriceList Library
  * @author Samuil Borisov
- * @notice library for inserting a validator with a price in a sorted list
+ * @notice Library for inserting a validator with a price in a sorted list, grouped by price within 1%
  */
 library SortedPriceList {
-    struct Node {
-        uint256 price;
-        address next;
-    }
-
     struct List {
-        mapping(address => Node) nodes;
-        address head;
-        uint256 size;
+        PriceGroup[] groups;
+        uint256 size; // Total number of validators
     }
 
     /**
@@ -28,54 +23,49 @@ library SortedPriceList {
      * @param self The list to insert the validator in
      * @param validator The validator to insert
      * @param price The price to insert
-     * @dev The list is sorted in ascending order
+     * @dev The list groups validators whose prices are within 1% of each other
      */
     function insert(List storage self, address validator, uint256 price) internal {
         assert(price != 0);
         assert(validator != address(0));
-        assert(self.nodes[validator].price == 0);
+        /// @dev There is not check if validator is already in the list, make sure to check before calling this function
 
-        // Create a new node
-        Node memory newNode = Node(price, address(0));
+        bool groupFound = false;
 
-        // If the new price is smaller or equal to the head, insert at the head (or if the list is empty)
-        if (self.nodes[self.head].price >= price || self.size == 0) {
-            newNode.next = self.head;
-            self.head = validator;
-            self.nodes[validator] = newNode;
-            self.size++;
-            return;
+        // Iterate through all existing groups to find a fitting one
+        for (uint256 i = 0; i < self.groups.length; i++) {
+            PriceGroup storage group = self.groups[i];
+            uint256 averagePrice = group.sumPrice / group.count;
+
+            // Check if the price fits into this group (within 1% difference)
+            if (price <= (averagePrice * 101) / 100 && price >= (averagePrice * 99) / 100) {
+                group.sumPrice += price;
+                group.count++;
+                group.validators.push(validator);
+                groupFound = true;
+                break;
+            }
         }
 
-        // Find the correct spot to insert the new node
-        address current = self.head;
-        while (self.nodes[current].next != address(0) && price > self.nodes[self.nodes[current].next].price) {
-            current = self.nodes[current].next;
+        // If no fitting group was found, create a new one
+        if (!groupFound) {
+            self.groups.push(PriceGroup(price, 1, new address[](0)));
+            self.groups[self.groups.length - 1].validators.push(validator);
         }
 
-        // Insert the new node
-        newNode.next = self.nodes[current].next;
-        self.nodes[current].next = validator;
-        self.nodes[validator] = newNode;
         self.size++;
     }
 
     /**
-     * @notice Returns all validators with their prices in the list
-     * @param self The list to get the validators from
-     * @return validatorPrices An array of ValidatorPrice structs
+     * @notice Returns all price groups with their aggregated data
+     * @param self The list to get the price groups from
+     * @return groups An array of PriceGroup structs
      */
-    function getAll(List storage self) internal view returns (ValidatorPrice[] memory validatorPrices) {
-        validatorPrices = new ValidatorPrice[](self.size);
-        address current = self.head;
-        uint256 index = 0;
-
-        while (current != address(0)) {
-            validatorPrices[index] = ValidatorPrice(current, self.nodes[current].price);
-            current = self.nodes[current].next;
-            index++;
+    function getAllGroups(List storage self) internal view returns (PriceGroup[] memory groups) {
+        groups = new PriceGroup[](self.groups.length);
+        for (uint256 i = 0; i < self.groups.length; i++) {
+            groups[i] = self.groups[i];
         }
-
-        return validatorPrices;
+        return groups;
     }
 }

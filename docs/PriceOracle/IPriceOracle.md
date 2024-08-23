@@ -13,7 +13,7 @@
 ### getVotesForDay
 
 ```solidity
-function getVotesForDay(uint256 day) external view returns (struct ValidatorPrice[])
+function getVotesForDay(uint256 day) external view returns (struct PriceGroup[])
 ```
 
 Returns the votes for the provided day
@@ -30,7 +30,7 @@ Returns the votes for the provided day
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | ValidatorPrice[] | ValidatorPrice[] The votes for the provided day |
+| _0 | PriceGroup[] | ValidatorPrice[] The votes for the provided day |
 
 ### shouldVote
 

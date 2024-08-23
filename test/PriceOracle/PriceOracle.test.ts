@@ -94,8 +94,8 @@ export function RunPriceOracleTests(): void {
       expect(await priceOracle.validatorLastVotedDay(this.signers.validators[0].address)).to.equal(nextBlockDay);
 
       const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
-      expect(pricesForDay.size).to.equal(1);
-      expect(pricesForDay.head).to.equal(this.signers.validators[0].address);
+      expect(pricesForDay).to.equal(1);
+      // expect(pricesForDay.head).to.equal(this.signers.validators[0].address); //sami
     });
 
     it("should revert vote when price for the day is updated", async function () {
@@ -225,7 +225,7 @@ export function RunPriceOracleTests(): void {
     });
   });
 
-  describe.skip("Price Many voters", function () {
+  describe.only("Price Many voters", function () {
     it("should vote with many validators", async function () {
       const { systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
         this.fixtures.validatorsDataStateFixture

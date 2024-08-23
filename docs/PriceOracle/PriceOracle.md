@@ -183,7 +183,7 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 ### getVotesForDay
 
 ```solidity
-function getVotesForDay(uint256 day) external view returns (struct ValidatorPrice[])
+function getVotesForDay(uint256 day) external view returns (struct PriceGroup[])
 ```
 
 Returns the votes for the provided day
@@ -200,7 +200,7 @@ Returns the votes for the provided day
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | ValidatorPrice[] | ValidatorPrice[] The votes for the provided day |
+| _0 | PriceGroup[] | ValidatorPrice[] The votes for the provided day |
 
 ### hydraChainContract
 
@@ -261,7 +261,7 @@ function pricePerDay(uint256) external view returns (uint256)
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256) external view returns (address head, uint256 size)
+function priceVotesForDay(uint256) external view returns (uint256 size)
 ```
 
 
@@ -278,7 +278,6 @@ function priceVotesForDay(uint256) external view returns (address head, uint256 
 
 | Name | Type | Description |
 |---|---|---|
-| head | address | undefined |
 | size | uint256 | undefined |
 
 ### shouldVote

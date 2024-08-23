@@ -4,7 +4,7 @@
 
 > SortedPriceList Library
 
-library for inserting a validator with a price in a sorted list
+Library for inserting a validator with a price in a sorted list, grouped by price within 1%
 
 
 
