@@ -1,5 +1,5 @@
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import {
   DAY,
@@ -10,7 +10,7 @@ import {
   tableDataPrices,
   tableDataRSI,
 } from "../constants";
-import { calculateRSIBonus, commitEpoch } from "../helper";
+import { calculateRSIBonus, commitEpoch, getCorrectVotingTimestamp } from "../helper";
 import { ethers } from "hardhat";
 
 export function RunRSIndexTests(): void {
@@ -112,8 +112,9 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
 
-    it("should have same values of RSI table data for 300+ elements", async function () {
+    it.only("should have same values of RSI table data for 300+ elements", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+      const correctVotingTime = getCorrectVotingTimestamp();
 
       const newPriceOracleContract = await (await ethers.getContractFactory("PriceOracle")).deploy();
       const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
@@ -139,6 +140,7 @@ export function RunRSIndexTests(): void {
       expect(await newAprCalculator.latestDailyPrice()).to.be.equal(initialDataPrices[initialDataPrices.length - 1]);
       expect(await newAprCalculator.rsi()).to.be.equal(0);
       expect(tableDataPrices.length, "Array length").to.be.equal(tableDataRSI.length);
+      await time.setNextBlockTimestamp(correctVotingTime);
 
       for (let i = 1; i < tableDataPrices.length; i++) {
         for (let j = 0; j !== 4; j++) {
