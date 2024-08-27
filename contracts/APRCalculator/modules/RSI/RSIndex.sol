@@ -83,7 +83,9 @@ abstract contract RSIndex is IRSIndex, Price {
 
         if (avrGain != 0 && avrLoss != 0) {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
-            rsindex = 100 - (100 * DENOMINATOR) / (DENOMINATOR + rs);
+            // index = 100 - (100 / (1 + RS))
+            // we change 100 with 10000 (DENOMINATOR) to avoid floating point + mutiply values * DENOMINATOR after the subtraction, because RS is already multiplied by DENOMINATOR
+            rsindex = DENOMINATOR - (DENOMINATOR * DENOMINATOR) / (DENOMINATOR + rs);
         } else if (avrLoss != 0) {
             // If the average gain is 0 but average loss is not, the RS index is = 0 and we apply max bonus
             rsindex = 0;
@@ -99,11 +101,11 @@ abstract contract RSIndex is IRSIndex, Price {
      */
     function _setRSI(uint256 rsindex) private {
         uint256 newRsi;
-        if (rsindex > 39) {
+        if (rsindex > 3999) {
             newRsi = 0;
-        } else if (rsindex > 29) {
+        } else if (rsindex > 2999) {
             newRsi = 11500;
-        } else if (rsindex > 19) {
+        } else if (rsindex > 1999) {
             newRsi = 12500;
         } else {
             newRsi = MAX_RSI_BONUS;

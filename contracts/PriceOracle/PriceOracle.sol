@@ -20,8 +20,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     mapping(uint256 => uint256) public pricePerDay;
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
-    uint256 public constant DAILY_VOTING_START_TIME = 36 * 1 minutes; // 36 minutes in seconds
-    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + (3 hours); // + 3 hours in seconds
+    uint256 public constant DAILY_VOTING_START_TIME = 36 minutes; // 36 minutes in seconds
+    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + 3 hours; // start time + 3 hours in seconds
 
     // _______________ Initializer _______________
 
@@ -66,8 +66,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @inheritdoc IPriceOracle
      */
     function shouldVote(uint256 day) public view returns (bool, string memory) {
-        uint256 secondsInADay = _secondsPassedToday();
-        if (secondsInADay < DAILY_VOTING_START_TIME || secondsInADay > DAILY_VOTING_END_TIME) {
+        uint256 secondsPassed = _secondsPassedToday();
+        if (secondsPassed < DAILY_VOTING_START_TIME || secondsPassed > DAILY_VOTING_END_TIME) {
             return (false, "NOT_VOTING_TIME");
         }
 
@@ -164,8 +164,8 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     }
 
     /**
-     * @notice Get the current time in seconds
-     * @return uint256 Current time
+     * @notice Get the passed seconds for the current day
+     * @return uint256 Passed seconds
      */
     function _secondsPassedToday() private view returns (uint256) {
         return block.timestamp % 1 days;

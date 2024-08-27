@@ -1,8 +1,17 @@
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { DAY, INITIAL_PRICE, MAX_RSI_BONUS } from "../constants";
+import {
+  DAY,
+  INITIAL_PRICE,
+  initialDataPrices,
+  MAX_RSI_BONUS,
+  SLOW_SMA,
+  tableDataPrices,
+  tableDataRSI,
+} from "../constants";
 import { calculateRSIBonus, commitEpoch } from "../helper";
+import { ethers } from "hardhat";
 
 export function RunRSIndexTests(): void {
   it("should get RSI", async function () {
@@ -101,6 +110,44 @@ export function RunRSIndexTests(): void {
       }
 
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
+    });
+
+    it("should have same values of RSI table data for 300+ elements", async function () {
+      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+      const newPriceOracleContract = await (await ethers.getContractFactory("PriceOracle")).deploy();
+      const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
+      const prices: number[] = [];
+      for (let i = 0; i < SLOW_SMA - initialDataPrices.length; i++) {
+        // Generate a random number between 300 and 600
+        const randomPrice = Math.floor(Math.random() * (600 - 300 + 1)) + 300;
+        prices.push(randomPrice);
+      }
+
+      for (let i = 0; i < initialDataPrices.length; i++) {
+        prices.push(initialDataPrices[i]);
+      }
+
+      // Initialize the new contracts
+      await newAprCalculator
+        .connect(this.signers.system)
+        .initialize(this.signers.governance.address, systemHydraChain.address, newPriceOracleContract.address, prices);
+      await newPriceOracleContract
+        .connect(this.signers.system)
+        .initialize(systemHydraChain.address, newAprCalculator.address);
+
+      expect(await newAprCalculator.latestDailyPrice()).to.be.equal(initialDataPrices[initialDataPrices.length - 1]);
+      expect(await newAprCalculator.rsi()).to.be.equal(0);
+      expect(tableDataPrices.length, "Array length").to.be.equal(tableDataRSI.length);
+
+      for (let i = 1; i < tableDataPrices.length; i++) {
+        for (let j = 0; j !== 4; j++) {
+          await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
+        }
+        expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);
+        expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
+        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
+      }
     });
   });
 
