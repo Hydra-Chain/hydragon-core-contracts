@@ -456,6 +456,23 @@ function pendingOwner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### powerExponent
+
+```solidity
+function powerExponent() external view returns (uint256)
+```
+
+`powerExponent` represents the numerator of the Voting Power Exponent, where the denominator is 10,000. The Voting Power Exponent is a fractional value between 0.5 and 1, used to exponentially decrease the voting power of a validator. This mechanism encourages better decentralization of the network.
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### register
 
 ```solidity
@@ -515,6 +532,22 @@ function transferOwnership(address newOwner) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | newOwner | address | undefined |
+
+### updateExponent
+
+```solidity
+function updateExponent(uint256 newValue) external nonpayable
+```
+
+Sets new Voting Power Exponent Numerator.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValue | uint256 | New Voting Power Exponent Numerator |
 
 ### validators
 
@@ -669,6 +702,22 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 |---|---|---|
 | previousOwner `indexed` | address | undefined |
 | newOwner `indexed` | address | undefined |
+
+### PowerExponentUpdated
+
+```solidity
+event PowerExponentUpdated(uint256 newPowerExponent)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newPowerExponent  | uint256 | undefined |
 
 ### RemovedFromWhitelist
 

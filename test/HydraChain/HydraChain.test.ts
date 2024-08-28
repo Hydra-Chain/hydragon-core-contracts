@@ -3,10 +3,9 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { ERRORS, INITIAL_COMMISSION, DENOMINATOR, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { ERRORS, INITIAL_COMMISSION, MAX_ACTIVE_VALIDATORS } from "../constants";
 import { RunInspectorTests } from "./Inspector.test";
 import { RunAccessControlTests } from "./AccessControl.test";
-import { RunPowerExponentTests } from "./PowerExponent.test";
 import { RunValidatorManagerTests } from "./ValidatorManager.test";
 import { RunDaoIncentiveTests } from "./DaoIncentive.test";
 import { RunValidatorsDataTests } from "./ValidatrosData.test";
@@ -42,12 +41,7 @@ export function RunHydraChainTests(): void {
 
         // Power Exponent
         const powerExp = await hydraChain.powerExponent();
-        expect(powerExp.value, "powerExp.value").to.equal(0);
-        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
-
-        const powerExpRes = await hydraChain.getExponent();
-        expect(powerExpRes.numerator, "powerExpRes.numerator").to.equal(0);
-        expect(powerExpRes.denominator, "powerExpRes.denominator").to.equal(DENOMINATOR);
+        expect(powerExp, "powerExponent").to.equal(0);
 
         // Inspector
         expect(await hydraChain.validatorPenalty()).to.equal(0);
@@ -141,12 +135,7 @@ export function RunHydraChainTests(): void {
 
         // Power Exponent
         const powerExp = await hydraChain.powerExponent();
-        expect(powerExp.value, "powerExp.value").to.equal(5000);
-        expect(powerExp.pendingValue, "powerExp.pendingValue").to.equal(0);
-
-        const powerExpRes = await hydraChain.getExponent();
-        expect(powerExpRes.numerator, "powerExpRes.numerator").to.equal(5000);
-        expect(powerExpRes.denominator, "powerExpRes.denominator").to.equal(DENOMINATOR);
+        expect(powerExp, "powerExponent").to.equal(5000); // power exponent = 0.5
 
         // Inspector
         expect(await hydraChain.validatorPenalty()).to.equal(hre.ethers.utils.parseEther("700"));
@@ -292,9 +281,6 @@ export function RunHydraChainTests(): void {
     });
     describe("Inspector", function () {
       RunInspectorTests();
-    });
-    describe("Power Exponent", function () {
-      RunPowerExponentTests();
     });
     describe("Validator Manager", function () {
       RunValidatorManagerTests();

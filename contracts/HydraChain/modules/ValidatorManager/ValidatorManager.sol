@@ -25,6 +25,12 @@ abstract contract ValidatorManager is
     IBLS public bls;
     address[] public validatorsAddresses;
     uint256 public activeValidatorsCount;
+    /**
+     * @notice `powerExponent` represents the numerator of the Voting Power Exponent, where the denominator is 10,000.
+     * The Voting Power Exponent is a fractional value between 0.5 and 1, used to exponentially decrease
+     * the voting power of a validator. This mechanism encourages better decentralization of the network.
+     */
+    uint256 public powerExponent;
     // slither-disable-next-line naming-convention
     mapping(address => Validator) public validators;
     /**
@@ -40,7 +46,6 @@ abstract contract ValidatorManager is
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
-
         address _hydraDelegationAddr,
         address _governance
     ) internal onlyInitializing {
@@ -54,6 +59,7 @@ abstract contract ValidatorManager is
         IBLS newBls
     ) internal onlyInitializing {
         bls = newBls;
+        powerExponent = 5000;
         // set initial validators
         for (uint256 i = 0; i < newValidators.length; i++) {
             _register(newValidators[i].addr, newValidators[i].signature, newValidators[i].pubkey);
@@ -165,6 +171,17 @@ abstract contract ValidatorManager is
     function deactivateValidator(address account) external onlyHydraStaking {
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function updateExponent(uint256 newValue) external onlyOwner {
+        require(newValue > 4999 && newValue < 10001, "0.5 <= Exponent <= 1");
+
+        powerExponent = newValue;
+
+        emit PowerExponentUpdated(newValue);
     }
 
     // _______________ Public functions _______________

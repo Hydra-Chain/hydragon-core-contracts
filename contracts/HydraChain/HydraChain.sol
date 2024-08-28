@@ -9,7 +9,6 @@ import {System} from "../common/System/System.sol";
 import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
-import {PowerExponent} from "./modules/PowerExponent/PowerExponent.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
 import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
@@ -23,7 +22,6 @@ contract HydraChain is
     HydraStakingConnector,
     ValidatorManager,
     Inspector,
-    PowerExponent,
     DaoIncentive,
     ValidatorsData
 {
@@ -58,7 +56,6 @@ contract HydraChain is
         __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, daoIncentiveVaultAddr);
         __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);
         __Inspector_init();
-        __PowerExponent_init();
 
         _initialize();
     }
@@ -111,8 +108,6 @@ contract HydraChain is
         epochs[newEpochId] = epoch;
         _commitBlockNumbers[newEpochId] = block.number;
         epochEndBlocks.push(epoch.endBlock);
-
-        _applyPendingExp(); // Apply new exponent in case it was changed in the latest epoch
 
         // Update participations
         uint256 uptimesCount = uptime.length;

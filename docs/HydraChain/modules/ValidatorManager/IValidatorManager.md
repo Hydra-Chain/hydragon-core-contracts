@@ -186,6 +186,22 @@ Validates BLS signature with the provided pubkey and registers validators into t
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
 
+### updateExponent
+
+```solidity
+function updateExponent(uint256 newValue) external nonpayable
+```
+
+Sets new Voting Power Exponent Numerator.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValue | uint256 | New Voting Power Exponent Numerator |
+
 
 
 ## Events
@@ -206,6 +222,22 @@ event NewValidator(address indexed validator, uint256[4] blsKey)
 |---|---|---|
 | validator `indexed` | address | undefined |
 | blsKey  | uint256[4] | undefined |
+
+### PowerExponentUpdated
+
+```solidity
+event PowerExponentUpdated(uint256 newPowerExponent)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newPowerExponent  | uint256 | undefined |
 
 
 
