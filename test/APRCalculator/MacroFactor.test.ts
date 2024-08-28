@@ -82,7 +82,7 @@ export function RunMacroFactorTests(): void {
       await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.emit(aprCalculator, "MacroFactorSet");
     });
 
-    it("should have same values of Macro table data for 300+ elements", async function () {
+    it("should have same values of Macro Factor for data table with 300+ elements", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const correctVotingTime = getCorrectVotingTimestamp();
 
@@ -119,7 +119,7 @@ export function RunMacroFactorTests(): void {
           tableDataMacroFactor[i - SLOW_SMA + initialDataPrices.length]
         );
         expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
-        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 120);
+        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 133);
       }
     });
   });

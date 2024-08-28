@@ -112,7 +112,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(MAX_RSI_BONUS);
     });
 
-    it("should have same values of RSI table data for 300+ elements", async function () {
+    it("should have same values of RSI Bonus for data table with 300+ elements", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
       const correctVotingTime = getCorrectVotingTimestamp();
 
@@ -148,7 +148,7 @@ export function RunRSIndexTests(): void {
         }
         expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);
         expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
-        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 120);
+        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 133);
       }
     });
   });
