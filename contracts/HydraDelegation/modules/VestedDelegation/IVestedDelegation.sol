@@ -50,6 +50,14 @@ interface IVestedDelegation is IDelegation {
     ) external view returns (uint256);
 
     /**
+     * @notice Calculates the delegators's generated rewards that are unclaimed
+     * @param staker Address of validator
+     * @param delegator Address of delegator
+     * @return reward Delegator's unclaimed rewards with staker (in HYDRA wei)
+     */
+    function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward);
+
+    /**
      * @notice Gets the RPS values for a staker in a given epoch range.
      * @param staker Validator that is deleagted to
      * @param startEpoch Start epoch for values

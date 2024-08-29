@@ -10,6 +10,29 @@
 
 ## Methods
 
+### calculateExpectedPositionReward
+
+```solidity
+function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward)
+```
+
+Gets delegators&#39;s generated rewards for a position that are not claimed yet
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of validator |
+| delegator | address | Address of delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+
 ### calculateOwedLiquidTokens
 
 ```solidity

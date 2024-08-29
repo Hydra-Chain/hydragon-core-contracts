@@ -341,19 +341,6 @@ export async function attachAddressToVestingManager(address: string) {
   return attachedManager;
 }
 
-export async function calculateExpectedReward(
-  base: BigNumber,
-  vestBonus: BigNumber,
-  rsi: BigNumber,
-  reward: BigNumber
-) {
-  // calculate expected reward based on the given apr factors
-  if (rsi.isZero()) {
-    rsi = DENOMINATOR;
-  }
-  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
-}
-
 export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNumber) {
   const base = await aprCalculator.base();
   const rsi = await aprCalculator.rsi();
@@ -387,18 +374,11 @@ export async function getCurrentDay() {
   return Math.floor(timestamp / DAY);
 }
 
-export async function applyCustomReward(
-  hydraDelegation: HydraDelegation,
-  validator: string,
-  delegator: string,
-  reward: BigNumber,
-  rsi: boolean
-) {
-  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
-  let bonus = position.base.add(position.vestBonus);
+export function applyVestingAPR(base: BigNumber, vestBonus: BigNumber, rsiBonus: BigNumber, reward: BigNumber) {
+  let bonus = base.add(vestBonus);
   let divider = DENOMINATOR;
-  if (rsi && !position.rsiBonus.isZero()) {
-    bonus = bonus.mul(position.rsiBonus);
+  if (!rsiBonus.isZero()) {
+    bonus = bonus.mul(rsiBonus);
     divider = divider.mul(DENOMINATOR);
   }
 
@@ -497,21 +477,15 @@ export async function getPermitSignature(
   );
 }
 
-export async function calculateTotalPotentialPositionReward(
+export async function calculateExpectedPositionReward(
   hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
   const rawReward = await hydraDelegation.getRawDelegatorReward(validator, delegator);
-  let bonus = position.base.add(position.vestBonus);
-  let divider = hre.ethers.BigNumber.from(10000);
-  if (!position.rsiBonus.eq(0)) {
-    bonus = bonus.mul(position.rsiBonus);
-    divider = divider.mul(10000);
-  }
 
-  return rawReward.mul(bonus).div(divider).div(EPOCHS_YEAR);
+  return applyVestingAPR(position.base, position.vestBonus, position.rsiBonus, rawReward);
 }
 
 export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, delegateAmount: BigNumber) {

@@ -110,6 +110,14 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
+    function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward) {
+        VestingPosition memory position = vestedDelegationPositions[staker][delegator];
+        reward = _applyVestingAPR(position, getRawDelegatorReward(staker, delegator));
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
     function getRPSValues(address staker, uint256 startEpoch, uint256 endEpoch) external view returns (RPS[] memory) {
         require(startEpoch <= endEpoch, "Invalid args");
 
@@ -264,7 +272,12 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external onlyManager {
+    function claimPositionReward(
+        address staker,
+        address to,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external onlyManager {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (_noRewardConditions(position)) {
             return;

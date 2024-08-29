@@ -16,7 +16,7 @@ import {
   commitEpoch,
   createManagerAndVest,
   getDelegatorPositionReward,
-  calculateTotalPotentialPositionReward,
+  calculateExpectedPositionReward,
   calculatePenaltyByWeeks,
   calcLiquidTokensToDistributeOnVesting,
 } from "../helper";
@@ -332,7 +332,7 @@ export function RunVestedDelegationTests(): void {
           this.minDelegation
         );
 
-        const reward = await calculateTotalPotentialPositionReward(
+        const reward = await calculateExpectedPositionReward(
           hydraDelegation,
           delegatedValidator.address,
           vestManager.address
@@ -979,7 +979,7 @@ export function RunVestedDelegationTests(): void {
             vestManager.address
           );
 
-          const totalPotentialRewards = await calculateTotalPotentialPositionReward(
+          const totalPotentialRewards = await calculateExpectedPositionReward(
             hydraDelegation,
             delegatedValidator.address,
             vestManager.address
@@ -1019,12 +1019,12 @@ export function RunVestedDelegationTests(): void {
             DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
           );
 
-          const manager1rewards = await calculateTotalPotentialPositionReward(
+          const manager1rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateTotalPotentialPositionReward(
+          const manager2rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1064,12 +1064,12 @@ export function RunVestedDelegationTests(): void {
             DAY * 3 // three days per epoch, so, 3 x 7 = 21 days ahead
           );
 
-          const manager1rewards = await calculateTotalPotentialPositionReward(
+          const manager1rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateTotalPotentialPositionReward(
+          const manager2rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1109,12 +1109,12 @@ export function RunVestedDelegationTests(): void {
             WEEK // one week = 1 epoch
           );
 
-          const manager1rewards = await calculateTotalPotentialPositionReward(
+          const manager1rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateTotalPotentialPositionReward(
+          const manager2rewards = await calculateExpectedPositionReward(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1124,6 +1124,46 @@ export function RunVestedDelegationTests(): void {
         });
       });
       // TODO: More tests with actual calculation results checks must be made
+    });
+
+    describe("calculateExpectedPositionReward()", async function () {
+      it("should successfully calculate the expected reward", async function () {
+        const { systemHydraChain, hydraDelegation, hydraStaking, vestingManagerFactory } = await loadFixture(
+          this.fixtures.delegatedFixture
+        );
+
+        const validator = this.signers.validators[1];
+        const manager = await createManagerAndVest(
+          vestingManagerFactory,
+          this.signers.accounts[4],
+          validator.address,
+          VESTING_DURATION_WEEKS,
+          this.minDelegation
+        );
+
+        // commit epochs to distribute rewards
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], validator],
+          5, // number of epochs to commit
+          this.epochSize,
+          DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
+        );
+
+        const expectedReward = await calculateExpectedPositionReward(
+          hydraDelegation,
+          validator.address,
+          manager.address
+        );
+
+        const managerRewards = await hydraDelegation.calculateExpectedPositionReward(
+          validator.address,
+          manager.address
+        );
+
+        expect(managerRewards).to.equal(expectedReward);
+      });
     });
   });
 }

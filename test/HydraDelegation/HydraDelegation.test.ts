@@ -9,7 +9,7 @@ import {
   commitEpochs,
   retrieveRPSData,
   commitEpoch,
-  calculateExpectedReward,
+  applyVestingAPR,
   getPermitSignature,
   calcLiquidTokensToDistributeOnVesting,
 } from "../helper";
@@ -406,7 +406,7 @@ export function RunHydraDelegationTests(): void {
         const base = await aprCalculator.base();
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
-        const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
 
         // commit epoch, so more reward is added that must not be claimed now
         await commitEpoch(
@@ -451,7 +451,7 @@ export function RunHydraDelegationTests(): void {
         const base = await aprCalculator.base();
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
-        const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
 
         // more rewards to be distributed
         await commitEpoch(
