@@ -246,7 +246,7 @@ Calculates the delegators&#39;s generated rewards that are unclaimed
 
 | Name | Type | Description |
 |---|---|---|
-| reward | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+| reward | uint256 | Unclaimed rewards expected by the delegator from a staker (in HYDRA wei) |
 
 ### calculateOwedLiquidTokens
 

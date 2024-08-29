@@ -53,7 +53,7 @@ interface IVestedDelegation is IDelegation {
      * @notice Calculates the delegators's generated rewards that are unclaimed
      * @param staker Address of validator
      * @param delegator Address of delegator
-     * @return reward Delegator's unclaimed rewards with staker (in HYDRA wei)
+     * @return reward Unclaimed rewards expected by the delegator from a staker (in HYDRA wei)
      */
     function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward);
 
