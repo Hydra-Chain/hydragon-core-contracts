@@ -283,7 +283,6 @@ abstract contract VestedDelegation is
             return;
         }
 
-        uint256 sumReward;
         DelegationPool storage delegationPool = delegationPools[staker];
 
         // distribute the proper vesting reward
@@ -296,7 +295,7 @@ abstract contract VestedDelegation is
 
         uint256 reward = delegationPool.claimRewards(msg.sender, epochRPS, balance, correction);
         reward = _applyVestingAPR(position, reward);
-        sumReward += reward;
+        uint256 sumReward = reward;
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp > position.end + position.duration) {
