@@ -16,7 +16,7 @@
 function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward)
 ```
 
-Gets delegators&#39;s generated rewards for a position that are not claimed yet
+Calculates the delegators&#39;s generated rewards that are unclaimed
 
 
 
