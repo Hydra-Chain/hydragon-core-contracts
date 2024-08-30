@@ -1,7 +1,19 @@
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ERRORS, INITIAL_DEFAULT_MACRO_FACTOR, MAX_MACRO_FACTOR, MIN_MACRO_FACTOR } from "../constants";
+import {
+  DAY,
+  ERRORS,
+  INITIAL_DEFAULT_MACRO_FACTOR,
+  initialDataPrices,
+  MAX_MACRO_FACTOR,
+  MIN_MACRO_FACTOR,
+  SLOW_SMA,
+  tableDataMacroFactor,
+  tableDataPrices,
+} from "../constants";
+import { ethers } from "hardhat";
+import { commitEpoch, getCorrectVotingTimestamp } from "../helper";
 
 export function RunMacroFactorTests(): void {
   it("should get macro factor", async function () {
@@ -68,6 +80,48 @@ export function RunMacroFactorTests(): void {
       expect(await aprCalculator.disabledBonusesUpdates()).to.be.false;
 
       await expect(priceOracle.connect(validatorToVote).vote(priceToVote)).to.emit(aprCalculator, "MacroFactorSet");
+    });
+
+    it("should have same values of Macro Factor for data table with 300+ elements", async function () {
+      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+      const correctVotingTime = getCorrectVotingTimestamp();
+
+      const newPriceOracleContract = await (await ethers.getContractFactory("PriceOracle")).deploy();
+      const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
+      const prices: number[] = [];
+
+      for (let i = 0; i < initialDataPrices.length; i++) {
+        prices.push(initialDataPrices[i]);
+      }
+      for (let i = 0; i < SLOW_SMA - initialDataPrices.length; i++) {
+        prices.push(tableDataPrices[i]);
+      }
+
+      // Initialize the new contracts
+      await newAprCalculator
+        .connect(this.signers.system)
+        .initialize(this.signers.governance.address, systemHydraChain.address, newPriceOracleContract.address, prices);
+      await newPriceOracleContract
+        .connect(this.signers.system)
+        .initialize(systemHydraChain.address, newAprCalculator.address);
+
+      expect(await newAprCalculator.latestDailyPrice()).to.be.equal(
+        tableDataPrices[SLOW_SMA - initialDataPrices.length - 1]
+      );
+      expect(await newAprCalculator.macroFactor()).to.be.equal(7500);
+      await time.setNextBlockTimestamp(correctVotingTime);
+
+      for (let i = SLOW_SMA - initialDataPrices.length; i < tableDataPrices.length; i++) {
+        for (let j = 0; j !== 4; j++) {
+          await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
+        }
+
+        expect(await newAprCalculator.macroFactor()).to.be.equal(
+          tableDataMacroFactor[i - SLOW_SMA + initialDataPrices.length]
+        );
+        expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
+        await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 133);
+      }
     });
   });
 
