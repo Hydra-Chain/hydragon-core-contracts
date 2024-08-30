@@ -274,4 +274,40 @@ export function RunValidatorManagerTests(): void {
         .withArgs("ALREADY_REGISTERED");
     });
   });
+
+  describe("Power Exponent", function () {
+    it("should revert trying to update the Exponent if we are no-govern address", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(hydraChain.updateExponent(6000)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("should revert trying to update the Exponent invalid small value", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(hydraChain.connect(this.signers.governance).updateExponent(4999)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidPowerExponent"
+      );
+    });
+
+    it("should revert trying to update the Exponent with invalid big value", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(hydraChain.connect(this.signers.governance).updateExponent(10001)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidPowerExponent"
+      );
+    });
+
+    it("should update the Exponent", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      expect(await hydraChain.powerExponent(), "powerExp before update").to.equal(5000);
+
+      await hydraChain.connect(this.signers.governance).updateExponent(6000);
+
+      expect(await hydraChain.powerExponent(), "powerExp after update").to.equal(6000);
+    });
+  });
 }

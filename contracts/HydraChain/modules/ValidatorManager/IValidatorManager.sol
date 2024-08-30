@@ -27,10 +27,12 @@ struct Uptime {
 
 interface IValidatorManager {
     event NewValidator(address indexed validator, uint256[4] blsKey);
+    event PowerExponentUpdated(uint256 newPowerExponent);
 
     error InvalidSignature(address signer);
     error MaxValidatorsReached();
     error InvalidCommission(uint256 commission);
+    error InvalidPowerExponent();
 
     /**
      * @notice Retruns bool indicating if validator is Active.
@@ -51,26 +53,18 @@ interface IValidatorManager {
     function isValidatorBanned(address validator) external view returns (bool);
 
     /**
-     * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
-     * @dev Validator must be whitelisted.
-     * @param signature Signature to validate message against
-     * @param pubkey BLS public key of validator
+     * @notice Gets all validators. Returns already unactive validators as well.
+     * @return Returns array of addresses
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external;
+    function getValidators() external view returns (address[] memory);
+
+    // _______________ Public functions _______________
 
     /**
-     * @notice Activates validator.
-     * @dev Can be called only by the staking contract.
-     * @param account Address of the validator
+     * @notice Gets the number of current validators
+     * @return Returns the count as uint256
      */
-    function activateValidator(address account) external;
-
-    /**
-     * @notice Deactivates validator.
-     * @dev Can be called only by the staking contract.
-     * @param account Address of the validator
-     */
-    function deactivateValidator(address account) external;
+    function getActiveValidatorsCount() external view returns (uint256);
 
     /**
      * @notice Gets validator by address.
@@ -97,16 +91,30 @@ interface IValidatorManager {
         );
 
     /**
-     * @notice Gets all validators. Returns already unactive validators as well.
-     * @return Returns array of addresses
+     * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
+     * @dev Validator must be whitelisted.
+     * @param signature Signature to validate message against
+     * @param pubkey BLS public key of validator
      */
-    function getValidators() external view returns (address[] memory);
-
-    // _______________ Public functions _______________
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external;
 
     /**
-     * @notice Gets the number of current validators
-     * @return Returns the count as uint256
+     * @notice Activates validator.
+     * @dev Can be called only by the staking contract.
+     * @param account Address of the validator
      */
-    function getActiveValidatorsCount() external view returns (uint256);
+    function activateValidator(address account) external;
+
+    /**
+     * @notice Deactivates validator.
+     * @dev Can be called only by the staking contract.
+     * @param account Address of the validator
+     */
+    function deactivateValidator(address account) external;
+
+    /**
+     * @notice Sets new Voting Power Exponent Numerator.
+     * @param newValue New Voting Power Exponent Numerator
+     */
+    function updateExponent(uint256 newValue) external;
 }

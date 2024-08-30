@@ -155,24 +155,6 @@ Look up an epoch by block number. Searches in O(log n) time.
 |---|---|---|
 | _0 | Epoch | Epoch Returns epoch if found, or else, the last epoch |
 
-### getExponent
-
-```solidity
-function getExponent() external view returns (uint256 numerator, uint256 denominator)
-```
-
-Return the Voting Power Exponent Numerator and Denominator
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| numerator | uint256 | Voting Power Exponent Numerator |
-| denominator | uint256 | Voting Power Exponent Denominator |
-
 ### getTotalVotingPower
 
 ```solidity
@@ -431,7 +413,7 @@ Total amount of blocks in a given epoch
 function updateExponent(uint256 newValue) external nonpayable
 ```
 
-Set new pending exponent, to be activated in the next commit epoch
+Sets new Voting Power Exponent Numerator.
 
 
 
@@ -480,6 +462,22 @@ event NewValidator(address indexed validator, uint256[4] blsKey)
 |---|---|---|
 | validator `indexed` | address | undefined |
 | blsKey  | uint256[4] | undefined |
+
+### PowerExponentUpdated
+
+```solidity
+event PowerExponentUpdated(uint256 newPowerExponent)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newPowerExponent  | uint256 | undefined |
 
 ### ValidatorBanned
 
@@ -548,6 +546,17 @@ error InvalidCommission(uint256 commission)
 | Name | Type | Description |
 |---|---|---|
 | commission | uint256 | undefined |
+
+### InvalidPowerExponent
+
+```solidity
+error InvalidPowerExponent()
+```
+
+
+
+
+
 
 ### InvalidSignature
 

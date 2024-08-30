@@ -466,24 +466,6 @@ Look up an epoch by block number. Searches in O(log n) time.
 |---|---|---|
 | _0 | Epoch | Epoch Returns epoch if found, or else, the last epoch |
 
-### getExponent
-
-```solidity
-function getExponent() external view returns (uint256 numerator, uint256 denominator)
-```
-
-Return the Voting Power Exponent Numerator and Denominator
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| numerator | uint256 | Voting Power Exponent Numerator |
-| denominator | uint256 | Voting Power Exponent Denominator |
-
 ### getTotalVotingPower
 
 ```solidity
@@ -771,10 +753,10 @@ function pendingOwner() external view returns (address)
 ### powerExponent
 
 ```solidity
-function powerExponent() external view returns (uint128 value, uint128 pendingValue)
+function powerExponent() external view returns (uint256)
 ```
 
-
+`powerExponent` represents the numerator of the Voting Power Exponent, where the denominator is 10,000. The Voting Power Exponent is a fractional value between 0.5 and 1, used to exponentially decrease the voting power of a validator. This mechanism encourages better decentralization of the network.
 
 
 
@@ -783,8 +765,7 @@ function powerExponent() external view returns (uint128 value, uint128 pendingVa
 
 | Name | Type | Description |
 |---|---|---|
-| value | uint128 | undefined |
-| pendingValue | uint128 | undefined |
+| _0 | uint256 | undefined |
 
 ### register
 
@@ -989,7 +970,7 @@ function transferOwnership(address newOwner) external nonpayable
 function updateExponent(uint256 newValue) external nonpayable
 ```
 
-Set new pending exponent, to be activated in the next commit epoch
+Sets new Voting Power Exponent Numerator.
 
 
 
@@ -1228,6 +1209,22 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 | previousOwner `indexed` | address | undefined |
 | newOwner `indexed` | address | undefined |
 
+### PowerExponentUpdated
+
+```solidity
+event PowerExponentUpdated(uint256 newPowerExponent)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newPowerExponent  | uint256 | undefined |
+
 ### RemovedFromWhitelist
 
 ```solidity
@@ -1311,6 +1308,17 @@ error InvalidCommission(uint256 commission)
 | Name | Type | Description |
 |---|---|---|
 | commission | uint256 | undefined |
+
+### InvalidPowerExponent
+
+```solidity
+error InvalidPowerExponent()
+```
+
+
+
+
+
 
 ### InvalidSignature
 
