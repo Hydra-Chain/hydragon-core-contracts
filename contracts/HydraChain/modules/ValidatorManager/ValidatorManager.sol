@@ -177,7 +177,9 @@ abstract contract ValidatorManager is
      * @inheritdoc IValidatorManager
      */
     function updateExponent(uint256 newValue) external onlyOwner {
-        require(newValue > 4999 && newValue < 10001, "0.5 <= Exponent <= 1");
+        if (newValue < 5000 || newValue > 10000) {
+            revert InvalidPowerExponent(); // must be 0.5 <= Exponent <= 1
+        }
 
         powerExponent = newValue;
 

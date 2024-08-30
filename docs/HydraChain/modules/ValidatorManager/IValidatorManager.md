@@ -259,6 +259,17 @@ error InvalidCommission(uint256 commission)
 |---|---|---|
 | commission | uint256 | undefined |
 
+### InvalidPowerExponent
+
+```solidity
+error InvalidPowerExponent()
+```
+
+
+
+
+
+
 ### InvalidSignature
 
 ```solidity

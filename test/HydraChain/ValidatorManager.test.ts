@@ -285,20 +285,22 @@ export function RunValidatorManagerTests(): void {
     it("should revert trying to update the Exponent invalid small value", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(hydraChain.connect(this.signers.governance).updateExponent(4999)).to.be.revertedWith(
-        "0.5 <= Exponent <= 1"
+      await expect(hydraChain.connect(this.signers.governance).updateExponent(4999)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidPowerExponent"
       );
     });
 
     it("should revert trying to update the Exponent with invalid big value", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(hydraChain.connect(this.signers.governance).updateExponent(10001)).to.be.revertedWith(
-        "0.5 <= Exponent <= 1"
+      await expect(hydraChain.connect(this.signers.governance).updateExponent(10001)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidPowerExponent"
       );
     });
 
-    it("should update the Exponent and apply to pending", async function () {
+    it("should update the Exponent", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       expect(await hydraChain.powerExponent(), "powerExp before update").to.equal(5000);

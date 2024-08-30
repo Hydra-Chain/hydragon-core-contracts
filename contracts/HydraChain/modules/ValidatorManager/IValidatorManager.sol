@@ -32,6 +32,7 @@ interface IValidatorManager {
     error InvalidSignature(address signer);
     error MaxValidatorsReached();
     error InvalidCommission(uint256 commission);
+    error InvalidPowerExponent();
 
     /**
      * @notice Retruns bool indicating if validator is Active.
