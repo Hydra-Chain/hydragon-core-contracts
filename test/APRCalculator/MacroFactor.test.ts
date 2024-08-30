@@ -115,6 +115,7 @@ export function RunMacroFactorTests(): void {
         for (let j = 0; j !== 4; j++) {
           await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
         }
+
         expect(await newAprCalculator.macroFactor()).to.be.equal(
           tableDataMacroFactor[i - SLOW_SMA + initialDataPrices.length]
         );
