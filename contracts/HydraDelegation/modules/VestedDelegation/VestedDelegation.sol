@@ -82,7 +82,7 @@ abstract contract VestedDelegation is
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
-    ) external view returns (uint256 sumReward) {
+    ) external view returns (uint256 reward) {
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         if (_noRewardConditions(position)) {
             return 0;
@@ -98,12 +98,12 @@ abstract contract VestedDelegation is
 
         DelegationPool storage delegationPool = delegationPools[staker];
         uint256 rewardIndex = delegationPool.claimableRewards(delegator, epochRPS, balance, correction);
-        sumReward = _applyVestingAPR(position, rewardIndex);
+        reward = _applyVestingAPR(position, rewardIndex);
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp > position.end + position.duration) {
             uint256 additionalRewardIndex = delegationPool.claimableRewards(delegator) - rewardIndex;
-            sumReward += aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
+            reward += aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
         }
     }
 
@@ -295,20 +295,19 @@ abstract contract VestedDelegation is
 
         uint256 reward = delegationPool.claimRewards(msg.sender, epochRPS, balance, correction);
         reward = _applyVestingAPR(position, reward);
-        uint256 sumReward = reward;
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp > position.end + position.duration) {
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
             additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
-            sumReward += additionalReward;
+            reward += additionalReward;
         }
 
-        if (sumReward == 0) return;
+        if (reward == 0) return;
 
-        rewardWalletContract.distributeReward(to, sumReward);
+        rewardWalletContract.distributeReward(to, reward);
 
-        emit PositionRewardClaimed(msg.sender, staker, sumReward);
+        emit PositionRewardClaimed(msg.sender, staker, reward);
     }
 
     /**
