@@ -13,7 +13,7 @@
 ### calculateExpectedPositionReward
 
 ```solidity
-function calculateExpectedPositionReward(address staker, address delegator) external view returns (uint256 reward)
+function calculateExpectedPositionReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
 Calculates the delegators&#39;s generated rewards that are unclaimed
@@ -26,6 +26,8 @@ Calculates the delegators&#39;s generated rewards that are unclaimed
 |---|---|---|
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
+| epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
 #### Returns
 

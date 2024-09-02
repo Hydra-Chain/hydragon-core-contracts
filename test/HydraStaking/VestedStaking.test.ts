@@ -11,7 +11,7 @@ import {
   getValidatorReward,
   registerValidator,
 } from "../helper";
-import { VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { HOUR, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 
 export function RunVestedStakingTests(): void {
   describe("", function () {
@@ -323,6 +323,109 @@ export function RunVestedStakingTests(): void {
         await expect(stakerHydraStaking["claimStakingRewards()"]())
           .to.emit(hydraStaking, "StakingRewardsClaimed")
           .withArgs(this.staker.address, reward);
+      });
+    });
+
+    describe("calculateExpectedPositionReward()", async function () {
+      it("should calculate the expected rewards when maturing", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+
+        // add reward exactly before maturing (second to the last block)
+        const position = await hydraStaking.vestedStakingPositions(this.staker.address);
+        const penultimate = position.end.sub(1);
+        await time.setNextBlockTimestamp(penultimate.toNumber());
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize
+        );
+
+        // enter maturing state
+        const nextTimestampMaturing = position.end.add(position.duration.div(2));
+        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+
+        // calculate up to which epoch rewards are matured
+        const valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
+        const valRewardHistoryRecordIndex = findProperRPSIndex(
+          valRewardsHistoryRecords,
+          position.end.sub(position.duration.div(2))
+        );
+
+        const stakerRewards = await hydraStaking.calculateExpectedPositionReward(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+
+        const stakingRewardsHistory = await hydraStaking.stakingRewardsHistory(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+
+        expect(stakerRewards).to.equal(stakingRewardsHistory.totalReward);
+      });
+
+      it("should calculate the expected maturing rewards after one claim", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+
+        // add reward exactly before maturing (second to the last block)
+        const position = await hydraStaking.vestedStakingPositions(this.staker.address);
+        const penultimate = position.end.sub(1);
+        await time.setNextBlockTimestamp(penultimate.toNumber());
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize
+        );
+
+        // enter maturing state
+        const nextTimestampMaturing = position.end.add(position.duration.div(2));
+        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+
+        // calculate up to which epoch rewards are matured
+        let valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
+        let valRewardHistoryRecordIndex = findProperRPSIndex(
+          valRewardsHistoryRecords,
+          position.end.sub(position.duration.div(2))
+        );
+
+        const takenRewards = await hydraStaking.calculateExpectedPositionReward(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+
+        await hydraStaking.connect(this.staker)["claimStakingRewards(uint256)"](valRewardHistoryRecordIndex);
+
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          3, // number of epochs to commit
+          this.epochSize,
+          HOUR
+        );
+
+        // calculate again up to which epoch rewards are matured
+        valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
+        valRewardHistoryRecordIndex = findProperRPSIndex(
+          valRewardsHistoryRecords,
+          position.end.sub(position.duration.div(2))
+        );
+
+        const stakingRewardsHistory = await hydraStaking.stakingRewardsHistory(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+
+        const stakerRewards = await hydraStaking.calculateExpectedPositionReward(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+
+        expect(stakerRewards).to.equal(stakingRewardsHistory.totalReward.sub(takenRewards));
       });
     });
   });

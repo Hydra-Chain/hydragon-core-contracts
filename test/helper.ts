@@ -315,11 +315,13 @@ export async function claimPositionRewards(
   vestManager: VestingManager,
   validator: string
 ) {
-  const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
-  const currentEpochId = await hydraChain.currentEpochId();
-  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
-  const rpsIndex = findProperRPSIndex(rpsValues, position.end);
-  await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    vestManager.address
+  );
+  await vestManager.claimVestedPositionReward(validator, epochNum, balanceChangeIndex);
 }
 
 export async function createNewVestManager(vestingManagerFactory: VestingManagerFactory, owner: SignerWithAddress) {

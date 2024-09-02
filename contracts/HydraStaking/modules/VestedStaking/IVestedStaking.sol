@@ -38,4 +38,15 @@ interface IVestedStaking {
      * @param rewardHistoryIndex The index of the reward history to claim rewards from
      */
     function claimStakingRewards(uint256 rewardHistoryIndex) external;
+
+    /**
+     * @notice Calculates the staker's generated rewards that are unclaimed
+     * @param staker The address of the staker
+     * @param rewardHistoryIndex The index of the reward history to calculate rewards from
+     * @return Unclaimed rewards expected by the vested staker's position (in HYDRA wei)
+     */
+    function calculateExpectedPositionReward(
+        address staker,
+        uint256 rewardHistoryIndex
+    ) external view returns (uint256);
 }

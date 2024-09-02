@@ -196,14 +196,10 @@ export function RunVestedDelegationTests(): void {
         await time.increase(WEEK * 110);
 
         const vestingDuration = 52; // in weeks
-        let currentReward = await hydraDelegation.getRawDelegatorReward(
-          this.signers.validators[2].address,
-          vestManager.address
-        );
 
         await claimPositionRewards(hydraChain, hydraDelegation, vestManager, this.delegatedValidators[0]);
 
-        currentReward = await hydraDelegation.getRawDelegatorReward(
+        const currentReward = await hydraDelegation.getRawDelegatorReward(
           this.signers.validators[2].address,
           vestManager.address
         );
@@ -1127,7 +1123,7 @@ export function RunVestedDelegationTests(): void {
     });
 
     describe("calculateExpectedPositionReward()", async function () {
-      it("should successfully calculate the expected reward", async function () {
+      it("should calculate the expected position rewards", async function () {
         const { systemHydraChain, hydraDelegation, hydraStaking, vestingManagerFactory } = await loadFixture(
           this.fixtures.delegatedFixture
         );
@@ -1157,9 +1153,19 @@ export function RunVestedDelegationTests(): void {
           manager.address
         );
 
-        const managerRewards = await hydraDelegation.calculateExpectedPositionReward(
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+          systemHydraChain,
+          hydraDelegation,
           validator.address,
           manager.address
+        );
+
+        const managerRewards = await hydraDelegation.calculateExpectedPositionReward(
+          validator.address,
+          manager.address,
+          epochNum,
+          balanceChangeIndex
         );
 
         expect(managerRewards).to.equal(expectedReward);

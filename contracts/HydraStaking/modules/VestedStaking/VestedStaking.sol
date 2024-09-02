@@ -91,6 +91,22 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
         emit StakingRewardsClaimed(msg.sender, rewards);
     }
 
+    /**
+     * @inheritdoc IVestedStaking
+     */
+    function calculateExpectedPositionReward(
+        address staker,
+        uint256 rewardHistoryIndex
+    ) external view returns (uint256) {
+        StakingRewardsHistory memory rewardData = stakingRewardsHistory[staker][rewardHistoryIndex];
+
+        if (rewardData.totalReward > stakingRewards[staker].taken) {
+            return rewardData.totalReward - stakingRewards[staker].taken;
+        }
+
+        return 0;
+    }
+
     // _______________ Internal functions _______________
 
     /**
