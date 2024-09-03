@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {PriceGroup} from "./PriceConsensusList.sol";
+import {PriceGroup} from "./PriceGroups.sol";
 
 interface IPriceOracle {
     event PriceVoted(uint256 price, address validator, uint256 day);

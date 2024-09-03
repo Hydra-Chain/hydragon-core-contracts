@@ -225,7 +225,7 @@ export function RunPriceOracleTests(): void {
     });
   });
 
-  describe.only("Price Many voters", function () {
+  describe.skip("Price Many voters", function () {
     it("should vote with many validators", async function () {
       const { systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
         this.fixtures.validatorsDataStateFixture

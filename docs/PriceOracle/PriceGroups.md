@@ -1,8 +1,8 @@
-# PriceConsensusList
+# PriceGroups
 
 *Samuil Borisov*
 
-> PriceConsensusList Library
+> PriceGroups Library
 
 Library for inserting a validator with a price in groups, based on the price consensus
 

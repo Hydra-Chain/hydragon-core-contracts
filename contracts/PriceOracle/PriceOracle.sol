@@ -8,7 +8,7 @@ import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-import {PriceConsensusList, PriceGroup} from "./PriceConsensusList.sol";
+import {PriceGroups, PriceGroup} from "./PriceGroups.sol";
 
 /**
  * @title PriceOracle
@@ -16,8 +16,8 @@ import {PriceConsensusList, PriceGroup} from "./PriceConsensusList.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    using PriceConsensusList for PriceConsensusList.List;
-    mapping(uint256 => PriceConsensusList.List) public priceVotesForDay;
+    using PriceGroups for PriceGroups.Groups;
+    mapping(uint256 => PriceGroups.Groups) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -101,20 +101,20 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        PriceConsensusList.List storage priceList = priceVotesForDay[day];
+        PriceGroups.Groups storage priceGroups = priceVotesForDay[day];
 
         // If there are fewer than 4 validators, there isn't enough data to determine a price
-        if (priceList.size < 4) {
+        if (priceGroups.votedValidators < 4) {
             return 0;
         }
 
         // Calculate the needed voting power to reach quorum
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
-        uint256 groupLength = priceList.groups.length;
+        uint256 groupLength = priceGroups.groups.length;
 
         // Iterate through the price groups to find one that meets the quorum
         for (uint256 i = 0; i < groupLength; i++) {
-            PriceGroup storage group = priceList.groups[i];
+            PriceGroup storage group = priceGroups.groups[i];
             uint256 powerSum = 0;
             uint256 groupValidatorsLength = group.validators.length;
 

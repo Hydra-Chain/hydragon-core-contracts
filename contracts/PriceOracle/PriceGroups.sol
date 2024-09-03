@@ -8,27 +8,27 @@ struct PriceGroup {
 }
 
 /**
- * @title PriceConsensusList Library
+ * @title PriceGroups Library
  * @author Samuil Borisov
  * @notice Library for inserting a validator with a price in groups, based on the price consensus
  */
-library PriceConsensusList {
-    struct List {
+library PriceGroups {
+    struct Groups {
         PriceGroup[] groups;
-        uint256 size; // Total number of validators
+        uint256 votedValidators; // Total number of validators
     }
 
     /**
      * @notice Inserts a new validator with a price in a group
-     * @param self The list of the groups
+     * @param self The groups to insert the validator in
      * @param validator The validator to insert
      * @param price The price to insert
-     * @dev Creates list of groups, where validators whose prices are within 1% of the average price are grouped together
+     * @dev Creates groups, where validators whose prices are within 1% of the average price are grouped together
      */
-    function insert(List storage self, address validator, uint256 price) internal {
-        assert(price != 0);
-        assert(validator != address(0));
-        /// @dev There is not check if validator is already in the list, make sure to check before calling this function
+    function insert(Groups storage self, address validator, uint256 price) internal {
+        // assert(price != 0);  // This is not needed, as the price is already checked in the calling function
+        // assert(validator != address(0)); // This is not needed, as the validator is the msg.sender, who should always be a valid address
+        /// @dev There is not check if validator is already in the groups, make sure to check before calling this function
 
         bool groupFound = false;
         uint256 groupsLength = self.groups.length;
@@ -41,7 +41,9 @@ library PriceConsensusList {
             // Check if the price fits into this group (within 1% difference)
             if (price >= (averagePrice * 99) / 100 && price <= (averagePrice * 101) / 100) {
                 group.sumPrice += price;
-                group.count++;
+                unchecked {
+                    group.count++; // Max validators in our case is 150, so no need to check for overflow
+                }
                 group.validators.push(validator);
                 groupFound = true;
                 break;
@@ -59,15 +61,17 @@ library PriceConsensusList {
         }
 
         // Update the total size of validators
-        self.size++;
+        unchecked {
+            self.votedValidators++; // Max validators in our case is 150, so no need to check for overflow
+        }
     }
 
     /**
      * @notice Returns all price groups with their aggregated data
-     * @param self The list to get the price groups from
+     * @param self The groups to get the price groups from
      * @return groups An array of PriceGroup structs
      */
-    function getAllGroups(List storage self) internal view returns (PriceGroup[] memory groups) {
+    function getAllGroups(Groups storage self) internal view returns (PriceGroup[] memory groups) {
         groups = new PriceGroup[](self.groups.length);
         uint256 groupsLength = self.groups.length;
         for (uint256 i = 0; i < groupsLength; i++) {

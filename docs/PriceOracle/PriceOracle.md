@@ -261,7 +261,7 @@ function pricePerDay(uint256) external view returns (uint256)
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256) external view returns (uint256 size)
+function priceVotesForDay(uint256) external view returns (uint256 votedValidators)
 ```
 
 
@@ -278,7 +278,7 @@ function priceVotesForDay(uint256) external view returns (uint256 size)
 
 | Name | Type | Description |
 |---|---|---|
-| size | uint256 | undefined |
+| votedValidators | uint256 | undefined |
 
 ### shouldVote
 
