@@ -95,7 +95,6 @@ export function RunPriceOracleTests(): void {
 
       const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
       expect(pricesForDay).to.equal(1);
-      // expect(pricesForDay.head).to.equal(this.signers.validators[0].address); //sami
     });
 
     it("should revert vote when price for the day is updated", async function () {
