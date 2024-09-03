@@ -1,23 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-struct PriceGroup {
-    uint256 sumPrice;
-    uint256 count;
-    address[] validators;
-}
+import {Groups, PriceGroup} from "./IPriceGroupsLib.sol";
 
 /**
- * @title PriceGroups Library
+ * @title PriceGroupsLib Library
  * @author Samuil Borisov
  * @notice Library for inserting a validator with a price in groups, based on the price consensus
  */
-library PriceGroups {
-    struct Groups {
-        PriceGroup[] groups;
-        uint256 votedValidators; // Total number of validators
-    }
-
+library PriceGroupsLib {
     /**
      * @notice Inserts a new validator with a price in a group
      * @param self The groups to insert the validator in
@@ -28,7 +19,7 @@ library PriceGroups {
     function insert(Groups storage self, address validator, uint256 price) internal {
         // assert(price != 0);  // This is not needed, as the price is already checked in the calling function
         // assert(validator != address(0)); // This is not needed, as the validator is the msg.sender, who should always be a valid address
-        /// @dev There is not check if validator is already in the groups, make sure to check before calling this function
+        /// @dev We cannot check if the validator is already in the group, so make sure to check if validator already voted this before calling the function (in our case, this is done in the vote function)
 
         bool groupFound = false;
         uint256 groupsLength = self.groups.length;
@@ -36,14 +27,11 @@ library PriceGroups {
         // Iterate through all existing groups to find a fitting one
         for (uint256 i = 0; i < groupsLength; i++) {
             PriceGroup storage group = self.groups[i];
-            uint256 averagePrice = group.sumPrice / group.count;
+            uint256 averagePrice = group.sumPrice / group.validators.length;
 
             // Check if the price fits into this group (within 1% difference)
             if (price >= (averagePrice * 99) / 100 && price <= (averagePrice * 101) / 100) {
                 group.sumPrice += price;
-                unchecked {
-                    group.count++; // Max validators in our case is 150, so no need to check for overflow
-                }
                 group.validators.push(validator);
                 groupFound = true;
                 break;
@@ -53,15 +41,16 @@ library PriceGroups {
         // If no fitting group was found, create a new one
         if (!groupFound) {
             // Create a new group with the validator
-            PriceGroup memory newGroup = PriceGroup(price, 1, new address[](1));
+            PriceGroup memory newGroup = PriceGroup(price, new address[](1));
             newGroup.validators[0] = validator;
 
             // Push the new group into storage
             self.groups.push(newGroup);
         }
 
-        // Update the total size of validators
+        // Update the total count of validators
         unchecked {
+            // TODO: (active validators could change during voting time) make sure no vunerabilities come from this!
             self.votedValidators++; // Max validators in our case is 150, so no need to check for overflow
         }
     }

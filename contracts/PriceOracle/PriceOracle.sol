@@ -7,8 +7,9 @@ import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
+import {Groups, PriceGroup} from "./libs/IPriceGroupsLib.sol";
+import {PriceGroupsLib} from "./libs/PriceGroupsLib.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-import {PriceGroups, PriceGroup} from "./PriceGroups.sol";
 
 /**
  * @title PriceOracle
@@ -16,8 +17,8 @@ import {PriceGroups, PriceGroup} from "./PriceGroups.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    using PriceGroups for PriceGroups.Groups;
-    mapping(uint256 => PriceGroups.Groups) public priceVotesForDay;
+    using PriceGroupsLib for Groups;
+    mapping(uint256 => Groups) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -101,7 +102,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        PriceGroups.Groups storage priceGroups = priceVotesForDay[day];
+        Groups storage priceGroups = priceVotesForDay[day];
 
         // If there are fewer than 4 validators, there isn't enough data to determine a price
         if (priceGroups.votedValidators < 4) {
@@ -125,7 +126,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
             // If the power sum reaches or exceeds the needed voting power, return the average price
             if (powerSum >= neededVotingPower) {
-                return group.sumPrice / group.count;
+                return group.sumPrice / groupValidatorsLength;
             }
         }
 
