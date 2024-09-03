@@ -487,6 +487,22 @@ Sets commission for staker.
 |---|---|---|
 | newCommission | uint256 | New commission (100 = 100%) |
 
+### setDelegationPoolStaker
+
+```solidity
+function setDelegationPoolStaker(address staker) external nonpayable
+```
+
+Sets the staker of the DelegationPool.
+
+*The function can be executed only by the HydraChain contract.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the validator/staker |
+
 ### stakerDelegationCommission
 
 ```solidity

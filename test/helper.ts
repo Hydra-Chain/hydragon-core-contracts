@@ -8,12 +8,12 @@ import { BigNumber, ContractTransaction } from "ethers";
 import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
 import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
-import { LiquidityToken } from "../typechain-types/contracts/LiquidityToken/LiquidityToken";
 import {
   APRCalculator,
   HydraChain,
   HydraDelegation,
   HydraStaking,
+  LiquidityToken,
   VestingManager,
   VestingManager__factory,
   VestingManagerFactory,

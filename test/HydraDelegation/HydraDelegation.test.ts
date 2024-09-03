@@ -121,6 +121,11 @@ export function RunHydraDelegationTests(): void {
           "delegationCommissionPerStaker"
         ).to.equal(INITIAL_COMMISSION);
 
+        expect(
+          (await hydraDelegation.delegationPools(this.signers.admin.address)).staker,
+          "delegationPool.staker"
+        ).to.equal(this.signers.admin.address);
+
         expect(await hydraDelegation.owner(), "owner").to.equal(this.signers.governance.address);
         expect(await hydraDelegation.minDelegation(), "minDelegation").to.equal(this.minDelegation);
         expect(await hydraDelegation.hydraChainContract(), "hydraChainContract").to.equal(hydraChain.address);
@@ -692,9 +697,11 @@ export function RunHydraDelegationTests(): void {
     describe("Delegation", function () {
       RunDelegationTests();
     });
+
     describe("VestedDelegation", function () {
       RunVestedDelegationTests();
     });
+
     describe("SwapVestedPosition", function () {
       RunSwapVestedPositionStakerTests();
     });

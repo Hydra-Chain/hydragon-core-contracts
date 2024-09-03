@@ -204,6 +204,20 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     .connect(this.signers.system)
     .initialize(this.signers.governance.address, hydraChain.address, priceOracle.address, prices);
 
+  await hydraDelegation
+    .connect(this.signers.system)
+    .initialize(
+      [validatorInit],
+      this.signers.governance.address,
+      INITIAL_COMMISSION,
+      liquidToken.address,
+      aprCalculator.address,
+      hydraStaking.address,
+      hydraChain.address,
+      vestingManagerFactory.address,
+      rewardWallet.address
+    );
+
   await systemHydraChain.initialize(
     [validatorInit],
     this.signers.governance.address,
@@ -225,20 +239,6 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       hydraChain.address,
       aprCalculator.address,
       hydraDelegation.address,
-      rewardWallet.address
-    );
-
-  await hydraDelegation
-    .connect(this.signers.system)
-    .initialize(
-      [validatorInit],
-      this.signers.governance.address,
-      INITIAL_COMMISSION,
-      liquidToken.address,
-      aprCalculator.address,
-      hydraStaking.address,
-      hydraChain.address,
-      vestingManagerFactory.address,
       rewardWallet.address
     );
 

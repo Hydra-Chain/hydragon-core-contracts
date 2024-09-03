@@ -212,6 +212,9 @@ abstract contract ValidatorManager is
         validators[validator].blsKey = pubkey;
         validators[validator].status = ValidatorStatus.Registered;
         validatorsAddresses.push(validator);
+
+        // set the staker property of the validator's DelegationPool
+        hydraDelegationContract.setDelegationPoolStaker(validator);
     }
 
     function _verifyValidatorRegistration(

@@ -18,6 +18,13 @@ interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
     function setCommission(uint256 newCommission) external;
 
     /**
+     * @notice Sets the staker of the DelegationPool.
+     * @dev The function can be executed only by the HydraChain contract.
+     * @param staker The address of the validator/staker
+     */
+    function setDelegationPoolStaker(address staker) external;
+
+    /**
      * @notice Returns commission for staker.
      * @param staker Address of the validator
      * @return commission Commission for staker

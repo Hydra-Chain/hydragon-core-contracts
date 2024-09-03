@@ -86,6 +86,13 @@ contract HydraDelegation is
         _distributeDelegationRewards(staker, reward, epochId);
     }
 
+    /**
+     * @inheritdoc IHydraDelegation
+     */
+    function setDelegationPoolStaker(address staker) external onlyHydraChain {
+        delegationPools[staker].staker = staker;
+    }
+
     // _______________ Internal functions _______________
 
     /**
