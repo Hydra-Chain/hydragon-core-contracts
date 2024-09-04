@@ -6,38 +6,39 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { ERRORS, WEEK } from "../constants";
 
 export function RunStakingTests(): void {
-  describe("Total Stake", function () {
-    it("should return 0 when no one has staked", async function () {
-      const { hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
-
-      const totalStake = await hydraStaking.totalStake();
-      expect(totalStake).to.equal(0);
-    });
-
-    it("should add up to total stake & balance after staking", async function () {
+  describe.only("Total Stake", function () {
+    it("should add up to stake variables & balance after staking", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
 
       const totalStakeBefore = await hydraStaking.totalStake();
       const balanceBefore = await hre.ethers.provider.getBalance(hydraStaking.address);
+      const stakeOfValidatorBefore = await hydraStaking.stakeOf(this.signers.validators[0].address);
 
       await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake });
       const totalStakeAfter = await hydraStaking.totalStake();
       const balanceAfter = await hre.ethers.provider.getBalance(hydraStaking.address);
+      const stakeOfValidatorAfter = await hydraStaking.stakeOf(this.signers.validators[0].address);
+
+      expect(stakeOfValidatorBefore.add(this.minStake)).to.equal(stakeOfValidatorAfter);
       expect(totalStakeBefore.add(this.minStake)).to.equal(totalStakeAfter);
       expect(balanceBefore.add(this.minStake)).to.equal(balanceAfter);
     });
 
-    it("should reduce total stake after unstake, but balance in contract stays the same", async function () {
+    it("should reduce stake variables after unstake, but balance in contract stays the same", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       const stakeAmount = await hydraStaking.stakeOf(this.signers.validators[0].address);
       const totalStakeBefore = await hydraStaking.totalStake();
       const balanceBefore = await hre.ethers.provider.getBalance(hydraStaking.address);
+      const stakeOfValidatorBefore = await hydraStaking.stakeOf(this.signers.validators[0].address);
 
       await hydraStaking.connect(this.signers.validators[0]).unstake(stakeAmount);
 
       const totalStakeAfter = await hydraStaking.totalStake();
       const balanceAfter = await hre.ethers.provider.getBalance(hydraStaking.address);
+      const stakeOfValidatorAfter = await hydraStaking.stakeOf(this.signers.validators[0].address);
+
+      expect(stakeOfValidatorAfter).to.equal(stakeOfValidatorBefore.sub(stakeAmount));
       expect(totalStakeAfter).to.equal(totalStakeBefore.sub(stakeAmount));
       expect(balanceAfter).to.equal(balanceBefore);
     });

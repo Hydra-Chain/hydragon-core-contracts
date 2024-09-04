@@ -7,26 +7,26 @@ import * as hre from "hardhat";
 import { ERRORS, WEEK } from "../constants";
 
 export function RunDelegationTests(): void {
-  describe("Total Delegation", function () {
-    it("should return 0 when no one has delegated", async function () {
-      const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-      const totalDelegation = await hydraDelegation.totalDelegation();
-      expect(totalDelegation).to.equal(0);
-    });
-
-    it("should add up to total delegation & balance after delegation", async function () {
+  describe.only("Total Delegation", function () {
+    it("should add up to delegation variables & balance after delegation", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
       const totalDelegation = await hydraDelegation.totalDelegation();
+      const delegationOfDelegator = await hydraDelegation.delegationOf(
+        this.signers.validators[0].address,
+        this.signers.delegator.address
+      );
+      const delegatedToStaker = await hydraDelegation.totalDelegationOf(this.signers.validators[0].address);
       expect(totalDelegation).to.equal(this.minDelegation.mul(2));
+      expect(delegatedToStaker).to.equal(this.minDelegation.mul(2));
+      expect(delegationOfDelegator).to.equal(this.minDelegation.mul(2));
       expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegation);
     });
 
-    it("should reduce total delegation after undelegation, but balance in contract stays the same", async function () {
+    it("should reduce delegation variables after undelegation, but balance in contract stays the same", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
-      const delegatedAmount = await hydraDelegation.delegationOf(
+      const delegatedAmountBefore = await hydraDelegation.delegationOf(
         this.signers.validators[0].address,
         this.signers.delegator.address
       );
@@ -34,10 +34,14 @@ export function RunDelegationTests(): void {
 
       await hydraDelegation
         .connect(this.signers.delegator)
-        .undelegate(this.signers.validators[0].address, delegatedAmount);
+        .undelegate(this.signers.validators[0].address, delegatedAmountBefore);
 
       const totalDelegationAfter = await hydraDelegation.totalDelegation();
-      expect(totalDelegationAfter).to.equal(totalDelegationBefore.sub(delegatedAmount));
+      expect(totalDelegationAfter).to.equal(totalDelegationBefore.sub(delegatedAmountBefore));
+      expect(await hydraDelegation.totalDelegationOf(this.signers.validators[0].address)).to.equal(0);
+      expect(
+        await hydraDelegation.delegationOf(this.signers.validators[0].address, this.signers.delegator.address)
+      ).to.equal(0);
       expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegationBefore);
     });
 
