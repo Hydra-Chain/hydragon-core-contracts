@@ -61,7 +61,10 @@ export const ERRORS = {
     newPositionUnavailable: "NEW_POSITION_UNAVAILABLE",
   },
   vesting: {
+    invalidEpoch: "INVALID_EPOCH",
+    wrongRPS: "WRONG_RPS",
     invalidParamsIndex: "INVALID_PARAMS_INDEX",
+    earlyBalanceChange: "EARLY_BALANCE_CHANGE",
   },
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account.toLowerCase()} is missing role ${role}`;

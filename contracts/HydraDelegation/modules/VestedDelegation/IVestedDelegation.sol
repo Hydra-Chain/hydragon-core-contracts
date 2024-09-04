@@ -50,15 +50,14 @@ interface IVestedDelegation is IDelegation {
     ) external view returns (uint256);
 
     /**
-     * @notice Calculates the delegators's generated rewards that are unclaimed
+     * @notice Calculates the delegators's pending (unclaimed) rewards for the position + additional reward, if any
      * @param staker Address of validator
      * @param delegator Address of delegator
-     * @param epochNumber Epoch where the last claimable reward is distributed
-     * We need it because not all rewards are matured at the moment of claiming
+     * @param epochNumber Epoch where the last reward for the vesting period is distributed
      * @param balanceChangeIndex Whether to redelegate the claimed rewards
-     * @return reward Unclaimed rewards expected by the delegator from a staker (in HYDRA wei)
+     * @return reward Pending rewards expected by the delegator from a staker (in HYDRA wei)
      */
-    function calculateExpectedPositionReward(
+    function calculatePositionPendingReward(
         address staker,
         address delegator,
         uint256 epochNumber,

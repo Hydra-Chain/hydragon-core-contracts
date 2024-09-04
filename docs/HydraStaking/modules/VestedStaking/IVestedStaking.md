@@ -34,13 +34,13 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
 
-### calculateExpectedPositionReward
+### calculatePositionPendingReward
 
 ```solidity
-function calculateExpectedPositionReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
+function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
 ```
 
-Calculates the staker&#39;s generated rewards that are unclaimed
+Calculates the staker&#39;s pending (unclaimed) position rewards
 
 
 
@@ -55,7 +55,7 @@ Calculates the staker&#39;s generated rewards that are unclaimed
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Unclaimed rewards expected by the vested staker&#39;s position (in HYDRA wei) |
+| _0 | uint256 | Pending rewards expected by the vested staker&#39;s position (in HYDRA wei) |
 
 ### claimStakingRewards
 

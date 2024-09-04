@@ -16,7 +16,7 @@ import {
   commitEpoch,
   createManagerAndVest,
   getDelegatorPositionReward,
-  calculateExpectedPositionReward,
+  calculateExpectedPositionRewardWithVestingAPR,
   calculatePenaltyByWeeks,
   calcLiquidTokensToDistributeOnVesting,
 } from "../helper";
@@ -328,7 +328,7 @@ export function RunVestedDelegationTests(): void {
           this.minDelegation
         );
 
-        const reward = await calculateExpectedPositionReward(
+        const reward = await calculateExpectedPositionRewardWithVestingAPR(
           hydraDelegation,
           delegatedValidator.address,
           vestManager.address
@@ -757,7 +757,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "INVALID_EPOCH");
+          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
       });
 
       it("should revert with wrong rps", async function () {
@@ -792,7 +792,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "WRONG_RPS");
+          .withArgs("vesting", ERRORS.vesting.wrongRPS);
       });
 
       it("should revert with invalid params index", async function () {
@@ -874,7 +874,7 @@ export function RunVestedDelegationTests(): void {
 
         await expect(hydraDelegation.getDelegatorPositionReward(oldValidator.address, vestManager.address, epochNum, 0))
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "EARLY_BALANCE_CHANGE");
+          .withArgs("vesting", ERRORS.vesting.earlyBalanceChange);
       });
 
       it("should return 0 reward if the position is non-existing one", async function () {
@@ -975,7 +975,7 @@ export function RunVestedDelegationTests(): void {
             vestManager.address
           );
 
-          const totalPotentialRewards = await calculateExpectedPositionReward(
+          const totalPotentialRewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             delegatedValidator.address,
             vestManager.address
@@ -1015,12 +1015,12 @@ export function RunVestedDelegationTests(): void {
             DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
           );
 
-          const manager1rewards = await calculateExpectedPositionReward(
+          const manager1rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateExpectedPositionReward(
+          const manager2rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1060,12 +1060,12 @@ export function RunVestedDelegationTests(): void {
             DAY * 3 // three days per epoch, so, 3 x 7 = 21 days ahead
           );
 
-          const manager1rewards = await calculateExpectedPositionReward(
+          const manager1rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateExpectedPositionReward(
+          const manager2rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1105,12 +1105,12 @@ export function RunVestedDelegationTests(): void {
             WEEK // one week = 1 epoch
           );
 
-          const manager1rewards = await calculateExpectedPositionReward(
+          const manager1rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager1.address
           );
-          const manager2rewards = await calculateExpectedPositionReward(
+          const manager2rewards = await calculateExpectedPositionRewardWithVestingAPR(
             hydraDelegation,
             validator.address,
             manager2.address
@@ -1122,53 +1122,206 @@ export function RunVestedDelegationTests(): void {
       // TODO: More tests with actual calculation results checks must be made
     });
 
-    describe("calculateExpectedPositionReward()", async function () {
-      it("should calculate the expected position rewards", async function () {
-        const { systemHydraChain, hydraDelegation, hydraStaking, vestingManagerFactory } = await loadFixture(
-          this.fixtures.delegatedFixture
+    describe("calculatePositionPendingReward()", async function () {
+      it("should calculate rewards even if the position is still active", async function () {
+        const { hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
         );
 
-        const validator = this.signers.validators[1];
-        const manager = await createManagerAndVest(
-          vestingManagerFactory,
-          this.signers.accounts[4],
-          validator.address,
-          VESTING_DURATION_WEEKS,
-          this.minDelegation
+        const managerRewards = await hydraDelegation.calculatePositionPendingReward(
+          delegatedValidator.address,
+          vestManager.address,
+          0,
+          0
         );
 
-        // commit epochs to distribute rewards
-        await commitEpochs(
+        expect(managerRewards).to.be.gt(0);
+      });
+
+      it("should revert when invalid epoch is sent", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 2);
+
+        const currEpochId = await systemHydraChain.currentEpochId();
+
+        await expect(
+          hydraDelegation.calculatePositionPendingReward(
+            delegatedValidator.address,
+            vestManager.address,
+            currEpochId.add(1),
+            0
+          )
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
+      });
+
+      it("should revert when invalid RPS is sent", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 2);
+
+        const currEpochId = await systemHydraChain.currentEpochId();
+
+        await expect(
+          hydraDelegation.calculatePositionPendingReward(
+            delegatedValidator.address,
+            vestManager.address,
+            currEpochId.sub(1),
+            0
+          )
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("vesting", ERRORS.vesting.wrongRPS);
+      });
+
+      it("should revert when invalid balance change is sent", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 2);
+
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
           systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], validator],
-          5, // number of epochs to commit
-          this.epochSize,
-          DAY * 3 // three days per epoch, so, 3 x 5 = 15 days ahead
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
         );
 
-        const expectedReward = await calculateExpectedPositionReward(
+        await expect(
+          hydraDelegation.calculatePositionPendingReward(
+            delegatedValidator.address,
+            vestManager.address,
+            epochNum,
+            balanceChangeIndex + 1
+          )
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
+      });
+
+      it("should revert when calculate the pending reward with early balance", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, oldValidator, newValidator } =
+          await loadFixture(this.fixtures.swappedPositionFixture);
+
+        // commit 4 epochs, 1 week each in order to mature the position and be able to claim
+        await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK + 1);
+
+        // prepare params for call
+        const { epochNum } = await retrieveRPSData(
+          systemHydraChain,
           hydraDelegation,
-          validator.address,
-          manager.address
+          oldValidator.address,
+          vestManager.address
+        );
+
+        await expect(
+          hydraDelegation.calculatePositionPendingReward(oldValidator.address, vestManager.address, epochNum, 0)
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("vesting", ERRORS.vesting.earlyBalanceChange);
+      });
+
+      it("should successfully calculate the pending reward for still active position", async function () {
+        const { systemHydraChain, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
         );
 
         // prepare params for call
         const { epochNum, balanceChangeIndex } = await retrieveRPSData(
           systemHydraChain,
           hydraDelegation,
-          validator.address,
-          manager.address
+          delegatedValidator.address,
+          vestManager.address
         );
 
-        const managerRewards = await hydraDelegation.calculateExpectedPositionReward(
-          validator.address,
-          manager.address,
+        const positionPendingReward = await hydraDelegation.calculatePositionPendingReward(
+          delegatedValidator.address,
+          vestManager.address,
           epochNum,
           balanceChangeIndex
         );
 
-        expect(managerRewards).to.equal(expectedReward);
+        const expectedReward = await calculateExpectedPositionRewardWithVestingAPR(
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        expect(positionPendingReward).to.be.equal(expectedReward);
+      });
+
+      it("should successfully calculate the pending reward for currently maturing position", async function () {
+        const { systemHydraChain, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        const positionPendingReward = await hydraDelegation.calculatePositionPendingReward(
+          delegatedValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        );
+
+        const expectedReward = await calculateExpectedPositionRewardWithVestingAPR(
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        expect(positionPendingReward).to.be.equal(expectedReward);
+      });
+
+      it("should successfully calculate the pending reward for matured position", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize);
+
+        const position = await hydraDelegation.vestedDelegationPositions(
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        // increase so the position is fully
+        await time.increaseTo(position.end.add(position.duration).add(DAY));
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 3, this.epochSize);
+
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        const positionPendingReward = await hydraDelegation.calculatePositionPendingReward(
+          delegatedValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        );
+
+        await expect(vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex))
+          .to.emit(hydraDelegation, "PositionRewardClaimed")
+          .withArgs(vestManager.address, delegatedValidator.address, positionPendingReward);
       });
     });
   });

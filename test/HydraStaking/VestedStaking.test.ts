@@ -326,7 +326,7 @@ export function RunVestedStakingTests(): void {
       });
     });
 
-    describe("calculateExpectedPositionReward()", async function () {
+    describe("calculatePositionPendingReward()", async function () {
       it("should calculate the expected rewards when maturing", async function () {
         const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
 
@@ -353,7 +353,7 @@ export function RunVestedStakingTests(): void {
           position.end.sub(position.duration.div(2))
         );
 
-        const stakerRewards = await hydraStaking.calculateExpectedPositionReward(
+        const stakerRewards = await hydraStaking.calculatePositionPendingReward(
           this.staker.address,
           valRewardHistoryRecordIndex
         );
@@ -392,7 +392,7 @@ export function RunVestedStakingTests(): void {
           position.end.sub(position.duration.div(2))
         );
 
-        const takenRewards = await hydraStaking.calculateExpectedPositionReward(
+        const takenRewards = await hydraStaking.calculatePositionPendingReward(
           this.staker.address,
           valRewardHistoryRecordIndex
         );
@@ -420,7 +420,7 @@ export function RunVestedStakingTests(): void {
           valRewardHistoryRecordIndex
         );
 
-        const stakerRewards = await hydraStaking.calculateExpectedPositionReward(
+        const stakerRewards = await hydraStaking.calculatePositionPendingReward(
           this.staker.address,
           valRewardHistoryRecordIndex
         );

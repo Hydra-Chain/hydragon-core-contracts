@@ -225,31 +225,6 @@ The threshold for the maximum number of allowed balance changes
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### calculateExpectedPositionReward
-
-```solidity
-function calculateExpectedPositionReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
-```
-
-Calculates the delegators&#39;s generated rewards that are unclaimed
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Address of validator |
-| delegator | address | Address of delegator |
-| epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | Unclaimed rewards expected by the delegator from a staker (in HYDRA wei) |
-
 ### calculateOwedLiquidTokens
 
 ```solidity
@@ -296,6 +271,31 @@ Calculates the penalty for the position.
 | Name | Type | Description |
 |---|---|---|
 | penalty | uint256 | undefined |
+
+### calculatePositionPendingReward
+
+```solidity
+function calculatePositionPendingReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+```
+
+Calculates the delegators&#39;s pending (unclaimed) rewards for the position + additional reward, if any
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of validator |
+| delegator | address | Address of delegator |
+| epochNumber | uint256 | Epoch where the last reward for the vesting period is distributed |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Pending rewards expected by the delegator from a staker (in HYDRA wei) |
 
 ### changeMinDelegation
 
@@ -536,7 +536,7 @@ Gets the delegation pool params history for a staker and delegator.
 ### getDelegatorPositionReward
 
 ```solidity
-function getDelegatorPositionReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
+function getDelegatorPositionReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
 ```
 
 Gets delegators&#39;s matured unclaimed rewards for a position
@@ -556,7 +556,7 @@ Gets delegators&#39;s matured unclaimed rewards for a position
 
 | Name | Type | Description |
 |---|---|---|
-| reward | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+| _0 | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
 
 ### getDelegatorReward
 

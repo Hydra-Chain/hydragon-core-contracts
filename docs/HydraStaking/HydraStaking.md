@@ -198,29 +198,6 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
 
-### calculateExpectedPositionReward
-
-```solidity
-function calculateExpectedPositionReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
-```
-
-Calculates the staker&#39;s generated rewards that are unclaimed
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | The address of the staker |
-| rewardHistoryIndex | uint256 | The index of the reward history to calculate rewards from |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | Unclaimed rewards expected by the vested staker&#39;s position (in HYDRA wei) |
-
 ### calculateOwedLiquidTokens
 
 ```solidity
@@ -243,6 +220,29 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | The amount of liquid tokens the user owes to the protocol |
+
+### calculatePositionPendingReward
+
+```solidity
+function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
+```
+
+Calculates the staker&#39;s pending (unclaimed) position rewards
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+| rewardHistoryIndex | uint256 | The index of the reward history to calculate rewards from |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Pending rewards expected by the vested staker&#39;s position (in HYDRA wei) |
 
 ### changeMinStake
 

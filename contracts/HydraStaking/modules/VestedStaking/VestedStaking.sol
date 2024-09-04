@@ -94,7 +94,7 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     /**
      * @inheritdoc IVestedStaking
      */
-    function calculateExpectedPositionReward(
+    function calculatePositionPendingReward(
         address staker,
         uint256 rewardHistoryIndex
     ) external view returns (uint256) {

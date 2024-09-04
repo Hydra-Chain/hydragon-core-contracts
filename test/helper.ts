@@ -479,7 +479,8 @@ export async function getPermitSignature(
   );
 }
 
-export async function calculateExpectedPositionReward(
+// function that calculates the position reward and applies the vesting APR
+export async function calculateExpectedPositionRewardWithVestingAPR(
   hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string

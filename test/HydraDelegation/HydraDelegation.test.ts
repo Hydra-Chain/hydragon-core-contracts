@@ -371,7 +371,7 @@ export function RunHydraDelegationTests(): void {
           "claimVestedPositionReward"
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "INVALID_EPOCH");
+          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
 
         // commit epoch
         await commitEpoch(
@@ -386,7 +386,7 @@ export function RunHydraDelegationTests(): void {
           "claimVestedPositionReward2"
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "WRONG_RPS");
+          .withArgs("vesting", ERRORS.vesting.wrongRPS);
       });
 
       it("should properly claim reward when not fully matured", async function () {
