@@ -6,7 +6,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { ERRORS, WEEK } from "../constants";
 
 export function RunStakingTests(): void {
-  describe.only("Total Stake", function () {
+  describe("Total Stake", function () {
     it("should add up to stake variables & balance after staking", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
 
