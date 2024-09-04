@@ -3,9 +3,62 @@ import * as hre from "hardhat";
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
-import { ERRORS } from "../constants";
+import { ERRORS, WEEK } from "../constants";
 
 export function RunStakingTests(): void {
+  describe("Total Stake", function () {
+    it("should return 0 when no one has staked", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+      const totalStake = await hydraStaking.totalStake();
+      expect(totalStake).to.equal(0);
+    });
+
+    it("should add up to total stake & balance after staking", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      const totalStakeBefore = await hydraStaking.totalStake();
+      const balanceBefore = await hre.ethers.provider.getBalance(hydraStaking.address);
+
+      await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake });
+      const totalStakeAfter = await hydraStaking.totalStake();
+      const balanceAfter = await hre.ethers.provider.getBalance(hydraStaking.address);
+      expect(totalStakeBefore.add(this.minStake)).to.equal(totalStakeAfter);
+      expect(balanceBefore.add(this.minStake)).to.equal(balanceAfter);
+    });
+
+    it("should reduce total stake after unstake, but balance in contract stays the same", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      const stakeAmount = await hydraStaking.stakeOf(this.signers.validators[0].address);
+      const totalStakeBefore = await hydraStaking.totalStake();
+      const balanceBefore = await hre.ethers.provider.getBalance(hydraStaking.address);
+
+      await hydraStaking.connect(this.signers.validators[0]).unstake(stakeAmount);
+
+      const totalStakeAfter = await hydraStaking.totalStake();
+      const balanceAfter = await hre.ethers.provider.getBalance(hydraStaking.address);
+      expect(totalStakeAfter).to.equal(totalStakeBefore.sub(stakeAmount));
+      expect(balanceAfter).to.equal(balanceBefore);
+    });
+
+    it("balance in contract should reduce after withdraw, and it is = to total stake (in the real chain)", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      // balance and total stake is different here in testing environment, since in the real network we are setting a balance of the contract to the total stake for the initial validators from the Node.
+      const stakeAmount = await hydraStaking.stakeOf(this.signers.validators[0].address);
+      await hydraStaking.connect(this.signers.validators[0]).unstake(stakeAmount);
+      const balance = await hre.ethers.provider.getBalance(hydraStaking.address);
+
+      // increase time to allow withdrawal
+      await hre.network.provider.send("evm_increaseTime", [WEEK]);
+      await hre.network.provider.send("evm_mine");
+
+      await hydraStaking.connect(this.signers.validators[0]).withdraw(this.signers.validators[0].address);
+      expect(await hre.ethers.provider.getBalance(hydraStaking.address)).to.equal(balance.sub(stakeAmount));
+    });
+  });
+
   describe("Stake", function () {
     it("should allow only registered or active validators to stake", async function () {
       const { hydraStaking, hydraChain } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);

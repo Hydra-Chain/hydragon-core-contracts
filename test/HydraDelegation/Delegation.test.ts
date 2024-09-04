@@ -59,7 +59,7 @@ export function RunDelegationTests(): void {
       await hre.network.provider.send("evm_increaseTime", [WEEK]);
       await hre.network.provider.send("evm_mine");
 
-      await hydraDelegation.connect(this.signers.delegator).withdraw(this.signers.validators[0].address);
+      await hydraDelegation.connect(this.signers.delegator).withdraw(this.signers.delegator.address);
       expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegation);
     });
   });
