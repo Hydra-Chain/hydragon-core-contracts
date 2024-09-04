@@ -4,9 +4,66 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { ERRORS } from "../constants";
+import { ERRORS, WEEK } from "../constants";
 
 export function RunDelegationTests(): void {
+  describe("Total Delegation", function () {
+    it("should return 0 when no one has delegated", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
+
+      const totalDelegation = await hydraDelegation.totalDelegation();
+      expect(totalDelegation).to.equal(0);
+    });
+
+    it("should add up to total delegation & balance after delegation", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const totalDelegation = await hydraDelegation.totalDelegation();
+      expect(totalDelegation).to.equal(this.minDelegation.mul(2));
+      expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegation);
+    });
+
+    it("should reduce total delegation after undelegation, but balance in contract stays the same", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const delegatedAmount = await hydraDelegation.delegationOf(
+        this.signers.validators[0].address,
+        this.signers.delegator.address
+      );
+      const totalDelegationBefore = await hydraDelegation.totalDelegation();
+
+      await hydraDelegation
+        .connect(this.signers.delegator)
+        .undelegate(this.signers.validators[0].address, delegatedAmount);
+
+      const totalDelegationAfter = await hydraDelegation.totalDelegation();
+      expect(totalDelegationAfter).to.equal(totalDelegationBefore.sub(delegatedAmount));
+      expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegationBefore);
+    });
+
+    it("balance in contract should reduce after withdraw, and it is = to total delegation", async function () {
+      const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+      const delegatedAmount = await hydraDelegation.delegationOf(
+        this.signers.validators[0].address,
+        this.signers.delegator.address
+      );
+
+      await hydraDelegation
+        .connect(this.signers.delegator)
+        .undelegate(this.signers.validators[0].address, delegatedAmount);
+
+      const totalDelegation = await hydraDelegation.totalDelegation();
+
+      // increase time to allow withdrawal
+      await hre.network.provider.send("evm_increaseTime", [WEEK]);
+      await hre.network.provider.send("evm_mine");
+
+      await hydraDelegation.connect(this.signers.delegator).withdraw(this.signers.validators[0].address);
+      expect(await hre.ethers.provider.getBalance(hydraDelegation.address)).to.equal(totalDelegation);
+    });
+  });
+
   describe("Delegate", function () {
     it("should revert when delegating zero amount", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);

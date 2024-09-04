@@ -28,6 +28,7 @@ export function RunHydraDelegationTests(): void {
         expect(hydraDelegation.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await hydraDelegation.owner()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.minDelegation()).to.equal(0);
+        expect(await hydraDelegation.totalDelegation()).to.equal(0);
         expect(await hydraDelegation.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
