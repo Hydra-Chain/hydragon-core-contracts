@@ -446,7 +446,7 @@ Historical Staker Delegation Pool&#39;s Params per delegator
 ### delegationPools
 
 ```solidity
-function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare, address staker)
+function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare)
 ```
 
 Keeps the delegation pools
@@ -466,7 +466,6 @@ Keeps the delegation pools
 | supply | uint256 | undefined |
 | virtualSupply | uint256 | undefined |
 | magnifiedRewardPerShare | uint256 | undefined |
-| staker | address | undefined |
 
 ### distributeDelegationRewards
 
@@ -1053,22 +1052,6 @@ Sets commission for staker.
 | Name | Type | Description |
 |---|---|---|
 | newCommission | uint256 | New commission (100 = 100%) |
-
-### setDelegationPoolStaker
-
-```solidity
-function setDelegationPoolStaker(address staker) external nonpayable
-```
-
-Sets the staker of the DelegationPool.
-
-*The function can be executed only by the HydraChain contract.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | The address of the validator/staker |
 
 ### stakerDelegationCommission
 

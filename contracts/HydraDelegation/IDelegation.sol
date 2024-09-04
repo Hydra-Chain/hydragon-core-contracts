@@ -7,7 +7,6 @@ struct DelegationPool {
     uint256 supply;
     uint256 virtualSupply;
     uint256 magnifiedRewardPerShare;
-    address staker;
     mapping(address => int256) magnifiedRewardCorrections;
     mapping(address => uint256) claimedRewards;
     mapping(address => uint256) balances;

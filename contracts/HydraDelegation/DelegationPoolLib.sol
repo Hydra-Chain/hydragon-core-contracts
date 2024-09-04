@@ -21,9 +21,9 @@ library DelegationPoolLib {
      * @param pool the DelegationPool for rewards to be distributed to
      * @param amount the total amount to be distributed
      */
-    function distributeReward(DelegationPool storage pool, uint256 amount) internal {
+    function distributeReward(DelegationPool storage pool, address staker, uint256 amount) internal {
         if (amount == 0) return;
-        if (pool.virtualSupply == 0) revert NoTokensDelegated(pool.staker);
+        if (pool.virtualSupply == 0) revert NoTokensDelegated(staker);
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 
