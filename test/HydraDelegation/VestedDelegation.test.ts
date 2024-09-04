@@ -1287,7 +1287,7 @@ export function RunVestedDelegationTests(): void {
         expect(positionPendingReward).to.be.equal(expectedReward);
       });
 
-      it("should successfully calculate the pending reward for matured position", async function () {
+      it("should successfully calculate the pending reward for matured position and claim", async function () {
         const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
