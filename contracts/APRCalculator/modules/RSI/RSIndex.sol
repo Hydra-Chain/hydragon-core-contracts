@@ -90,8 +90,8 @@ abstract contract RSIndex is IRSIndex, Price {
             // If the average gain is 0 but average loss is not, the RS index is = 0 and we apply max bonus
             rsindex = 0;
         } else {
-            // If the average loss is 0 or both are 0, the RS index is 100 and there is no bonus
-            rsindex = 100;
+            // If the average loss is 0 or both are 0, the RS index is 10000 and there is no bonus
+            rsindex = 10000;
         }
     }
 

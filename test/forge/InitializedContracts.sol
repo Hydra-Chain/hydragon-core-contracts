@@ -3,16 +3,20 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
-import {HydraChain, ValidatorInit} from "contracts/HydraChain/HydraChain.sol";
-import {HydraStaking, StakerInit} from "contracts/HydraStaking/HydraStaking.sol";
-import {HydraDelegation} from "contracts/HydraDelegation/HydraDelegation.sol";
-import {APRCalculator} from "contracts/APRCalculator/APRCalculator.sol";
-import {RewardWallet} from "contracts/RewardWallet/RewardWallet.sol";
+import {HydraChain, ValidatorInit, IHydraChain} from "contracts/HydraChain/HydraChain.sol";
+import {HydraStaking, StakerInit, IHydraStaking} from "contracts/HydraStaking/HydraStaking.sol";
+import {HydraDelegation, IHydraDelegation} from "contracts/HydraDelegation/HydraDelegation.sol";
+import {APRCalculator, IAPRCalculator} from "contracts/APRCalculator/APRCalculator.sol";
+import {RewardWallet, IRewardWallet} from "contracts/RewardWallet/RewardWallet.sol";
 import {PriceOracle} from "contracts/PriceOracle/PriceOracle.sol";
 import {LiquidityToken} from "contracts/LiquidityToken/LiquidityToken.sol";
-import {VestingManagerFactory} from "contracts/VestingManager/VestingManagerFactory.sol";
+import {VestingManagerFactory, IVestingManagerFactory} from "contracts/VestingManager/VestingManagerFactory.sol";
 import {HydraVault} from "contracts/HydraVault/HydraVault.sol";
 import {BLS, IBLS} from "contracts/BLS/BLS.sol";
+
+/*//////////////////////////////////////////////////////////////////////////
+                                INITIALIZER
+//////////////////////////////////////////////////////////////////////////*/
 
 abstract contract InitializedContracts is Test {
     HydraChain hydraChain;
@@ -43,8 +47,9 @@ abstract contract InitializedContracts is Test {
         bls = new BLS();
 
         governance = address(0x123);
+        vm.startPrank(SYSTEM);
 
-        // Initialize LiquidityToken
+        // ⭐️ Initialize LiquidityToken
         liquidityToken.initialize(
             "Liquidity Token",
             "LQT",
@@ -53,29 +58,29 @@ abstract contract InitializedContracts is Test {
             address(hydraDelegation)
         );
 
-        // Initialize APRCalculator
         // create an array of 310 random numbers between 300 and 600
         uint256[310] memory prices;
         for (uint256 i = 0; i < 309; i++) {
             prices[i] = (uint256(keccak256(abi.encodePacked(block.timestamp, i))) % 300) + 300;
         }
+        // ⭐️ Initialize APRCalculator
         aprCalculator.initialize(governance, address(hydraChain), address(priceOracle), prices);
 
-        // Initialize VestingManagerFactory
+        // ⭐️ Initialize VestingManagerFactory
         vestingManagerFactory.initialize(address(hydraDelegation));
 
-        // Initialize PriceOracle
+        // ⭐️ Initialize PriceOracle
         priceOracle.initialize(address(hydraChain), address(aprCalculator));
 
-        // Initialize RewardWallet
         // Convert fixed-size array to dynamic array
         address[] memory rewardWalletAddresses = new address[](3);
         rewardWalletAddresses[0] = address(hydraChain);
         rewardWalletAddresses[1] = address(hydraStaking);
         rewardWalletAddresses[2] = address(hydraDelegation);
+        // ⭐️ Initialize RewardWallet
         rewardWallet.initialize(rewardWalletAddresses);
 
-        // Validator initialization
+        // Setting initial validators
         validators.push(address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
         uint256[4] memory pubkeys = [
             0x15b9b97130698b3f960bb3a97bd9f87217d2b9a973e72e968b281ca8bc2a3a19,
@@ -101,7 +106,7 @@ abstract contract InitializedContracts is Test {
             stake: 2000000000000000000
         });
 
-        // Initialize HydraChain
+        // ⭐️ Initialize HydraChain
         hydraChain.initialize(
             validatorInit,
             governance,
@@ -113,11 +118,11 @@ abstract contract InitializedContracts is Test {
             IBLS(address(bls))
         );
 
-        // Initialize HydraStaking
+        // ⭐️ Initialize HydraStaking
         hydraStaking.initialize(
             stakerInit,
             governance,
-            0,
+            1 ether,
             address(liquidityToken),
             address(hydraChain),
             address(aprCalculator),
@@ -125,11 +130,11 @@ abstract contract InitializedContracts is Test {
             address(rewardWallet)
         );
 
-        // Initialize HydraDelegation
+        // ⭐️ Initialize HydraDelegation
         hydraDelegation.initialize(
             stakerInit,
             governance,
-            0,
+            1,
             address(liquidityToken),
             address(aprCalculator),
             address(hydraStaking),
@@ -137,5 +142,197 @@ abstract contract InitializedContracts is Test {
             address(vestingManagerFactory),
             address(rewardWallet)
         );
+    }
+}
+
+/*//////////////////////////////////////////////////////////////////////////
+                            INITIALIZATION TEST
+//////////////////////////////////////////////////////////////////////////*/
+
+contract TestInitlizedContracts is InitializedContracts {
+    // APRCalculator
+
+    function test_getBaseAPR() public {
+        assertEq(aprCalculator.getBaseAPR(), 500);
+    }
+
+    function test_getDENOMINATOR() public {
+        assertEq(aprCalculator.getDENOMINATOR(), 10000);
+    }
+
+    function test_getEpochsPerYear() public {
+        assertEq(aprCalculator.getEpochsPerYear(), 31500);
+    }
+
+    function test_getDisabledBonusesUpdates() public {
+        assertEq(aprCalculator.disabledBonusesUpdates(), false);
+    }
+
+    function test_getDefaultMacroFactor() public {
+        assertEq(aprCalculator.defaultMacroFactor(), 7500);
+    }
+
+    function test_getRSI() public view {
+        assert(aprCalculator.rsi() >= 0);
+        assert(aprCalculator.rsi() <= aprCalculator.MAX_RSI_BONUS());
+    }
+
+    function test_getMacroFactor() public view {
+        assert(aprCalculator.macroFactor() >= aprCalculator.MIN_MACRO_FACTOR());
+        assert(aprCalculator.macroFactor() <= aprCalculator.MAX_MACRO_FACTOR());
+    }
+
+    // LiquidityToken
+
+    function test_getName() public {
+        assertEq(liquidityToken.name(), "Liquidity Token");
+    }
+
+    function test_getSymbol() public {
+        assertEq(liquidityToken.symbol(), "LQT");
+    }
+
+    function test_getGovernance() public view {
+        assert(liquidityToken.hasRole(liquidityToken.DEFAULT_ADMIN_ROLE(), governance));
+    }
+
+    function test_getStaking() public view {
+        assert(liquidityToken.hasRole(liquidityToken.SUPPLY_CONTROLLER_ROLE(), address(hydraStaking)));
+    }
+
+    function test_getDelegation() public view {
+        assert(liquidityToken.hasRole(liquidityToken.SUPPLY_CONTROLLER_ROLE(), address(hydraDelegation)));
+    }
+
+    // VestingManagerFactory
+
+    function test_getDelegationAddr() public view {
+        assert(address(vestingManagerFactory.beacon()) != address(0));
+    }
+
+    // PriceOracle
+
+    function test_getHydraChainAddrFromOracle() public view {
+        assert(priceOracle.hydraChainContract() == IHydraChain(address(hydraChain)));
+    }
+
+    function test_getAPRCalculatorAddrFromOracle() public view {
+        assert(priceOracle.aprCalculatorContract() == IAPRCalculator(address(aprCalculator)));
+    }
+
+    // RewardWallet
+
+    function test_getManagersFromRewardWallet() public view {
+        assert(rewardWallet.rewardManagers(address(hydraChain)) == true);
+        assert(rewardWallet.rewardManagers(address(hydraStaking)) == true);
+        assert(rewardWallet.rewardManagers(address(hydraDelegation)) == true);
+    }
+
+    // HydraChain
+
+    function test_getGovernanceFromHydraChain() public view {
+        assert(hydraChain.owner() == governance);
+    }
+
+    function test_getStakingFromHydraChain() public view {
+        assert(hydraChain.hydraStakingContract() == IHydraStaking(address(hydraStaking)));
+    }
+
+    function test_getDelegationFromHydraChain() public view {
+        assert(hydraChain.hydraDelegationContract() == IHydraDelegation(address(hydraDelegation)));
+    }
+
+    function test_getAPRCalculatorFromHydraChain() public view {
+        assert(hydraChain.aprCalculatorContract() == IAPRCalculator(address(aprCalculator)));
+    }
+
+    function test_getRewardWalletFromHydraChain() public view {
+        assert(hydraChain.rewardWalletContract() == IRewardWallet(address(rewardWallet)));
+    }
+
+    function test_getHydraVaultFromHydraChain() public view {
+        assert(hydraChain.daoIncentiveVaultAddr() == address(hydraVault));
+    }
+
+    function test_getBLSFromHydraChain() public view {
+        assert(hydraChain.bls() == IBLS(address(bls)));
+    }
+
+    function test_getValidatorsStatusFromHydraChain() public view {
+        assert(hydraChain.isValidatorActive(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) == true);
+    }
+
+    // HydraStaking
+
+    function test_getGovernanceFromHydraStaking() public view {
+        assert(hydraStaking.owner() == governance);
+    }
+
+    function test_getMinStakeFromHydraStaking() public view {
+        assert(hydraStaking.minStake() == 1 ether);
+    }
+
+    function test_getLiquidityTokenFromHydraStaking() public view {
+        assert(hydraDelegation.liquidToken() == address(liquidityToken));
+    }
+
+    function test_getHydraChainFromHydraStaking() public view {
+        assert(hydraStaking.hydraChainContract() == IHydraChain(address(hydraChain)));
+    }
+
+    function test_getAPRCalculatorFromHydraStaking() public view {
+        assert(hydraStaking.aprCalculatorContract() == IAPRCalculator(address(aprCalculator)));
+    }
+
+    function test_getDelegationFromHydraStaking() public view {
+        assert(hydraStaking.delegationContract() == IHydraDelegation(address(hydraDelegation)));
+    }
+
+    function test_getRewardWalletFromHydraStaking() public view {
+        assert(hydraStaking.rewardWalletContract() == IRewardWallet(address(rewardWallet)));
+    }
+
+    function test_getStakeOfFromHydraStaking() public view {
+        assert(hydraStaking.stakeOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) == 2000000000000000000);
+    }
+
+    // HydraDelegation
+
+    function test_getGovernanceFromHydraDelegation() public view {
+        assert(hydraDelegation.owner() == governance);
+    }
+
+    function test_getInitalCommissionFromHydraDelegation() public view {
+        assert(hydraDelegation.delegationCommissionPerStaker(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) == 1);
+    }
+
+    function test_getLiquidityTokenFromHydraDelegation() public view {
+        assert(hydraDelegation.liquidToken() == address(liquidityToken));
+    }
+
+    function test_getAPRCalculatorFromHydraDelegation() public view {
+        assert(hydraDelegation.aprCalculatorContract() == IAPRCalculator(address(aprCalculator)));
+    }
+
+    function test_getStakingFromHydraDelegation() public view {
+        assert(hydraDelegation.hydraStakingContract() == IHydraStaking(address(hydraStaking)));
+    }
+
+    function test_getHydraChainFromHydraDelegation() public view {
+        assert(hydraDelegation.hydraChainContract() == IHydraChain(address(hydraChain)));
+    }
+
+    function test_getVestingManagerFactoryFromHydraDelegation() public view {
+        assert(
+            hydraDelegation.vestingManagerFactoryContract() == IVestingManagerFactory(address(vestingManagerFactory))
+        );
+    }
+
+    function test_getRewardWalletFromHydraDelegation() public view {
+        assert(hydraDelegation.rewardWalletContract() == IRewardWallet(address(rewardWallet)));
+    }
+
+    function test_getVestingLiquidityDecreasePerWeek() public view {
+        assert(hydraDelegation.vestingLiquidityDecreasePerWeek() == 133);
     }
 }
