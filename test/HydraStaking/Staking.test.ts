@@ -43,10 +43,10 @@ export function RunStakingTests(): void {
       expect(balanceAfter).to.equal(balanceBefore);
     });
 
-    it("balance in contract should reduce after withdraw, and it is = to total stake (in the real chain)", async function () {
+    it("balance in contract should reduce after withdraw, and it is = to total stake (in non-testing environment)", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      // balance and total stake is different here in testing environment, since in the real network we are setting a balance of the contract to the total stake for the initial validators from the Node.
+      // balance and total stake is different here in testing environment, since in the deployed network we are setting a balance of the contract to the total stake for the initial validators from the Node.
       const stakeAmount = await hydraStaking.stakeOf(this.signers.validators[0].address);
       await hydraStaking.connect(this.signers.validators[0]).unstake(stakeAmount);
       const balance = await hre.ethers.provider.getBalance(hydraStaking.address);
