@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@utils/Test.sol";
 
 import {PriceGroupsLib} from "contracts/PriceOracle/libs/PriceGroupsLib.sol";
-import {Groups, PriceGroup} from "contracts/PriceOracle/libs/IPriceGroupsLib.sol";
+import {PriceGroup} from "contracts/PriceOracle/libs/IPriceGroupsLib.sol";
 
 abstract contract EmptyState is Test {
     PriceGroupsMock priceGroupsLib;
@@ -34,7 +34,7 @@ abstract contract MultiState is EmptyState {
 
         // Ensure there is at least one group and one validator
         vm.assume(priceGroupsLib.groupsLenghtGetter() == 1);
-        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 150);
+        vm.assume(priceGroupsLib.getTotalValidators() == 150);
     }
 
     function _fillDifferentGroups(uint256[] memory amounts) internal {
@@ -46,18 +46,18 @@ abstract contract MultiState is EmptyState {
 
         // Ensure there is at least one group and one validator
         vm.assume(priceGroupsLib.groupsLenghtGetter() > 75);
-        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 150);
+        vm.assume(priceGroupsLib.getTotalValidators() == 150);
     }
 
     function _fillWithZero(uint256[] memory amounts) internal {
         for (uint256 i = 0; i < amounts.length; i++) {
             amounts[i] = 0;
-            priceGroupsLib.insert(address(this), amounts[i]);
+            priceGroupsLib.insert(address(0), amounts[i]);
         }
 
         // Ensure there is at least one group and one validator
         vm.assume(priceGroupsLib.groupsLenghtGetter() == 1);
-        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 150);
+        vm.assume(priceGroupsLib.getTotalValidators() == 150);
     }
 
     function _fillWithSpecificNumbers() internal {
@@ -73,7 +73,7 @@ abstract contract MultiState is EmptyState {
 
         // Ensure there is at least one group and one validator
         vm.assume(priceGroupsLib.groupsLenghtGetter() == 1);
-        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 30);
+        vm.assume(priceGroupsLib.getTotalValidators() == 30);
     }
 }
 
@@ -120,7 +120,7 @@ contract PriceGroupsTest_MultiState is MultiState {
         }
     }
 
-    function testZeroPrice() public {
+    function testZeroPriceAndAddress() public {
         uint256[] memory amounts = new uint256[](150);
         _fillWithZero(amounts);
 
@@ -128,7 +128,7 @@ contract PriceGroupsTest_MultiState is MultiState {
         assertEq(groups.length, 1);
         assertEq(groups[0].validators.length, 150);
         for (uint256 i = 0; i < 150; i++) {
-            assertEq(groups[0].validators[i], address(this));
+            assertEq(groups[0].validators[i], address(0));
         }
         assertEq(groups[0].sumPrice, 0);
     }
@@ -148,7 +148,7 @@ contract PriceGroupsTest_MultiState is MultiState {
 
 contract PriceGroupsTest_SingleState is SingleState {
     function testSingleSetUp() public {
-        assertEq(priceGroupsLib.voltedValidatorsGetter(), 1);
+        assertEq(priceGroupsLib.getTotalValidators(), 1);
         assertEq(priceGroupsLib.groupsLenghtGetter(), 1);
         PriceGroup memory currentGroup = priceGroupsLib.priceGroupGetter(0);
         assertEq(currentGroup.sumPrice, 100);
@@ -158,7 +158,7 @@ contract PriceGroupsTest_SingleState is SingleState {
 
     function testInsertDifferentGroup() public {
         priceGroupsLib.insert(address(this), 102);
-        assertEq(priceGroupsLib.voltedValidatorsGetter(), 2);
+        assertEq(priceGroupsLib.getTotalValidators(), 2);
         assertEq(priceGroupsLib.groupsLenghtGetter(), 2);
         PriceGroup memory currentGroup = priceGroupsLib.priceGroupGetter(1);
         assertEq(currentGroup.sumPrice, 102);
@@ -168,7 +168,7 @@ contract PriceGroupsTest_SingleState is SingleState {
 
     function testInsertInSameGroup() public {
         priceGroupsLib.insert(address(this), 101);
-        assertEq(priceGroupsLib.voltedValidatorsGetter(), 2);
+        assertEq(priceGroupsLib.getTotalValidators(), 2);
         assertEq(priceGroupsLib.groupsLenghtGetter(), 1);
         PriceGroup memory currentGroup = priceGroupsLib.priceGroupGetter(0);
         assertEq(currentGroup.sumPrice, 201);
@@ -213,7 +213,7 @@ contract PriceGroupsTest_SingleState is SingleState {
 //////////////////////////////////////////////////////////////////////////*/
 
 contract PriceGroupsMock {
-    Groups priceGroups;
+    PriceGroup[] priceGroups;
 
     function insert(address validator, uint256 price) external {
         PriceGroupsLib.insert(priceGroups, validator, price);
@@ -223,19 +223,19 @@ contract PriceGroupsMock {
         return PriceGroupsLib.getAllGroups(priceGroups);
     }
 
+    function getTotalValidators() external view returns (uint256) {
+        return PriceGroupsLib.getTotalValidators(priceGroups);
+    }
+
     /*//////////////////////////////////////////////////////////////////////////
                                      GETTERS
      //////////////////////////////////////////////////////////////////////////*/
 
-    function voltedValidatorsGetter() external view returns (uint256) {
-        return priceGroups.votedValidators;
-    }
-
     function groupsLenghtGetter() external view returns (uint256) {
-        return priceGroups.groups.length;
+        return priceGroups.length;
     }
 
     function priceGroupGetter(uint256 a) external view returns (PriceGroup memory) {
-        return priceGroups.groups[a];
+        return priceGroups[a];
     }
 }

@@ -93,7 +93,7 @@ export function RunPriceOracleTests(): void {
         .withArgs(21, this.signers.validators[0].address, nextBlockDay);
       expect(await priceOracle.validatorLastVotedDay(this.signers.validators[0].address)).to.equal(nextBlockDay);
 
-      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
+      const pricesForDay = (await priceOracle.getGroupVotesForDay(nextBlockDay)).length;
       expect(pricesForDay).to.equal(1);
     });
 
@@ -105,7 +105,6 @@ export function RunPriceOracleTests(): void {
       await priceOracle.connect(this.signers.validators[0]).vote(21);
       await priceOracle.connect(this.signers.validators[1]).vote(21);
       await priceOracle.connect(this.signers.validators[2]).vote(21);
-      await priceOracle.connect(this.signers.validators[3]).vote(21);
 
       await expect(priceOracle.connect(this.signers.validators[1]).vote(25))
         .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
@@ -128,13 +127,13 @@ export function RunPriceOracleTests(): void {
   describe("Price update", function () {
     const correctVotingTime = getCorrectVotingTimestamp();
 
-    it("should not update price if votes are less than 4, even if they have enough power", async function () {
+    it("should not update price if votes are less than 3 (in a single group), even if they have enough power", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await time.setNextBlockTimestamp(correctVotingTime);
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
-      await priceOracle.connect(this.signers.validators[1]).vote(21);
+      await priceOracle.connect(this.signers.validators[1]).vote(25);
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
     });
 
@@ -159,7 +158,6 @@ export function RunPriceOracleTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(221);
       await priceOracle.connect(this.signers.validators[1]).vote(221);
-      await priceOracle.connect(this.signers.validators[2]).vote(221);
       await expect(priceOracle.connect(this.signers.validators[3]).vote(221))
         .to.emit(priceOracle, "PriceUpdated")
         .withArgs(221, currentDay);
@@ -197,9 +195,9 @@ export function RunPriceOracleTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(price1);
       await priceOracle.connect(this.signers.validators[1]).vote(price2);
-      await priceOracle.connect(this.signers.validators[2]).vote(price3);
+      await priceOracle.connect(this.signers.validators[2]).vote(1);
       // the last vote does not matter, since others already have enough power to update the price
-      await expect(priceOracle.connect(this.signers.validators[3]).vote(1))
+      await expect(priceOracle.connect(this.signers.validators[3]).vote(price3))
         .to.emit(priceOracle, "PriceUpdated")
         .withArgs(expectedPrice, currentDay);
     });

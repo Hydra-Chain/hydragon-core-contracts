@@ -7,7 +7,7 @@ import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {Groups, PriceGroup} from "./libs/IPriceGroupsLib.sol";
+import {PriceGroup} from "./libs/IPriceGroupsLib.sol";
 import {PriceGroupsLib} from "./libs/PriceGroupsLib.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
 
@@ -17,8 +17,8 @@ import {IPriceOracle} from "./IPriceOracle.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    using PriceGroupsLib for Groups;
-    mapping(uint256 => Groups) public priceVotesForDay;
+    using PriceGroupsLib for PriceGroup[];
+    mapping(uint256 => PriceGroup[]) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -68,6 +68,13 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         return priceVotesForDay[day].getAllGroups();
     }
 
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function getTotalVotedValidators(uint256 day) external view returns (uint256) {
+        return priceVotesForDay[day].getTotalValidators();
+    }
+
     // _______________ Public functions _______________
 
     /**
@@ -102,23 +109,23 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        Groups storage priceGroups = priceVotesForDay[day];
-
-        // If there are fewer than 4 validators, there isn't enough data to determine a price
-        if (priceGroups.votedValidators < 4) {
-            return 0;
-        }
+        PriceGroup[] storage priceGroups = priceVotesForDay[day];
 
         // Calculate the needed voting power to reach quorum
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
-        uint256 groupsLength = priceGroups.groups.length;
+        uint256 groupsLength = priceGroups.length;
 
         // Iterate through the price groups to find one that meets the quorum
         for (uint256 i = 0; i < groupsLength; i++) {
-            PriceGroup storage group = priceGroups.groups[i];
-            uint256 powerSum = 0;
+            PriceGroup storage group = priceGroups[i];
             uint256 groupValidatorsLength = group.validators.length;
 
+            // At least 3 validators are needed to calculate the average price
+            if (groupValidatorsLength < 3) {
+                continue;
+            }
+
+            uint256 powerSum = 0;
             // Sum the voting power of all validators in the group
             for (uint256 j = 0; j < groupValidatorsLength; j++) {
                 powerSum += hydraChainContract.getValidatorPower(group.validators[j]);

@@ -202,6 +202,28 @@ Returns the group of validators and their prices they agreed on for the provided
 |---|---|---|
 | _0 | PriceGroup[] | PriceGroup[] The group of validators and their agreed prices |
 
+### getTotalVotedValidators
+
+```solidity
+function getTotalVotedValidators(uint256 day) external view returns (uint256)
+```
+
+Returns the total validators count that voted for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to validators count |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | uint256 The total validators count |
+
 ### hydraChainContract
 
 ```solidity
@@ -261,7 +283,7 @@ function pricePerDay(uint256) external view returns (uint256)
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256) external view returns (uint256 votedValidators)
+function priceVotesForDay(uint256, uint256) external view returns (uint256 sumPrice)
 ```
 
 
@@ -273,12 +295,13 @@ function priceVotesForDay(uint256) external view returns (uint256 votedValidator
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+| _1 | uint256 | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| votedValidators | uint256 | undefined |
+| sumPrice | uint256 | undefined |
 
 ### shouldVote
 
