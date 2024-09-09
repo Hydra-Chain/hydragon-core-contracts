@@ -15,11 +15,11 @@ library PriceGroupsLib {
      * @param validator The validator to insert
      * @param price The price to insert
      * @dev Creates groups, where validators whose prices are within 1% of the average price are grouped together
+     * @dev Make sure to check if validator has already voted before calling the function (in our case, this is done in the vote function)
+     * You can add "hasVoted" mapping to the Group struct, and check if the validator has already voted
      */
     function insert(Groups storage self, address validator, uint256 price) internal {
-        // assert(price != 0);  // This is not needed, as the price is already checked in the calling function
         // assert(validator != address(0)); // This is not needed, as the validator is the msg.sender, who should always be a valid address
-        /// @dev We cannot check if the validator is already in the group, so make sure to check if validator already voted this before calling the function (in our case, this is done in the vote function)
 
         bool groupFound = false;
         uint256 groupsLength = self.groups.length;

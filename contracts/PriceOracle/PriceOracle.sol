@@ -111,10 +111,10 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         // Calculate the needed voting power to reach quorum
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
-        uint256 groupLength = priceGroups.groups.length;
+        uint256 groupsLength = priceGroups.groups.length;
 
         // Iterate through the price groups to find one that meets the quorum
-        for (uint256 i = 0; i < groupLength; i++) {
+        for (uint256 i = 0; i < groupsLength; i++) {
             PriceGroup storage group = priceGroups.groups[i];
             uint256 powerSum = 0;
             uint256 groupValidatorsLength = group.validators.length;

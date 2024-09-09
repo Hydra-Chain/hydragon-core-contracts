@@ -48,6 +48,33 @@ abstract contract MultiState is EmptyState {
         vm.assume(priceGroupsLib.groupsLenghtGetter() > 75);
         vm.assume(priceGroupsLib.voltedValidatorsGetter() == 150);
     }
+
+    function _fillWithZero(uint256[] memory amounts) internal {
+        for (uint256 i = 0; i < amounts.length; i++) {
+            amounts[i] = 0;
+            priceGroupsLib.insert(address(this), amounts[i]);
+        }
+
+        // Ensure there is at least one group and one validator
+        vm.assume(priceGroupsLib.groupsLenghtGetter() == 1);
+        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 150);
+    }
+
+    function _fillWithSpecificNumbers() internal {
+        for (uint256 i = 0; i < 10; i++) {
+            priceGroupsLib.insert(address(this), 10000);
+        }
+        for (uint i = 0; i < 10; i++) {
+            priceGroupsLib.insert(address(this), 10001);
+        }
+        for (uint i = 0; i < 10; i++) {
+            priceGroupsLib.insert(address(this), 9999);
+        }
+
+        // Ensure there is at least one group and one validator
+        vm.assume(priceGroupsLib.groupsLenghtGetter() == 1);
+        vm.assume(priceGroupsLib.voltedValidatorsGetter() == 30);
+    }
 }
 
 contract PriceGroupsTest_MultiState is MultiState {
@@ -91,6 +118,31 @@ contract PriceGroupsTest_MultiState is MultiState {
             }
             prevousGroupValues.push(currentGroupValue);
         }
+    }
+
+    function testZeroPrice() public {
+        uint256[] memory amounts = new uint256[](150);
+        _fillWithZero(amounts);
+
+        PriceGroup[] memory groups = priceGroupsLib.getAllGroups();
+        assertEq(groups.length, 1);
+        assertEq(groups[0].validators.length, 150);
+        for (uint256 i = 0; i < 150; i++) {
+            assertEq(groups[0].validators[i], address(this));
+        }
+        assertEq(groups[0].sumPrice, 0);
+    }
+
+    function testSpecificNumbers() public {
+        _fillWithSpecificNumbers();
+
+        PriceGroup[] memory groups = priceGroupsLib.getAllGroups();
+        assertEq(groups.length, 1);
+        assertEq(groups[0].validators.length, 30);
+        for (uint256 i = 0; i < 30; i++) {
+            assertEq(groups[0].validators[i], address(this));
+        }
+        assertEq(groups[0].sumPrice, 10000 * 30);
     }
 }
 
