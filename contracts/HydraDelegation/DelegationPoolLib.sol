@@ -5,7 +5,7 @@ import "../common/libs/SafeMathInt.sol";
 import {DelegationPool} from "./IDelegation.sol";
 
 // In our version of the contracts we don't use this error
-// error NoTokensDelegated(address staker);
+// error NoTokensDelegated();
 
 /**
  * @title Delegation Pool Lib
@@ -25,7 +25,7 @@ library DelegationPoolLib {
     function distributeReward(DelegationPool storage pool, uint256 amount) internal {
         if (amount == 0) return;
         // In our version of the contracts we cannot hit this case, because virtualSupply will always equal the supply
-        // if (pool.virtualSupply == 0) revert NoTokensDelegated(staker);
+        // if (pool.virtualSupply == 0) revert NoTokensDelegated();
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 
