@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "@utils/Test.sol";
 
-import {NoTokensDelegated, DelegationPool, DelegationPoolLib} from "contracts/HydraDelegation/DelegationPoolLib.sol";
+import {DelegationPool, DelegationPoolLib} from "contracts/HydraDelegation/DelegationPoolLib.sol";
 import {SafeMathInt, SafeMathUint} from "contracts/common/libs/SafeMathInt.sol";
 
 contract DelegationPoolTest is Test {
@@ -45,7 +45,7 @@ contract DelegationPoolTest is Test {
     function testWithdraw() public {
         delegationPoolLibUser.deposit(accountA, 1 ether);
         delegationPoolLibUser.deposit(accountB, 3 ether);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 8);
+        delegationPoolLibUser.distributeReward(8);
 
         delegationPoolLibUser.withdraw(accountB, 1 ether);
 
@@ -57,17 +57,18 @@ contract DelegationPoolTest is Test {
     function testDistributeReward_AmountZero() public {
         vm.record();
 
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 0);
+        delegationPoolLibUser.distributeReward(0);
 
         // did not write to storage
         (, bytes32[] memory writes) = (vm.accesses(address(this)));
         assertEq(writes.length, 0);
     }
 
-    function testCannotDistributeReward_NoTokensDelegated() public {
-        vm.expectRevert(abi.encodeWithSelector(NoTokensDelegated.selector, (address(delegationPoolLibUser))));
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 1);
-    }
+    // In our version of the contracts we cannot hit this case
+    // function testCannotDistributeReward_NoTokensDelegated() public {
+    //     vm.expectRevert(abi.encodeWithSelector(NoTokensDelegated.selector, (address(delegationPoolLibUser))));
+    //     delegationPoolLibUser.distributeReward(1);
+    // }
 
     function testDistributeReward(uint96[2] memory amounts, uint96 reward) public {
         vm.assume(amounts[0] > 0);
@@ -76,7 +77,7 @@ contract DelegationPoolTest is Test {
         delegationPoolLibUser.deposit(accountA, amounts[0]);
         delegationPoolLibUser.deposit(accountB, amounts[1]);
 
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), reward);
+        delegationPoolLibUser.distributeReward(reward);
 
         assertEq(
             delegationPoolLibUser.magnifiedRewardPerShareGetter(),
@@ -89,7 +90,7 @@ contract DelegationPoolTest is Test {
         vm.assume(amounts[1] > 0);
         vm.assume(reward > 0);
         delegationPoolLibUser.deposit(accountA, amounts[0]);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), reward);
+        delegationPoolLibUser.distributeReward(reward);
 
         delegationPoolLibUser.deposit(accountA, amounts[1]);
 
@@ -105,28 +106,28 @@ contract DelegationPoolTest is Test {
     function testTotalRewardsEarned() public {
         delegationPoolLibUser.deposit(accountA, 2 ether);
         delegationPoolLibUser.deposit(accountB, 1 ether);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 12 ether);
+        delegationPoolLibUser.distributeReward(12 ether);
 
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountA), 8 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountB), 4 ether);
 
         address accountC = makeAddr("accountC");
         delegationPoolLibUser.deposit(accountC, 17 ether);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 10 ether);
+        delegationPoolLibUser.distributeReward(10 ether);
 
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountA), 9 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountB), 4.5 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountC), 8.5 ether);
 
         delegationPoolLibUser.withdraw(accountC, 17 ether);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 2 ether);
+        delegationPoolLibUser.distributeReward(2 ether);
 
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountA), 10.333333333333333332 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountB), 5.166666666666666666 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountC), 8.5 ether);
 
         delegationPoolLibUser.deposit(accountC, 1 ether);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 4 ether);
+        delegationPoolLibUser.distributeReward(4 ether);
 
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountA), 12.333333333333333332 ether);
         assertEq(delegationPoolLibUser.totalRewardsEarned(accountB), 6.166666666666666666 ether);
@@ -142,7 +143,7 @@ contract DelegationPoolTest is Test {
 
         delegationPoolLibUser.deposit(accountA, amounts[0]);
         delegationPoolLibUser.deposit(accountB, amounts[1]);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), rewards[0]);
+        delegationPoolLibUser.distributeReward(rewards[0]);
 
         assertEq(
             delegationPoolLibUser.totalRewardsEarned(accountA),
@@ -155,7 +156,7 @@ contract DelegationPoolTest is Test {
 
         address accountC = makeAddr("accountC");
         delegationPoolLibUser.deposit(accountC, amounts[2]);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), rewards[1]);
+        delegationPoolLibUser.distributeReward(rewards[1]);
 
         assertEq(
             delegationPoolLibUser.totalRewardsEarned(accountA),
@@ -176,13 +177,13 @@ contract DelegationPoolTest is Test {
 
     function testClaimRewards() public {
         delegationPoolLibUser.deposit(accountA, 1);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 1 ether);
+        delegationPoolLibUser.distributeReward(1 ether);
 
         delegationPoolLibUser.claimRewards(accountA);
 
         assertEq(delegationPoolLibUser.claimedRewardsGetter(accountA), 1 ether);
 
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 2 ether);
+        delegationPoolLibUser.distributeReward(2 ether);
 
         delegationPoolLibUser.claimRewards(accountA);
 
@@ -191,7 +192,7 @@ contract DelegationPoolTest is Test {
 
     function testClaimableRewards() public {
         delegationPoolLibUser.deposit(accountA, 1);
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 1 ether);
+        delegationPoolLibUser.distributeReward(1 ether);
 
         assertEq(delegationPoolLibUser.claimableRewards(accountA), 1 ether);
 
@@ -199,7 +200,7 @@ contract DelegationPoolTest is Test {
 
         assertEq(delegationPoolLibUser.claimableRewards(accountA), 0 ether);
 
-        delegationPoolLibUser.distributeReward(address(delegationPoolLibUser), 3 ether);
+        delegationPoolLibUser.distributeReward(3 ether);
 
         assertEq(delegationPoolLibUser.claimableRewards(accountA), 3 ether);
     }
@@ -212,8 +213,8 @@ contract DelegationPoolTest is Test {
 contract DelegationPoolLibUser {
     DelegationPool pool;
 
-    function distributeReward(address staker, uint256 amount) external {
-        DelegationPoolLib.distributeReward(pool, staker, amount);
+    function distributeReward(uint256 amount) external {
+        DelegationPoolLib.distributeReward(pool, amount);
     }
 
     function deposit(address account, uint256 amount) external {

@@ -194,7 +194,7 @@ contract Delegation is
      * @param reward Amount to distribute
      */
     function _distributeDelegationRewards(address staker, uint256 reward) internal virtual {
-        delegationPools[staker].distributeReward(staker, reward);
+        delegationPools[staker].distributeReward(reward);
         emit DelegatorRewardDistributed(staker, reward);
     }
 

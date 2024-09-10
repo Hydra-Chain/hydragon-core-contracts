@@ -1684,22 +1684,6 @@ error InvalidWaitPeriod()
 
 
 
-### NoTokensDelegated
-
-```solidity
-error NoTokensDelegated(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
-
 ### NoWithdrawalAvailable
 
 ```solidity
