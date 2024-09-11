@@ -70,6 +70,26 @@ contract DelegationPoolTest is Test {
     //     delegationPoolLibUser.distributeReward(1);
     // }
 
+    function testDistributeReward_EmptyPool(uint96 amount, uint96 reward) public {
+        vm.assume(amount > 1 ether);
+        vm.assume(reward > 10 ether);
+
+        delegationPoolLibUser.deposit(accountA, amount);
+        delegationPoolLibUser.distributeReward(reward);
+
+        delegationPoolLibUser.withdraw(accountA, amount);
+
+        assertEq(delegationPoolLibUser.virtualSupplyGetter(), 0, "VirtualSupply");
+
+        vm.record();
+
+        delegationPoolLibUser.distributeReward(5);
+
+        // did not write to storage
+        (, bytes32[] memory writes) = (vm.accesses(address(this)));
+        assertEq(writes.length, 0);
+    }
+
     function testDistributeReward(uint96[2] memory amounts, uint96 reward) public {
         vm.assume(amounts[0] > 0);
         vm.assume(amounts[1] > 0);
@@ -251,6 +271,10 @@ contract DelegationPoolLibUser {
 
     function supplyGetter() external view returns (uint256) {
         return pool.supply;
+    }
+
+    function virtualSupplyGetter() external view returns (uint256) {
+        return pool.virtualSupply;
     }
 
     function magnifiedRewardPerShareGetter() external view returns (uint256) {

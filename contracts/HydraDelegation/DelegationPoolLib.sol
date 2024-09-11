@@ -24,8 +24,10 @@ library DelegationPoolLib {
      */
     function distributeReward(DelegationPool storage pool, uint256 amount) internal {
         if (amount == 0) return;
-        // In our version of the contracts we cannot hit this case, because virtualSupply will always equal the supply
+        // In our version of the contracts we cannot hit this case, because virtualSupply will always equal the supply.
+        // However, if there is such a case, we should skip the calculation to avoid Panic.
         // if (pool.virtualSupply == 0) revert NoTokensDelegated();
+        if (pool.virtualSupply == 0) return;
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 
