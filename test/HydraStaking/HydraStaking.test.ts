@@ -22,6 +22,7 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.minStake()).to.equal(0);
         expect(await hydraStaking.totalStake()).to.equal(0);
         expect(await hydraStaking.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraStaking.delegationContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
 
         expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
@@ -106,12 +107,11 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.delegationContract(), "delegationContract").to.equal(hydraDelegation.address);
         expect(await hydraStaking.aprCalculatorContract(), "aprCalculatorContract").to.equal(aprCalculator.address);
         expect(await hydraStaking.stakeOf(this.signers.admin.address), "stakeOf").to.equal(this.minStake.mul(2));
+        expect(await hydraStaking.totalBalanceOf(this.signers.admin.address), "stakeOf").to.equal(this.minStake.mul(2));
         expect(
           await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
           "hasRole"
         ).to.be.true;
-
-        expect(await hydraStaking.MIN_STAKE_LIMIT(), "MIN_STAKE_LIMIT").to.equal(this.minStake);
 
         // Liquid Delegation
         expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);
@@ -153,6 +153,52 @@ export function RunHydraStakingTests(): void {
             rewardWallet.address
           )
         ).to.be.revertedWith(ERRORS.initialized);
+      });
+    });
+
+    describe("Total Balance", function () {
+      it("should add up to Total Balance after delegation", async function () {
+        const { hydraStaking, hydraDelegation } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const totalBalance = await hydraStaking.totalBalance();
+
+        await hydraDelegation
+          .connect(this.signers.delegator)
+          .delegate(this.signers.validators[0].address, { value: this.minDelegation });
+
+        expect(await hydraStaking.totalBalance()).to.be.equal(totalBalance.add(this.minDelegation));
+      });
+
+      it("should add up to Total Balance after stake", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+        const totalBalance = await hydraStaking.totalBalance();
+
+        await hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake });
+
+        expect(await hydraStaking.totalBalance()).to.be.equal(totalBalance.add(this.minStake));
+      });
+
+      it("should reduce to Total Balance after undelegate", async function () {
+        const { hydraStaking, hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+        const totalBalance = await hydraStaking.totalBalance();
+
+        await hydraDelegation
+          .connect(this.signers.delegator)
+          .undelegate(this.signers.validators[0].address, this.minStake);
+
+        expect(await hydraStaking.totalBalance()).to.be.equal(totalBalance.sub(this.minStake));
+      });
+
+      it("should reduce to Total Balance after unstake", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const totalBalance = await hydraStaking.totalBalance();
+
+        await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake);
+
+        expect(await hydraStaking.totalBalance()).to.be.equal(totalBalance.sub(this.minStake));
       });
     });
 
