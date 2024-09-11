@@ -91,6 +91,7 @@ abstract contract VestedDelegation is
         // fetch the proper vesting reward params for the matured period
         (uint256 epochRPS, uint256 balance, int256 correction) = _getMaturedRewardParams(
             staker,
+            delegator,
             position,
             epochNumber,
             balanceChangeIndex
@@ -326,6 +327,7 @@ abstract contract VestedDelegation is
         // fetch the proper vesting reward params for the matured period
         (uint256 epochRPS, uint256 balance, int256 correction) = _getMaturedRewardParams(
             staker,
+            msg.sender,
             position,
             epochNumber,
             balanceChangeIndex
@@ -577,12 +579,14 @@ abstract contract VestedDelegation is
     /**
      * @notice Gets the reward parameters for a given position, epoch number and balance change index
      * @param staker Address of the validator
+     * @param manager Address of the vest manager
      * @param position The vested position
      * @param epochNumber Epoch number
      * @param balanceChangeIndex Index of the balance change
      */
     function _getMaturedRewardParams(
         address staker,
+        address manager,
         VestingPosition memory position,
         uint256 epochNumber,
         uint256 balanceChangeIndex
@@ -599,7 +603,7 @@ abstract contract VestedDelegation is
         }
 
         // return the reward params
-        return _rewardParams(staker, msg.sender, alreadyMatured, epochNumber, balanceChangeIndex);
+        return _rewardParams(staker, manager, alreadyMatured, epochNumber, balanceChangeIndex);
     }
 
     /**

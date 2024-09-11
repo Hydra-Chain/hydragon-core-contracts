@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
 import { DAY, ERRORS, WEEK } from "../constants";
-import { commitEpoch, commitEpochs, retrieveRPSData } from "../helper";
+import { commitEpoch, commitEpochs, getClaimableRewardRPSData } from "../helper";
 
 export function RunSwapVestedPositionStakerTests(): void {
   it("should revert when not the vest manager owner", async function () {
@@ -129,7 +129,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 5, this.epochSize, DAY * 3);
 
     // prepare params for call
-    const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
       systemHydraChain,
       hydraDelegation,
       newValidator.address,
@@ -179,7 +179,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(newValidator.address, this.minDelegation);
 
     // verify that there are rewards left to claim
-    const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
       systemHydraChain,
       hydraDelegation,
       newValidator.address,
@@ -187,7 +187,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     );
 
     expect(
-      await hydraDelegation.getDelegatorPositionReward(
+      await hydraDelegation.calculatePositionClaimableReward(
         newValidator.address,
         vestManager.address,
         epochNum,
@@ -304,7 +304,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     expect(rewardsBeforeClaim).to.be.gt(0);
 
     // prepare params for call
-    const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
       systemHydraChain,
       hydraDelegation,
       newValidator.address,
@@ -338,7 +338,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     expect(rewardsBeforeClaim).to.be.gt(0);
 
     // prepare params for call
-    const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
       systemHydraChain,
       hydraDelegation,
       newValidator.address,
@@ -371,7 +371,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     expect(rewardsBeforeClaim, "rewardsBeforeClaim").to.be.gt(0);
 
     // prepare params for call
-    const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
       systemHydraChain,
       hydraDelegation,
       oldValidator.address,

@@ -20,7 +20,7 @@ import { RunVestedDelegationTests } from "./VestedDelegation.test";
 import { LiquidityToken__factory } from "../../typechain-types";
 
 export function RunHydraDelegationTests(): void {
-  describe.only("", function () {
+  describe("", function () {
     describe("HydraDelegation initializations", function () {
       it("should validate default values when HydraDelegation deployed", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.presetHydraChainStateFixture);

@@ -823,7 +823,7 @@ export function RunVestedDelegationTests(): void {
           .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
       });
 
-      it.only("should revert when get reward with late balance", async function () {
+      it("should revert when get reward with late balance", async function () {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, oldValidator, newValidator } =
           await loadFixture(this.fixtures.swappedPositionFixture);
 
@@ -1217,11 +1217,11 @@ export function RunVestedDelegationTests(): void {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, oldValidator, newValidator } =
           await loadFixture(this.fixtures.swappedPositionFixture);
 
-        // commit 4 epochs, 1 week each in order to mature the position and be able to claim
-        await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK + 1);
+        // commit 3 epochs, 1 week each in order to enter maturing period
+        await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 3, this.epochSize, WEEK);
 
         // prepare params for call
-        const { epochNum } = await getClaimableRewardRPSData(
+        const { epochNum } = await getPendingRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           oldValidator.address,
@@ -1270,7 +1270,6 @@ export function RunVestedDelegationTests(): void {
           this.fixtures.vestedDelegationFixture
         );
 
-        // vito
         // prepare params for call
         let { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
