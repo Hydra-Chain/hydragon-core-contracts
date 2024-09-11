@@ -143,7 +143,7 @@ export function RunRSIndexTests(): void {
       await time.setNextBlockTimestamp(correctVotingTime);
 
       for (let i = 1; i < tableDataPrices.length; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
         }
         expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);

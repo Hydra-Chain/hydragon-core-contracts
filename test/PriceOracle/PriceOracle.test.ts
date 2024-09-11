@@ -127,7 +127,7 @@ export function RunPriceOracleTests(): void {
   describe("Price update", function () {
     const correctVotingTime = getCorrectVotingTimestamp();
 
-    it("should not update price if votes are less than 3 (in a single group), even if they have enough power", async function () {
+    it("should not update price if validators do not agree on a price and reach needed power (price rounding to 1%)", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await time.setNextBlockTimestamp(correctVotingTime);
@@ -135,17 +135,20 @@ export function RunPriceOracleTests(): void {
       await priceOracle.connect(this.signers.validators[0]).vote(21);
       await priceOracle.connect(this.signers.validators[1]).vote(25);
       await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
+      await expect(priceOracle.connect(this.signers.validators[3]).vote(28)).to.not.emit(priceOracle, "PriceUpdated");
     });
 
-    it("should not update price, if there is is not enough power for a price (rounding to 1%)", async function () {
-      const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+    it("should not update price if there are less than 3 active validators in a single group", async function () {
+      const { priceOracle, hydraChain } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await time.setNextBlockTimestamp(correctVotingTime);
+      await priceOracle.connect(this.signers.validators[0]).vote(21);
 
-      await priceOracle.connect(this.signers.validators[0]).vote(10);
-      await priceOracle.connect(this.signers.validators[1]).vote(14);
-      await priceOracle.connect(this.signers.validators[2]).vote(18);
-      await expect(priceOracle.connect(this.signers.validators[3]).vote(24)).to.not.emit(priceOracle, "PriceUpdated");
+      const validatorsData = [{ validator: this.signers.validators[0].address, votingPower: 0 }];
+      await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+      await priceOracle.connect(this.signers.validators[1]).vote(21);
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
     });
 
     it("should update price successfully", async function () {

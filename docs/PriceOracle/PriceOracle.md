@@ -6,7 +6,7 @@
 
 
 
-*This contract will be responsible for the price updates. Active validators will be able to vote and agree on the price.*
+*This contract will be responsible for the price updates. Active validators will be able to vote and agree on the price.If a validator is no longer active, but in a group. His vote won&#39;t count as active validator, but the price will be used for the price calculation. (Since we are using the average price of the group)*
 
 ## Methods
 
