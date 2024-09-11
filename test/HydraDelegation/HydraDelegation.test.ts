@@ -692,9 +692,11 @@ export function RunHydraDelegationTests(): void {
     describe("Delegation", function () {
       RunDelegationTests();
     });
+
     describe("VestedDelegation", function () {
       RunVestedDelegationTests();
     });
+
     describe("SwapVestedPosition", function () {
       RunSwapVestedPositionStakerTests();
     });

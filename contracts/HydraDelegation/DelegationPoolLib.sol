@@ -4,8 +4,6 @@ pragma solidity 0.8.17;
 import "../common/libs/SafeMathInt.sol";
 import {DelegationPool} from "./IDelegation.sol";
 
-error NoTokensDelegated(address staker);
-
 /**
  * @title Delegation Pool Lib
  * @author Rosen Santev (Based Polygon Technology's RewardPoolLib)
@@ -22,8 +20,7 @@ library DelegationPoolLib {
      * @param amount the total amount to be distributed
      */
     function distributeReward(DelegationPool storage pool, uint256 amount) internal {
-        if (amount == 0) return;
-        if (pool.virtualSupply == 0) revert NoTokensDelegated(pool.staker);
+        if (amount == 0 || pool.virtualSupply == 0) return;
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 

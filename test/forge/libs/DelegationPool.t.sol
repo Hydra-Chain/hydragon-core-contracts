@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "@utils/Test.sol";
 
-import {NoTokensDelegated, DelegationPool, DelegationPoolLib} from "contracts/HydraDelegation/DelegationPoolLib.sol";
+import {DelegationPool, DelegationPoolLib} from "contracts/HydraDelegation/DelegationPoolLib.sol";
 import {SafeMathInt, SafeMathUint} from "contracts/common/libs/SafeMathInt.sol";
 
 contract DelegationPoolTest is Test {
@@ -64,9 +64,30 @@ contract DelegationPoolTest is Test {
         assertEq(writes.length, 0);
     }
 
-    function testCannotDistributeReward_NoTokensDelegated() public {
-        vm.expectRevert(abi.encodeWithSelector(NoTokensDelegated.selector, (delegationPoolLibUser.validatorGetter())));
-        delegationPoolLibUser.distributeReward(1);
+    // In our version of the contracts we cannot hit this case
+    // function testCannotDistributeReward_NoTokensDelegated() public {
+    //     vm.expectRevert(abi.encodeWithSelector(NoTokensDelegated.selector, (address(delegationPoolLibUser))));
+    //     delegationPoolLibUser.distributeReward(1);
+    // }
+
+    function testDistributeReward_EmptyPool(uint96 amount, uint96 reward) public {
+        vm.assume(amount > 1 ether);
+        vm.assume(reward > 10 ether);
+
+        delegationPoolLibUser.deposit(accountA, amount);
+        delegationPoolLibUser.distributeReward(reward);
+
+        delegationPoolLibUser.withdraw(accountA, amount);
+
+        assertEq(delegationPoolLibUser.virtualSupplyGetter(), 0, "VirtualSupply");
+
+        vm.record();
+
+        delegationPoolLibUser.distributeReward(5);
+
+        // did not write to storage
+        (, bytes32[] memory writes) = (vm.accesses(address(this)));
+        assertEq(writes.length, 0);
     }
 
     function testDistributeReward(uint96[2] memory amounts, uint96 reward) public {
@@ -212,10 +233,6 @@ contract DelegationPoolTest is Test {
 contract DelegationPoolLibUser {
     DelegationPool pool;
 
-    constructor() {
-        pool.staker = address(this);
-    }
-
     function distributeReward(uint256 amount) external {
         DelegationPoolLib.distributeReward(pool, amount);
     }
@@ -256,12 +273,12 @@ contract DelegationPoolLibUser {
         return pool.supply;
     }
 
-    function magnifiedRewardPerShareGetter() external view returns (uint256) {
-        return pool.magnifiedRewardPerShare;
+    function virtualSupplyGetter() external view returns (uint256) {
+        return pool.virtualSupply;
     }
 
-    function validatorGetter() external view returns (address) {
-        return pool.staker;
+    function magnifiedRewardPerShareGetter() external view returns (uint256) {
+        return pool.magnifiedRewardPerShare;
     }
 
     function magnifiedRewardCorrectionsGetter(address a) external view returns (int256) {

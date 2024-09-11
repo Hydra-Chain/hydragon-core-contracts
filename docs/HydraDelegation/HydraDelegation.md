@@ -446,7 +446,7 @@ Historical Staker Delegation Pool&#39;s Params per delegator
 ### delegationPools
 
 ```solidity
-function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare, address staker)
+function delegationPools(address) external view returns (uint256 supply, uint256 virtualSupply, uint256 magnifiedRewardPerShare)
 ```
 
 Keeps the delegation pools
@@ -466,7 +466,6 @@ Keeps the delegation pools
 | supply | uint256 | undefined |
 | virtualSupply | uint256 | undefined |
 | magnifiedRewardPerShare | uint256 | undefined |
-| staker | address | undefined |
 
 ### distributeDelegationRewards
 
@@ -1684,22 +1683,6 @@ error InvalidWaitPeriod()
 
 
 
-
-### NoTokensDelegated
-
-```solidity
-error NoTokensDelegated(address staker)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | undefined |
 
 ### NoWithdrawalAvailable
 
