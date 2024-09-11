@@ -71,6 +71,7 @@ library PriceGroupsLib {
         for (uint256 i = 0; i < groupsLength; i++) {
             totalVotedValidators += self[i].validators.length;
         }
+
         return totalVotedValidators;
     }
 }

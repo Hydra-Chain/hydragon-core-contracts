@@ -15,6 +15,7 @@ import {IPriceOracle} from "./IPriceOracle.sol";
  * @title PriceOracle
  * @dev This contract will be responsible for the price updates.
  * Active validators will be able to vote and agree on the price.
+ * @dev If a validator is no longer active, but in a group. His vote won't count as active validator, but the price will be used for the price calculation. (Since we are using the average price of the group)
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
     using PriceGroupsLib for PriceGroup[];
@@ -119,20 +120,20 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         for (uint256 i = 0; i < groupsLength; i++) {
             PriceGroup storage group = priceGroups[i];
             uint256 groupValidatorsLength = group.validators.length;
-
-            // At least 3 validators are needed to calculate the average price
-            if (groupValidatorsLength < 3) {
-                continue;
-            }
-
             uint256 powerSum = 0;
+            uint256 powerCounter = 0;
             // Sum the voting power of all validators in the group
             for (uint256 j = 0; j < groupValidatorsLength; j++) {
+                uint256 validatorPower = hydraChainContract.getValidatorPower(group.validators[j]);
+                if (validatorPower == 0) {
+                    continue;
+                }
+                powerCounter++;
                 powerSum += hydraChainContract.getValidatorPower(group.validators[j]);
             }
 
-            // If the power sum reaches or exceeds the needed voting power, return the average price
-            if (powerSum >= neededVotingPower) {
+            // If the power sum reaches or exceeds the needed voting power & have at least 3 active validators, return the average price
+            if (powerCounter > 2 && powerSum >= neededVotingPower) {
                 return group.sumPrice / groupValidatorsLength;
             }
         }
