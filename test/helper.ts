@@ -247,7 +247,6 @@ export async function getClaimableRewardRPSData(
   const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
   const maturedIn = await getClosestMaturedTimestamp(position);
 
-  console.log("=== new, maturedIn: ", maturedIn);
   const { epochNum, balanceChangeIndex } = await retrieveRPSData(
     hydraChain,
     hydraDelegation,
@@ -289,7 +288,6 @@ export async function retrieveRPSData(
   // const maturedIn = await getClosestMaturedTimestamp(position);
   const currentEpochId = await hydraChain.currentEpochId();
   const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
-  console.log("=== new, rps values: ", rpsValues);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
   const delegationPoolParamsHistory = await hydraDelegation.getDelegationPoolParamsHistory(validator, manager);
   const balanceChangeIndex = findProperBalanceChangeIndex(

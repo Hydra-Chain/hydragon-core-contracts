@@ -315,7 +315,7 @@ Calculates the delegators&#39;s pending rewards for the position + additional re
 | delegator | address | Address of delegator |
 | maturedReward | uint256 | The reward that has already been matured |
 | epochNumber | uint256 | Epoch where the last reward for the vesting period is distributed |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards for the full position period OLDparam epochNumber Epoch where the last claimable reward is distributed OLDparam balanceChangeIndex Whether to redelegate the claimed rewards for the matured period OLDparam posEndEpochNumber Epoch where the last reward for the vesting period is distributed OLDparam posEndBalChangeIndex Whether to redelegate the claimed rewards for the full position period |
+| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards for the full position period |
 
 #### Returns
 
