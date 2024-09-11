@@ -4,9 +4,6 @@ pragma solidity 0.8.17;
 import "../common/libs/SafeMathInt.sol";
 import {DelegationPool} from "./IDelegation.sol";
 
-// In our version of the contracts we don't use this error
-// error NoTokensDelegated();
-
 /**
  * @title Delegation Pool Lib
  * @author Rosen Santev (Based Polygon Technology's RewardPoolLib)
@@ -23,11 +20,7 @@ library DelegationPoolLib {
      * @param amount the total amount to be distributed
      */
     function distributeReward(DelegationPool storage pool, uint256 amount) internal {
-        if (amount == 0) return;
-        // In our version of the contracts we cannot hit this case, because virtualSupply will always equal the supply.
-        // However, if there is such a case, we should skip the calculation to avoid Panic.
-        // if (pool.virtualSupply == 0) revert NoTokensDelegated();
-        if (pool.virtualSupply == 0) return;
+        if (amount == 0 || pool.virtualSupply == 0) return;
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
     }
 
