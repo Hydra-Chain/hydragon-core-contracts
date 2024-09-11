@@ -238,7 +238,7 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
   return closestIndex;
 }
 
-export async function retrieveRPSData(
+export async function getClaimableRewardRPSData(
   hydraChain: HydraChain,
   hydraDelegation: HydraDelegation,
   validator: string,
@@ -246,8 +246,50 @@ export async function retrieveRPSData(
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
   const maturedIn = await getClosestMaturedTimestamp(position);
+
+  console.log("=== new, maturedIn: ", maturedIn);
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    manager,
+    maturedIn
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function getPendingRewardRPSData(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  manager: string
+) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
+
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    manager,
+    position.end.toNumber()
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function retrieveRPSData(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  manager: string,
+  maturedIn: number
+) {
+  // const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
+  // const maturedIn = await getClosestMaturedTimestamp(position);
   const currentEpochId = await hydraChain.currentEpochId();
   const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
+  console.log("=== new, rps values: ", rpsValues);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
   const delegationPoolParamsHistory = await hydraDelegation.getDelegationPoolParamsHistory(validator, manager);
   const balanceChangeIndex = findProperBalanceChangeIndex(
@@ -255,7 +297,7 @@ export async function retrieveRPSData(
     hre.ethers.BigNumber.from(epochNum)
   );
 
-  return { position, epochNum, balanceChangeIndex };
+  return { epochNum, balanceChangeIndex };
 }
 
 export async function getClosestMaturedTimestamp(position: any) {
@@ -315,11 +357,15 @@ export async function claimPositionRewards(
   vestManager: VestingManager,
   validator: string
 ) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
+  const maturedIn = await getClosestMaturedTimestamp(position);
+
   const { epochNum, balanceChangeIndex } = await retrieveRPSData(
     hydraChain,
     hydraDelegation,
     validator,
-    vestManager.address
+    vestManager.address,
+    maturedIn
   );
   await vestManager.claimVestedPositionReward(validator, epochNum, balanceChangeIndex);
 }
@@ -409,10 +455,19 @@ export async function getDelegatorPositionReward(
   validator: string,
   delegator: string
 ) {
-  // prepare params for call
-  const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
+  const maturedIn = await getClosestMaturedTimestamp(position);
 
-  return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
+  // prepare params for call
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    delegator,
+    maturedIn
+  );
+
+  return await hydraDelegation.calculatePositionClaimableReward(validator, delegator, epochNum, balanceChangeIndex);
 }
 
 // function that returns whether a position is matured or not

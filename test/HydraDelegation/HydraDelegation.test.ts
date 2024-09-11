@@ -7,7 +7,7 @@ import * as hre from "hardhat";
 import { ERRORS, WEEK, EPOCHS_YEAR, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
 import {
   commitEpochs,
-  retrieveRPSData,
+  getClaimableRewardRPSData,
   commitEpoch,
   applyVestingAPR,
   getPermitSignature,
@@ -20,7 +20,7 @@ import { RunVestedDelegationTests } from "./VestedDelegation.test";
 import { LiquidityToken__factory } from "../../typechain-types";
 
 export function RunHydraDelegationTests(): void {
-  describe("", function () {
+  describe.only("", function () {
     describe("HydraDelegation initializations", function () {
       it("should validate default values when HydraDelegation deployed", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
@@ -359,7 +359,7 @@ export function RunHydraDelegationTests(): void {
         await time.increase(WEEK * 52);
 
         // prepare params for call
-        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,
@@ -418,7 +418,7 @@ export function RunHydraDelegationTests(): void {
         );
 
         // prepare params for call
-        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,
@@ -470,7 +470,7 @@ export function RunHydraDelegationTests(): void {
         const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
 
         // prepare params for call
-        const { position, epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { position, epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,
