@@ -40,7 +40,7 @@ interface IVestedStaking {
     function claimStakingRewards(uint256 rewardHistoryIndex) external;
 
     /**
-     * @notice Calculates the staker's pending (unclaimed) position rewards
+     * @notice Calculates the staker's pending position rewards
      * @param staker The address of the staker
      * @param rewardHistoryIndex The index of the reward history to calculate rewards from
      * @return Pending rewards expected by the vested staker's position (in HYDRA wei)

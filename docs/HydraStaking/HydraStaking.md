@@ -227,7 +227,7 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
 ```
 
-Calculates the staker&#39;s pending (unclaimed) position rewards
+Calculates the staker&#39;s pending position rewards
 
 
 

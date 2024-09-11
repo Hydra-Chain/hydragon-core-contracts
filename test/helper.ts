@@ -284,8 +284,6 @@ export async function retrieveRPSData(
   manager: string,
   maturedIn: number
 ) {
-  // const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
-  // const maturedIn = await getClosestMaturedTimestamp(position);
   const currentEpochId = await hydraChain.currentEpochId();
   const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));

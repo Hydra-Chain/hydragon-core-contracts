@@ -102,7 +102,7 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
 ```
 
-Calculates the staker&#39;s pending (unclaimed) position rewards
+Calculates the staker&#39;s pending position rewards
 
 
 
