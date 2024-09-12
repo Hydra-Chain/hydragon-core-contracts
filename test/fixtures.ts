@@ -359,7 +359,7 @@ async function rsiOverSoldConditionFixtureFunction(this: Mocha.Context) {
   await time.setNextBlockTimestamp(correctVotingTime);
 
   for (let i = 0; i !== 15; i++) {
-    for (let j = 0; j !== 4; j++) {
+    for (let j = 0; j !== 3; j++) {
       await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE - i * 35);
     }
     await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
@@ -524,7 +524,6 @@ async function votedValidatorsStateFixtureFunction(this: Mocha.Context) {
   const priceToVote = INITIAL_PRICE * 2;
   await priceOracle.connect(this.signers.validators[0]).vote(priceToVote);
   await priceOracle.connect(this.signers.validators[1]).vote(priceToVote);
-  await priceOracle.connect(this.signers.validators[2]).vote(priceToVote);
 
   return {
     hydraChain,

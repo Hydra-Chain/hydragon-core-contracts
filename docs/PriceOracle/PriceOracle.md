@@ -261,7 +261,7 @@ function pricePerDay(uint256) external view returns (uint256)
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256) external view returns (address head, uint256 size)
+function priceVotesForDay(uint256) external view returns (address head)
 ```
 
 
@@ -279,7 +279,6 @@ function priceVotesForDay(uint256) external view returns (address head, uint256 
 | Name | Type | Description |
 |---|---|---|
 | head | address | undefined |
-| size | uint256 | undefined |
 
 ### shouldVote
 

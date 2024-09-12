@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-struct ValidatorPrice {
-    address validator;
-    uint256 price;
-}
+import {ValidatorPrice, List, Node} from "./ISortedPriceList.sol";
 
 /**
  * @title SortedPriceList Library
@@ -12,17 +9,6 @@ struct ValidatorPrice {
  * @notice library for inserting a validator with a price in a sorted list
  */
 library SortedPriceList {
-    struct Node {
-        uint256 price;
-        address next;
-    }
-
-    struct List {
-        mapping(address => Node) nodes;
-        address head;
-        uint256 size;
-    }
-
     /**
      * @notice Inserts a new validator with a price in the sorted list
      * @param self The list to insert the validator in
@@ -39,11 +25,10 @@ library SortedPriceList {
         Node memory newNode = Node(price, address(0));
 
         // If the new price is smaller or equal to the head, insert at the head (or if the list is empty)
-        if (self.nodes[self.head].price >= price || self.size == 0) {
+        if (self.nodes[self.head].price >= price || self.head == address(0)) {
             newNode.next = self.head;
             self.head = validator;
             self.nodes[validator] = newNode;
-            self.size++;
             return;
         }
 
@@ -57,7 +42,6 @@ library SortedPriceList {
         newNode.next = self.nodes[current].next;
         self.nodes[current].next = validator;
         self.nodes[validator] = newNode;
-        self.size++;
     }
 
     /**
@@ -66,7 +50,6 @@ library SortedPriceList {
      * @return validatorPrices An array of ValidatorPrice structs
      */
     function getAll(List storage self) internal view returns (ValidatorPrice[] memory validatorPrices) {
-        validatorPrices = new ValidatorPrice[](self.size);
         address current = self.head;
         uint256 index = 0;
 

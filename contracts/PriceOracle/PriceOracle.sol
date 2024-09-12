@@ -8,7 +8,8 @@ import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-import {SortedPriceList, ValidatorPrice} from "./SortedPriceList.sol";
+import {ValidatorPrice, List} from "./libs/ISortedPriceList.sol";
+import {SortedPriceList} from "./libs/SortedPriceList.sol";
 
 /**
  * @title PriceOracle
@@ -16,8 +17,8 @@ import {SortedPriceList, ValidatorPrice} from "./SortedPriceList.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    using SortedPriceList for SortedPriceList.List;
-    mapping(uint256 => SortedPriceList.List) public priceVotesForDay;
+    using SortedPriceList for List;
+    mapping(uint256 => List) public priceVotesForDay;
     mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
@@ -101,11 +102,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        SortedPriceList.List storage priceList = priceVotesForDay[day];
-
-        if (priceList.size < 4) {
-            return 0; // Not enough votes to determine
-        }
+        List storage priceList = priceVotesForDay[day];
 
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
 
@@ -117,20 +114,26 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
 
         while (current != address(0)) {
             uint256 currentPrice = priceList.nodes[current].price;
+            uint256 validatorPower = hydraChainContract.getValidatorPower(current);
+
+            if (validatorPower == 0) {
+                current = priceList.nodes[current].next;
+                continue;
+            }
 
             // Check if price is outside 1% range and start a new group
             if (currentPrice > ((sumPrice / count) * 101) / 100) {
                 count = 1;
                 sumPrice = currentPrice;
-                powerSum = hydraChainContract.getValidatorPower(current);
+                powerSum = validatorPower;
             } else {
                 count++;
                 sumPrice += currentPrice;
-                powerSum += hydraChainContract.getValidatorPower(current);
+                powerSum += validatorPower;
             }
 
-            // Check if quorum is reached
-            if (powerSum >= neededVotingPower) {
+            // Check if quorum is reached: 3+ active validators agree on a price, and their power is enough
+            if (count > 2 && powerSum >= neededVotingPower) {
                 return sumPrice / count;
             }
 
