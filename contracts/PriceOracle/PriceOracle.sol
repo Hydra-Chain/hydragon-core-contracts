@@ -19,7 +19,6 @@ import {SortedPriceList} from "./libs/SortedPriceList.sol";
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
     using SortedPriceList for List;
     mapping(uint256 => List) public priceVotesForDay;
-    mapping(address => uint256) public validatorLastVotedDay;
     mapping(uint256 => uint256) public pricePerDay;
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
@@ -49,7 +48,6 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             revert InvalidVote(errMsg);
         }
 
-        validatorLastVotedDay[msg.sender] = day;
         priceVotesForDay[day].insert(msg.sender, price);
 
         emit PriceVoted(price, msg.sender, day);
@@ -66,6 +64,13 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      */
     function getVotesForDay(uint256 day) external view returns (ValidatorPrice[] memory) {
         return priceVotesForDay[day].getAll();
+    }
+
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function getNumberOfValidatorsVotedForDay(uint256 day) external view returns (uint256) {
+        return priceVotesForDay[day].size;
     }
 
     // _______________ Public functions _______________
@@ -87,7 +92,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             return (false, "PRICE_ALREADY_SET");
         }
 
-        if (validatorLastVotedDay[msg.sender] == day) {
+        if (priceVotesForDay[day].nodes[msg.sender].price != 0) {
             return (false, "ALREADY_VOTED");
         }
 

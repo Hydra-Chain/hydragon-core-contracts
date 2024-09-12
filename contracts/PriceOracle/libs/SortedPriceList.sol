@@ -17,9 +17,8 @@ library SortedPriceList {
      * @dev The list is sorted in ascending order
      */
     function insert(List storage self, address validator, uint256 price) internal {
-        assert(price != 0);
         assert(validator != address(0));
-        assert(self.nodes[validator].price == 0);
+        // assert(self.nodes[validator].price == 0); // This check is already done in the vote function
 
         // Create a new node
         Node memory newNode = Node(price, address(0));
@@ -29,6 +28,7 @@ library SortedPriceList {
             newNode.next = self.head;
             self.head = validator;
             self.nodes[validator] = newNode;
+            self.size++;
             return;
         }
 
@@ -42,6 +42,7 @@ library SortedPriceList {
         newNode.next = self.nodes[current].next;
         self.nodes[current].next = validator;
         self.nodes[validator] = newNode;
+        self.size++;
     }
 
     /**
@@ -50,6 +51,7 @@ library SortedPriceList {
      * @return validatorPrices An array of ValidatorPrice structs
      */
     function getAll(List storage self) internal view returns (ValidatorPrice[] memory validatorPrices) {
+        validatorPrices = new ValidatorPrice[](self.size);
         address current = self.head;
         uint256 index = 0;
 

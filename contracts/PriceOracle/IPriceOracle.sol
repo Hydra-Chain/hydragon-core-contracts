@@ -25,6 +25,13 @@ interface IPriceOracle {
      */
     function getVotesForDay(uint256 day) external view returns (ValidatorPrice[] memory);
 
+    /**
+     * @notice Returns number of validators voted for the provided day
+     * @param day The day to get the number
+     * @return uint256 The total number of validators voted
+     */
+    function getNumberOfValidatorsVotedForDay(uint256 day) external view returns (uint256);
+
     // _______________ Public functions _______________
 
     /**

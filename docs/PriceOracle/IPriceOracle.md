@@ -10,6 +10,28 @@
 
 ## Methods
 
+### getNumberOfValidatorsVotedForDay
+
+```solidity
+function getNumberOfValidatorsVotedForDay(uint256 day) external view returns (uint256)
+```
+
+Returns number of validators voted for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to get the number |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | uint256 The total number of validators voted |
+
 ### getVotesForDay
 
 ```solidity

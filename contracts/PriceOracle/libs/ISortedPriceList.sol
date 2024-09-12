@@ -19,6 +19,7 @@ struct Node {
 struct List {
     mapping(address => Node) nodes;
     address head;
+    uint256 size;
 }
 
 /**
