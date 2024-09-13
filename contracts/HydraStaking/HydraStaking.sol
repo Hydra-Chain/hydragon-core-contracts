@@ -216,6 +216,7 @@ contract HydraStaking is
 
     /**
      * @notice Distributes the reward for the given staker.
+     * @notice Validator won't receive a reward in the epoch of exiting his position (stake becomes 0). His delegators will receive a reward for his uptime.
      * @param epochId The epoch id
      * @param uptime The uptime data for the validator (staker)
      * @param fullRewardIndex The full reward index
@@ -232,14 +233,14 @@ contract HydraStaking is
     ) private returns (uint256 reward) {
         require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
 
-        uint256 totalStake = stakeOf(uptime.validator);
-        uint256 commission = _getstakerDelegationCommission(uptime.validator);
+        uint256 stake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
+        uint256 commission = _getstakerDelegationCommission(uptime.validator);
         // slither-disable-next-line divide-before-multiply
-        uint256 stakerRewardIndex = (fullRewardIndex * (totalStake + delegation) * uptime.signedBlocks) /
+        uint256 stakerRewardIndex = (fullRewardIndex * (stake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
-            totalStake,
+            stake,
             delegation,
             stakerRewardIndex,
             commission
@@ -269,7 +270,7 @@ contract HydraStaking is
         uint256 totalReward,
         uint256 commission
     ) private pure returns (uint256, uint256) {
-        if (stakedBalance == 0) return (0, 0);
+        if (stakedBalance == 0) return (0, totalReward);
         if (delegatedBalance == 0) return (totalReward, 0);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
         uint256 delegatorReward = totalReward - stakerReward;
