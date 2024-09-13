@@ -164,14 +164,6 @@ contract ValidatorPricesTest_SingleState is SingleState {
     function testFailInsertSameFromZeroAddress() public {
         sortedPriceList.insert(address(0), 100);
     }
-
-    function testFailInsertZeroAmount() public {
-        sortedPriceList.insert(address(1), 0);
-    }
-
-    function testFailInsertWithAlreadyListedValidator() public {
-        sortedPriceList.insert(address(this), 100);
-    }
 }
 
 /*//////////////////////////////////////////////////////////////////////////
@@ -182,9 +174,6 @@ contract SortedPriceListMock {
     List priceList;
 
     function insert(address validator, uint256 price) external {
-        // This to checks are made in the vote function in our case
-        assert(price != 0);
-        assert(priceList.nodes[validator].price == 0);
         SortedPriceList.insert(priceList, validator, price);
     }
 
