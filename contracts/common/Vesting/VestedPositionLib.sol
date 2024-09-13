@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import {VestingPosition} from "./IVesting.sol";
 
 library VestedPositionLib {
-
     /**
      * @notice Check if the current time is between start and end time of the position
      * @param position Vesting position
@@ -13,6 +12,7 @@ library VestedPositionLib {
     function isActive(VestingPosition memory position) internal view returns (bool) {
         return position.start < block.timestamp && block.timestamp < position.end;
     }
+
     /**
      * @notice Check if the current time is between end of the position, but not all rewards are matured yet (needs double duration for maturing)
      * @param position Vesting position

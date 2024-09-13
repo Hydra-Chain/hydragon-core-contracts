@@ -9,6 +9,26 @@ struct StakingRewardsHistory {
 
 interface IVestedStaking {
     /**
+     * @notice Calculates the staker's vested position claimable (already matured) rewards.
+     * @param staker The address of the staker
+     * @param rewardHistoryIndex The index of the reward history at time that is already matured
+     * @return claimable reward of the staker
+     **/
+    function calculatePositionClaimableReward(
+        address staker,
+        uint256 rewardHistoryIndex
+    ) external view returns (uint256);
+
+    /**
+     * @notice Calculates the staker's total (pending + claimable) rewards.
+     * Pending - such that are not matured so not claimable yet.
+     * Claimable - such that are matured and claimable.
+     * @param staker The address of the staker
+     * @return Pending rewards expected by the vested staker's position (in HYDRA wei)
+     */
+    function calculatePositionTotalReward(address staker) external view returns (uint256);
+
+    /**
      * @notice Returns historical records of the staking rewards of the user
      * @param staker The address of the staker
      * @return stakingRewardsHistory array with the historical records of the staking rewards of the user
@@ -38,12 +58,4 @@ interface IVestedStaking {
      * @param rewardHistoryIndex The index of the reward history to claim rewards from
      */
     function claimStakingRewards(uint256 rewardHistoryIndex) external;
-
-    /**
-     * @notice Calculates the staker's pending position rewards
-     * @param staker The address of the staker
-     * @param rewardHistoryIndex The index of the reward history to calculate rewards from
-     * @return Pending rewards expected by the vested staker's position (in HYDRA wei)
-     */
-    function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256);
 }

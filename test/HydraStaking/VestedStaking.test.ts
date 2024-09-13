@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import * as hre from "hardhat";
 import { expect } from "chai";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 import {
   calculatePenalty,
@@ -11,7 +11,7 @@ import {
   getValidatorReward,
   registerValidator,
 } from "../helper";
-import { HOUR, VESTING_DURATION_WEEKS, WEEK } from "../constants";
+import { VESTING_DURATION_WEEKS, WEEK } from "../constants";
 
 export function RunVestedStakingTests(): void {
   describe("", function () {
@@ -326,14 +326,13 @@ export function RunVestedStakingTests(): void {
       });
     });
 
-    describe("calculatePositionPendingReward()", async function () {
-      it("should calculate the expected rewards when maturing", async function () {
+    describe("calculatePositionTotalReward()", async function () {
+      it("should be bigger than claimable when maturing", async function () {
         const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
-        const penultimate = position.end.sub(1);
-        await time.setNextBlockTimestamp(penultimate.toNumber());
+        await time.setNextBlockTimestamp(position.end.sub(1).toNumber());
         await commitEpochs(
           systemHydraChain,
           hydraStaking,
@@ -341,10 +340,6 @@ export function RunVestedStakingTests(): void {
           1, // number of epochs to commit
           this.epochSize
         );
-
-        // enter maturing state
-        const nextTimestampMaturing = position.end.add(position.duration.div(2));
-        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
 
         // calculate up to which epoch rewards are matured
         const valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
@@ -353,26 +348,34 @@ export function RunVestedStakingTests(): void {
           position.end.sub(position.duration.div(2))
         );
 
-        const stakerRewards = await hydraStaking.calculatePositionPendingReward(
+        // enter maturing state
+        const nextTimestampMaturing = position.end.add(position.duration.div(2));
+        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+        await mine();
+
+        const claimableRewards = await hydraStaking.calculatePositionClaimableReward(
           this.staker.address,
           valRewardHistoryRecordIndex
         );
+        const totalRewards = await hydraStaking.calculatePositionTotalReward(this.staker.address);
 
-        const stakingRewardsHistory = await hydraStaking.stakingRewardsHistory(
-          this.staker.address,
-          valRewardHistoryRecordIndex
-        );
+        expect(totalRewards).to.be.gt(claimableRewards);
+      });
+    });
 
-        expect(stakerRewards).to.equal(stakingRewardsHistory.totalReward);
+    describe("calculatePositionClaimableReward()", async function () {
+      it("should return zero in case active position", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
+
+        expect(await hydraStaking.calculatePositionClaimableReward(this.staker.address, 0)).to.be.eq(0);
       });
 
-      it("should calculate the expected maturing rewards after one claim", async function () {
+      it("should return all rewards in case matured", async function () {
         const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
-        const penultimate = position.end.sub(1);
-        await time.setNextBlockTimestamp(penultimate.toNumber());
+        await time.setNextBlockTimestamp(position.end.sub(1).toNumber());
         await commitEpochs(
           systemHydraChain,
           hydraStaking,
@@ -381,51 +384,14 @@ export function RunVestedStakingTests(): void {
           this.epochSize
         );
 
-        // enter maturing state
-        const nextTimestampMaturing = position.end.add(position.duration.div(2));
-        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+        // enter matured state
+        await time.setNextBlockTimestamp(position.end.add(position.duration).toNumber());
+        await mine();
 
-        // calculate up to which epoch rewards are matured
-        let valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
-        let valRewardHistoryRecordIndex = findProperRPSIndex(
-          valRewardsHistoryRecords,
-          position.end.sub(position.duration.div(2))
-        );
+        const claimableRewards = await hydraStaking.calculatePositionClaimableReward(this.staker.address, 0);
+        const totalRewards = await hydraStaking.calculatePositionTotalReward(this.staker.address);
 
-        const takenRewards = await hydraStaking.calculatePositionPendingReward(
-          this.staker.address,
-          valRewardHistoryRecordIndex
-        );
-
-        await hydraStaking.connect(this.staker)["claimStakingRewards(uint256)"](valRewardHistoryRecordIndex);
-
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          3, // number of epochs to commit
-          this.epochSize,
-          HOUR
-        );
-
-        // calculate again up to which epoch rewards are matured
-        valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
-        valRewardHistoryRecordIndex = findProperRPSIndex(
-          valRewardsHistoryRecords,
-          position.end.sub(position.duration.div(2))
-        );
-
-        const stakingRewardsHistory = await hydraStaking.stakingRewardsHistory(
-          this.staker.address,
-          valRewardHistoryRecordIndex
-        );
-
-        const stakerRewards = await hydraStaking.calculatePositionPendingReward(
-          this.staker.address,
-          valRewardHistoryRecordIndex
-        );
-
-        expect(stakerRewards).to.equal(stakingRewardsHistory.totalReward.sub(takenRewards));
+        expect(totalRewards).to.be.eq(claimableRewards);
       });
     });
   });

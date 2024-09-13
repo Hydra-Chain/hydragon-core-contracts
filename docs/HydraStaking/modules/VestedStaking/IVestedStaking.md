@@ -34,13 +34,13 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 | penalty | uint256 | for the staker |
 | reward | uint256 | of the staker |
 
-### calculatePositionPendingReward
+### calculatePositionTotalReward
 
 ```solidity
-function calculatePositionPendingReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
+function calculatePositionTotalReward(address staker) external view returns (uint256)
 ```
 
-Calculates the staker&#39;s pending position rewards
+Calculates the staker&#39;s total (pending + claimable) rewards. Pending - such that are not matured so not claimable yet. Claimable - such that are matured and claimable.
 
 
 
@@ -49,7 +49,6 @@ Calculates the staker&#39;s pending position rewards
 | Name | Type | Description |
 |---|---|---|
 | staker | address | The address of the staker |
-| rewardHistoryIndex | uint256 | The index of the reward history to calculate rewards from |
 
 #### Returns
 

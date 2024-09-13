@@ -32,6 +32,32 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     /**
      * @inheritdoc IVestedStaking
      */
+    function calculatePositionClaimableReward(
+        address staker,
+        uint256 rewardHistoryIndex
+    ) external view returns (uint256) {
+        VestingPosition memory position = vestedStakingPositions[staker];
+        if (position.isActive()) {
+            return 0;
+        }
+
+        if (position.isMaturing()) {
+            return _calcStakingRewards(staker, rewardHistoryIndex);
+        }
+
+        return unclaimedRewards(staker);
+    }
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
+    function calculatePositionTotalReward(address staker) external view returns (uint256) {
+        return stakingRewards[staker].total;
+    }
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
     function getStakingRewardsHistoryValues(address staker) external view returns (StakingRewardsHistory[] memory) {
         return stakingRewardsHistory[staker];
     }
@@ -89,22 +115,6 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
         rewardWalletContract.distributeReward(msg.sender, rewards);
 
         emit StakingRewardsClaimed(msg.sender, rewards);
-    }
-
-    /**
-     * @inheritdoc IVestedStaking
-     */
-    function calculatePositionPendingReward(
-        address staker,
-        uint256 rewardHistoryIndex
-    ) external view returns (uint256) {
-        StakingRewardsHistory memory rewardData = stakingRewardsHistory[staker][rewardHistoryIndex];
-
-        if (rewardData.totalReward > stakingRewards[staker].taken) {
-            return rewardData.totalReward - stakingRewards[staker].taken;
-        }
-
-        return 0;
     }
 
     // _______________ Internal functions _______________
