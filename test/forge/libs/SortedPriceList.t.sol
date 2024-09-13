@@ -50,18 +50,6 @@ abstract contract MultiState is EmptyState {
         vm.assume(sortedPriceList.getTotalValidators() == 150);
     }
 
-    function _fillWithZeroPrice(uint256[] memory amounts) internal {
-        for (uint256 i = 0; i < amounts.length; i++) {
-            amounts[i] = 0;
-            address randomAddress = vm.addr(uint256(keccak256(abi.encode(i))));
-            sortedPriceList.insert(randomAddress, amounts[i]);
-        }
-
-        // Ensure the total number of validators is 150
-        vm.assume(sortedPriceList.headGetter() != address(0));
-        vm.assume(sortedPriceList.getTotalValidators() == 150);
-    }
-
     function _fillWithSpecificNumbers() internal {
         for (uint256 i = 0; i < 10; i++) {
             address randomAddress = vm.addr(uint256(keccak256(abi.encode(i))));
@@ -114,17 +102,6 @@ contract SortedPriceListTest_MultiState is MultiState {
             assert(list[i].validator != address(0));
             assert(list[i].price >= lastPrice);
             lastPrice = list[i].price;
-        }
-    }
-
-    function testZeroPriceAndAddress() public {
-        uint256[] memory amounts = new uint256[](150);
-        _fillWithZeroPrice(amounts);
-
-        ValidatorPrice[] memory list = sortedPriceList.getAllVotes();
-        assertEq(list.length, 150);
-        for (uint256 i = 0; i < 150; i++) {
-            assertEq(list[i].price, 0);
         }
     }
 
@@ -187,6 +164,14 @@ contract ValidatorPricesTest_SingleState is SingleState {
     function testFailInsertSameFromZeroAddress() public {
         sortedPriceList.insert(address(0), 100);
     }
+
+    function testFailInsertZeroAmount() public {
+        sortedPriceList.insert(address(1), 0);
+    }
+
+    function testFailInsertWithAlreadyListedValidator() public {
+        sortedPriceList.insert(address(this), 100);
+    }
 }
 
 /*//////////////////////////////////////////////////////////////////////////
@@ -197,6 +182,9 @@ contract SortedPriceListMock {
     List priceList;
 
     function insert(address validator, uint256 price) external {
+        // This to checks are made in the vote function in our case
+        assert(price != 0);
+        assert(priceList.nodes[validator].price == 0);
         SortedPriceList.insert(priceList, validator, price);
     }
 

@@ -122,7 +122,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             uint256 validatorPower = hydraChainContract.getValidatorPower(current);
 
             if (validatorPower == 0) {
-                current = priceList.nodes[current].next;
+                current = priceList.getNext(current);
                 continue;
             }
 
@@ -142,7 +142,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
                 return sumPrice / count;
             }
 
-            current = priceList.nodes[current].next;
+            current = priceList.getNext(current);
         }
 
         return 0; // No price meets the requirement

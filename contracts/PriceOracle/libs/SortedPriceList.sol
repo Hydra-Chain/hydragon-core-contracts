@@ -15,10 +15,11 @@ library SortedPriceList {
      * @param validator The validator to insert
      * @param price The price to insert
      * @dev The list is sorted in ascending order
+     * @dev To make sure it works correctly, the price should be greater than 0, and the validator should not have been inserted before (his price should be 0)!
+     * (in our case, we are making those checks in the vote function)
      */
     function insert(List storage self, address validator, uint256 price) internal {
         assert(validator != address(0));
-        // assert(self.nodes[validator].price == 0); // This check is already done in the vote function
 
         // Create a new node
         Node memory newNode = Node(price, address(0));
@@ -30,16 +31,19 @@ library SortedPriceList {
             self.head = validator;
             self.nodes[validator] = newNode;
             self.size++;
+
             return;
         }
 
+        address next = getNext(self, current);
         // Find the correct spot to insert the new node
-        while (self.nodes[current].next != address(0) && price > self.nodes[self.nodes[current].next].price) {
-            current = self.nodes[current].next;
+        while (next != address(0) && price > self.nodes[next].price) {
+            current = getNext(self, current); // change the current node to the next one
+            next = getNext(self, current); // take the next node for updated current
         }
 
         // Insert the new node
-        newNode.next = self.nodes[current].next;
+        newNode.next = next;
         self.nodes[current].next = validator;
         self.nodes[validator] = newNode;
         self.size++;
@@ -57,10 +61,20 @@ library SortedPriceList {
 
         while (current != address(0)) {
             validatorPrices[index] = ValidatorPrice(current, self.nodes[current].price);
-            current = self.nodes[current].next;
+            current = getNext(self, current);
             index++;
         }
 
         return validatorPrices;
+    }
+
+    /**
+     * @notice Returns the next validator in the list
+     * @param self The list to get the next validator from
+     * @param current The current validator
+     * @return address The next validator
+     */
+    function getNext(List storage self, address current) internal view returns (address) {
+        return self.nodes[current].next;
     }
 }
