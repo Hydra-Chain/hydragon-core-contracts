@@ -258,7 +258,7 @@ export async function getClaimableRewardRPSData(
   return { position, epochNum, balanceChangeIndex };
 }
 
-export async function getPendingRewardRPSData(
+export async function getTotalRewardRPSData(
   hydraChain: HydraChain,
   hydraDelegation: HydraDelegation,
   validator: string,

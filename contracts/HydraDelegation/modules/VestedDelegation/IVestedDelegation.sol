@@ -50,18 +50,18 @@ interface IVestedDelegation is IDelegation {
     ) external view returns (uint256);
 
     /**
-     * @notice Calculates the delegators's pending rewards for the position + additional reward, if any
+     * @notice Calculates the delegators's total rewards distributed (pending and claimable).
+     * Pending - such that are not matured so not claimable yet.
+     * Claimable - such that are matured and claimable.
      * @param staker Address of validator
      * @param delegator Address of delegator
-     * @param maturedReward The reward that has already been matured
      * @param epochNumber Epoch where the last reward for the vesting period is distributed
      * @param balanceChangeIndex Whether to redelegate the claimed rewards for the full position period
      * @return reward Pending rewards expected by the delegator from a staker (in HYDRA wei)
      */
-    function calculatePositionPendingReward(
+    function calculatePositionTotalReward(
         address staker,
         address delegator,
-        uint256 maturedReward,
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) external view returns (uint256 reward);

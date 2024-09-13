@@ -59,13 +59,13 @@ Calculates the penalty for the position.
 |---|---|---|
 | penalty | uint256 | undefined |
 
-### calculatePositionPendingReward
+### calculatePositionTotalReward
 
 ```solidity
-function calculatePositionPendingReward(address staker, address delegator, uint256 maturedReward, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
+function calculatePositionTotalReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
-Calculates the delegators&#39;s pending rewards for the position + additional reward, if any
+Calculates the delegators&#39;s total rewards distributed (pending and claimable). Pending - such that are not matured so not claimable yet. Claimable - such that are matured and claimable.
 
 
 
@@ -75,7 +75,6 @@ Calculates the delegators&#39;s pending rewards for the position + additional re
 |---|---|---|
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
-| maturedReward | uint256 | The reward that has already been matured |
 | epochNumber | uint256 | Epoch where the last reward for the vesting period is distributed |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards for the full position period |
 
