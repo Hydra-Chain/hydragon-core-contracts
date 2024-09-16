@@ -227,7 +227,7 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 function calculatePositionClaimableReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
 ```
 
-
+Calculates the staker&#39;s vested position claimable (already matured) rewards.
 
 
 
@@ -235,14 +235,14 @@ function calculatePositionClaimableReward(address staker, uint256 rewardHistoryI
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | undefined |
-| rewardHistoryIndex | uint256 | undefined |
+| staker | address | The address of the staker |
+| rewardHistoryIndex | uint256 | The index of the reward history at time that is already matured |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | claimable reward of the staker* |
 
 ### calculatePositionTotalReward
 

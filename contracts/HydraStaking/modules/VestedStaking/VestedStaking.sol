@@ -52,7 +52,7 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
      * @inheritdoc IVestedStaking
      */
     function calculatePositionTotalReward(address staker) external view returns (uint256) {
-        return stakingRewards[staker].total;
+        return unclaimedRewards(staker);
     }
 
     /**

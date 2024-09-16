@@ -102,7 +102,7 @@ abstract contract VestedDelegation is
         uint256 reward = _applyVestingAPR(position, rewardIndex);
 
         // If the full maturing period is finished, calculate also the reward made after the vesting period
-        if (block.timestamp > position.end + position.duration) {
+        if (block.timestamp >= position.end + position.duration) {
             reward += _calcPositionAdditionalReward(delegationPool, delegator, rewardIndex);
         }
 
@@ -335,7 +335,7 @@ abstract contract VestedDelegation is
         reward = _applyVestingAPR(position, reward);
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
-        if (block.timestamp > position.end + position.duration) {
+        if (block.timestamp >= position.end + position.duration) {
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
             reward += aprCalculatorContract.applyBaseAPR(additionalReward);
         }
@@ -590,13 +590,13 @@ abstract contract VestedDelegation is
     ) private view returns (uint256 rps, uint256 balance, int256 correction) {
         uint256 matureEnd = position.end + position.duration;
         uint256 alreadyMatured;
-        // If full mature period is finished, the full reward up to the end of the vesting must be matured
-        if (matureEnd < block.timestamp) {
-            alreadyMatured = position.end;
-        } else {
-            // rewardPerShare must be fetched from the history records
+        // If full mature period is not finished, rewardPerShare must be fetched from the history records
+        if (block.timestamp < matureEnd) {
             uint256 maturedPeriod = block.timestamp - position.end;
             alreadyMatured = position.start + maturedPeriod;
+        } else {
+            // otherwise the full reward up to the end of the vesting must be matured
+            alreadyMatured = position.end;
         }
 
         // return the reward params
