@@ -28,21 +28,10 @@ interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     function getDENOMINATOR() external pure returns (uint256);
 
     /**
-     * @notice returns the number of epochs per year
-     */
-    function getEpochsPerYear() external pure returns (uint256);
-
-    /**
      * @notice applies the base APR for the given amount
      * @param amount the amount to apply the APR to
      */
     function applyBaseAPR(uint256 amount) external view returns (uint256);
-
-    /**
-     * @notice applies the max reward for the given amount - 52 weeks
-     * @param reward the reward to apply the max reward to
-     */
-    function applyMaxReward(uint256 reward) external view returns (uint256);
 
     /**
      * @notice applies macro factor for the given total staked amount
@@ -64,8 +53,8 @@ interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     function getMaxAPR() external view returns (uint256 nominator, uint256 denominator);
 
     /**
-     * @notice returns the epoch max reward for the given total staked amount
-     * @param totalStaked the total staked amount to apply the max epoch reward to
+     * @notice returns the max yearly reward for the given total staked amount
+     * @param totalStaked the total staked amount to apply the max APR params to
      */
-    function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward);
+    function getMaxYearlyReward(uint256 totalStaked) external view returns (uint256 reward);
 }

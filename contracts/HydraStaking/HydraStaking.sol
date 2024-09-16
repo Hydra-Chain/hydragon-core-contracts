@@ -34,6 +34,7 @@ contract HydraStaking is
 {
     using SafeMathUint for uint256;
 
+    uint256 public lastDistribution; // last rewards distribution timestamp
     /// @notice Mapping used to keep the paid rewards per epoch
     mapping(uint256 => uint256) public distributedRewardPerEpoch;
 
@@ -62,6 +63,7 @@ contract HydraStaking is
     }
 
     function _initialize(StakerInit[] calldata initialStakers) private {
+        lastDistribution = block.timestamp;
         // the amount of stake for all initial stakers will be send as hydra to the contract from the node
         uint256 length = initialStakers.length;
         for (uint256 i = 0; i < length; i++) {
@@ -74,18 +76,14 @@ contract HydraStaking is
     /**
      * @inheritdoc IHydraStaking
      */
-    function distributeRewardsFor(
-        uint256 epochId,
-        Uptime[] calldata uptime,
-        uint256 epochSize
-    ) external onlySystemCall {
+    function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime) external onlySystemCall {
         require(distributedRewardPerEpoch[epochId] == 0, "REWARD_ALREADY_DISTRIBUTED");
 
         uint256 totalBlocks = hydraChainContract.totalBlocks(epochId);
         require(totalBlocks != 0, "EPOCH_NOT_COMMITTED");
 
         uint256 totalSupply = totalBalance();
-        uint256 rewardIndex = _calcRewardIndex(totalSupply, epochSize, totalBlocks);
+        uint256 rewardIndex = _calcRewardIndex(totalSupply);
         uint256 length = uptime.length;
         uint256 totalReward = 0;
         for (uint256 i = 0; i < length; ++i) {
@@ -282,22 +280,16 @@ contract HydraStaking is
     /**
      * Calculates the epoch reward index.
      * We call it index because it is not the actual reward
-     * but only the macroFactor and the blocksCreated/totalEpochBlocks ratio are aplied here.
+     * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are aplied here.
+     * we need to apply the ration because all APR params are yearly
+     * but we distribute rewards only for the time that has passed from last distribution.
      * The participation factor is applied later in the distribution process.
      * (base + vesting and RSI are applied on claimReward for delegators
      * and on _distributeValidatorReward for stakers)
      * @param activeStake Total active stake for the epoch
-     * @param totalBlocks Number of blocks in the epoch
-     * @param epochSize Expected size (number of blocks) of the epoch
      */
-    function _calcRewardIndex(
-        uint256 activeStake,
-        uint256 epochSize,
-        uint256 totalBlocks
-    ) private view returns (uint256) {
-        uint256 modifiedEpochReward = aprCalculatorContract.applyMacro(activeStake);
-
-        return (modifiedEpochReward * totalBlocks) / (epochSize);
+    function _calcRewardIndex(uint256 activeStake) private view returns (uint256) {
+        return ((aprCalculatorContract.applyMacro(activeStake)) * (block.timestamp - lastDistribution)) / 365 days;
     }
 
     // slither-disable-next-line unused-state,naming-convention

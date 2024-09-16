@@ -345,7 +345,7 @@ function delegationContract() external view returns (contract IHydraDelegation)
 ### distributeRewardsFor
 
 ```solidity
-function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external nonpayable
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime) external nonpayable
 ```
 
 
@@ -358,7 +358,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 |---|---|---|
 | epochId | uint256 | undefined |
 | uptime | Uptime[] | undefined |
-| epochSize | uint256 | undefined |
 
 ### distributedRewardPerEpoch
 
@@ -505,6 +504,23 @@ function initialize(StakerInit[] initialStakers, address governance, uint256 new
 | aprCalculatorAddr | address | undefined |
 | hydraDelegationAddr | address | undefined |
 | rewardWalletAddr | address | undefined |
+
+### lastDistribution
+
+```solidity
+function lastDistribution() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### leftToWithdrawPerStaker
 

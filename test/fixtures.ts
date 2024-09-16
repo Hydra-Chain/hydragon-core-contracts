@@ -300,7 +300,7 @@ async function commitEpochTxFixtureFunction(this: Mocha.Context) {
     },
   ];
   const commitEpochTx = await systemHydraChain.commitEpoch(epochId, epoch, this.epochSize, uptime);
-  await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime, this.epochSize);
+  await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime);
 
   return {
     hydraChain,

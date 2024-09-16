@@ -44,23 +44,6 @@ function DENOMINATOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### EPOCHS_YEAR
-
-```solidity
-function EPOCHS_YEAR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### FAST_SMA
 
 ```solidity
@@ -326,28 +309,6 @@ applies macro factor for the given total staked amount
 |---|---|---|
 | reward | uint256 | undefined |
 
-### applyMaxReward
-
-```solidity
-function applyMaxReward(uint256 reward) external view returns (uint256)
-```
-
-applies the max reward for the given amount - 52 weeks
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | the reward to apply the max reward to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### averageGain
 
 ```solidity
@@ -494,45 +455,6 @@ returns the denominator for the APR calculation
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### getEpochMaxReward
-
-```solidity
-function getEpochMaxReward(uint256 totalStaked) external view returns (uint256 reward)
-```
-
-returns the epoch max reward for the given total staked amount
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| totalStaked | uint256 | the total staked amount to apply the max epoch reward to |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| reward | uint256 | undefined |
-
-### getEpochsPerYear
-
-```solidity
-function getEpochsPerYear() external pure returns (uint256)
-```
-
-returns the number of epochs per year
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### getMacroFactor
 
 ```solidity
@@ -567,6 +489,28 @@ returns the max APR for 52 weeks
 |---|---|---|
 | nominator | uint256 | the nominator for the max APR |
 | denominator | uint256 | the denominator for the max APR |
+
+### getMaxYearlyReward
+
+```solidity
+function getMaxYearlyReward(uint256 totalStaked) external view returns (uint256 reward)
+```
+
+returns the max yearly reward for the given total staked amount
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| totalStaked | uint256 | the total staked amount to apply the max APR params to |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| reward | uint256 | undefined |
 
 ### getRSIBonus
 

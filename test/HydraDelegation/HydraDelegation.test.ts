@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { ERRORS, WEEK, EPOCHS_YEAR, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
+import { ERRORS, WEEK, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
 import {
   commitEpochs,
   getClaimableRewardRPSData,
@@ -466,7 +466,7 @@ export function RunHydraDelegationTests(): void {
           await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address)
         ).sub(baseReward);
 
-        const expectedAdditionalReward = base.mul(additionalReward).div(10000).div(EPOCHS_YEAR);
+        const expectedAdditionalReward = base.mul(additionalReward).div(10000);
         const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
 
         // prepare params for call
