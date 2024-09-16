@@ -142,6 +142,18 @@ export function RunInspectorTests(): void {
         .withArgs();
     });
 
+    it("should not ban the validator, if he is not Active anymore (he unstake on his own)", async function () {
+      const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+      const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
+      await hydraStaking.connect(validatorToBan).unstake(stakedAmount);
+
+      await expect(hydraChain.banValidator(validatorToBan.address)).to.be.revertedWithCustomError(
+        hydraChain,
+        "NoBanSubject"
+      );
+    });
+
     it("should ban any validator with governance", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
@@ -180,41 +192,6 @@ export function RunInspectorTests(): void {
         staker.address,
         liquidTokensThatMustBeCollected.mul(-1)
       );
-    });
-
-    it("should ban the validator, even if he succeeded to unstake before that", async function () {
-      const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-      const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
-      await hydraStaking.connect(validatorToBan).unstake(stakedAmount);
-      expect(await hydraChain.isSubjectToBanAfterExit(validatorToBan.address)).to.be.true;
-
-      const banTx = await hydraChain.banValidator(validatorToBan.address);
-
-      expect((await hydraChain.validators(validatorToBan.address)).status, "status").to.be.equal(
-        VALIDATOR_STATUS.Banned
-      );
-      expect((await hydraChain.getValidator(validatorToBan.address)).active, "active").to.be.equal(false);
-      expect(await hydraStaking.stakeOf(validatorToBan.address), "balanceOf").to.be.equal(0);
-      await expect(banTx, "ValidatorBanned").to.emit(hydraChain, "ValidatorBanned").withArgs(validatorToBan.address);
-    });
-
-    it("should ban the validator, even if he succeeded to unstake before that and stake again", async function () {
-      const { hydraChain, validatorToBan, hydraStaking } = await loadFixture(this.fixtures.validatorToBanFixture);
-
-      const stakedAmount = await hydraStaking.stakeOf(validatorToBan.address);
-      await hydraStaking.connect(validatorToBan).unstake(stakedAmount);
-      await hydraStaking.connect(validatorToBan).stake({ value: this.minStake });
-      expect(await hydraChain.isSubjectToBanAfterExit(validatorToBan.address)).to.be.true;
-
-      const banTx = await hydraChain.banValidator(validatorToBan.address);
-
-      expect((await hydraChain.validators(validatorToBan.address)).status, "status").to.be.equal(
-        VALIDATOR_STATUS.Banned
-      );
-      expect((await hydraChain.getValidator(validatorToBan.address)).active, "active").to.be.equal(false);
-      expect(await hydraStaking.stakeOf(validatorToBan.address), "balanceOf").to.be.equal(0);
-      await expect(banTx, "ValidatorBanned").to.emit(hydraChain, "ValidatorBanned").withArgs(validatorToBan.address);
     });
 
     it("should ban and penalize the validator", async function () {

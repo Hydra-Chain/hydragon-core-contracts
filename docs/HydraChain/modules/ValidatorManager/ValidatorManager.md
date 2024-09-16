@@ -334,28 +334,6 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
-### isSubjectToBanAfterExit
-
-```solidity
-function isSubjectToBanAfterExit(address) external view returns (bool)
-```
-
-Mapping that updates on exit if validator is subject to ban
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
 ### isValidatorActive
 
 ```solidity

@@ -128,7 +128,7 @@ contract HydraChain is
      */
     function isSubjectToBan(address validator) public view override returns (bool) {
         // check if the owner (governance) is calling or the validator is already subject to ban on previous exit
-        if (msg.sender == owner() || isSubjectToBanAfterExit[validator]) {
+        if (msg.sender == owner()) {
             return true;
         }
 
@@ -138,32 +138,12 @@ contract HydraChain is
         if (
             validators[validator].status == ValidatorStatus.Active &&
             lastCommittedEndBlock > valiatorParticipation &&
-            lastCommittedEndBlock - validatorsParticipation[validator] >= banThreshold
+            lastCommittedEndBlock - valiatorParticipation >= banThreshold
         ) {
             return true;
         }
 
         return false;
-    }
-
-    // _______________ Internal functions _______________
-
-    /**
-     * @inheritdoc ValidatorManager
-     */
-    function _updateExitParticipation(address validator) internal override {
-        if (isSubjectToBanAfterExit[validator]) {
-            return;
-        }
-
-        uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];
-        uint256 valiatorParticipation = validatorsParticipation[validator];
-        if (
-            lastCommittedEndBlock > valiatorParticipation &&
-            lastCommittedEndBlock - valiatorParticipation >= banThreshold
-        ) {
-            isSubjectToBanAfterExit[validator] = true;
-        }
     }
 
     // slither-disable-next-line unused-state,naming-convention

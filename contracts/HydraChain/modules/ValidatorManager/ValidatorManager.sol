@@ -40,8 +40,6 @@ abstract contract ValidatorManager is
      * less blocks to participate before getting eligible for ban.
      */
     mapping(address => uint256) public validatorsParticipation;
-    /// @notice Mapping that updates on exit if validator is subject to ban
-    mapping(address => bool) public isSubjectToBanAfterExit;
 
     // _______________ Initializer _______________
 
@@ -173,8 +171,6 @@ abstract contract ValidatorManager is
     function deactivateValidator(address account) external onlyHydraStaking {
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;
-        // check if the validator is subject to ban after exit
-        _updateExitParticipation(account);
     }
 
     /**
@@ -208,12 +204,6 @@ abstract contract ValidatorManager is
     function _updateParticipation(address validator) internal {
         validatorsParticipation[validator] = block.number;
     }
-
-    /**
-     * @notice Method used to check if the validator is subject to ban on exit
-     * @param validator address
-     */
-    function _updateExitParticipation(address validator) internal virtual {}
 
     // _______________ Private functions _______________
 
