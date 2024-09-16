@@ -628,6 +628,28 @@ Returns if a given validator is subject to a ban
 |---|---|---|
 | _0 | bool | Returns true if the validator is subject to a ban |
 
+### isSubjectToBanAfterExit
+
+```solidity
+function isSubjectToBanAfterExit(address) external view returns (bool)
+```
+
+Mapping that updates on exit if validator is subject to ban
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isValidatorActive
 
 ```solidity
