@@ -23,7 +23,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
     function __Inspector_init_unchained() internal onlyInitializing {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
-        banThreshold = 123428; // the approximate number of blocks for 72 hours
+        banThreshold = 123428;
     }
 
     // _______________ Modifiers _______________
