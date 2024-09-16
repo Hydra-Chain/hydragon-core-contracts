@@ -30,6 +30,7 @@ export function RunDaoIncentiveTests(): void {
 
       await expect(distributeVaultFundsTx).to.emit(hydraChain, "VaultFundsDistributed").withArgs(reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(reward);
+      expect(await hydraChain.lastDistribution()).to.be.equal(latestTimestamp);
     });
 
     it("should have reward for 2 stakers with min stake", async function () {

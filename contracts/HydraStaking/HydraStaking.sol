@@ -91,6 +91,7 @@ contract HydraStaking is
         }
 
         distributedRewardPerEpoch[epochId] = totalReward;
+        lastDistribution = block.timestamp;
     }
 
     // _______________ Public functions _______________
