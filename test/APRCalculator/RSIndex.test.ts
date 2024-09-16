@@ -34,7 +34,7 @@ export function RunRSIndexTests(): void {
       );
 
       for (let i = 0; i <= 15; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE + i * 35);
         }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
@@ -60,7 +60,7 @@ export function RunRSIndexTests(): void {
       const averageLoss = await aprCalculator.averageLoss();
 
       // vote price 5 times bigger to update the average gain and loss
-      for (let j = 0; j !== 4; j++) {
+      for (let j = 0; j !== 3; j++) {
         await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE * 5);
       }
 
@@ -70,7 +70,7 @@ export function RunRSIndexTests(): void {
 
       // vote price again and see if the average gain and loss are updated properly
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
-      for (let j = 0; j !== 4; j++) {
+      for (let j = 0; j !== 3; j++) {
         await priceOracle.connect(this.signers.validators[j]).vote(1);
       }
 
@@ -86,7 +86,7 @@ export function RunRSIndexTests(): void {
       const currentPrice = await aprCalculator.latestDailyPrice();
 
       for (let i = 0; i !== 21; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await priceOracle.connect(this.signers.validators[j]).vote(currentPrice.add(1000000));
         }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
@@ -99,7 +99,7 @@ export function RunRSIndexTests(): void {
       expect(await aprCalculator.rsi()).to.be.equal(0);
 
       for (let i = 0; i !== 3; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await priceOracle.connect(this.signers.validators[j]).vote(currentPrice);
         }
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
@@ -143,7 +143,7 @@ export function RunRSIndexTests(): void {
       await time.setNextBlockTimestamp(correctVotingTime);
 
       for (let i = 1; i < tableDataPrices.length; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
         }
         expect(await newAprCalculator.rsi()).to.be.equal(tableDataRSI[i]);
@@ -186,8 +186,7 @@ export function RunRSIndexTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(INITIAL_PRICE / 2);
       await priceOracle.connect(this.signers.validators[1]).vote(INITIAL_PRICE / 2);
-      await priceOracle.connect(this.signers.validators[2]).vote(INITIAL_PRICE / 2);
-      await expect(priceOracle.connect(this.signers.validators[3]).vote(INITIAL_PRICE / 2)).to.emit(
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(INITIAL_PRICE / 2)).to.emit(
         aprCalculator,
         "RSIBonusSet"
       );
@@ -205,7 +204,7 @@ export function RunRSIndexTests(): void {
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY);
       await aprCalculator.connect(this.signers.governance).disableGuard();
       // update the price again (smaller than the current price) to update the average gain and loss
-      for (let j = 0; j !== 4; j++) {
+      for (let j = 0; j !== 3; j++) {
         await priceOracle.connect(this.signers.validators[j]).vote(INITIAL_PRICE / 2);
       }
 

@@ -1,10 +1,11 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { ERRORS } from "../constants";
-import { getCorrectVotingTimestamp, getCurrentDay } from "../helper";
+import * as mcl from "../../ts/mcl";
+import { CHAIN_ID, DAY, DOMAIN, ERRORS, INITIAL_PRICE, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { commitEpoch, getCorrectVotingTimestamp, getCurrentDay } from "../helper";
 
 export function RunPriceOracleTests(): void {
   describe("Initialization", function () {
@@ -90,11 +91,10 @@ export function RunPriceOracleTests(): void {
       await expect(priceOracle.connect(this.signers.validators[0]).vote(21))
         .to.emit(priceOracle, "PriceVoted")
         .withArgs(21, this.signers.validators[0].address, nextBlockDay);
-      expect(await priceOracle.validatorLastVotedDay(this.signers.validators[0].address)).to.equal(nextBlockDay);
 
-      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay, [0]);
-      expect(pricesForDay.price).to.equal(21);
-      expect(pricesForDay.validator).to.equal(this.signers.validators[0].address);
+      const pricesForDay = await priceOracle.priceVotesForDay(nextBlockDay);
+      expect(pricesForDay.head).to.equal(this.signers.validators[0].address);
+      expect(pricesForDay.size).to.equal(1);
     });
 
     it("should revert vote when price for the day is updated", async function () {
@@ -105,7 +105,6 @@ export function RunPriceOracleTests(): void {
       await priceOracle.connect(this.signers.validators[0]).vote(21);
       await priceOracle.connect(this.signers.validators[1]).vote(21);
       await priceOracle.connect(this.signers.validators[2]).vote(21);
-      await priceOracle.connect(this.signers.validators[3]).vote(21);
 
       await expect(priceOracle.connect(this.signers.validators[1]).vote(25))
         .to.be.revertedWithCustomError(priceOracle, "InvalidVote")
@@ -128,14 +127,49 @@ export function RunPriceOracleTests(): void {
   describe("Price update", function () {
     const correctVotingTime = getCorrectVotingTimestamp();
 
-    it("should not update price if votes are less than 4, even if they have enough power", async function () {
+    it("should not update price if votes are less than 3 active validators vote for price, even if others have enough power", async function () {
+      const { priceOracle, hydraChain } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+      await time.setNextBlockTimestamp(correctVotingTime);
+
+      await priceOracle.connect(this.signers.validators[0]).vote(21);
+      const validatorsData = [
+        { validator: this.signers.validators[0].address, votingPower: 0 },
+        { validator: this.signers.validators[1].address, votingPower: 50 },
+        { validator: this.signers.validators[2].address, votingPower: 50 },
+      ];
+      await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+      await priceOracle.connect(this.signers.validators[1]).vote(21);
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
+    });
+
+    it("should not update price if not enough power is reached", async function () {
+      const { priceOracle, hydraChain } = await loadFixture(this.fixtures.validatorsDataStateFixture);
+
+      await time.setNextBlockTimestamp(correctVotingTime);
+
+      const validatorsData = [
+        { validator: this.signers.validators[0].address, votingPower: 1 },
+        { validator: this.signers.validators[1].address, votingPower: 1 },
+        { validator: this.signers.validators[2].address, votingPower: 1 },
+      ];
+      await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+      await priceOracle.connect(this.signers.validators[0]).vote(21);
+      await priceOracle.connect(this.signers.validators[1]).vote(21);
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
+    });
+
+    it("should not update price if validators vote for different prices", async function () {
       const { priceOracle } = await loadFixture(this.fixtures.validatorsDataStateFixture);
 
       await time.setNextBlockTimestamp(correctVotingTime);
 
       await priceOracle.connect(this.signers.validators[0]).vote(21);
-      await priceOracle.connect(this.signers.validators[1]).vote(21);
-      await expect(priceOracle.connect(this.signers.validators[2]).vote(21)).to.not.emit(priceOracle, "PriceUpdated");
+      await priceOracle.connect(this.signers.validators[1]).vote(25);
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(30)).to.not.emit(priceOracle, "PriceUpdated");
+      await expect(priceOracle.connect(this.signers.validators[3]).vote(35)).to.not.emit(priceOracle, "PriceUpdated");
     });
 
     it("should not update price, if there is is not enough power for a price (rounding to 1%)", async function () {
@@ -159,8 +193,7 @@ export function RunPriceOracleTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(221);
       await priceOracle.connect(this.signers.validators[1]).vote(221);
-      await priceOracle.connect(this.signers.validators[2]).vote(221);
-      await expect(priceOracle.connect(this.signers.validators[3]).vote(221))
+      await expect(priceOracle.connect(this.signers.validators[2]).vote(221))
         .to.emit(priceOracle, "PriceUpdated")
         .withArgs(221, currentDay);
       expect(await priceOracle.pricePerDay(currentDay)).to.equal(221);
@@ -197,9 +230,8 @@ export function RunPriceOracleTests(): void {
 
       await priceOracle.connect(this.signers.validators[0]).vote(price1);
       await priceOracle.connect(this.signers.validators[1]).vote(price2);
-      await priceOracle.connect(this.signers.validators[2]).vote(price3);
-      // the last vote does not matter, since others already have enough power to update the price
-      await expect(priceOracle.connect(this.signers.validators[3]).vote(1))
+      await priceOracle.connect(this.signers.validators[2]).vote(1);
+      await expect(priceOracle.connect(this.signers.validators[3]).vote(price3))
         .to.emit(priceOracle, "PriceUpdated")
         .withArgs(expectedPrice, currentDay);
     });
@@ -221,6 +253,63 @@ export function RunPriceOracleTests(): void {
       await expect(lastVote).to.emit(newPriceOracleContract, "PriceUpdateFailed");
       await expect(lastVote).to.not.emit(newPriceOracleContract, "PriceUpdated");
       expect(await newPriceOracleContract.pricePerDay(currentDay)).to.equal(0);
+    });
+  });
+
+  describe.skip("Price Many voters", function () {
+    it("should vote with many validators", async function () {
+      const { systemHydraChain, hydraStaking, priceOracle } = await loadFixture(
+        this.fixtures.validatorsDataStateFixture
+      );
+      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(5);
+
+      const keyPair = mcl.newKeyPair();
+      const provider = ethers.provider;
+      const initialBalance = ethers.utils.parseEther("100000");
+      const newValidatorAddresses = [];
+
+      // * Whitelist & Register & Stake & Update Power
+      for (let i = 5; i < MAX_ACTIVE_VALIDATORS; i++) {
+        console.log("Validator", i);
+        // create a new wallet and signature
+        const wallet = ethers.Wallet.createRandom();
+        const connectedWallet = wallet.connect(provider);
+        const validatorsData = [{ validator: wallet.address, votingPower: 20 }];
+        const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
+
+        // send eth to wallet
+        await network.provider.send("hardhat_setBalance", [
+          wallet.address,
+          initialBalance.toHexString().replace(/^0x0+/, "0x"),
+        ]);
+
+        // whitelist, register & stake
+        await systemHydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
+        await systemHydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+        await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
+        await systemHydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+        newValidatorAddresses.push(connectedWallet);
+      }
+      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(MAX_ACTIVE_VALIDATORS);
+      await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[0]], this.epochSize);
+      const correctVotingTime = getCorrectVotingTimestamp();
+      await time.setNextBlockTimestamp(correctVotingTime + 10 * DAY);
+
+      for (let i = 1; i < 92; i++) {
+        let valueToVote;
+        if (i % 2 === 0) {
+          valueToVote = INITIAL_PRICE + INITIAL_PRICE * (i / 100000);
+        } else {
+          valueToVote = INITIAL_PRICE - INITIAL_PRICE * (i / 100000);
+        }
+        console.log("Vote", i + " : ", valueToVote);
+        await priceOracle.connect(newValidatorAddresses[i]).vote(valueToVote * 1000);
+      }
+      await expect(priceOracle.connect(newValidatorAddresses[100]).vote(INITIAL_PRICE * 1000)).to.emit(
+        priceOracle,
+        "PriceUpdated"
+      );
     });
   });
 }

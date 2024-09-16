@@ -112,7 +112,7 @@ export function RunMacroFactorTests(): void {
       await time.setNextBlockTimestamp(correctVotingTime);
 
       for (let i = SLOW_SMA - initialDataPrices.length; i < tableDataPrices.length; i++) {
-        for (let j = 0; j !== 4; j++) {
+        for (let j = 0; j !== 3; j++) {
           await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
         }
 

@@ -7,7 +7,9 @@ import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {IPriceOracle, PriceForValidator} from "./IPriceOracle.sol";
+import {IPriceOracle} from "./IPriceOracle.sol";
+import {ValidatorPrice, List} from "./libs/ISortedPriceList.sol";
+import {SortedPriceList} from "./libs/SortedPriceList.sol";
 
 /**
  * @title PriceOracle
@@ -15,8 +17,8 @@ import {IPriceOracle, PriceForValidator} from "./IPriceOracle.sol";
  * Active validators will be able to vote and agree on the price.
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
-    mapping(uint256 => PriceForValidator[]) public priceVotesForDay;
-    mapping(address => uint256) public validatorLastVotedDay;
+    using SortedPriceList for List;
+    mapping(uint256 => List) public priceVotesForDay;
     mapping(uint256 => uint256) public pricePerDay;
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
@@ -46,10 +48,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             revert InvalidVote(errMsg);
         }
 
-        validatorLastVotedDay[msg.sender] = day;
-
-        PriceForValidator memory priceForValidator = PriceForValidator({price: price, validator: msg.sender});
-        priceVotesForDay[day].push(priceForValidator);
+        priceVotesForDay[day].insert(msg.sender, price);
 
         emit PriceVoted(price, msg.sender, day);
 
@@ -58,6 +57,20 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         if (availablePrice != 0) {
             _updatePrice(availablePrice, day);
         }
+    }
+
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function getVotesForDay(uint256 day) external view returns (ValidatorPrice[] memory) {
+        return priceVotesForDay[day].getAll();
+    }
+
+    /**
+     * @inheritdoc IPriceOracle
+     */
+    function getNumberOfValidatorsVotedForDay(uint256 day) external view returns (uint256) {
+        return priceVotesForDay[day].size;
     }
 
     // _______________ Public functions _______________
@@ -79,7 +92,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
             return (false, "PRICE_ALREADY_SET");
         }
 
-        if (validatorLastVotedDay[msg.sender] == day) {
+        if (priceVotesForDay[day].nodes[msg.sender].price != 0) {
             return (false, "ALREADY_VOTED");
         }
 
@@ -94,47 +107,42 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Price if available, 0 otherwise
      */
     function _calcPriceWithQuorum(uint256 day) internal view returns (uint256) {
-        PriceForValidator[] memory prices = priceVotesForDay[day];
-        uint256 len = prices.length;
-
-        if (len < 4) {
-            return 0; // Not enough votes to determine
-        }
+        List storage priceList = priceVotesForDay[day];
 
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
 
-        // Sort prices in ascending order
-        for (uint256 i = 0; i < len - 1; i++) {
-            for (uint256 j = i + 1; j < len; j++) {
-                if (prices[i].price > prices[j].price) {
-                    PriceForValidator memory temp = prices[i];
-                    prices[i] = prices[j];
-                    prices[j] = temp;
-                }
-            }
-        }
-
-        // Check for suitable price
-        uint256 count = 1; // set to 1 to avoid division by 0
+        // Iterate through the sorted list directly
+        address current = priceList.head;
+        uint256 count = 1;
         uint256 sumPrice = 0;
         uint256 powerSum = 0;
-        for (uint256 i = 0; i < len; i++) {
-            uint256 currentPriceIndex = prices[i].price;
-            if (currentPriceIndex > ((sumPrice / count) * 101) / 100) {
-                // If price is outside 1% range, start a new group
-                count = 1;
-                sumPrice = currentPriceIndex;
-                powerSum = hydraChainContract.getValidatorPower(prices[i].validator);
-            } else {
-                // If price is within 1% range, add it to the group
-                count++;
-                sumPrice += currentPriceIndex;
-                powerSum += hydraChainContract.getValidatorPower(prices[i].validator);
+
+        while (current != address(0)) {
+            uint256 currentPrice = priceList.nodes[current].price;
+            uint256 validatorPower = hydraChainContract.getValidatorPower(current);
+
+            if (validatorPower == 0) {
+                current = priceList.getNext(current);
+                continue;
             }
 
-            if (powerSum >= neededVotingPower) {
-                return sumPrice / count; // Return the average price of the group
+            // Check if price is outside 1% range and start a new group
+            if (currentPrice > ((sumPrice / count) * 101) / 100) {
+                count = 1;
+                sumPrice = currentPrice;
+                powerSum = validatorPower;
+            } else {
+                count++;
+                sumPrice += currentPrice;
+                powerSum += validatorPower;
             }
+
+            // Check if quorum is reached: 3+ active validators agree on a price, and their power is enough
+            if (count > 2 && powerSum >= neededVotingPower) {
+                return sumPrice / count;
+            }
+
+            current = priceList.getNext(current);
         }
 
         return 0; // No price meets the requirement

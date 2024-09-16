@@ -180,6 +180,50 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
+### getNumberOfValidatorsVotedForDay
+
+```solidity
+function getNumberOfValidatorsVotedForDay(uint256 day) external view returns (uint256)
+```
+
+Returns number of validators voted for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to get the number |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | uint256 The total number of validators voted |
+
+### getVotesForDay
+
+```solidity
+function getVotesForDay(uint256 day) external view returns (struct ValidatorPrice[])
+```
+
+Returns the votes for the provided day
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| day | uint256 | The day to get the votes |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | ValidatorPrice[] | ValidatorPrice[] The votes for the provided day |
+
 ### hydraChainContract
 
 ```solidity
@@ -239,7 +283,7 @@ function pricePerDay(uint256) external view returns (uint256)
 ### priceVotesForDay
 
 ```solidity
-function priceVotesForDay(uint256, uint256) external view returns (uint256 price, address validator)
+function priceVotesForDay(uint256) external view returns (address head, uint256 size)
 ```
 
 
@@ -251,14 +295,13 @@ function priceVotesForDay(uint256, uint256) external view returns (uint256 price
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-| _1 | uint256 | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| price | uint256 | undefined |
-| validator | address | undefined |
+| head | address | undefined |
+| size | uint256 | undefined |
 
 ### shouldVote
 
@@ -282,28 +325,6 @@ Returns true if the validator can vote for the provided day
 |---|---|---|
 | _0 | bool | true if the validator can vote |
 | _1 | string | error message if the validator cannot vote |
-
-### validatorLastVotedDay
-
-```solidity
-function validatorLastVotedDay(address) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 ### vote
 
