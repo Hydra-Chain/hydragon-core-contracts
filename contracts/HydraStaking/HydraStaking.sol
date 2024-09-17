@@ -247,7 +247,7 @@ contract HydraStaking is
         );
 
         _distributeStakingReward(uptime.validator, stakerShares);
-        distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
+        _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
         // Keep history record of the staker rewards to be used on maturing vesting reward claim
         if (stakerShares > 0) {
