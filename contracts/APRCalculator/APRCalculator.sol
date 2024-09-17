@@ -7,7 +7,6 @@ import {IAPRCalculator} from "./IAPRCalculator.sol";
 
 contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     uint256 public constant INITIAL_BASE_APR = 500;
-    uint256 public constant EPOCHS_YEAR = 31500;
 
     uint256 public base;
     uint256[52] public vestingBonus;
@@ -57,13 +56,6 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     /**
      * @inheritdoc IAPRCalculator
      */
-    function getEpochsPerYear() public pure returns (uint256) {
-        return EPOCHS_YEAR;
-    }
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
     function getVestingBonus(uint256 weeksCount) public view returns (uint256 nominator) {
         return vestingBonus[weeksCount - 1];
     }
@@ -74,33 +66,17 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
         uint256 vestBonus = getVestingBonus(52);
 
-        nominator = (base + vestBonus) * macroFactor * MAX_RSI_BONUS;
-        denominator = 10000 * 10000 * 10000;
+        nominator = (base + vestBonus) * MAX_MACRO_FACTOR * MAX_RSI_BONUS;
+        denominator = 10000 ** 3;
     }
 
     /**
      * @inheritdoc IAPRCalculator
      */
-    function applyMaxReward(uint256 reward) public view returns (uint256) {
-        // max vesting bonus is 52 weeks
-        uint256 vestBonus = getVestingBonus(52);
+    function getMaxYearlyReward(uint256 totalStaked) public view returns (uint256 reward) {
+        (uint256 nominator, uint256 denominator) = getMaxAPR();
 
-        uint256 bonus = (base + vestBonus) * MAX_RSI_BONUS;
-
-        return ((reward * bonus) / (10000 * 10000)) / EPOCHS_YEAR;
-    }
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function getEpochMaxReward(uint256 totalStaked) public view returns (uint256 reward) {
-        uint256 nominator;
-        uint256 denominator;
-
-        (nominator, denominator) = getMaxAPR();
-
-        // Divide to EPOCHS_YEAR because result is yearly
-        return (totalStaked * nominator) / denominator / EPOCHS_YEAR;
+        return (totalStaked * nominator) / denominator;
     }
 
     /**
@@ -114,7 +90,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
      * @inheritdoc IAPRCalculator
      */
     function applyBaseAPR(uint256 amount) public view returns (uint256) {
-        return (amount * base) / DENOMINATOR / EPOCHS_YEAR;
+        return (amount * base) / DENOMINATOR;
     }
 
     // _______________ Internal functions _______________

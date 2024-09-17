@@ -4,7 +4,6 @@ import { expect } from "chai";
 import {
   ARRAY_310_ELEMENTS,
   DENOMINATOR,
-  EPOCHS_YEAR,
   ERRORS,
   FAST_SMA,
   INITIAL_BASE_APR,
@@ -16,7 +15,6 @@ import {
   SLOW_SMA,
 } from "../constants";
 import { ethers } from "hardhat";
-import { applyMaxReward } from "../helper";
 import { RunPriceTests } from "./Price.test";
 import { RunRSIndexTests } from "./RSIndex.test";
 import { RunMacroFactorTests } from "./MacroFactor.test";
@@ -30,7 +28,6 @@ export function RunAPRCalculatorTests(): void {
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.base()).to.equal(0);
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
-        expect(await aprCalculator.EPOCHS_YEAR()).to.be.equal(EPOCHS_YEAR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
 
         // RSIndex
@@ -129,34 +126,25 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         const base = await aprCalculator.base();
-        const macroFactor = await aprCalculator.macroFactor();
+        const macroFactor = await aprCalculator.MAX_MACRO_FACTOR();
         const vestingBonus = await aprCalculator.getVestingBonus(52);
         const rsiBonus = await aprCalculator.MAX_RSI_BONUS();
         const nominator = base.add(vestingBonus).mul(macroFactor).mul(rsiBonus);
         const denominator = DENOMINATOR.mul(DENOMINATOR).mul(DENOMINATOR);
-
         const maxAPR = await aprCalculator.getMaxAPR();
+
         expect(maxAPR.nominator).to.be.equal(nominator);
         expect(maxAPR.denominator).to.be.equal(denominator);
       });
 
-      it("should apply max rewards", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        const reward = ethers.BigNumber.from(10);
-        const maxReward = await applyMaxReward(aprCalculator, reward);
-
-        expect(await aprCalculator.applyMaxReward(reward)).to.be.equal(maxReward);
-      });
-
-      it("should get epoch max reward", async function () {
+      it("should get max yearly reward", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         const totalStaked = ethers.BigNumber.from(1000);
         const maxAPR = await aprCalculator.getMaxAPR();
-        const maxEpochReward = totalStaked.mul(maxAPR.nominator).div(maxAPR.denominator).div(EPOCHS_YEAR);
+        const maxYearlyReward = totalStaked.mul(maxAPR.nominator).div(maxAPR.denominator);
 
-        expect(await aprCalculator.getEpochMaxReward(totalStaked)).to.be.equal(maxEpochReward);
+        expect(await aprCalculator.getMaxYearlyReward(totalStaked)).to.be.equal(maxYearlyReward);
       });
     });
 

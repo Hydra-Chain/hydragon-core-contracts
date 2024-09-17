@@ -46,10 +46,7 @@ abstract contract Vesting is APRCalculatorConnector {
      * @param reward index The reward to which we gonna apply the custom APR
      * @return The reward with the applied APR
      */
-    function _applyVestingAPR(
-        VestingPosition memory position,
-        uint256 reward
-    ) internal view returns (uint256) {
+    function _applyVestingAPR(VestingPosition memory position, uint256 reward) internal view returns (uint256) {
         uint256 bonus = (position.base + position.vestBonus);
         uint256 divider = aprCalculatorContract.getDENOMINATOR();
         if (position.rsiBonus != 0) {
@@ -57,7 +54,7 @@ abstract contract Vesting is APRCalculatorConnector {
             divider *= divider;
         }
 
-        return (reward * bonus) / divider / aprCalculatorContract.getEpochsPerYear();
+        return (reward * bonus) / divider;
     }
 
     /**

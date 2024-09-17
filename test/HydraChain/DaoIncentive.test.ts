@@ -1,9 +1,9 @@
 /* eslint-disable node/no-extraneous-import */
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
 
-import { EPOCHS_YEAR, ERRORS } from "../constants";
+import { ERRORS } from "../constants";
 
 export function RunDaoIncentiveTests(): void {
   describe("distributeDAOIncentive", function () {
@@ -16,15 +16,21 @@ export function RunDaoIncentiveTests(): void {
     });
 
     it("should distribute funds to the vault", async function () {
-      const { hydraChain, distributeVaultFundsTx, hydraStaking } = await loadFixture(
-        this.fixtures.distributeVaultFundsFixture
-      );
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
+      const lastDistribution = await hydraChain.lastDistribution();
+      const distributeVaultFundsTx = await hydraChain.connect(this.signers.system).distributeDAOIncentive();
+      const latestTimestamp = await time.latest();
       const totalSupply = await hydraStaking.totalBalance();
-      const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
+      const reward = totalSupply
+        .mul(200)
+        .div(10000)
+        .mul(ethers.BigNumber.from(latestTimestamp).sub(lastDistribution))
+        .div(time.duration.days(365));
 
       await expect(distributeVaultFundsTx).to.emit(hydraChain, "VaultFundsDistributed").withArgs(reward);
       expect(await hydraChain.vaultDistribution()).to.be.equal(reward);
+      expect(await hydraChain.lastDistribution()).to.be.equal(latestTimestamp);
     });
 
     it("should have reward for 2 stakers with min stake", async function () {
@@ -45,12 +51,17 @@ export function RunDaoIncentiveTests(): void {
     });
 
     it("should claim vault funds", async function () {
-      const { hydraChain, hydraStaking, DAOIncentiveVault } = await loadFixture(
-        this.fixtures.distributeVaultFundsFixture
-      );
+      const { hydraChain, hydraStaking, DAOIncentiveVault } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
       const totalSupply = await hydraStaking.totalBalance();
-      const reward = totalSupply.mul(200).div(10000).div(EPOCHS_YEAR);
+      const lastDistribution = await hydraChain.lastDistribution();
+      await hydraChain.connect(this.signers.system).distributeDAOIncentive();
+      const latestTimestamp = await time.latest();
+      const reward = totalSupply
+        .mul(200)
+        .div(10000)
+        .mul(ethers.BigNumber.from(latestTimestamp).sub(lastDistribution))
+        .div(time.duration.days(365));
       const claimVaultFundsTx = await hydraChain.claimVaultFunds();
 
       await expect(claimVaultFundsTx).to.emit(hydraChain, "VaultFunded").withArgs(reward);

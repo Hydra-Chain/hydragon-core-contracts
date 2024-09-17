@@ -19,6 +19,7 @@ abstract contract DaoIncentive is
 {
     address public daoIncentiveVaultAddr;
     uint256 public vaultDistribution;
+    uint256 public lastDistribution; // timestamp of the last distribution
 
     // _______________ Initializer _______________
 
@@ -34,6 +35,7 @@ abstract contract DaoIncentive is
 
     function __DaoIncentive_init_unchained(address _daoIncentiveVaultAddr) internal {
         daoIncentiveVaultAddr = _daoIncentiveVaultAddr;
+        lastDistribution = block.timestamp;
     }
 
     // _______________ External functions _______________
@@ -42,8 +44,9 @@ abstract contract DaoIncentive is
      * @inheritdoc IDaoIncentive
      */
     function distributeDAOIncentive() external onlySystemCall {
-        uint256 reward = ((hydraStakingContract.totalBalance() * 200) / 10000) /
-            aprCalculatorContract.getEpochsPerYear();
+        uint256 reward = (((hydraStakingContract.totalBalance() * 200) / 10000) *
+            (block.timestamp - lastDistribution)) / 365 days;
+        lastDistribution = block.timestamp;
         vaultDistribution += reward;
 
         emit VaultFundsDistributed(reward);

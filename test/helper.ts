@@ -7,7 +7,7 @@ import { BigNumber, ContractTransaction } from "ethers";
 
 import * as mcl from "../ts/mcl";
 import { Fixtures, Signers } from "./mochaContext";
-import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, EPOCHS_YEAR, SYSTEM, WEEK } from "./constants";
+import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, SYSTEM, WEEK } from "./constants";
 import {
   APRCalculator,
   HydraChain,
@@ -99,7 +99,7 @@ export async function commitEpoch(
 
   const distributeRewardsTx = await hydraStaking
     .connect(systemHydraChain.signer)
-    .distributeRewardsFor(currEpochId, validatorsUptime, epochSize);
+    .distributeRewardsFor(currEpochId, validatorsUptime);
 
   return { commitEpochTx, distributeRewardsTx, distributeVaultFundsTx };
 }
@@ -391,7 +391,7 @@ export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNu
   const vestBonus = await aprCalculator.getVestingBonus(52);
 
   // calculate expected reward
-  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
+  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR));
 }
 
 export async function calculateRSIBonus(averageGain: number, averageLoss: number) {
@@ -426,7 +426,7 @@ export function applyVestingAPR(base: BigNumber, vestBonus: BigNumber, rsiBonus:
     divider = divider.mul(DENOMINATOR);
   }
 
-  return reward.mul(bonus).div(divider).div(EPOCHS_YEAR);
+  return reward.mul(bonus).div(divider);
 }
 
 export async function createManagerAndVest(
@@ -530,8 +530,9 @@ export async function getPermitSignature(
   );
 }
 
-// function that calculates the position reward and applies the vesting APR
-export async function calculateExpectedPositionRewardWithVestingAPR(
+// function that calculates the position expected (not matured) reward.
+// It works for still active positions only
+export async function calcExpectedPositionRewardForActivePosition(
   hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string

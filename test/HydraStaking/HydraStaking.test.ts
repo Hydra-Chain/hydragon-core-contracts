@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import * as hre from "hardhat";
 import { expect } from "chai";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { commitEpoch } from "../helper";
 import { ERRORS, WEEK } from "../constants";
@@ -112,6 +112,7 @@ export function RunHydraStakingTests(): void {
           await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
           "hasRole"
         ).to.be.true;
+        expect(await hydraStaking.lastDistribution()).to.not.equal(0);
 
         // Liquid Delegation
         expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);
@@ -153,6 +154,22 @@ export function RunHydraStakingTests(): void {
             rewardWallet.address
           )
         ).to.be.revertedWith(ERRORS.initialized);
+      });
+    });
+
+    describe("lastDistribution", function () {
+      it("should update on reward distribution", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+        const rewardingValidator = this.signers.validators[0];
+
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [rewardingValidator, this.signers.validators[1]],
+          this.epochSize
+        );
+
+        expect((await hydraStaking.lastDistribution()).toNumber()).to.be.equal(await time.latest());
       });
     });
 

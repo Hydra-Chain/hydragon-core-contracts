@@ -119,6 +119,7 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.aprCalculatorContract()).to.equal(aprCalculator.address);
         expect(await hydraChain.rewardWalletContract()).to.equal(rewardWallet.address);
         expect(await hydraChain.daoIncentiveVaultAddr()).to.equal(DAOIncentiveVault.address);
+        expect(await hydraChain.lastDistribution()).to.not.equal(0);
 
         // Validator Manager
         expect(await hydraChain.bls()).to.equal(bls.address);

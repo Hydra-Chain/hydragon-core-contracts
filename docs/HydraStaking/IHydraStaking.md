@@ -79,7 +79,7 @@ Claims staking rewards for the sender.
 ### distributeRewardsFor
 
 ```solidity
-function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSize) external nonpayable
+function distributeRewardsFor(uint256 epochId, Uptime[] uptime) external nonpayable
 ```
 
 
@@ -92,7 +92,6 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime, uint256 epochSiz
 |---|---|---|
 | epochId | uint256 | undefined |
 | uptime | Uptime[] | undefined |
-| epochSize | uint256 | undefined |
 
 ### liquidToken
 
