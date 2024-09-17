@@ -84,6 +84,8 @@ contract HydraStaking is
 
         uint256 totalSupply = totalBalance();
         uint256 rewardIndex = _calcRewardIndex(totalSupply);
+        lastDistribution = block.timestamp;
+
         uint256 length = uptime.length;
         uint256 totalReward = 0;
         for (uint256 i = 0; i < length; ++i) {
@@ -91,7 +93,6 @@ contract HydraStaking is
         }
 
         distributedRewardPerEpoch[epochId] = totalReward;
-        lastDistribution = block.timestamp;
     }
 
     // _______________ Public functions _______________
