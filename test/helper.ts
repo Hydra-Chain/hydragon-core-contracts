@@ -530,8 +530,9 @@ export async function getPermitSignature(
   );
 }
 
-// function that calculates the position reward and applies the vesting APR
-export async function calculateExpectedPositionRewardWithVestingAPR(
+// function that calculates the position expected (not matured) reward.
+// It works for still active positions only
+export async function calcExpectedPositionRewardForActivePosition(
   hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string
