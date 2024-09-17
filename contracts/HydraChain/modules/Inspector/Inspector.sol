@@ -95,9 +95,6 @@ abstract contract Inspector is IInspector, ValidatorManager {
             }
 
             hydraStakingContract.penalizeStaker(validator, rewards);
-        }
-
-        if (validators[validator].status == ValidatorStatus.Active) {
             activeValidatorsCount--;
         }
 

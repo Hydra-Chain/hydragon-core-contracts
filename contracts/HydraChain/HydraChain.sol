@@ -10,7 +10,7 @@ import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
-import {ValidatorManager, ValidatorInit} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {ValidatorManager, ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
@@ -127,16 +127,24 @@ contract HydraChain is
      * @return Returns true if the validator is subject to a ban
      */
     function isSubjectToBan(address validator) public view override returns (bool) {
-        uint256 lastCommittedEndBlock = epochs[currentEpochId - 1].endBlock;
-        // check if the threshold is reached when the method is not executed by the owner (governance)
-        if (msg.sender != owner() && lastCommittedEndBlock - validatorsParticipation[validator] < banThreshold) {
-            return false;
+        // check if the owner (governance) is calling or the validator is already subject to ban on previous exit
+        if (msg.sender == owner()) {
+            return true;
         }
 
-        return true;
-    }
+        uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];
+        uint256 valiatorParticipation = validatorsParticipation[validator];
+        // check if the validator is active and the last participation is less than the threshold
+        if (
+            validators[validator].status == ValidatorStatus.Active &&
+            lastCommittedEndBlock > valiatorParticipation &&
+            lastCommittedEndBlock - valiatorParticipation >= banThreshold
+        ) {
+            return true;
+        }
 
-    // _______________ Internal functions _______________
+        return false;
+    }
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
