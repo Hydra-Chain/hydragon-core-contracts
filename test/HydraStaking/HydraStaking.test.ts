@@ -24,6 +24,7 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.delegationContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(await hydraStaking.lastDistribution()).to.be.equal(0);
 
         expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
 
