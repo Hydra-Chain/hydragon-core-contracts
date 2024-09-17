@@ -7,9 +7,9 @@ import * as hre from "hardhat";
 import { ERRORS, WEEK, EPOCHS_YEAR, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
 import {
   commitEpochs,
-  retrieveRPSData,
+  getClaimableRewardRPSData,
   commitEpoch,
-  calculateExpectedReward,
+  applyVestingAPR,
   getPermitSignature,
   calcLiquidTokensToDistributeOnVesting,
 } from "../helper";
@@ -359,7 +359,7 @@ export function RunHydraDelegationTests(): void {
         await time.increase(WEEK * 52);
 
         // prepare params for call
-        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,
@@ -371,7 +371,7 @@ export function RunHydraDelegationTests(): void {
           "claimVestedPositionReward"
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "INVALID_EPOCH");
+          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
 
         // commit epoch
         await commitEpoch(
@@ -386,7 +386,7 @@ export function RunHydraDelegationTests(): void {
           "claimVestedPositionReward2"
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "WRONG_RPS");
+          .withArgs("vesting", ERRORS.vesting.wrongRPS);
       });
 
       it("should properly claim reward when not fully matured", async function () {
@@ -406,7 +406,7 @@ export function RunHydraDelegationTests(): void {
         const base = await aprCalculator.base();
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
-        const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
 
         // commit epoch, so more reward is added that must not be claimed now
         await commitEpoch(
@@ -418,7 +418,7 @@ export function RunHydraDelegationTests(): void {
         );
 
         // prepare params for call
-        const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,
@@ -451,7 +451,7 @@ export function RunHydraDelegationTests(): void {
         const base = await aprCalculator.base();
         const vestBonus = await aprCalculator.getVestingBonus(1);
         const rsi = await aprCalculator.rsi();
-        const expectedReward = await calculateExpectedReward(base, vestBonus, rsi, baseReward);
+        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
 
         // more rewards to be distributed
         await commitEpoch(
@@ -470,7 +470,7 @@ export function RunHydraDelegationTests(): void {
         const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
 
         // prepare params for call
-        const { position, epochNum, balanceChangeIndex } = await retrieveRPSData(
+        const { position, epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
           hydraDelegation,
           delegatedValidator.address,

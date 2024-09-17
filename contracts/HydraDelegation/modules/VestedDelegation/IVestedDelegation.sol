@@ -34,7 +34,7 @@ interface IVestedDelegation is IDelegation {
     error NotVestingManager();
 
     /**
-     * @notice Gets delegators's matured unclaimed rewards for a position
+     * @notice Calculates position's claimable rewards
      * @param staker Address of validator
      * @param delegator Address of delegator
      * @param epochNumber Epoch where the last claimable reward is distributed
@@ -42,12 +42,29 @@ interface IVestedDelegation is IDelegation {
      * @param balanceChangeIndex Whether to redelegate the claimed rewards
      * @return Delegator's unclaimed rewards with staker (in HYDRA wei)
      */
-    function getDelegatorPositionReward(
+    function calculatePositionClaimableReward(
         address staker,
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) external view returns (uint256);
+
+    /**
+     * @notice Calculates the delegators's total rewards distributed (pending and claimable).
+     * Pending - such that are not matured so not claimable yet.
+     * Claimable - such that are matured and claimable.
+     * @param staker Address of validator
+     * @param delegator Address of delegator
+     * @param epochNumber Epoch where the last reward for the vesting period is distributed
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards for the full position period
+     * @return reward Pending rewards expected by the delegator from a staker (in HYDRA wei)
+     */
+    function calculatePositionTotalReward(
+        address staker,
+        address delegator,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external view returns (uint256 reward);
 
     /**
      * @notice Gets the RPS values for a staker in a given epoch range.
@@ -119,7 +136,8 @@ interface IVestedDelegation is IDelegation {
     function swapVestedPositionStaker(address oldStaker, address newStaker) external;
 
     /**
-     * @notice Claims reward for the vest manager (delegator).
+     * @notice Claims reward for the vest manager (delegator) and distribute it to the desired address.
+     * @dev It can be called only by the vest manager
      * @param staker Validator to claim from
      * @param to Address to transfer the reward to
      * @param epochNumber Epoch where the last claimable reward is distributed

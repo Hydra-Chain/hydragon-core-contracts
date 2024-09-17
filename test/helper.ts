@@ -238,7 +238,7 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
   return closestIndex;
 }
 
-export async function retrieveRPSData(
+export async function getClaimableRewardRPSData(
   hydraChain: HydraChain,
   hydraDelegation: HydraDelegation,
   validator: string,
@@ -246,6 +246,44 @@ export async function retrieveRPSData(
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
   const maturedIn = await getClosestMaturedTimestamp(position);
+
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    manager,
+    maturedIn
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function getTotalRewardRPSData(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  manager: string
+) {
+  const position = await hydraDelegation.vestedDelegationPositions(validator, manager);
+
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    manager,
+    position.end.toNumber()
+  );
+
+  return { position, epochNum, balanceChangeIndex };
+}
+
+export async function retrieveRPSData(
+  hydraChain: HydraChain,
+  hydraDelegation: HydraDelegation,
+  validator: string,
+  manager: string,
+  maturedIn: number
+) {
   const currentEpochId = await hydraChain.currentEpochId();
   const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
   const epochNum = findProperRPSIndex(rpsValues, hre.ethers.BigNumber.from(maturedIn));
@@ -255,7 +293,7 @@ export async function retrieveRPSData(
     hre.ethers.BigNumber.from(epochNum)
   );
 
-  return { position, epochNum, balanceChangeIndex };
+  return { epochNum, balanceChangeIndex };
 }
 
 export async function getClosestMaturedTimestamp(position: any) {
@@ -316,10 +354,16 @@ export async function claimPositionRewards(
   validator: string
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, vestManager.address);
-  const currentEpochId = await hydraChain.currentEpochId();
-  const rpsValues = await hydraDelegation.getRPSValues(validator, 0, currentEpochId);
-  const rpsIndex = findProperRPSIndex(rpsValues, position.end);
-  await vestManager.claimVestedPositionReward(validator, rpsIndex, 0);
+  const maturedIn = await getClosestMaturedTimestamp(position);
+
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    vestManager.address,
+    maturedIn
+  );
+  await vestManager.claimVestedPositionReward(validator, epochNum, balanceChangeIndex);
 }
 
 export async function createNewVestManager(vestingManagerFactory: VestingManagerFactory, owner: SignerWithAddress) {
@@ -339,19 +383,6 @@ export async function attachAddressToVestingManager(address: string) {
   const attachedManager: VestingManager = VestManagerFactory.attach(address);
 
   return attachedManager;
-}
-
-export async function calculateExpectedReward(
-  base: BigNumber,
-  vestBonus: BigNumber,
-  rsi: BigNumber,
-  reward: BigNumber
-) {
-  // calculate expected reward based on the given apr factors
-  if (rsi.isZero()) {
-    rsi = DENOMINATOR;
-  }
-  return base.add(vestBonus).mul(rsi).mul(reward).div(DENOMINATOR.mul(DENOMINATOR)).div(EPOCHS_YEAR);
 }
 
 export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNumber) {
@@ -387,18 +418,11 @@ export async function getCurrentDay() {
   return Math.floor(timestamp / DAY);
 }
 
-export async function applyCustomReward(
-  hydraDelegation: HydraDelegation,
-  validator: string,
-  delegator: string,
-  reward: BigNumber,
-  rsi: boolean
-) {
-  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
-  let bonus = position.base.add(position.vestBonus);
+export function applyVestingAPR(base: BigNumber, vestBonus: BigNumber, rsiBonus: BigNumber, reward: BigNumber) {
+  let bonus = base.add(vestBonus);
   let divider = DENOMINATOR;
-  if (rsi && !position.rsiBonus.isZero()) {
-    bonus = bonus.mul(position.rsiBonus);
+  if (!rsiBonus.isZero()) {
+    bonus = bonus.mul(rsiBonus);
     divider = divider.mul(DENOMINATOR);
   }
 
@@ -427,10 +451,19 @@ export async function getDelegatorPositionReward(
   validator: string,
   delegator: string
 ) {
-  // prepare params for call
-  const { epochNum, balanceChangeIndex } = await retrieveRPSData(hydraChain, hydraDelegation, validator, delegator);
+  const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
+  const maturedIn = await getClosestMaturedTimestamp(position);
 
-  return await hydraDelegation.getDelegatorPositionReward(validator, delegator, epochNum, balanceChangeIndex);
+  // prepare params for call
+  const { epochNum, balanceChangeIndex } = await retrieveRPSData(
+    hydraChain,
+    hydraDelegation,
+    validator,
+    delegator,
+    maturedIn
+  );
+
+  return await hydraDelegation.calculatePositionClaimableReward(validator, delegator, epochNum, balanceChangeIndex);
 }
 
 // function that returns whether a position is matured or not
@@ -497,21 +530,16 @@ export async function getPermitSignature(
   );
 }
 
-export async function calculateTotalPotentialPositionReward(
+// function that calculates the position reward and applies the vesting APR
+export async function calculateExpectedPositionRewardWithVestingAPR(
   hydraDelegation: HydraDelegation,
   validator: string,
   delegator: string
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
   const rawReward = await hydraDelegation.getRawDelegatorReward(validator, delegator);
-  let bonus = position.base.add(position.vestBonus);
-  let divider = hre.ethers.BigNumber.from(10000);
-  if (!position.rsiBonus.eq(0)) {
-    bonus = bonus.mul(position.rsiBonus);
-    divider = divider.mul(10000);
-  }
 
-  return rawReward.mul(bonus).div(divider).div(EPOCHS_YEAR);
+  return applyVestingAPR(position.base, position.vestBonus, position.rsiBonus, rawReward);
 }
 
 export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, delegateAmount: BigNumber) {

@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import * as hre from "hardhat";
 import { expect } from "chai";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 import {
   calculatePenalty,
@@ -323,6 +323,75 @@ export function RunVestedStakingTests(): void {
         await expect(stakerHydraStaking["claimStakingRewards()"]())
           .to.emit(hydraStaking, "StakingRewardsClaimed")
           .withArgs(this.staker.address, reward);
+      });
+    });
+
+    describe("calculatePositionTotalReward()", async function () {
+      it("should be bigger than claimable when maturing", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+
+        // add reward exactly before maturing (second to the last block)
+        const position = await hydraStaking.vestedStakingPositions(this.staker.address);
+        await time.setNextBlockTimestamp(position.end.sub(1).toNumber());
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize
+        );
+
+        // calculate up to which epoch rewards are matured
+        const valRewardsHistoryRecords = await hydraStaking.getStakingRewardsHistoryValues(this.staker.address);
+        const valRewardHistoryRecordIndex = findProperRPSIndex(
+          valRewardsHistoryRecords,
+          position.end.sub(position.duration.div(2))
+        );
+
+        // enter maturing state
+        const nextTimestampMaturing = position.end.add(position.duration.div(2));
+        await time.setNextBlockTimestamp(nextTimestampMaturing.toNumber());
+        await mine();
+
+        const claimableRewards = await hydraStaking.calculatePositionClaimableReward(
+          this.staker.address,
+          valRewardHistoryRecordIndex
+        );
+        const totalRewards = await hydraStaking.calculatePositionTotalReward(this.staker.address);
+
+        expect(totalRewards).to.be.gt(claimableRewards);
+      });
+    });
+
+    describe("calculatePositionClaimableReward()", async function () {
+      it("should return zero in case active position", async function () {
+        const { hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
+
+        expect(await hydraStaking.calculatePositionClaimableReward(this.staker.address, 0)).to.be.eq(0);
+      });
+
+      it("should return all rewards in case matured", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+
+        // add reward exactly before maturing (second to the last block)
+        const position = await hydraStaking.vestedStakingPositions(this.staker.address);
+        await time.setNextBlockTimestamp(position.end.sub(1).toNumber());
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize
+        );
+
+        // enter matured state
+        await time.setNextBlockTimestamp(position.end.add(position.duration).toNumber());
+        await mine();
+
+        const claimableRewards = await hydraStaking.calculatePositionClaimableReward(this.staker.address, 0);
+        const totalRewards = await hydraStaking.calculatePositionTotalReward(this.staker.address);
+
+        expect(totalRewards).to.be.eq(claimableRewards);
       });
     });
   });

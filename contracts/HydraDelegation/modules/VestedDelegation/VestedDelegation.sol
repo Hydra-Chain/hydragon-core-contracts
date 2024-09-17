@@ -77,34 +77,80 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function getDelegatorPositionReward(
+    function calculatePositionClaimableReward(
         address staker,
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
-    ) external view returns (uint256 sumReward) {
+    ) external view returns (uint256) {
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         if (_noRewardConditions(position)) {
             return 0;
         }
 
-        // distribute the proper vesting reward
-        (uint256 epochRPS, uint256 balance, int256 correction) = _rewardParams(
+        // fetch the proper vesting reward params for the matured period
+        (uint256 epochRPS, uint256 balance, int256 correction) = _getMaturedRewardParams(
             staker,
             delegator,
+            position,
             epochNumber,
             balanceChangeIndex
         );
 
         DelegationPool storage delegationPool = delegationPools[staker];
         uint256 rewardIndex = delegationPool.claimableRewards(delegator, epochRPS, balance, correction);
-        sumReward = _applyVestingAPR(position, rewardIndex);
+        uint256 reward = _applyVestingAPR(position, rewardIndex);
 
-        // If the full maturing period is finished, withdraw also the reward made after the vesting period
-        if (block.timestamp > position.end + position.duration) {
-            uint256 additionalRewardIndex = delegationPool.claimableRewards(delegator) - rewardIndex;
-            sumReward += aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
+        // If the full maturing period is finished, calculate also the reward made after the vesting period
+        if (block.timestamp >= position.end + position.duration) {
+            reward += _calcPositionAdditionalReward(delegationPool, delegator, rewardIndex);
         }
+
+        return reward;
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function calculatePositionTotalReward(
+        address staker,
+        address delegator,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external view returns (uint256) {
+        VestingPosition memory position = vestedDelegationPositions[staker][delegator];
+        // if the position is still active apply the vesting APR to the generated raw reward
+        if (_noRewardConditions(position)) {
+            return _applyVestingAPR(position, getRawDelegatorReward(staker, delegator));
+        }
+
+        DelegationPool storage delegationPool = delegationPools[staker];
+
+        // fetch the reward params for the full vesting period
+        (uint256 epochRPSAtEnd, uint256 balanceAtEnd, int256 correctionAtEnd) = _rewardParams(
+            staker,
+            delegator,
+            position.end,
+            epochNumber,
+            balanceChangeIndex
+        );
+
+        // get the reward index for the vesting period
+        uint256 vestingRewardIndex = delegationPool.claimableRewards(
+            delegator,
+            epochRPSAtEnd,
+            balanceAtEnd,
+            correctionAtEnd
+        );
+
+        // apply the vesting APR for the reward
+        uint256 reward = _applyVestingAPR(position, vestingRewardIndex);
+
+        // the position has entered the maturing period, so, we have to calculate the additional
+        //  reward made after the vesting period
+        reward += _calcPositionAdditionalReward(delegationPool, delegator, vestingRewardIndex);
+
+        return reward;
     }
 
     /**
@@ -264,39 +310,41 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external onlyManager {
+    function claimPositionReward(
+        address staker,
+        address to,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) external onlyManager {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (_noRewardConditions(position)) {
             return;
         }
 
-        uint256 sumReward;
-        DelegationPool storage delegationPool = delegationPools[staker];
-
-        // distribute the proper vesting reward
-        (uint256 epochRPS, uint256 balance, int256 correction) = _rewardParams(
+        // fetch the proper vesting reward params for the matured period
+        (uint256 epochRPS, uint256 balance, int256 correction) = _getMaturedRewardParams(
             staker,
             msg.sender,
+            position,
             epochNumber,
             balanceChangeIndex
         );
 
+        DelegationPool storage delegationPool = delegationPools[staker];
         uint256 reward = delegationPool.claimRewards(msg.sender, epochRPS, balance, correction);
         reward = _applyVestingAPR(position, reward);
-        sumReward += reward;
 
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
-        if (block.timestamp > position.end + position.duration) {
+        if (block.timestamp >= position.end + position.duration) {
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
-            sumReward += additionalReward;
+            reward += aprCalculatorContract.applyBaseAPR(additionalReward);
         }
 
-        if (sumReward == 0) return;
+        if (reward == 0) return;
 
-        rewardWalletContract.distributeReward(to, sumReward);
+        rewardWalletContract.distributeReward(to, reward);
 
-        emit PositionRewardClaimed(msg.sender, staker, sumReward);
+        emit PositionRewardClaimed(msg.sender, staker, reward);
     }
 
     /**
@@ -375,7 +423,7 @@ abstract contract VestedDelegation is
      */
     function isPositionAvailableForSwap(address newStaker, address delegator) public view returns (bool) {
         VestingPosition memory newPosition = vestedDelegationPositions[newStaker][delegator];
-        // TODO: maturing can be missed as condition beacause if there are no rewards that must mature after the end of the position - its fine to delete the position
+        // TODO: maturing can be missed as condition because if there are no rewards that must mature after the end of the position - its fine to delete the position
         if (newPosition.isActive() || newPosition.isMaturing()) {
             return false;
         }
@@ -526,37 +574,57 @@ abstract contract VestedDelegation is
     }
 
     /**
-     * @notice Gets the reward parameters for the given staker and manager
+     * @notice Gets the reward parameters for a given position, epoch number and balance change index
      * @param staker Address of the validator
      * @param manager Address of the vest manager
+     * @param position The vested position
+     * @param epochNumber Epoch number
+     * @param balanceChangeIndex Index of the balance change
+     */
+    function _getMaturedRewardParams(
+        address staker,
+        address manager,
+        VestingPosition memory position,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) private view returns (uint256 rps, uint256 balance, int256 correction) {
+        uint256 matureEnd = position.end + position.duration;
+        uint256 alreadyMatured;
+        // If full mature period is not finished, rewardPerShare must be fetched from the history records
+        if (block.timestamp < matureEnd) {
+            uint256 maturedPeriod = block.timestamp - position.end;
+            alreadyMatured = position.start + maturedPeriod;
+        } else {
+            // otherwise the full reward up to the end of the vesting must be matured
+            alreadyMatured = position.end;
+        }
+
+        // return the reward params
+        return _rewardParams(staker, manager, alreadyMatured, epochNumber, balanceChangeIndex);
+    }
+
+    /**
+     * @notice Retrieve the reward parameters for the given staker, manager, and up to which time the reward is matured
+     * @param staker Address of the validator
+     * @param manager Address of the vest manager
+     * @param maturedUpTo Timestamp up to which the reward is matured
      * @param epochNumber Epoch number
      * @param balanceChangeIndex Index of the balance change
      */
     function _rewardParams(
         address staker,
         address manager,
+        uint256 maturedUpTo,
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) private view returns (uint256 rps, uint256 balance, int256 correction) {
-        VestingPosition memory position = vestedDelegationPositions[staker][manager];
-        uint256 matureEnd = position.end + position.duration;
-        uint256 alreadyMatured;
-        // If full mature period is finished, the full reward up to the end of the vesting must be matured
-        if (matureEnd < block.timestamp) {
-            alreadyMatured = position.end;
-        } else {
-            // rewardPerShare must be fetched from the history records
-            uint256 maturedPeriod = block.timestamp - position.end;
-            alreadyMatured = position.start + maturedPeriod;
-        }
-
         RPS memory rpsData = historyRPS[staker][epochNumber];
         if (rpsData.timestamp == 0) {
             revert DelegateRequirement({src: "vesting", msg: "INVALID_EPOCH"});
         }
 
         // If the given RPS is for future time - it is wrong, so revert
-        if (rpsData.timestamp > alreadyMatured) {
+        if (rpsData.timestamp > maturedUpTo) {
             revert DelegateRequirement({src: "vesting", msg: "WRONG_RPS"});
         }
 
@@ -569,6 +637,22 @@ abstract contract VestedDelegation is
         );
 
         return (rewardPerShare, balanceData, correctionData);
+    }
+
+    /**
+     * @notice Calculates the delegators's vested pending reward
+     * @param delegationPool Delegation pool of staker
+     * @param delegator Address of delegator
+     * @param vestedRewardIndex This is the raw reward generated for the vested period
+     * @return reward Pending reward that is generated beyond the vested period (in HYDRA wei)
+     */
+    function _calcPositionAdditionalReward(
+        DelegationPool storage delegationPool,
+        address delegator,
+        uint256 vestedRewardIndex
+    ) private view returns (uint256 reward) {
+        uint256 additionalRewardIndex = delegationPool.claimableRewards(delegator) - vestedRewardIndex;
+        reward = aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
     }
 
     // slither-disable-next-line unused-state,naming-convention
