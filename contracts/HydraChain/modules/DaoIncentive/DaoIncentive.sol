@@ -46,9 +46,8 @@ abstract contract DaoIncentive is
     function distributeDAOIncentive() external onlySystemCall {
         uint256 reward = (((hydraStakingContract.totalBalance() * 200) / 10000) *
             (block.timestamp - lastDistribution)) / 365 days;
-        vaultDistribution += reward;
-
         lastDistribution = block.timestamp;
+        vaultDistribution += reward;
 
         emit VaultFundsDistributed(reward);
     }
