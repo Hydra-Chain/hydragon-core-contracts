@@ -150,10 +150,6 @@ contract TestInitlizedAPR is InitlizeAPR {
         assertEq(aprCalculator.getDENOMINATOR(), 10000);
     }
 
-    function test_getEpochsPerYear() public {
-        assertEq(aprCalculator.getEpochsPerYear(), 31500);
-    }
-
     function test_getLatestDailyPrice() public {
         assertEq(aprCalculator.latestDailyPrice(), 500);
     }

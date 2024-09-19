@@ -91,7 +91,7 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
      * @param reward The reward amount
      * @param epochId The epoch id
      */
-    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
         delegationContract.distributeDelegationRewards(staker, reward, epochId);
     }
 

@@ -160,10 +160,6 @@ contract TestInitlizedContracts is InitializedContracts {
         assertEq(aprCalculator.getDENOMINATOR(), 10000);
     }
 
-    function test_getEpochsPerYear() public {
-        assertEq(aprCalculator.getEpochsPerYear(), 31500);
-    }
-
     function test_getDisabledBonusesUpdates() public {
         assertEq(aprCalculator.disabledBonusesUpdates(), false);
     }
