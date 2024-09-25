@@ -17,7 +17,7 @@ interface IMacroFactor {
     // _______________ Public functions _______________
 
     /**
-     * @notice Get the macro factor
+     * @notice Get the macro factor˘
      * @return macro factor
      * @dev return the macro factor
      */
