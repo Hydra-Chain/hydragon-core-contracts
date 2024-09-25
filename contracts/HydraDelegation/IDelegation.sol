@@ -9,6 +9,12 @@ struct RPS {
     uint64 timestamp;
 }
 
+struct DelegationPoolDelegatorParams {
+    uint256 balance;
+    int256 correction;
+    uint256 epochNum;
+}
+
 struct DelegationPool {
     uint256 supply;
     uint256 virtualSupply;
@@ -21,6 +27,11 @@ struct DelegationPool {
      * @dev This is used to keep the history RPS in order to calculate properly the rewards
      */
     mapping(uint256 => RPS) historyRPS;
+    /**
+     * @notice Historical Staker Delegation Pool's Params per delegator
+     * @dev Delegator => Pool params data
+     */
+    mapping(address => DelegationPoolDelegatorParams[]) delegatorsParamsHistory;
 }
 
 interface IDelegation is IWithdrawal {

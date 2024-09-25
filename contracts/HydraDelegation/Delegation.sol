@@ -179,12 +179,21 @@ contract Delegation is
         if (amounAfterUndelegate < minDelegation && amounAfterUndelegate != 0)
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
-        delegation.withdraw(delegator, amount);
+        _withdrawDelegation(staker, delegation, delegator, amount);
         _totalDelegation -= amount;
 
         hydraStakingContract.onUndelegate(staker);
 
         emit Undelegated(staker, delegator, amount);
+    }
+
+    function _withdrawDelegation(
+        address /**staker*/,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual {
+        delegation.withdraw(delegator, amount);
     }
 
     /**

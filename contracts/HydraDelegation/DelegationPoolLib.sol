@@ -2,7 +2,8 @@
 pragma solidity 0.8.17;
 
 import "../common/libs/SafeMathInt.sol";
-import {DelegationPool, RPS} from "./IDelegation.sol";
+import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegation.sol";
+import {DelegateRequirement} from "./../common/Errors.sol";
 
 /**
  * @title Delegation Pool Lib
@@ -58,6 +59,24 @@ library DelegationPoolLib {
         // slither-disable-next-line divide-before-multiply
         pool.magnifiedRewardCorrections[account] += (pool.magnifiedRewardPerShare * share).toInt256Safe();
         pool.supply -= amount;
+    }
+
+    /**
+     * @notice decrements the balance of a specific pool member
+     * @param pool the DelegationPool of the account to decrement the balance of
+     * @param account the address to decrement the balance of
+     * @param amount the amount to decrement the balance by
+     */
+    function withdraw(DelegationPool storage pool, address account, uint256 amount, uint256 epochNumber) internal {
+        uint256 share = (amount * pool.virtualSupply) / pool.supply;
+        pool.balances[account] -= share;
+        pool.virtualSupply -= share;
+        // slither-disable-next-line divide-before-multiply
+        pool.magnifiedRewardCorrections[account] += (pool.magnifiedRewardPerShare * share).toInt256Safe();
+        pool.supply -= amount;
+
+        // Update delegator params history
+        _saveAccountParamsChange(pool, account, epochNumber);
     }
 
     /**
@@ -160,18 +179,25 @@ library DelegationPoolLib {
      * @notice returns the amount of claimable rewards for an address in a pool
      * @param pool the DelegationPool to query the claimable rewards from
      * @param account the address for which query the amount of claimable rewards
-     * @param rps the reward per share
-     * @param balance the balance of the account
-     * @param correction the correction of the account
+     * @param epochNumber Epoch where the last claimable reward is distributed
+     * We need it because not all rewards are matured at the moment of claiming
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards
      * @return uint256 the amount of claimable rewards for the address
      */
     function claimableRewards(
         DelegationPool storage pool,
         address account,
-        uint256 rps,
-        uint256 balance,
-        int256 correction
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
     ) internal view returns (uint256) {
+        // fetch the proper vesting reward params
+        (uint256 rps, uint256 balance, int256 correction) = _getRewardParams(
+            pool,
+            account,
+            epochNumber,
+            balanceChangeIndex
+        );
+
         uint256 _rewardsEarned = rewardsEarned(rps, balance, correction);
         uint256 claimedRewards = pool.claimedRewards[account];
         if (claimedRewards >= _rewardsEarned) return 0;
@@ -183,20 +209,43 @@ library DelegationPoolLib {
      * @notice claims the rewards for an address in a pool
      * @param pool the DelegationPool to claim the rewards from
      * @param account the address for which to claim the rewards
-     * @param rps the reward per share
-     * @param balance the balance of the account
-     * @param correction the correction of the account
+     * @param epochNumber Epoch where the last claimable reward is distributed
+     * We need it because not all rewards are matured at the moment of claiming
+     * @param balanceChangeIndex Whether to redelegate the claimed rewards
      * @return reward the amount of rewards claimed
      */
     function claimRewards(
         DelegationPool storage pool,
         address account,
-        uint256 rps,
-        uint256 balance,
-        int256 correction
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
     ) internal returns (uint256 reward) {
-        reward = claimableRewards(pool, account, rps, balance, correction);
+        reward = claimableRewards(pool, account, epochNumber, balanceChangeIndex);
         pool.claimedRewards[account] += reward;
+    }
+
+    /**
+     * @notice Gets the delegator's reward at past moment based on a given epoch number and balance change index
+     * @param pool the DelegationPool to query the claimable rewards from
+     * @param delegator Address of the delegator
+     * @param epochNumber Epoch number
+     * @param balanceChangeIndex Index of the balance change
+     */
+    function _getRewardParams(
+        DelegationPool storage pool,
+        address delegator,
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) private view returns (uint256 rps, uint256 balance, int256 correction) {
+        uint256 rewardPerShare = pool.historyRPS[epochNumber].value;
+        (uint256 balanceData, int256 correctionData) = _getAccountParams(
+            pool,
+            delegator,
+            epochNumber,
+            balanceChangeIndex
+        );
+
+        return (rewardPerShare, balanceData, correctionData);
     }
 
     /**
@@ -212,5 +261,91 @@ library DelegationPoolLib {
         require(poolRPS.value == 0, "RPS already saved");
 
         pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
+    }
+
+    /**
+     * @notice Gets the account specific pool params for the given epoch
+     * @param pool the DelegationPool to query the account params from
+     * @param delegator Address of the vest manager
+     * @param epochNumber Epoch number
+     * @param paramsIndex Index of the params
+     */
+    function _getAccountParams(
+        DelegationPool storage pool,
+        address delegator,
+        uint256 epochNumber,
+        uint256 paramsIndex
+    ) private view returns (uint256 balance, int256 correction) {
+        if (paramsIndex >= pool.delegatorsParamsHistory[delegator].length) {
+            revert DelegateRequirement({src: "vesting", msg: "INVALID_PARAMS_INDEX"});
+        }
+
+        DelegationPoolDelegatorParams memory params = pool.delegatorsParamsHistory[delegator][paramsIndex];
+        if (params.epochNum > epochNumber) {
+            revert DelegateRequirement({src: "vesting", msg: "LATE_BALANCE_CHANGE"});
+        } else if (params.epochNum == epochNumber) {
+            // If balance change is made exactly in the epoch with the given index - it is the valid one for sure
+            // because the balance change is made exactly before the distribution of the reward in this epoch
+        } else {
+            // This is the case where the balance change is before the handled epoch (epochNumber)
+            if (paramsIndex == pool.delegatorsParamsHistory[delegator].length - 1) {
+                // If it is the last balance change - don't check does the next one can be better
+            } else {
+                // If it is not the last balance change - check does the next one can be better
+                // We just need the right account specific pool params for the given RPS, to be able
+                // to properly calculate the reward
+                DelegationPoolDelegatorParams memory nextParamsRecord = pool.delegatorsParamsHistory[delegator][
+                    paramsIndex + 1
+                ];
+                if (nextParamsRecord.epochNum <= epochNumber) {
+                    // If the next balance change is made in an epoch before the handled one or in the same epoch
+                    // and is bigger than the provided balance change - the provided one is not valid.
+                    // Because when the reward was distributed for the given epoch, the account balance was different
+                    revert DelegateRequirement({src: "vesting", msg: "EARLY_BALANCE_CHANGE"});
+                }
+            }
+        }
+
+        return (params.balance, params.correction);
+    }
+
+    /**
+     * @notice Saves the account specific pool params change
+     * * @param pool the DelegationPool to save the account params for
+     * @param delegator Address of the delegator
+     */
+    function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
+        if (isBalanceChangeMade(pool, delegator, epochNumber)) {
+            // balance can be changed only once per epoch
+            revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+        }
+
+        pool.delegatorsParamsHistory[delegator].push(
+            DelegationPoolDelegatorParams({
+                balance: balanceOf(pool, delegator),
+                correction: correctionOf(pool, delegator),
+                epochNum: epochNumber
+            })
+        );
+    }
+
+    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
+    function isBalanceChangeMade(
+        DelegationPool storage pool,
+        address delegator,
+        uint256 currentEpochNum
+    ) internal view returns (bool) {
+        uint256 length = pool.delegatorsParamsHistory[delegator].length;
+        if (length == 0) {
+            return false;
+        }
+
+        DelegationPoolDelegatorParams memory data = pool.delegatorsParamsHistory[delegator][length - 1];
+
+        if (data.epochNum == currentEpochNum) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IDelegation, RPS} from "../../IDelegation.sol";
-
-struct DelegationPoolParams {
-    uint256 balance;
-    int256 correction;
-    uint256 epochNum;
-}
+import {IDelegation, RPS, DelegationPoolDelegatorParams} from "../../IDelegation.sol";
 
 interface IVestedDelegation is IDelegation {
     event PositionOpened(
@@ -76,7 +70,7 @@ interface IVestedDelegation is IDelegation {
     function getDelegationPoolParamsHistory(
         address staker,
         address delegator
-    ) external view returns (DelegationPoolParams[] memory);
+    ) external view returns (DelegationPoolDelegatorParams[] memory);
 
     /**
      * @notice Calculates the penalty for the position.
