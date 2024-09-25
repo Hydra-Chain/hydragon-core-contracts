@@ -36,7 +36,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - name: Run tests
-        run: FOUNDRY_PROFILE=intense forge test -vvv --no-match-contract=ValidatorStorage; forge test -vvv --match-contract=ValidatorStorage
+        run: forge test -vvv
   gas_report:
     runs-on: ubuntu-latest
     steps:
