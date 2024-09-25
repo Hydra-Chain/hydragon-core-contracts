@@ -428,7 +428,7 @@ export function RunVestedDelegationTests(): void {
           expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(cutAmount.sub(penalty));
           expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
         } else {
-          // dev: On coverage, the gas const is taken away from the user balance
+          // dev: On coverage, the gas cost is taken away from the user balance
           expect(balanceAfter.sub(balanceBefore).add(gasUsed), "left balance coverage").to.be.eq(
             cutAmount.sub(penalty)
           );
@@ -489,13 +489,25 @@ export function RunVestedDelegationTests(): void {
 
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
+        const withdrawTx = await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
+        const waitWithdrawTx = await withdrawTx.wait();
+        const gasUsed = waitWithdrawTx.gasUsed;
 
         const balanceAfter = await vestManagerOwner.getBalance();
 
         // should slash the delegator with the calculated penalty
-        expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(delegatedBalance.sub(penalty));
-        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
+        if (balanceAfter.sub(balanceBefore).sub(delegatedBalance.sub(penalty)).toString() === "0") {
+          expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(delegatedBalance.sub(penalty));
+          expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
+        } else {
+          // dev: On coverage, the gas cost is taken away from the user balance
+          expect(balanceAfter.sub(balanceBefore).add(gasUsed), "left balance coverage").to.be.eq(
+            delegatedBalance.sub(penalty)
+          );
+          expect(balanceAfter.add(gasUsed), "balanceAfter coverage").to.be.eq(
+            balanceBefore.add(delegatedBalance.sub(penalty))
+          );
+        }
       });
 
       it.only("should properly cut position", async function () {
