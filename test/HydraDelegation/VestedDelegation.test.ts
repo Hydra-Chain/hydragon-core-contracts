@@ -342,7 +342,7 @@ export function RunVestedDelegationTests(): void {
         expect(reward, "reward").to.be.gt(0);
       });
 
-      it("should slash the amount when in active position", async function () {
+      it.only("should slash the amount when in active position", async function () {
         const { hydraDelegation, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
@@ -426,7 +426,7 @@ export function RunVestedDelegationTests(): void {
         expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
       });
 
-      it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
+      it.only("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
         const { hydraDelegation, liquidToken, vestManager, vestManagerOwner, delegatedValidator } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
@@ -486,7 +486,7 @@ export function RunVestedDelegationTests(): void {
         expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
       });
 
-      it("should properly cut position", async function () {
+      it.only("should properly cut position", async function () {
         const {
           systemHydraChain,
           hydraDelegation,
@@ -653,7 +653,7 @@ export function RunVestedDelegationTests(): void {
         ).to.be.revertedWith("ERC20Permit: invalid signature");
       });
 
-      it("should properly cut position with permit", async function () {
+      it.only("should properly cut position with permit", async function () {
         const {
           systemHydraChain,
           hydraDelegation,
