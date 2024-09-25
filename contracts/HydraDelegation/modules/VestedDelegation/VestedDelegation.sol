@@ -37,11 +37,7 @@ abstract contract VestedDelegation is
      * @dev Staker => Delegator => Pool params data
      */
     mapping(address => mapping(address => DelegationPoolParams[])) public delegationPoolParamsHistory;
-    /**
-     * @notice Keeps the history of the RPS for the stakers
-     * @dev This is used to keep the history RPS in order to calculate properly the rewards
-     */
-    mapping(address => mapping(uint256 => RPS)) public historyRPS;
+
     /**
      * @notice The threshold for the maximum number of allowed balance changes
      * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
@@ -157,19 +153,7 @@ abstract contract VestedDelegation is
      * @inheritdoc IVestedDelegation
      */
     function getRPSValues(address staker, uint256 startEpoch, uint256 endEpoch) external view returns (RPS[] memory) {
-        require(startEpoch <= endEpoch, "Invalid args");
-
-        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
-        uint256 itemIndex = 0;
-        for (uint256 i = startEpoch; i <= endEpoch; i++) {
-            if (historyRPS[staker][i].value != 0) {
-                values[itemIndex] = (historyRPS[staker][i]);
-            }
-
-            itemIndex++;
-        }
-
-        return values;
+        return delegationPools[staker].getRPSValues(startEpoch, endEpoch);
     }
 
     /**
@@ -437,14 +421,6 @@ abstract contract VestedDelegation is
         return true;
     }
 
-    // TODO: Consider deleting it as we shouldn't be getting into that case
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function isBalanceChangeThresholdExceeded(address staker, address delegator) public view returns (bool) {
-        return delegationPoolParamsHistory[staker][delegator].length > balanceChangeThreshold;
-    }
-
     // _______________ Internal functions _______________
 
     /**
@@ -459,36 +435,6 @@ abstract contract VestedDelegation is
      */
     function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
         super._undelegate(staker, delegator, amount);
-    }
-
-    /**
-     * @notice Distributes the tokens to the delegator
-     * @param staker The address of the validator
-     * @param reward The reward to be distributed
-     * @param epochId The epoch number
-     */
-    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
-        _distributeDelegationRewards(staker, reward);
-
-        // Keep history record of the rewardPerShare to be used on reward claim
-        if (reward > 0) {
-            _saveEpochRPS(staker, delegationPools[staker].magnifiedRewardPerShare, epochId);
-        }
-    }
-
-    /**
-     * @notice Saves the RPS for the given staker for the epoch
-     * @param staker Address of the validator
-     * @param rewardPerShare Amount of tokens to be withdrawn
-     * @param epochNumber Epoch number
-     */
-    function _saveEpochRPS(address staker, uint256 rewardPerShare, uint256 epochNumber) internal {
-        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
-
-        RPS memory stakerRPSes = historyRPS[staker][epochNumber];
-        require(stakerRPSes.value == 0, "RPS already saved");
-
-        historyRPS[staker][epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }
 
     /**
@@ -618,7 +564,7 @@ abstract contract VestedDelegation is
         uint256 epochNumber,
         uint256 balanceChangeIndex
     ) private view returns (uint256 rps, uint256 balance, int256 correction) {
-        RPS memory rpsData = historyRPS[staker][epochNumber];
+        RPS memory rpsData = delegationPools[staker].historyRPS[epochNumber];
         if (rpsData.timestamp == 0) {
             revert DelegateRequirement({src: "vesting", msg: "INVALID_EPOCH"});
         }

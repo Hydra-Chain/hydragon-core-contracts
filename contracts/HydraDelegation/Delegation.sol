@@ -26,7 +26,6 @@ contract Delegation is
 
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
-    // @note maybe this must be part of the HydraChain
     /// @notice The minimum delegation amount to be delegated
     uint256 public minDelegation;
 
@@ -192,9 +191,11 @@ contract Delegation is
      * @notice Distributes rewards to a delegator
      * @param staker Address of the validator
      * @param reward Amount to distribute
+     * @param epochId The epoch number
      */
-    function _distributeDelegationRewards(address staker, uint256 reward) internal virtual {
-        delegationPools[staker].distributeReward(reward);
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
+        delegationPools[staker].distributeReward(reward, epochId);
+
         emit DelegatorRewardDistributed(staker, reward);
     }
 

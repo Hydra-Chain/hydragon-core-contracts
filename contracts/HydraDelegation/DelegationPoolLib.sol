@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "../common/libs/SafeMathInt.sol";
-import {DelegationPool} from "./IDelegation.sol";
+import {DelegationPool, RPS} from "./IDelegation.sol";
 
 /**
  * @title Delegation Pool Lib
@@ -18,10 +18,14 @@ library DelegationPoolLib {
      * @notice distributes an amount to a pool
      * @param pool the DelegationPool for rewards to be distributed to
      * @param amount the total amount to be distributed
+     * @param epochId The epoch number for which the reward is distributed
      */
-    function distributeReward(DelegationPool storage pool, uint256 amount) internal {
+    function distributeReward(DelegationPool storage pool, uint256 amount, uint256 epochId) internal {
         if (amount == 0 || pool.virtualSupply == 0) return;
         pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
+
+        // Keep history record of the rewardPerShare to be used on reward claim
+        _saveEpochRPS(pool, pool.magnifiedRewardPerShare, epochId);
     }
 
     /**
@@ -110,6 +114,26 @@ library DelegationPoolLib {
         return totalRewardsEarned(pool, account) - pool.claimedRewards[account];
     }
 
+    function getRPSValues(
+        DelegationPool storage pool,
+        uint256 startEpoch,
+        uint256 endEpoch
+    ) internal view returns (RPS[] memory) {
+        require(startEpoch <= endEpoch, "Invalid args");
+
+        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
+        uint256 itemIndex = 0;
+        for (uint256 i = startEpoch; i <= endEpoch; i++) {
+            if (pool.historyRPS[i].value != 0) {
+                values[itemIndex] = (pool.historyRPS[i]);
+            }
+
+            itemIndex++;
+        }
+
+        return values;
+    }
+
     /**
      * @notice returns the scaling factor used for decimal places
      * @dev this means the last 18 places in a number are to the right of the decimal point
@@ -173,5 +197,20 @@ library DelegationPoolLib {
     ) internal returns (uint256 reward) {
         reward = claimableRewards(pool, account, rps, balance, correction);
         pool.claimedRewards[account] += reward;
+    }
+
+    /**
+     * @notice Saves the RPS for the given staker for the epoch
+     * @param pool the DelegationPool to save the RPS for
+     * @param rewardPerShare Amount of tokens to be withdrawn
+     * @param epochNumber Epoch number
+     */
+    function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
+        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
+
+        RPS memory poolRPS = pool.historyRPS[epochNumber];
+        require(poolRPS.value == 0, "RPS already saved");
+
+        pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }
 }

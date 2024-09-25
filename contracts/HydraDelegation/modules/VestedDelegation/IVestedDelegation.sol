@@ -1,18 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IDelegation} from "../../IDelegation.sol";
+import {IDelegation, RPS} from "../../IDelegation.sol";
 
 struct DelegationPoolParams {
     uint256 balance;
     int256 correction;
     uint256 epochNum;
-}
-
-// Reward Per Share
-struct RPS {
-    uint192 value;
-    uint64 timestamp;
 }
 
 interface IVestedDelegation is IDelegation {
