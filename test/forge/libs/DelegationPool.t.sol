@@ -71,8 +71,9 @@ contract DelegationPoolTest is Test {
     // }
 
     function testDistributeReward_EmptyPool(uint96 amount, uint96 reward) public {
-        vm.assume(amount > 1 ether);
-        vm.assume(reward > 10 ether);
+        if (amount <= 1 ether || reward <= 10 ether) {
+            return;
+        }
 
         delegationPoolLibUser.deposit(accountA, amount);
         delegationPoolLibUser.distributeReward(reward);
