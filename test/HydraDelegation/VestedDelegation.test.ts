@@ -411,30 +411,14 @@ export function RunVestedDelegationTests(): void {
         );
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
-        // check if amount is properly slashed
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        const withdrawTx = await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-        const gasUsed = (await withdrawTx.wait()).gasUsed;
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
         // should slash the delegator with the calculated penalty
         // cut half of the requested amount because half of the vesting period is still not passed
-        if (balanceAfter.sub(balanceBefore).sub(cutAmount.sub(penalty)).toString() === "0") {
-          expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(cutAmount.sub(penalty));
-          expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
-        } else {
-          // dev: On coverage, the gas cost is taken away from the user balance
-          expect(balanceAfter.sub(balanceBefore).add(gasUsed), "left balance coverage").to.be.eq(
-            cutAmount.sub(penalty)
-          );
-          expect(balanceAfter.add(gasUsed), "balanceAfter coverage").to.be.eq(
-            balanceBefore.add(cutAmount.sub(penalty))
-          );
-        }
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          cutAmount.sub(penalty)
+        );
       });
 
       it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
@@ -483,29 +467,13 @@ export function RunVestedDelegationTests(): void {
         );
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
-        // check if amount is properly slashed
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        const withdrawTx = await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-        const gasUsed = (await withdrawTx.wait()).gasUsed;
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
         // should slash the delegator with the calculated penalty
-        if (balanceAfter.sub(balanceBefore).sub(delegatedBalance.sub(penalty)).toString() === "0") {
-          expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(delegatedBalance.sub(penalty));
-          expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
-        } else {
-          // dev: On coverage, the gas cost is taken away from the user balance
-          expect(balanceAfter.sub(balanceBefore).add(gasUsed), "left balance coverage").to.be.eq(
-            delegatedBalance.sub(penalty)
-          );
-          expect(balanceAfter.add(gasUsed), "balanceAfter coverage").to.be.eq(
-            balanceBefore.add(delegatedBalance.sub(penalty))
-          );
-        }
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance.sub(penalty)
+        );
       });
 
       it("should properly cut position", async function () {
@@ -545,22 +513,12 @@ export function RunVestedDelegationTests(): void {
           );
         await vestManager.cutVestedDelegatePosition(delegatedValidator.address, delegatedBalance);
 
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        const withdrawTx = await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
-        const gasUsedWithdraw = (await withdrawTx.wait()).gasUsed;
-
-        if (balanceAfter.sub(balanceBefore).sub(delegatedBalance).toString() === "0") {
-          expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
-        } else {
-          // dev: On coverage, the gas cost is taken away from the user balance
-          expect(balanceAfter.add(gasUsedWithdraw), "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
-        }
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance
+        );
 
         // check is amount properly removed from delegation
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
@@ -736,21 +694,12 @@ export function RunVestedDelegationTests(): void {
           calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, delegatedBalance).mul(-1)
         );
 
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        const withdrawTx = await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-        const gasUsed = (await withdrawTx.wait()).gasUsed;
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
-        if (balanceAfter.sub(balanceBefore).sub(delegatedBalance).toString() === "0") {
-          expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
-        } else {
-          // dev: On coverage, the gas cost is taken away from the user balance
-          expect(balanceAfter.add(gasUsed), "balanceAfter coverage").to.be.eq(balanceBefore.add(delegatedBalance));
-        }
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance
+        );
 
         // check is amount properly removed from delegation
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);

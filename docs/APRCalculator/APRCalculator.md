@@ -461,7 +461,7 @@ returns the denominator for the APR calculation
 function getMacroFactor() external view returns (uint256)
 ```
 
-Get the macro factor˘
+Get the macro factor
 
 *return the macro factor*
 

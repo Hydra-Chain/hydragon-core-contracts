@@ -32,7 +32,7 @@ Change the default macro factor
 function getMacroFactor() external view returns (uint256)
 ```
 
-Get the macro factor˘
+Get the macro factor
 
 *return the macro factor*
 
