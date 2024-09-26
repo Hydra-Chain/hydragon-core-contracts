@@ -171,6 +171,45 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
+    function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
+        VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
+        if (position.isMaturing()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
+        }
+
+        if (position.isActive()) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
+        }
+
+        // ensure previous rewards are claimed
+        DelegationPool storage delegation = delegationPools[staker];
+        if (delegation.claimableRewards(msg.sender) > 0) {
+            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
+        }
+
+        // we delete the previous position historical data (in case any)
+        // to avoid any possible issues
+        delegation.cleanDelegatorHistoricalData(msg.sender);
+
+        uint256 duration = durationWeeks * 1 weeks;
+        // TODO: calculate end of period instead of write in the cold storage. It is cheaper
+        vestedDelegationPositions[staker][msg.sender] = VestingPosition({
+            duration: duration,
+            start: block.timestamp,
+            end: block.timestamp + duration,
+            base: aprCalculatorContract.getBaseAPR(),
+            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
+        });
+
+        _delegate(staker, msg.sender, msg.value);
+
+        emit PositionOpened(msg.sender, staker, durationWeeks, msg.value);
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
     function swapVestedPositionStaker(address oldStaker, address newStaker) external onlyManager {
         VestingPosition memory oldPosition = vestedDelegationPositions[oldStaker][msg.sender];
         // ensure that the old position is active in order to continue the swap
@@ -190,20 +229,6 @@ abstract contract VestedDelegation is
         // undelegate (withdraw & emit event) the old amount from the old position
         _baseUndelegate(oldStaker, msg.sender, amount);
 
-        _saveAccountParamsChange(
-            oldStaker,
-            msg.sender,
-            DelegationPoolDelegatorParams({
-                balance: 0,
-                correction: oldDelegation.correctionOf(msg.sender),
-                epochNum: hydraChainContract.getCurrentEpochId()
-            })
-        );
-
-        DelegationPool storage newDelegation = delegationPools[newStaker];
-        // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
-        _baseDelegate(newStaker, msg.sender, amount);
-
         // transfer the old position parameters to the new one
         vestedDelegationPositions[newStaker][msg.sender] = VestingPosition({
             duration: oldPosition.duration,
@@ -214,16 +239,8 @@ abstract contract VestedDelegation is
             rsiBonus: oldPosition.rsiBonus
         });
 
-        // keep the change in the new delegation pool params
-        _saveAccountParamsChange(
-            newStaker,
-            msg.sender,
-            DelegationPoolDelegatorParams({
-                balance: amount,
-                correction: newDelegation.correctionOf(msg.sender),
-                epochNum: hydraChainContract.getCurrentEpochId()
-            })
-        );
+        // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
+        _baseDelegate(newStaker, msg.sender, amount);
 
         emit PositionSwapped(msg.sender, oldStaker, newStaker, amount);
     }
@@ -245,18 +262,6 @@ abstract contract VestedDelegation is
             // if position is closed when active, we delete the vesting data
             if (delegatedAmountLeft == 0) {
                 delete vestedDelegationPositions[staker][msg.sender];
-                delete delegation.delegatorsParamsHistory[msg.sender];
-            } else {
-                // keep the change in the account pool params
-                _saveAccountParamsChange(
-                    staker,
-                    msg.sender,
-                    DelegationPoolDelegatorParams({
-                        balance: delegation.balanceOf(msg.sender),
-                        correction: delegation.correctionOf(msg.sender),
-                        epochNum: hydraChainContract.getCurrentEpochId()
-                    })
-                );
             }
         }
 
@@ -301,53 +306,6 @@ abstract contract VestedDelegation is
         emit PositionRewardClaimed(msg.sender, staker, reward);
     }
 
-    /**
-     * @inheritdoc IVestedDelegation
-     */
-    function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
-        VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
-        if (position.isMaturing()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
-        }
-
-        if (position.isActive()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
-        }
-
-        // ensure previous rewards are claimed
-        DelegationPool storage delegation = delegationPools[staker];
-        if (delegation.claimableRewards(msg.sender) > 0) {
-            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
-        }
-
-        uint256 duration = durationWeeks * 1 weeks;
-        delete delegation.delegatorsParamsHistory[msg.sender];
-        // TODO: calculate end of period instead of write in the cold storage. It is cheaper
-        vestedDelegationPositions[staker][msg.sender] = VestingPosition({
-            duration: duration,
-            start: block.timestamp,
-            end: block.timestamp + duration,
-            base: aprCalculatorContract.getBaseAPR(),
-            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
-        });
-
-        _delegate(staker, msg.sender, msg.value);
-
-        // keep the change in the delegation pool params per account after the actual _delegate()
-        _saveAccountParamsChange(
-            staker,
-            msg.sender,
-            DelegationPoolDelegatorParams({
-                balance: delegationOf(staker, msg.sender),
-                correction: delegation.correctionOf(msg.sender),
-                epochNum: hydraChainContract.getCurrentEpochId()
-            })
-        );
-
-        emit PositionOpened(msg.sender, staker, durationWeeks, msg.value);
-    }
-
     // _______________ Public functions _______________
 
     // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
@@ -390,16 +348,31 @@ abstract contract VestedDelegation is
         super._delegate(staker, delegator, amount);
     }
 
+    function _depositDelegation(
+        address staker,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual override {
+        // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
+        // so vested rewards claiming is possible
+        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+            return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());
+        }
+
+        super._depositDelegation(staker, delegation, delegator, amount);
+    }
+
     function _withdrawDelegation(
         address staker,
         DelegationPool storage delegation,
         address delegator,
         uint256 amount
     ) internal virtual override {
-        // If it is an active position, withdraw by keeping the change in the delegation pool params
+        // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
-        if (vestedDelegationPositions[staker][delegator].isActive()) {
-            return delegation.withdraw(delegator, amount, hydraStakingContract.currentEpochId());
+        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+            return delegation.withdraw(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
 
         super._withdrawDelegation(staker, delegation, delegator, amount);

@@ -46,6 +46,12 @@ library DelegationPoolLib {
         pool.magnifiedRewardCorrections[account] -= (pool.magnifiedRewardPerShare * share).toInt256Safe();
     }
 
+    function deposit(DelegationPool storage pool, address account, uint256 amount, uint256 epochId) internal {
+        deposit(pool, account, amount);
+        // Update delegator params history
+        _saveAccountParamsChange(pool, account, epochId);
+    }
+
     /**
      * @notice decrements the balance of a specific pool member
      * @param pool the DelegationPool of the account to decrement the balance of
@@ -68,13 +74,7 @@ library DelegationPoolLib {
      * @param amount the amount to decrement the balance by
      */
     function withdraw(DelegationPool storage pool, address account, uint256 amount, uint256 epochNumber) internal {
-        uint256 share = (amount * pool.virtualSupply) / pool.supply;
-        pool.balances[account] -= share;
-        pool.virtualSupply -= share;
-        // slither-disable-next-line divide-before-multiply
-        pool.magnifiedRewardCorrections[account] += (pool.magnifiedRewardPerShare * share).toInt256Safe();
-        pool.supply -= amount;
-
+        withdraw(pool, account, amount);
         // Update delegator params history
         _saveAccountParamsChange(pool, account, epochNumber);
     }
@@ -222,6 +222,15 @@ library DelegationPoolLib {
     ) internal returns (uint256 reward) {
         reward = claimableRewards(pool, account, epochNumber, balanceChangeIndex);
         pool.claimedRewards[account] += reward;
+    }
+
+    /**
+     * @notice Deletes  the historical data of a delegator
+     * @param pool the DelegationPool to clean the historical data from
+     * @param account the address of the  delegator to clean the historical data from
+     */
+    function cleanDelegatorHistoricalData(DelegationPool storage pool, address account) internal {
+        delete pool.delegatorsParamsHistory[account];
     }
 
     /**

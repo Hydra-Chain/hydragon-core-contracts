@@ -149,13 +149,6 @@ interface IVestedDelegation is IDelegation {
     ) external view returns (bool);
 
     /**
-     * @notice Checks if the balance changes exceeds the threshold
-     * @param staker Validator to delegate to
-     * @param delegator Delegator that has delegated
-     */
-    function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool);
-
-    /**
      * @notice Check if the new position that the user wants to swap to is available for the swap
      * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
      * @param newStaker The address of the new validator

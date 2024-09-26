@@ -142,12 +142,21 @@ contract Delegation is
         if (delegatedAmount + amount < minDelegation)
             revert DelegateRequirement({src: "delegate", msg: "DELEGATION_TOO_LOW"});
 
-        delegation.deposit(delegator, amount);
+        _depositDelegation(staker, delegation, delegator, amount);
         _totalDelegation += amount;
 
         hydraStakingContract.onDelegate(staker);
 
         emit Delegated(staker, delegator, amount);
+    }
+
+    function _depositDelegation(
+        address /**staker*/,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual {
+        delegation.deposit(delegator, amount);
     }
 
     /**

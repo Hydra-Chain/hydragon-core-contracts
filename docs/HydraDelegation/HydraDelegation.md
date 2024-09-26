@@ -467,32 +467,6 @@ Return the amount of delegation for a delegator to a staker
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### delegationPoolParamsHistory
-
-```solidity
-function delegationPoolParamsHistory(address, address, uint256) external view returns (uint256 balance, int256 correction, uint256 epochNum)
-```
-
-Historical Staker Delegation Pool&#39;s Params per delegator
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | address | undefined |
-| _2 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| balance | uint256 | undefined |
-| correction | int256 | undefined |
-| epochNum | uint256 | undefined |
-
 ### delegationPools
 
 ```solidity
@@ -538,7 +512,7 @@ Distributes rewards to delegators.
 ### getDelegationPoolParamsHistory
 
 ```solidity
-function getDelegationPoolParamsHistory(address staker, address delegator) external view returns (struct DelegationPoolParams[])
+function getDelegationPoolParamsHistory(address staker, address delegator) external view returns (struct DelegationPoolDelegatorParams[])
 ```
 
 Gets the delegation pool params history for a staker and delegator.
@@ -556,7 +530,7 @@ Gets the delegation pool params history for a staker and delegator.
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | DelegationPoolParams[] | undefined |
+| _0 | DelegationPoolDelegatorParams[] | undefined |
 
 ### getDelegatorReward
 
@@ -690,30 +664,6 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### historyRPS
-
-```solidity
-function historyRPS(address, uint256) external view returns (uint192 value, uint64 timestamp)
-```
-
-Keeps the history of the RPS for the stakers
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-| _1 | uint256 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| value | uint192 | undefined |
-| timestamp | uint64 | undefined |
-
 ### hydraChainContract
 
 ```solidity
@@ -812,29 +762,6 @@ Checks if balance change was already made in the current epoch
 | staker | address | Validator to delegate to |
 | delegator | address | Delegator that has delegated |
 | currentEpochNum | uint256 | Current epoch number |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
-### isBalanceChangeThresholdExceeded
-
-```solidity
-function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool)
-```
-
-Checks if the balance changes exceeds the threshold
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Validator to delegate to |
-| delegator | address | Delegator that has delegated |
 
 #### Returns
 

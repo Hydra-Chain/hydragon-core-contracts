@@ -12,6 +12,7 @@ import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol"
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {Delegation} from "./Delegation.sol";
+import {DelegationPool} from "./IDelegation.sol";
 
 contract HydraDelegation is
     IHydraDelegation,
@@ -126,6 +127,24 @@ contract HydraDelegation is
         }
 
         super._distributeTokens(staker, account, amount);
+    }
+
+    function _depositDelegation(
+        address staker,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual override(Delegation, VestedDelegation) {
+        super._depositDelegation(staker, delegation, delegator, amount);
+    }
+
+    function _withdrawDelegation(
+        address staker,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual override(Delegation, VestedDelegation) {
+        super._withdrawDelegation(staker, delegation, delegator, amount);
     }
 
     // _______________ Private functions _______________
