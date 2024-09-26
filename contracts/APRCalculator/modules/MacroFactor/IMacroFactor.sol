@@ -23,4 +23,3 @@ interface IMacroFactor {
      */
     function getMacroFactor() external view returns (uint256);
 }
-

@@ -16,6 +16,4 @@ import {TestBase} from "forge-std/Base.sol";
 import {DSTest} from "ds-test/test.sol";
 
 // ⭐️ TEST
-abstract contract Test is DSTest, Assertions, StdCheats, StdUtils, TestBase {
-
-}
+abstract contract Test is DSTest, Assertions, StdCheats, StdUtils, TestBase {}

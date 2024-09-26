@@ -28,10 +28,7 @@ interface IPenalizeableStaking is IStaking {
      * @param staker The address of the staker to penalize
      * @param stakeDistributions The distribution of the penalty
      */
-    function penalizeStaker(
-        address staker,
-        PenalizedStakeDistribution[] calldata stakeDistributions
-    ) external;
+    function penalizeStaker(address staker, PenalizedStakeDistribution[] calldata stakeDistributions) external;
 
     /**
      * @notice Withdraws the funds of a banned validator

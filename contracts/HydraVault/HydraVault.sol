@@ -4,15 +4,13 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract HydraVault is Initializable, OwnableUpgradeable {
+import {System} from "../common/System/System.sol";
+
+contract HydraVault is Initializable, System, OwnableUpgradeable {
     event FeeReceived(address indexed from, uint256 amount);
     event FeesRelocated(bool success, bytes data);
 
-    constructor() {
-        _disableInitializers();
-    }
-
-    function initialize(address governance) public initializer {
+    function initialize(address governance) public initializer onlySystemCall {
         _transferOwnership(governance);
     }
 
