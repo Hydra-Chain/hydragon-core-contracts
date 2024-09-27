@@ -141,8 +141,7 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external {
-        if (!AccessControl.isWhitelisted[msg.sender]) revert Unauthorized("WHITELIST");
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external onlyWhitelisted {
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
 
         _register(msg.sender, signature, pubkey);

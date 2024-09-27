@@ -20,6 +20,9 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.owner()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.currentEpochId()).to.equal(0);
 
+        // AccessControl
+        expect(await hydraChain.isWhitelistingEnabled()).to.be.false;
+
         // DaoIncentive
         expect(await hydraChain.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
@@ -113,6 +116,9 @@ export function RunHydraChainTests(): void {
         expect(
           await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
         ).to.be.true;
+
+        // AccessControl
+        expect(await hydraChain.isWhitelistingEnabled()).to.be.true;
 
         // DaoIncentive
         expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);

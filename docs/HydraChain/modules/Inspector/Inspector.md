@@ -272,6 +272,28 @@ Deactivates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
+### disableWhitelisting
+
+```solidity
+function disableWhitelisting() external nonpayable
+```
+
+Disables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
+### enableWhitelisting
+
+```solidity
+function enableWhitelisting() external nonpayable
+```
+
+Enables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
 ### getActiveValidatorsCount
 
 ```solidity
@@ -470,6 +492,23 @@ function isWhitelisted(address) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isWhitelistingEnabled
+
+```solidity
+function isWhitelistingEnabled() external view returns (bool)
+```
+
+
+
+
+
 
 #### Returns
 
@@ -994,5 +1033,27 @@ error Unauthorized(string only)
 | Name | Type | Description |
 |---|---|---|
 | only | string | undefined |
+
+### WhitelistingAlreadyDisabled
+
+```solidity
+error WhitelistingAlreadyDisabled()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyEnabled
+
+```solidity
+error WhitelistingAlreadyEnabled()
+```
+
+
+
+
+
 
 
