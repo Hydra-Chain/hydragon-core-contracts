@@ -411,19 +411,14 @@ export function RunVestedDelegationTests(): void {
         );
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
-        // check if amount is properly slashed
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
         // should slash the delegator with the calculated penalty
         // cut half of the requested amount because half of the vesting period is still not passed
-        expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(cutAmount.sub(penalty));
-        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(cutAmount.sub(penalty)));
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          cutAmount.sub(penalty)
+        );
       });
 
       it("should slash when undelegates exactly 1 week after the start of the vested position", async function () {
@@ -472,18 +467,13 @@ export function RunVestedDelegationTests(): void {
         );
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
-        // check if amount is properly slashed
-        const balanceBefore = await vestManagerOwner.getBalance();
-
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
         // should slash the delegator with the calculated penalty
-        expect(balanceAfter.sub(balanceBefore), "left balance").to.be.eq(delegatedBalance.sub(penalty));
-        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance.sub(penalty)));
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance.sub(penalty)
+        );
       });
 
       it("should properly cut position", async function () {
@@ -512,7 +502,6 @@ export function RunVestedDelegationTests(): void {
         // Finish the vesting period
         await time.increase(WEEK * 60);
 
-        const balanceBefore = await vestManagerOwner.getBalance();
         const delegatedBalance = await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address);
         expect(delegatedBalance, "delegatedBalance").to.not.be.eq(0);
 
@@ -526,11 +515,10 @@ export function RunVestedDelegationTests(): void {
 
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
-        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance
+        );
 
         // check is amount properly removed from delegation
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
@@ -679,7 +667,6 @@ export function RunVestedDelegationTests(): void {
         // Finish the vesting period
         await time.increase(WEEK * 60);
 
-        const balanceBefore = await vestManagerOwner.getBalance();
         const delegatedBalance = await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address);
         expect(delegatedBalance, "delegatedBalance").to.not.be.eq(0);
 
@@ -709,11 +696,10 @@ export function RunVestedDelegationTests(): void {
 
         // increase time so reward is available to be withdrawn
         await time.increase(WEEK);
-        await vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address);
-
-        const balanceAfter = await vestManagerOwner.getBalance();
-
-        expect(balanceAfter, "balanceAfter").to.be.eq(balanceBefore.add(delegatedBalance));
+        await expect(vestManager.connect(vestManagerOwner).withdraw(vestManagerOwner.address)).to.changeEtherBalance(
+          vestManagerOwner,
+          delegatedBalance
+        );
 
         // check is amount properly removed from delegation
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
