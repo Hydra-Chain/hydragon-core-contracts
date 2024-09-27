@@ -239,6 +239,7 @@ abstract contract VestedDelegation is
             rsiBonus: oldPosition.rsiBonus
         });
 
+        delegationPools[newStaker].cleanDelegatorHistoricalData(msg.sender);
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
         _baseDelegate(newStaker, msg.sender, amount);
 
