@@ -292,26 +292,18 @@ library DelegationPoolLib {
         DelegationPoolDelegatorParams memory params = pool.delegatorsParamsHistory[delegator][paramsIndex];
         if (params.epochNum > epochNumber) {
             revert DelegateRequirement({src: "vesting", msg: "LATE_BALANCE_CHANGE"});
-        } else if (params.epochNum == epochNumber) {
-            // If balance change is made exactly in the epoch with the given index - it is the valid one for sure
-            // because the balance change is made exactly before the distribution of the reward in this epoch
-        } else {
-            // This is the case where the balance change is before the handled epoch (epochNumber)
-            if (paramsIndex == pool.delegatorsParamsHistory[delegator].length - 1) {
-                // If it is the last balance change - don't check does the next one can be better
-            } else {
-                // If it is not the last balance change - check does the next one can be better
-                // We just need the right account specific pool params for the given RPS, to be able
-                // to properly calculate the reward
-                DelegationPoolDelegatorParams memory nextParamsRecord = pool.delegatorsParamsHistory[delegator][
-                    paramsIndex + 1
-                ];
-                if (nextParamsRecord.epochNum <= epochNumber) {
-                    // If the next balance change is made in an epoch before the handled one or in the same epoch
-                    // and is bigger than the provided balance change - the provided one is not valid.
-                    // Because when the reward was distributed for the given epoch, the account balance was different
-                    revert DelegateRequirement({src: "vesting", msg: "EARLY_BALANCE_CHANGE"});
-                }
+        } else if (params.epochNum < epochNumber && paramsIndex != pool.delegatorsParamsHistory[delegator].length - 1) {
+            // If balance change is not made exactly in the epoch with the given index, but in earlier epoch
+            // And if this is not the last balance change - there is a chance of having a better balance change
+            // in a next epoch (again before the passed one). So we need to check does the next one can be better
+            DelegationPoolDelegatorParams memory nextParamsRecord = pool.delegatorsParamsHistory[delegator][
+                paramsIndex + 1
+            ];
+            if (nextParamsRecord.epochNum <= epochNumber) {
+                // If the next balance change is made in an epoch before the handled one or in the same epoch
+                // - the provided one is not valid.
+                // Because when the reward was distributed for the given epoch, the account balance was different
+                revert DelegateRequirement({src: "vesting", msg: "EARLY_BALANCE_CHANGE"});
             }
         }
 
