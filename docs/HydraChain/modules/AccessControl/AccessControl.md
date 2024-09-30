@@ -37,6 +37,28 @@ Adds addresses that are allowed to register as validators.
 |---|---|---|
 | whitelistAddreses | address[] | Array of address to whitelist |
 
+### disableWhitelisting
+
+```solidity
+function disableWhitelisting() external nonpayable
+```
+
+Disables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
+### enableWhitelisting
+
+```solidity
+function enableWhitelisting() external nonpayable
+```
+
+Enables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
 ### isWhitelisted
 
 ```solidity
@@ -52,6 +74,23 @@ function isWhitelisted(address) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isWhitelistingEnabled
+
+```solidity
+function isWhitelistingEnabled() external view returns (bool)
+```
+
+
+
+
+
 
 #### Returns
 
@@ -241,6 +280,28 @@ error MustBeWhitelisted()
 
 ```solidity
 error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyDisabled
+
+```solidity
+error WhitelistingAlreadyDisabled()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyEnabled
+
+```solidity
+error WhitelistingAlreadyEnabled()
 ```
 
 

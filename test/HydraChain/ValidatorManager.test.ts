@@ -149,9 +149,9 @@ export function RunValidatorManagerTests(): void {
     it("should be able to register only whitelisted", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-      await expect(hydraChain.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0]))
-        .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
-        .withArgs("WHITELIST");
+      await expect(
+        hydraChain.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0])
+      ).to.be.revertedWithCustomError(hydraChain, "MustBeWhitelisted");
     });
 
     it("should not be able to register with invalid signature", async function () {

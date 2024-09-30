@@ -7,6 +7,7 @@ import {IAccessControl} from "./IAccessControl.sol";
 
 abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     mapping(address => bool) public isWhitelisted;
+    bool public isWhitelistingEnabled;
 
     // _______________ Initializer _______________
 
@@ -17,9 +18,36 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
 
     function __AccessControl_init_unchained(address _governance) internal onlyInitializing {
         _transferOwnership(_governance);
+        isWhitelistingEnabled = true;
+    }
+
+    // _______________ Modifiers _______________
+
+    /**
+     * @dev Checks if whitelisting is enabled and if the sender is whitelisted.
+     */
+    modifier onlyWhitelisted() {
+        if (isWhitelistingEnabled && !isWhitelisted[msg.sender]) revert MustBeWhitelisted();
+        _;
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IAccessControl
+     */
+    function enableWhitelisting() external onlyOwner {
+        if (isWhitelistingEnabled) revert WhitelistingAlreadyEnabled();
+        isWhitelistingEnabled = true;
+    }
+
+    /**
+     * @inheritdoc IAccessControl
+     */
+    function disableWhitelisting() external onlyOwner {
+        if (!isWhitelistingEnabled) revert WhitelistingAlreadyDisabled();
+        isWhitelistingEnabled = false;
+    }
 
     /**
      * @inheritdoc IAccessControl
