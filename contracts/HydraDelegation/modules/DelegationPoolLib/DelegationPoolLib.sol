@@ -6,10 +6,14 @@ import {DelegateRequirement} from "./../../../common/Errors.sol";
 import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegationPoolLib.sol";
 
 /**
- * @title Delegation Pool Lib
- * @author Rosen Santev (Based Polygon Technology's RewardPoolLib)
- * @notice library for handling delegators and their rewards
- * Each staker has a Delegation Pool. The rewards that a staker receives are split between the staker and the delegators of that staker. The pool holds the delegators' share of the rewards, and maintains an accounting system for determining the delegators' shares in the pool. Rewards, whether to a staker (from stake) or to a delegator, do not autocompound, as to say that if a staker has a stake of 10 and earns 1 in rewards, their stake remains 10, and they have a separate one in rewards.
+ * @title Delegation Pool Library
+ * @author Rosen Santev (Based on Polygon Technology's RewardPoolLib)
+ * @notice This library is used for managing delegators and their rewards within a staking pool. Each staker has a
+ * Delegation Pool that tracks delegators' shares of the staker's rewards.
+ * This version supports reward claims based on previous balance states, thanks to the historical
+ * `delegatorsParamsHistory` tracking.
+ * Rewards do not autocompound. If a staker has a stake of 10 and earns 1 reward, their stake remains 10,
+ * with the rewards tracked separately.
  */
 library DelegationPoolLib {
     using SafeMathUint for uint256;
