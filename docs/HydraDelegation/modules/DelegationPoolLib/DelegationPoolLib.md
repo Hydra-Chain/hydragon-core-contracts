@@ -1,10 +1,10 @@
 # DelegationPoolLib
 
-*Rosen Santev (Based Polygon Technology&#39;s RewardPoolLib)*
+*Rosen Santev (Based on Polygon Technology&#39;s RewardPoolLib)*
 
-> Delegation Pool Lib
+> Delegation Pool Library
 
-library for handling delegators and their rewards Each staker has a Delegation Pool. The rewards that a staker receives are split between the staker and the delegators of that staker. The pool holds the delegators&#39; share of the rewards, and maintains an accounting system for determining the delegators&#39; shares in the pool. Rewards, whether to a staker (from stake) or to a delegator, do not autocompound, as to say that if a staker has a stake of 10 and earns 1 in rewards, their stake remains 10, and they have a separate one in rewards.
+This library is used for managing delegators and their rewards within a staking pool. Each staker has a Delegation Pool that tracks delegators&#39; shares of the staker&#39;s rewards. This version supports reward claims based on previous balance states, thanks to the historical `delegatorsParamsHistory` tracking. Rewards do not autocompound. If a staker has a stake of 10 and earns 1 reward, their stake remains 10, with the rewards tracked separately.
 
 
 
