@@ -10,8 +10,8 @@ import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
 import {Delegation} from "../../Delegation.sol";
-import {DelegationPool} from "../../IDelegation.sol";
-import {DelegationPoolLib} from "../../DelegationPoolLib.sol";
+import {DelegationPool} from "../../modules/DelegationPoolLib/DelegationPoolLib.sol";
+import {DelegationPoolLib} from "../../modules/DelegationPoolLib/DelegationPoolLib.sol";
 import {IVestedDelegation, RPS, DelegationPoolDelegatorParams} from "./IVestedDelegation.sol";
 
 abstract contract VestedDelegation is

@@ -7,8 +7,9 @@ import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.so
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
-import {DelegationPoolLib} from "./DelegationPoolLib.sol";
-import {IDelegation, DelegationPool} from "./IDelegation.sol";
+import {DelegationPoolLib} from "./modules/DelegationPoolLib/DelegationPoolLib.sol";
+import {DelegationPool} from "./modules/DelegationPoolLib/IDelegationPoolLib.sol";
+import {IDelegation} from "./IDelegation.sol";
 
 contract Delegation is
     IDelegation,

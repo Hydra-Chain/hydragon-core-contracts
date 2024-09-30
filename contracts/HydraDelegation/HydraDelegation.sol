@@ -12,7 +12,7 @@ import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol"
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {Delegation} from "./Delegation.sol";
-import {DelegationPool} from "./IDelegation.sol";
+import {DelegationPool} from "./modules/DelegationPoolLib/DelegationPoolLib.sol";
 
 contract HydraDelegation is
     IHydraDelegation,

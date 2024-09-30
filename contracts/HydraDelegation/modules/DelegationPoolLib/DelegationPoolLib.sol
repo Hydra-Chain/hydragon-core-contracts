@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../common/libs/SafeMathInt.sol";
-import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegation.sol";
-import {DelegateRequirement} from "./../common/Errors.sol";
+import "../../../common/libs/SafeMathInt.sol";
+import {DelegateRequirement} from "./../../../common/Errors.sol";
+import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegationPoolLib.sol";
 
 /**
  * @title Delegation Pool Lib
@@ -264,10 +264,7 @@ library DelegationPoolLib {
      * @param epochNumber Epoch number
      */
     function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
-        require(rewardPerShare > 0, "rewardPerShare must be greater than 0");
-
-        RPS memory poolRPS = pool.historyRPS[epochNumber];
-        require(poolRPS.value == 0, "RPS already saved");
+        require(pool.historyRPS[epochNumber].timestamp == 0, "RPS already saved");
 
         pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }

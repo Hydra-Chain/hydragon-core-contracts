@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IDelegation, RPS, DelegationPoolDelegatorParams} from "../../IDelegation.sol";
+import {IDelegation} from "../../IDelegation.sol";
+import {RPS, DelegationPoolDelegatorParams} from "../DelegationPoolLib/IDelegationPoolLib.sol";
 
 interface IVestedDelegation is IDelegation {
     event PositionOpened(
