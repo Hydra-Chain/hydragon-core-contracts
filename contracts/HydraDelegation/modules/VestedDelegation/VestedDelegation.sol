@@ -264,11 +264,12 @@ abstract contract VestedDelegation is
             if (delegatedAmountLeft == 0) {
                 delete vestedDelegationPositions[staker][msg.sender];
             }
+
+            _burnAmount(penalty);
         }
 
         _undelegate(staker, msg.sender, amount);
         uint256 amountAfterPenalty = amount - penalty;
-        _burnAmount(penalty);
         _registerWithdrawal(msg.sender, amountAfterPenalty);
 
         emit PositionCut(msg.sender, staker, amountAfterPenalty);
