@@ -62,9 +62,6 @@ contract BLS is IBLS {
     // prettier-ignore
     uint256 private constant MASK24 = 0xffffffffffffffffffffffffffffffffffffffffffffffff;
 
-    error NumberOfKeyIsZero();
-    error NumberOfPublicKeyAndMessageNotEqual();
-
     /**
      * @inheritdoc IBLS
      */
@@ -110,15 +107,9 @@ contract BLS is IBLS {
     ) external view returns (bool checkResult, bool callSuccess) {
         uint256 size = pubkeys.length;
         // solhint-disable-next-line reason-string
-        // require(size > 0, "BLS: number of public key is zero");
-        if (size == 0) {
-            revert NumberOfKeyIsZero();
-        }
+        require(size > 0, "BLS: number of public key is zero");
         // solhint-disable-next-line reason-string
-        // require(size == messages.length, "BLS: number of public keys and messages must be equal");
-        if (size != 0) {
-            revert NumberOfPublicKeyAndMessageNotEqual();
-        }
+        require(size == messages.length, "BLS: number of public keys and messages must be equal");
         uint256 inputSize = (size + 1) * 6;
         uint256[] memory input = new uint256[](inputSize);
         input[0] = signature[0];
