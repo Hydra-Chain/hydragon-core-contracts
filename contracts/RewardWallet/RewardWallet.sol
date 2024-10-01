@@ -65,6 +65,7 @@ contract RewardWallet is IRewardWallet, System, Initializable {
     // _______________ Internal functions _______________
 
     function _distributeReward(address to, uint256 amount) internal {
+        // slither-disable-next-line arbitrary-send-eth
         (bool success, ) = to.call{value: amount}("");
         if (!success) revert DistributionFailed();
 

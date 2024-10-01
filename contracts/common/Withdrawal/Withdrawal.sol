@@ -69,6 +69,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     }
 
     function _withdraw(address to, uint256 amount) internal {
+        // slither-disable-next-line arbitrary-send-eth
         (bool success, ) = to.call{value: amount}("");
         if (!success) revert WithdrawalFailed();
 

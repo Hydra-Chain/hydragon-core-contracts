@@ -176,6 +176,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Passed seconds
      */
     function _secondsPassedToday() private view returns (uint256) {
+        // slither-disable-next-line weak-prng
         return block.timestamp % 1 days;
     }
 
