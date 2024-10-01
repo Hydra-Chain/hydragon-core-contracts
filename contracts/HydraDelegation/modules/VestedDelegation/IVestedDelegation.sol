@@ -2,18 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IDelegation} from "../../IDelegation.sol";
-
-struct DelegationPoolParams {
-    uint256 balance;
-    int256 correction;
-    uint256 epochNum;
-}
-
-// Reward Per Share
-struct RPS {
-    uint192 value;
-    uint64 timestamp;
-}
+import {RPS, DelegationPoolDelegatorParams} from "../DelegationPoolLib/IDelegationPoolLib.sol";
 
 interface IVestedDelegation is IDelegation {
     event PositionOpened(
@@ -82,7 +71,7 @@ interface IVestedDelegation is IDelegation {
     function getDelegationPoolParamsHistory(
         address staker,
         address delegator
-    ) external view returns (DelegationPoolParams[] memory);
+    ) external view returns (DelegationPoolDelegatorParams[] memory);
 
     /**
      * @notice Calculates the penalty for the position.
@@ -159,13 +148,6 @@ interface IVestedDelegation is IDelegation {
         address delegator,
         uint256 currentEpochNum
     ) external view returns (bool);
-
-    /**
-     * @notice Checks if the balance changes exceeds the threshold
-     * @param staker Validator to delegate to
-     * @param delegator Delegator that has delegated
-     */
-    function isBalanceChangeThresholdExceeded(address staker, address delegator) external view returns (bool);
 
     /**
      * @notice Check if the new position that the user wants to swap to is available for the swap

@@ -745,7 +745,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.invalidEpoch);
       });
 
       it("should revert with wrong rps", async function () {
@@ -780,7 +780,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.wrongRPS);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.wrongRPS);
       });
 
       it("should revert with invalid params index", async function () {
@@ -1214,7 +1214,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.invalidEpoch);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.invalidEpoch);
       });
 
       it("should revert when invalid RPS is sent", async function () {
@@ -1235,7 +1235,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.wrongRPS);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.wrongRPS);
       });
 
       it("should revert when invalid balance change index is sent", async function () {

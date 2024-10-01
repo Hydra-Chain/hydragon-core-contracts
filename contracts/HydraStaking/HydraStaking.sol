@@ -6,7 +6,7 @@ import {Governed} from "../common/Governed/Governed.sol";
 import {SafeMathUint} from "./../common/libs/SafeMathInt.sol";
 import {Unauthorized, StakeRequirement} from "../common/Errors.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {DelegationPool} from "../HydraDelegation/IDelegation.sol";
+import {DelegationPool} from "..//HydraDelegation/modules/DelegationPoolLib/DelegationPoolLib.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";

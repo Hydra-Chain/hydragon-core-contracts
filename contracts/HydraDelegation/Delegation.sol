@@ -7,8 +7,9 @@ import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.so
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
-import {DelegationPoolLib} from "./DelegationPoolLib.sol";
-import {IDelegation, DelegationPool} from "./IDelegation.sol";
+import {DelegationPoolLib} from "./modules/DelegationPoolLib/DelegationPoolLib.sol";
+import {DelegationPool} from "./modules/DelegationPoolLib/IDelegationPoolLib.sol";
+import {IDelegation} from "./IDelegation.sol";
 
 contract Delegation is
     IDelegation,
@@ -26,7 +27,6 @@ contract Delegation is
 
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
-    // @note maybe this must be part of the HydraChain
     /// @notice The minimum delegation amount to be delegated
     uint256 public minDelegation;
 
@@ -143,12 +143,21 @@ contract Delegation is
         if (delegatedAmount + amount < minDelegation)
             revert DelegateRequirement({src: "delegate", msg: "DELEGATION_TOO_LOW"});
 
-        delegation.deposit(delegator, amount);
+        _depositDelegation(staker, delegation, delegator, amount);
         _totalDelegation += amount;
 
         hydraStakingContract.onDelegate(staker);
 
         emit Delegated(staker, delegator, amount);
+    }
+
+    function _depositDelegation(
+        address /**staker*/,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual {
+        delegation.deposit(delegator, amount);
     }
 
     /**
@@ -180,7 +189,7 @@ contract Delegation is
         if (amounAfterUndelegate < minDelegation && amounAfterUndelegate != 0)
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
-        delegation.withdraw(delegator, amount);
+        _withdrawDelegation(staker, delegation, delegator, amount);
         _totalDelegation -= amount;
 
         hydraStakingContract.onUndelegate(staker);
@@ -188,13 +197,24 @@ contract Delegation is
         emit Undelegated(staker, delegator, amount);
     }
 
+    function _withdrawDelegation(
+        address /**staker*/,
+        DelegationPool storage delegation,
+        address delegator,
+        uint256 amount
+    ) internal virtual {
+        delegation.withdraw(delegator, amount);
+    }
+
     /**
      * @notice Distributes rewards to a delegator
      * @param staker Address of the validator
      * @param reward Amount to distribute
+     * @param epochId The epoch number
      */
-    function _distributeDelegationRewards(address staker, uint256 reward) internal virtual {
-        delegationPools[staker].distributeReward(reward);
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal virtual {
+        delegationPools[staker].distributeReward(reward, epochId);
+
         emit DelegatorRewardDistributed(staker, reward);
     }
 

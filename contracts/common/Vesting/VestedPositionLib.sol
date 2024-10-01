@@ -10,7 +10,7 @@ library VestedPositionLib {
      * @return bool Returns true if the position is active
      */
     function isActive(VestingPosition memory position) internal view returns (bool) {
-        return position.start < block.timestamp && block.timestamp < position.end;
+        return position.start <= block.timestamp && block.timestamp < position.end;
     }
 
     /**
@@ -32,6 +32,6 @@ library VestedPositionLib {
      */
     function isInVestingCycle(VestingPosition memory position) internal view returns (bool) {
         uint256 matureEnd = position.end + position.duration;
-        return position.start < block.timestamp && block.timestamp < matureEnd;
+        return position.start <= block.timestamp && block.timestamp < matureEnd;
     }
 }

@@ -270,7 +270,6 @@ export function RunPriceOracleTests(): void {
 
       // * Whitelist & Register & Stake & Update Power
       for (let i = 5; i < MAX_ACTIVE_VALIDATORS; i++) {
-        console.log("Validator", i);
         // create a new wallet and signature
         const wallet = ethers.Wallet.createRandom();
         const connectedWallet = wallet.connect(provider);
