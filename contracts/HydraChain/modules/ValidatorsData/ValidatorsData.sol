@@ -51,7 +51,7 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
             totalNewPower += validatorsPower[i].votingPower;
             totalOldPower += oldPower;
         }
-        
+
         if (totalNewPower > totalOldPower) {
             totalVotingPower += totalNewPower - totalOldPower;
         } else {
