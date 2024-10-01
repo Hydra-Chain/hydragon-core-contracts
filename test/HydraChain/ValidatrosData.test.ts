@@ -62,6 +62,17 @@ export function RunValidatorsDataTests(): void {
     expect(await hydraChain.validatorPower(this.signers.validators[1].address)).to.deep.equal(42);
     expect(await hydraChain.validatorPower(this.signers.validators[2].address)).to.deep.equal(5);
     expect(await hydraChain.validatorPower(this.signers.validators[3].address)).to.deep.equal(14);
+
+    const validatorsDataSameValue = [
+      { validator: this.signers.validators[1].address, votingPower: 42 },
+      { validator: this.signers.validators[2].address, votingPower: 5 },
+      { validator: this.signers.validators[3].address, votingPower: 14 },
+    ];
+    await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsDataSameValue);
+
+    expect(await hydraChain.validatorPower(this.signers.validators[1].address)).to.deep.equal(42);
+    expect(await hydraChain.validatorPower(this.signers.validators[2].address)).to.deep.equal(5);
+    expect(await hydraChain.validatorPower(this.signers.validators[3].address)).to.deep.equal(14);
   });
 
   it("should correctly update the total voting power", async function () {
@@ -82,6 +93,16 @@ export function RunValidatorsDataTests(): void {
     ];
 
     await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsDataNew);
+
+    expect(await hydraChain.totalVotingPower()).to.deep.equal(6);
+
+    const validatorsDataSameTotal = [
+      { validator: this.signers.validators[1].address, votingPower: 2 },
+      { validator: this.signers.validators[2].address, votingPower: 2 },
+      { validator: this.signers.validators[3].address, votingPower: 2 },
+    ];
+
+    await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsDataSameTotal);
 
     expect(await hydraChain.totalVotingPower()).to.deep.equal(6);
   });

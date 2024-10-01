@@ -43,14 +43,19 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
      */
     function syncValidatorsData(ValidatorPower[] calldata validatorsPower) external onlySystemCall {
         uint256 arrLength = validatorsPower.length;
+        uint256 totalNewPower = 0;
+        uint256 totalOldPower = 0;
         for (uint i = 0; i < arrLength; i++) {
             uint256 oldPower = validatorPower[validatorsPower[i].validator];
             validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
-            if (oldPower != 0) {
-                totalVotingPower = totalVotingPower - oldPower + validatorsPower[i].votingPower;
-            } else {
-                totalVotingPower += validatorsPower[i].votingPower;
-            }
+            totalNewPower += validatorsPower[i].votingPower;
+            totalOldPower += oldPower;
+        }
+        
+        if (totalNewPower > totalOldPower) {
+            totalVotingPower += totalNewPower - totalOldPower;
+        } else {
+            totalVotingPower -= totalOldPower - totalNewPower;
         }
     }
 
