@@ -156,7 +156,7 @@ contract HydraDelegation is
     /**
      * @notice Set commission for staker
      * @param staker Address of the validator
-     * @param newCommission New commission (100 = 10%)
+     * @param newCommission New commission (100 = 100%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
