@@ -12,15 +12,13 @@ import {VestingPosition} from "./IVesting.sol";
 abstract contract Vesting is APRCalculatorConnector {
     using VestedPositionLib for VestingPosition;
 
+    error FailedToBurnAmount();
+
     /**
      * @notice A constant for the calculation of the weeks left of a vesting period
      * @dev Representing a week in seconds - 1
      */
     uint256 private constant WEEK_MINUS_SECOND = 604799;
-
-    // _______________ Initializer _______________
-
-    function __Vesting_init() internal {}
 
     // _______________ Internal functions _______________
 
@@ -63,7 +61,9 @@ abstract contract Vesting is APRCalculatorConnector {
      */
     function _burnAmount(uint256 amount) internal {
         (bool success, ) = address(0).call{value: amount}("");
-        require(success, "Failed to burn amount");
+        if (!success) {
+            revert FailedToBurnAmount();
+        }
     }
 
     // slither-disable-next-line unused-state,naming-convention
