@@ -215,7 +215,7 @@ export function RunHydraChainTests(): void {
 
         await expect(
           systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime)
-        ).to.be.revertedWith("EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
+        ).to.be.revertedWith("EPOCH_MUST_BE_DIVISIBLE_BY_SIZE");
       });
 
       it("should revert with invalid start block", async function () {

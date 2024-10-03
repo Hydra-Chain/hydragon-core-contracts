@@ -45,8 +45,9 @@ export function RunVestedDelegationTests(): void {
         const zeroAddress = hre.ethers.constants.AddressZero;
         await impersonateAccount(zeroAddress);
         const zeroAddrSigner = await hre.ethers.getSigner(zeroAddress);
-        await expect(vestingManagerFactory.connect(zeroAddrSigner).newVestingManager()).to.be.revertedWith(
-          "INVALID_OWNER"
+        await expect(vestingManagerFactory.connect(zeroAddrSigner).newVestingManager()).to.be.revertedWithCustomError(
+          vestingManagerFactory,
+          "InvalidOwner"
         );
       });
 

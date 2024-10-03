@@ -47,7 +47,7 @@ export function RunDaoIncentiveTests(): void {
     it("should revert when there are not vault funds to claim", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.commitEpochTxFixture);
 
-      await expect(hydraChain.claimVaultFunds()).to.be.revertedWith("NO_VAULT_FUNDS_TO_CLAIM");
+      await expect(hydraChain.claimVaultFunds()).to.be.revertedWithCustomError(hydraChain, "NoVaultFundsToClaim");
     });
 
     it("should claim vault funds", async function () {
