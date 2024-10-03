@@ -15,12 +15,6 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     mapping(address => uint256) public validatorPower;
     uint256 public totalVotingPower;
 
-    // _______________ Initializer _______________
-
-    function __ValidatorData_init() internal onlyInitializing {}
-
-    function __ValidatorData_init_unchained() internal onlyInitializing {}
-
     // _______________ External functions _______________
 
     /**
@@ -44,7 +38,7 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
         uint256 arrLength = validatorsPower.length;
         uint256 totalNewPower = 0;
         uint256 totalOldPower = 0;
-        for (uint i = 0; i < arrLength; i++) {
+        for (uint256 i = 0; i < arrLength; i++) {
             uint256 oldPower = validatorPower[validatorsPower[i].validator];
             validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
             totalNewPower += validatorsPower[i].votingPower;

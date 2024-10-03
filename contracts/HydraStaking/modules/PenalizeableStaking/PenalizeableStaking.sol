@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {Staking} from "../../Staking.sol";
-import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
+import {IPenalizeableStaking, PenalizedStakeDistribution} from "./IPenalizeableStaking.sol";
 
 abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
     /**
@@ -12,10 +12,6 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * the staker's total stake and any penalties applied due to a ban
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
-
-    // _______________ Initializer _______________
-
-    function __PenalizeableStaking_init() internal onlyInitializing {}
 
     // _______________ External functions _______________
 

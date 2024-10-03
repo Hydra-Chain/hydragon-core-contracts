@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 interface IVestingManagerFactory {
+    error InvalidOwner();
+
     /**
      * @notice Claims that a delegator is a vest manager or not.
      * @param account Delegator's address

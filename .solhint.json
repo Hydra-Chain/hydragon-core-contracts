@@ -5,6 +5,7 @@
     "var-name-mixedcase": "off",
     "func-name-mixedcase": "off",
     "use-custom-errors": "off",
+    "empty-blocks": "off",
     "func-visibility": ["warn", { "ignoreConstructors": true }]
   }
 }

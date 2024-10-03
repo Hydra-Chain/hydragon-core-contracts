@@ -50,7 +50,9 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
      * @inheritdoc IVestingManagerFactory
      */
     function newVestingManager() external {
-        require(msg.sender != address(0), "INVALID_OWNER");
+        if (msg.sender == address(0)) {
+            revert InvalidOwner();
+        }
 
         BeaconProxy manager = new BeaconProxy(
             address(beacon),

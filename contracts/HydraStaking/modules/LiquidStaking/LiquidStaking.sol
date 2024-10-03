@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import {Liquid} from "../../../common/Liquid/Liquid.sol";
-import {ILiquidityToken} from "../../../LiquidityToken/ILiquidityToken.sol";
 import {Staking} from "../../Staking.sol";
 
 /**
