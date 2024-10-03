@@ -57,7 +57,9 @@ abstract contract DaoIncentive is
      */
     function claimVaultFunds() external {
         uint256 reward = vaultDistribution;
-        require(reward != 0, "NO_VAULT_FUNDS_TO_CLAIM");
+        if (reward == 0) {
+            revert NoVaultFundsToClaim();
+        }
 
         vaultDistribution = 0;
         rewardWalletContract.distributeReward(daoIncentiveVaultAddr, reward);

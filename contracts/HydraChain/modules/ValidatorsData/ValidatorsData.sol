@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "../../../common/System/System.sol";
-import {Unauthorized} from "../../../common/Errors.sol";
 import {IValidatorsData, ValidatorPower} from "./IValidatorsData.sol";
 
 /**

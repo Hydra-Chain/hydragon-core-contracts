@@ -2,3 +2,4 @@ node_modules
 contracts/mocks
 contracts/BLS
 contracts/GenesisProxy
+contracts/common/libs
