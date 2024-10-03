@@ -13,6 +13,12 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
 
+    // _______________ Initializer _______________
+
+    function __PenalizeableStaking_init() internal onlyInitializing {}
+
+    function __PenalizeableStaking_init_unchained() internal onlyInitializing {}
+
     // _______________ External functions _______________
 
     /**

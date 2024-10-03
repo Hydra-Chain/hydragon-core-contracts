@@ -15,6 +15,12 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     mapping(address => uint256) public validatorPower;
     uint256 public totalVotingPower;
 
+    // _______________ Initializer _______________
+
+    function __ValidatorData_init() internal onlyInitializing {}
+
+    function __ValidatorData_init_unchained() internal onlyInitializing {}
+
     // _______________ External functions _______________
 
     /**

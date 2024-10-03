@@ -23,6 +23,12 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
      */
     mapping(address => StakingRewardsHistory[]) public stakingRewardsHistory;
 
+    // _______________ Initializer _______________
+
+    function __VestedStaking_init() internal {}
+
+    function __VestedStaking_init_unchained() internal {}
+
     // _______________ External functions _______________
 
     /**
