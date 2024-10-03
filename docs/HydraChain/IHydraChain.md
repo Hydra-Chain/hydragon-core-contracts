@@ -596,4 +596,15 @@ error NoBanSubject()
 
 
 
+### NoVaultFundsToClaim
+
+```solidity
+error NoVaultFundsToClaim()
+```
+
+
+
+
+
+
 

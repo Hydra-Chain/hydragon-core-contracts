@@ -1425,6 +1425,17 @@ error NoBanSubject()
 
 
 
+### NoVaultFundsToClaim
+
+```solidity
+error NoVaultFundsToClaim()
+```
+
+
+
+
+
+
 ### PreviouslyWhitelisted
 
 ```solidity

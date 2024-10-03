@@ -1598,6 +1598,17 @@ error DelegateRequirement(string src, string msg)
 | src | string | undefined |
 | msg | string | undefined |
 
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
 ### InvalidCommission
 
 ```solidity
