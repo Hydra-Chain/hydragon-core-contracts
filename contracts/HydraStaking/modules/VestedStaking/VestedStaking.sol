@@ -25,8 +25,10 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line no-empty-blocks
     function __VestedStaking_init() internal {}
 
+    // solhint-disable-next-line no-empty-blocks
     function __VestedStaking_init_unchained() internal {}
 
     // _______________ External functions _______________

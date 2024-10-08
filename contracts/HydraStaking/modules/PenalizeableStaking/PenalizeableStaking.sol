@@ -15,8 +15,10 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line no-empty-blocks
     function __PenalizeableStaking_init() internal onlyInitializing {}
 
+    // solhint-disable-next-line no-empty-blocks
     function __PenalizeableStaking_init_unchained() internal onlyInitializing {}
 
     // _______________ External functions _______________
@@ -100,6 +102,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * @param unstakeAmount The amount to unstake
      * @param leftForStaker The amount left for the staker
      */
+    // solhint-disable-next-line no-empty-blocks
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal virtual {}
 
     /**
@@ -108,6 +111,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * @param staker The staker to withdraw banned funds
      * @param withdrawnAmount The amount to withdraw
      */
+    // solhint-disable-next-line no-empty-blocks
     function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual {}
 
     /**

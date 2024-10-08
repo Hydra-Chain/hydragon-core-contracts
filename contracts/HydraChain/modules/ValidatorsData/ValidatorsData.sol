@@ -17,8 +17,10 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line no-empty-blocks
     function __ValidatorData_init() internal onlyInitializing {}
 
+    // solhint-disable-next-line no-empty-blocks
     function __ValidatorData_init_unchained() internal onlyInitializing {}
 
     // _______________ External functions _______________
