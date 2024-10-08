@@ -45,10 +45,9 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
         uint256 totalNewPower = 0;
         uint256 totalOldPower = 0;
         for (uint256 i = 0; i < arrLength; i++) {
-            uint256 oldPower = validatorPower[validatorsPower[i].validator];
-            validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
             totalNewPower += validatorsPower[i].votingPower;
-            totalOldPower += oldPower;
+            totalOldPower += validatorPower[validatorsPower[i].validator];
+            validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
         }
 
         if (totalNewPower > totalOldPower) {
