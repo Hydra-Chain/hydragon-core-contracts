@@ -13,6 +13,8 @@ struct StakerInit {
 }
 
 interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking {
+    error DistributeRewardFailed(string message);
+
     /**
      * @notice Distributes rewards for the given epoch
      * @dev The function updates the rewards in the Staking and Delegation contracts' state

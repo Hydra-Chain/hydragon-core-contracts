@@ -190,9 +190,9 @@ export function RunHydraChainTests(): void {
         const { systemHydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
         const unexpectedEpochId = hre.ethers.utils.parseEther("1");
 
-        await expect(
-          systemHydraChain.commitEpoch(unexpectedEpochId, this.epoch, this.epochSize, this.uptime)
-        ).to.be.revertedWith("UNEXPECTED_EPOCH_ID");
+        await expect(systemHydraChain.commitEpoch(unexpectedEpochId, this.epoch, this.epochSize, this.uptime))
+          .to.be.revertedWithCustomError(systemHydraChain, "CommitEpochFailed")
+          .withArgs("UNEXPECTED_EPOCH_ID");
       });
 
       it("should revert with no blocks committed", async function () {
@@ -201,9 +201,9 @@ export function RunHydraChainTests(): void {
         this.epoch.startBlock = hre.ethers.BigNumber.from(0);
         this.epoch.endBlock = hre.ethers.BigNumber.from(0);
 
-        await expect(
-          systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime)
-        ).to.be.revertedWith("NO_BLOCKS_COMMITTED");
+        await expect(systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime))
+          .to.be.revertedWithCustomError(systemHydraChain, "CommitEpochFailed")
+          .withArgs("NO_BLOCKS_COMMITTED");
       });
 
       it("should revert that epoch is not divisible by epochSize", async function () {
@@ -213,9 +213,9 @@ export function RunHydraChainTests(): void {
         this.epoch.startBlock = hre.ethers.BigNumber.from(1);
         this.epoch.endBlock = hre.ethers.BigNumber.from(63);
 
-        await expect(
-          systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime)
-        ).to.be.revertedWith("EPOCH_MUST_BE_DIVISIBLE_BY_SIZE");
+        await expect(systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime))
+          .to.be.revertedWithCustomError(systemHydraChain, "CommitEpochFailed")
+          .withArgs("EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
       });
 
       it("should revert with invalid start block", async function () {
@@ -226,9 +226,9 @@ export function RunHydraChainTests(): void {
         this.epoch.endBlock = hre.ethers.BigNumber.from(64);
         this.epochSize = hre.ethers.BigNumber.from(62);
 
-        await expect(
-          systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime)
-        ).to.be.revertedWith("INVALID_START_BLOCK");
+        await expect(systemHydraChain.commitEpoch(this.epochId, this.epoch, this.epochSize, this.uptime))
+          .to.be.revertedWithCustomError(systemHydraChain, "CommitEpochFailed")
+          .withArgs("INVALID_START_BLOCK");
       });
 
       it("should commit epoch", async function () {

@@ -98,10 +98,18 @@ contract HydraChain is
         Uptime[] calldata uptime
     ) external onlySystemCall {
         uint256 newEpochId = currentEpochId++;
-        require(id == newEpochId, "UNEXPECTED_EPOCH_ID");
-        require(epoch.endBlock > epoch.startBlock, "NO_BLOCKS_COMMITTED");
-        require((epoch.endBlock - epoch.startBlock + 1) % epochSize == 0, "EPOCH_MUST_BE_DIVISIBLE_BY_SIZE");
-        require(epochs[newEpochId - 1].endBlock + 1 == epoch.startBlock, "INVALID_START_BLOCK");
+        if (id != newEpochId) {
+            revert CommitEpochFailed("UNEXPECTED_EPOCH_ID");
+        }
+        if (epoch.startBlock >= epoch.endBlock) {
+            revert CommitEpochFailed("NO_BLOCKS_COMMITTED");
+        }
+        if ((epoch.endBlock - epoch.startBlock + 1) % epochSize != 0) {
+            revert CommitEpochFailed("EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
+        }
+        if (epochs[newEpochId - 1].endBlock + 1 != epoch.startBlock) {
+            revert CommitEpochFailed("INVALID_START_BLOCK");
+        }
 
         epochs[newEpochId] = epoch;
         _commitBlockNumbers[newEpochId] = block.number;
