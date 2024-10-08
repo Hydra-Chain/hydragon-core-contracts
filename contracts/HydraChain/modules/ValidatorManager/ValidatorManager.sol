@@ -134,8 +134,8 @@ abstract contract ValidatorManager is
     {
         Validator memory v = validators[validatorAddress];
         blsKey = v.blsKey;
-        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         stake = hydraStakingContract.stakeOf(validatorAddress);
+        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;
