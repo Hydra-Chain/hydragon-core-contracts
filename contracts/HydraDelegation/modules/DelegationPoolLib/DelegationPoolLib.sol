@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SafeMathUint, SafeMathInt} from "../../../common/libs/SafeMathInt.sol";
+import {SafeMathInt} from "../../../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../../../common/libs/SafeMathUint.sol";
 import {DelegateRequirement} from "./../../../common/Errors.sol";
 import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegationPoolLib.sol";
 

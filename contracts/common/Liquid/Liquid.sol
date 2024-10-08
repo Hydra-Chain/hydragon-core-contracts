@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {SafeMathUint} from "../../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../../common/libs/SafeMathUint.sol";
 import {ILiquidityToken} from "../../LiquidityToken/ILiquidityToken.sol";
 import {ILiquid} from "./ILiquid.sol";
 

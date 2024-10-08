@@ -4,7 +4,6 @@
     "compiler-version": ["error", "^0.8.0"],
     "func-name-mixedcase": "off",
     "custom-errors": "off",
-    "one-contract-per-file": "off",
     "func-visibility": ["warn", { "ignoreConstructors": true }]
   }
 }

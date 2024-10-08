@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
-import {SafeMathUint} from "./../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";

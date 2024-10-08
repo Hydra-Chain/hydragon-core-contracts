@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
-import {SafeMathUint} from "../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../common/libs/SafeMathUint.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";

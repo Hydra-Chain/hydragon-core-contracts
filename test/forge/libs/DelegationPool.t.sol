@@ -5,7 +5,8 @@ import "@utils/Test.sol";
 
 import {DelegationPool, DelegationPoolDelegatorParams} from "contracts/HydraDelegation/modules/DelegationPoolLib/IDelegationPoolLib.sol";
 import {DelegationPoolLib} from "contracts/HydraDelegation/modules/DelegationPoolLib/DelegationPoolLib.sol";
-import {SafeMathInt, SafeMathUint} from "contracts/common/libs/SafeMathInt.sol";
+import {SafeMathInt} from "contracts/common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "contracts/common/libs/SafeMathUint.sol";
 
 contract DelegationPoolTest is Test {
     using SafeMathUint for uint256;
