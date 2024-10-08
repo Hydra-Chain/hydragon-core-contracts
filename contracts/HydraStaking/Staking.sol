@@ -21,6 +21,7 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Staking_init(
         uint256 _newMinStake,
         address _aprCalculatorAddr,
@@ -34,9 +35,12 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
         __Staking_init_unchained(_newMinStake);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Staking_init_unchained(uint256 _newMinStake) internal onlyInitializing {
         _changeMinStake(_newMinStake);
     }
+
+    // _______________ Modifiers _______________
 
     modifier onlyActiveStaker(address staker) {
         if (stakeOf(staker) < minStake) {

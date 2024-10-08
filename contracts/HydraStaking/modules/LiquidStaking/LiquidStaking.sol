@@ -11,6 +11,7 @@ import {Staking} from "../../Staking.sol";
 abstract contract LiquidStaking is Staking, Liquid {
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
         __LiquidStaking_init(_liquidToken);
     }

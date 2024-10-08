@@ -11,10 +11,12 @@ abstract contract RewardWalletConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __RewardWalletConnector_init(address _rewardWalletAddr) internal onlyInitializing {
         __RewardWalletConnector_init_unchained(_rewardWalletAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __RewardWalletConnector_init_unchained(address _rewardWalletAddr) internal onlyInitializing {
         rewardWalletContract = IRewardWallet(_rewardWalletAddr);
     }

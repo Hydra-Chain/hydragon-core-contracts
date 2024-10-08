@@ -17,10 +17,12 @@ abstract contract MacroFactor is IMacroFactor, Price {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __MacroFactor_init() internal onlyInitializing {
         __MacroFactor_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __MacroFactor_init_unchained() internal onlyInitializing {
         defaultMacroFactor = 7500;
         _initializeMacroFactor();

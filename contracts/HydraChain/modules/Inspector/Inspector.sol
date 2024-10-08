@@ -16,10 +16,12 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Inspector_init() internal onlyInitializing {
         __Inspector_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Inspector_init_unchained() internal onlyInitializing {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;

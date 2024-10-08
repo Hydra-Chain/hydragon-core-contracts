@@ -23,6 +23,7 @@ abstract contract DaoIncentive is
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __DaoIncentive_init(
         address _aprCalculatorAddr,
         address _rewardWalletAddr,
@@ -33,6 +34,7 @@ abstract contract DaoIncentive is
         __DaoIncentive_init_unchained(_daoIncentiveVaultAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __DaoIncentive_init_unchained(address _daoIncentiveVaultAddr) internal {
         daoIncentiveVaultAddr = _daoIncentiveVaultAddr;
         lastDistribution = block.timestamp;

@@ -11,10 +11,12 @@ abstract contract HydraChainConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraChainConnector_init(address _hydraChainAddr) internal onlyInitializing {
         __HydraChainConnector_init_unchained(_hydraChainAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraChainConnector_init_unchained(address _hydraChainAddr) internal onlyInitializing {
         hydraChainContract = IHydraChain(_hydraChainAddr);
     }

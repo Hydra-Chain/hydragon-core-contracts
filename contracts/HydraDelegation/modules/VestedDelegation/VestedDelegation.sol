@@ -41,6 +41,7 @@ abstract contract VestedDelegation is
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __VestedDelegation_init(
         address _vestingManagerFactoryAddr,
         address _hydraChainAddr
@@ -50,6 +51,7 @@ abstract contract VestedDelegation is
         __VestedDelegation_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __VestedDelegation_init_unchained() internal onlyInitializing {
         balanceChangeThreshold = 32;
     }

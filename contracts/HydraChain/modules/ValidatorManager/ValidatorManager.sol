@@ -44,6 +44,7 @@ abstract contract ValidatorManager is
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
@@ -55,6 +56,7 @@ abstract contract ValidatorManager is
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __ValidatorManager_init_unchained(
         ValidatorInit[] calldata newValidators,
         IBLS newBls

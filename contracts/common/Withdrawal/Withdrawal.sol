@@ -16,12 +16,14 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Withdrawal_init(address _governance) internal {
         __ReentrancyGuard_init();
         _transferOwnership(_governance);
         __Withdrawal_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Withdrawal_init_unchained() internal onlyInitializing {
         _changeWithdrawalWaitPeriod(1 weeks);
     }

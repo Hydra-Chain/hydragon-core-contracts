@@ -11,10 +11,12 @@ abstract contract PriceOracleConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __PriceOracleConnector_init(address _priceOracleAddr) internal onlyInitializing {
         __PriceOracleConnector_init_unchained(_priceOracleAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __PriceOracleConnector_init_unchained(address _priceOracleAddr) internal onlyInitializing {
         priceOracleContract = IPriceOracle(_priceOracleAddr);
     }

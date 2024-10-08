@@ -20,6 +20,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Price_init(
         address _hydraChainAddr,
         address _priceOracleAddr,
@@ -34,6 +35,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         _grantRole(MANAGER_ROLE, _governance);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Price_init_unchained(uint256[310] memory _prices) internal onlyInitializing {
         updatedPrices = _prices;
         latestDailyPrice = _prices[309];

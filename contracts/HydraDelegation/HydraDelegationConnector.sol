@@ -11,10 +11,12 @@ abstract contract HydraDelegationConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraDelegationConnector_init(address _hydraDelegationAddr) internal onlyInitializing {
         __HydraDelegationConnector_init_unchained(_hydraDelegationAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraDelegationConnector_init_unchained(address _hydraDelegationAddr) internal onlyInitializing {
         hydraDelegationContract = IHydraDelegation(_hydraDelegationAddr);
     }

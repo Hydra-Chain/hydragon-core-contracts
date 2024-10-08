@@ -20,14 +20,6 @@ abstract contract Vesting is APRCalculatorConnector {
      */
     uint256 private constant WEEK_MINUS_SECOND = 604799;
 
-    // _______________ Initializer _______________
-
-    // solhint-disable-next-line no-empty-blocks
-    function __Vesting_init() internal {}
-
-    // solhint-disable-next-line no-empty-blocks
-    function __Vesting_init_unchained() internal {}
-
     // _______________ Internal functions _______________
 
     /**
