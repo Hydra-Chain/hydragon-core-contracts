@@ -131,12 +131,12 @@ contract HydraChain is
         }
 
         uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];
-        uint256 valiatorParticipation = validatorsParticipation[validator];
+        uint256 validatorParticipation = validatorsParticipation[validator];
         // check if the validator is active and the last participation is less than the threshold
         if (
             validators[validator].status == ValidatorStatus.Active &&
-            lastCommittedEndBlock > valiatorParticipation &&
-            lastCommittedEndBlock - valiatorParticipation >= banThreshold
+            lastCommittedEndBlock > validatorParticipation &&
+            lastCommittedEndBlock - validatorParticipation >= banThreshold
         ) {
             return true;
         }
