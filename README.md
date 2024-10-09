@@ -9,6 +9,7 @@ This repository contains the smart contract suite used in Polygon's POS v3 block
 
 ## Contents
 
+- [Known discrepancies](#known-discrepancies)
 - [Repo Architecture](#repo-architecture)
   - [Contracts](#contracts)
   - [General Repo Layout](#general-repo-layout)
@@ -21,6 +22,11 @@ This repository contains the smart contract suite used in Polygon's POS v3 block
   - [Run Slither](#run-slither)
   - [Continuous Integration](#continuous-integration)
   - [Documentation](#documentation)
+
+## Known discrepancies
+
+- The epoch increases at the begining of the last block of an epoch, which results in the following:
+  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (or valdiator status) at epoch X + 2, because actually he made the balance change in epoch x + 1
 
 ## Repo Architecture
 
