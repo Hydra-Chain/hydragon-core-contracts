@@ -317,7 +317,7 @@ export function RunSwapVestedPositionStakerTests(): void {
         .claimVestedPositionReward(newValidator.address, epochNum, balanceChangeIndex + 1)
     )
       .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-      .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
+      .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.invalidParamsIndex);
   });
 
   it("should claim all rewards from the new position after swap", async function () {
@@ -400,6 +400,6 @@ export function RunSwapVestedPositionStakerTests(): void {
       vestManager.connect(vestManagerOwner).swapVestedPositionStaker(oldValidator.address, newValidator.address)
     )
       .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-      .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
+      .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.balanceChangeMade);
   });
 }
