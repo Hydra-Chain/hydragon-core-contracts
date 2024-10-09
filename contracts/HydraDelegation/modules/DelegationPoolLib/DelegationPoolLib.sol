@@ -144,7 +144,7 @@ library DelegationPoolLib {
         uint256 endEpoch
     ) internal view returns (RPS[] memory) {
         if (startEpoch > endEpoch) {
-            revert DelegateRequirement({src: "vesting", msg: "INVALID_ARGUMENTS"});
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "INVALID_ARGUMENTS"});
         }
 
         RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
@@ -272,7 +272,7 @@ library DelegationPoolLib {
      */
     function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
         if (pool.historyRPS[epochNumber].timestamp != 0) {
-            revert DelegateRequirement({src: "vesting", msg: "RPS_ALREADY_SAVED"});
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "RPS_ALREADY_SAVED"});
         }
 
         pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
