@@ -62,8 +62,12 @@ export const ERRORS = {
   vesting: {
     invalidEpoch: "INVALID_EPOCH",
     wrongRPS: "WRONG_RPS",
+  },
+  DelegPoolLib: {
     invalidParamsIndex: "INVALID_PARAMS_INDEX",
     earlyBalanceChange: "EARLY_BALANCE_CHANGE",
+    lateBalanceChange: "LATE_BALANCE_CHANGE",
+    balanceChangeMade: "BALANCE_CHANGE_ALREADY_MADE",
   },
   accessControl: (account: string, role: string) => {
     return `AccessControl: account ${account.toLowerCase()} is missing role ${role}`;

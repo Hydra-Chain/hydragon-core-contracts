@@ -928,6 +928,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
 ### InvalidMinStake
 
 ```solidity

@@ -13,10 +13,12 @@ abstract contract RSIndex is IRSIndex, Price {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __RSIndex_init() internal onlyInitializing {
         __RSIndex_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __RSIndex_init_unchained() internal onlyInitializing {
         _initializeRSI();
     }

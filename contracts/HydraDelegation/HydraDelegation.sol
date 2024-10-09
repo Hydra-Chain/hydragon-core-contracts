@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
-import {SafeMathUint} from "../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../common/libs/SafeMathUint.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
@@ -156,7 +156,7 @@ contract HydraDelegation is
     /**
      * @notice Set commission for staker
      * @param staker Address of the validator
-     * @param newCommission New commission (100 = 10%)
+     * @param newCommission New commission (100 = 100%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);

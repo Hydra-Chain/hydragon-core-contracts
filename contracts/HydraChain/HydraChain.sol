@@ -5,8 +5,6 @@ import {ArraysUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Array
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import {IBLS} from "../BLS/IBLS.sol";
-import {System} from "../common/System/System.sol";
-import {SafeMathInt} from "../common/libs/SafeMathInt.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
@@ -100,10 +98,18 @@ contract HydraChain is
         Uptime[] calldata uptime
     ) external onlySystemCall {
         uint256 newEpochId = currentEpochId++;
-        require(id == newEpochId, "UNEXPECTED_EPOCH_ID");
-        require(epoch.endBlock > epoch.startBlock, "NO_BLOCKS_COMMITTED");
-        require((epoch.endBlock - epoch.startBlock + 1) % epochSize == 0, "EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
-        require(epochs[newEpochId - 1].endBlock + 1 == epoch.startBlock, "INVALID_START_BLOCK");
+        if (id != newEpochId) {
+            revert CommitEpochFailed("UNEXPECTED_EPOCH_ID");
+        }
+        if (epoch.startBlock >= epoch.endBlock) {
+            revert CommitEpochFailed("NO_BLOCKS_COMMITTED");
+        }
+        if ((epoch.endBlock - epoch.startBlock + 1) % epochSize != 0) {
+            revert CommitEpochFailed("EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
+        }
+        if (epochs[newEpochId - 1].endBlock + 1 != epoch.startBlock) {
+            revert CommitEpochFailed("INVALID_START_BLOCK");
+        }
 
         epochs[newEpochId] = epoch;
         _commitBlockNumbers[newEpochId] = block.number;
@@ -133,12 +139,12 @@ contract HydraChain is
         }
 
         uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];
-        uint256 valiatorParticipation = validatorsParticipation[validator];
+        uint256 validatorParticipation = validatorsParticipation[validator];
         // check if the validator is active and the last participation is less than the threshold
         if (
             validators[validator].status == ValidatorStatus.Active &&
-            lastCommittedEndBlock > valiatorParticipation &&
-            lastCommittedEndBlock - valiatorParticipation >= banThreshold
+            lastCommittedEndBlock > validatorParticipation &&
+            lastCommittedEndBlock - validatorParticipation >= banThreshold
         ) {
             return true;
         }

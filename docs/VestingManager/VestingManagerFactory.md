@@ -286,6 +286,17 @@ event NewVestingManager(address indexed owner, address newClone)
 
 ## Errors
 
+### InvalidOwner
+
+```solidity
+error InvalidOwner()
+```
+
+
+
+
+
+
 ### Unauthorized
 
 ```solidity

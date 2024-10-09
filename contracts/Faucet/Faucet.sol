@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../common/Errors.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ZeroAddress, SendFailed} from "../common/Errors.sol";
 
 error InsufficientCooldown();
 
@@ -74,6 +74,7 @@ contract Faucet is AccessControl {
     // _______________ Private functions _______________
 
     function _sendHYDRA(address to, uint256 amount) private {
+        // slither-disable-next-line arbitrary-send-eth
         (bool sent, ) = payable(to).call{value: amount}("");
         if (!sent) revert SendFailed();
     }

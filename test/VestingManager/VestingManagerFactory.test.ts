@@ -101,8 +101,9 @@ export function RunVestManagerFactoryTests(): void {
         const { vestingManagerFactory } = await loadFixture(this.fixtures.vestManagerFixture);
         const zeroAddress = await hre.ethers.getSigner(hre.ethers.constants.AddressZero);
 
-        await expect(vestingManagerFactory.connect(zeroAddress).newVestingManager()).to.be.revertedWith(
-          "INVALID_OWNER"
+        await expect(vestingManagerFactory.connect(zeroAddress).newVestingManager()).to.be.revertedWithCustomError(
+          vestingManagerFactory,
+          "InvalidOwner"
         );
       });
 

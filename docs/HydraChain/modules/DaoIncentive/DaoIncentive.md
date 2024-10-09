@@ -292,6 +292,17 @@ event VaultFundsDistributed(uint256 amount)
 
 ## Errors
 
+### NoVaultFundsToClaim
+
+```solidity
+error NoVaultFundsToClaim()
+```
+
+
+
+
+
+
 ### Unauthorized
 
 ```solidity

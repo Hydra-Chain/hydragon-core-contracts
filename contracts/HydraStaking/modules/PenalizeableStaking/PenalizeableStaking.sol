@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {Staking} from "../../Staking.sol";
-import {IPenalizeableStaking, PenalizedStakeDistribution, WithdrawalInfo} from "./IPenalizeableStaking.sol";
+import {IPenalizeableStaking, PenalizedStakeDistribution} from "./IPenalizeableStaking.sol";
 
 abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnector, Staking {
     /**
@@ -12,10 +12,6 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * the staker's total stake and any penalties applied due to a ban
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
-
-    // _______________ Initializer _______________
-
-    function __PenalizeableStaking_init() internal onlyInitializing {}
 
     // _______________ External functions _______________
 
@@ -98,6 +94,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * @param unstakeAmount The amount to unstake
      * @param leftForStaker The amount left for the staker
      */
+    // solhint-disable-next-line no-empty-blocks
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal virtual {}
 
     /**
@@ -106,6 +103,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * @param staker The staker to withdraw banned funds
      * @param withdrawnAmount The amount to withdraw
      */
+    // solhint-disable-next-line no-empty-blocks
     function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual {}
 
     /**

@@ -5,6 +5,8 @@ interface IDaoIncentive {
     event VaultFundsDistributed(uint256 amount);
     event VaultFunded(uint256 amount);
 
+    error NoVaultFundsToClaim();
+
     /**
      * @notice Distribute vault funds
      * @dev Only callable by the system

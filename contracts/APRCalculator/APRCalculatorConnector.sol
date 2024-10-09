@@ -11,10 +11,12 @@ abstract contract APRCalculatorConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __APRCalculatorConnector_init(address _aprCalculatorAddr) internal onlyInitializing {
         __APRCalculatorConnector_init_unchained(_aprCalculatorAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __APRCalculatorConnector_init_unchained(address _aprCalculatorAddr) internal onlyInitializing {
         aprCalculatorContract = IAPRCalculator(_aprCalculatorAddr);
     }

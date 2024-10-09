@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "../../../common/System/System.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
@@ -14,6 +14,7 @@ import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IV
 abstract contract ValidatorManager is
     IValidatorManager,
     System,
+    Initializable,
     AccessControl,
     HydraStakingConnector,
     HydraDelegationConnector
@@ -43,6 +44,7 @@ abstract contract ValidatorManager is
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __ValidatorManager_init(
         ValidatorInit[] calldata _newValidators,
         IBLS _newBls,
@@ -54,6 +56,7 @@ abstract contract ValidatorManager is
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __ValidatorManager_init_unchained(
         ValidatorInit[] calldata newValidators,
         IBLS newBls
@@ -131,8 +134,8 @@ abstract contract ValidatorManager is
     {
         Validator memory v = validators[validatorAddress];
         blsKey = v.blsKey;
-        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         stake = hydraStakingContract.stakeOf(validatorAddress);
+        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
         active = v.status == ValidatorStatus.Active;

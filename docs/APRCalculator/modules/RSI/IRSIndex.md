@@ -34,7 +34,7 @@ Get the rsi
 ### RSIBonusSet
 
 ```solidity
-event RSIBonusSet(uint256 RSIndex)
+event RSIBonusSet(uint256 rsiBonus)
 ```
 
 
@@ -45,7 +45,7 @@ event RSIBonusSet(uint256 RSIndex)
 
 | Name | Type | Description |
 |---|---|---|
-| RSIndex  | uint256 | undefined |
+| rsiBonus  | uint256 | undefined |
 
 
 

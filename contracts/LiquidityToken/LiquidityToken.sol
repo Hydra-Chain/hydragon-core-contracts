@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 
-import "../common/System/System.sol";
-import "../common/Governed/Governed.sol";
-import "./ILiquidityToken.sol";
+import {System} from "../common/System/System.sol";
+import {Governed} from "../common/Governed/Governed.sol";
+import {ILiquidityToken} from "./ILiquidityToken.sol";
 
 /**
  * @title LiquidityToken

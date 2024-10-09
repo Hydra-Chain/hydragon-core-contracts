@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
@@ -176,6 +175,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
      * @return uint256 Passed seconds
      */
     function _secondsPassedToday() private view returns (uint256) {
+        // slither-disable-next-line weak-prng
         return block.timestamp % 1 days;
     }
 

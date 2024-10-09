@@ -11,10 +11,12 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __DelegatedStaking_init(address _hydraDelegationAddr) internal onlyInitializing {
         __DelegatedStaking_init_unchained(_hydraDelegationAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __DelegatedStaking_init_unchained(address _hydraDelegationAddr) internal onlyInitializing {
         delegationContract = IHydraDelegation(_hydraDelegationAddr);
     }

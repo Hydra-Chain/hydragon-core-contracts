@@ -16,6 +16,8 @@ struct Epoch {
 interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidatorsData {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
 
+    error CommitEpochFailed(string reason);
+
     /**
      * @notice Get current epoch ID
      */

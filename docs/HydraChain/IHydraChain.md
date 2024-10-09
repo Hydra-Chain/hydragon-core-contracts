@@ -531,6 +531,22 @@ event VaultFundsDistributed(uint256 amount)
 
 ## Errors
 
+### CommitEpochFailed
+
+```solidity
+error CommitEpochFailed(string reason)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| reason | string | undefined |
+
 ### InvalidCommission
 
 ```solidity
@@ -589,6 +605,17 @@ error MaxValidatorsReached()
 
 ```solidity
 error NoBanSubject()
+```
+
+
+
+
+
+
+### NoVaultFundsToClaim
+
+```solidity
+error NoVaultFundsToClaim()
 ```
 
 

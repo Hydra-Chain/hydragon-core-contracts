@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {SafeMathUint} from "../../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../../common/libs/SafeMathUint.sol";
 import {ILiquidityToken} from "../../LiquidityToken/ILiquidityToken.sol";
 import {ILiquid} from "./ILiquid.sol";
 
@@ -21,10 +21,12 @@ abstract contract Liquid is ILiquid, Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __LiquidStaking_init(address newLiquidToken) internal onlyInitializing {
         __LiquidStaking_init_unchained(newLiquidToken);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __LiquidStaking_init_unchained(address newLiquidToken) internal onlyInitializing {
         _liquidToken = newLiquidToken;
     }

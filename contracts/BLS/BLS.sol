@@ -26,7 +26,7 @@ SOFTWARE.
 
 pragma solidity 0.8.17;
 
-import "./IBLS.sol";
+import {IBLS} from "./IBLS.sol";
 import {ModexpInverse, ModexpSqrt} from "./libs/ModExp.sol";
 
 /**

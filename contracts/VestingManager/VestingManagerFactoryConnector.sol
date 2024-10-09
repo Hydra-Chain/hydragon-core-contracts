@@ -11,10 +11,12 @@ abstract contract VestingManagerFactoryConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __VestingManagerFactoryConnector_init(address vestingManagerFactoryAddr) internal onlyInitializing {
         __VestingManagerFactoryConnector_init_unchained(vestingManagerFactoryAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __VestingManagerFactoryConnector_init_unchained(
         address vestingManagerFactoryAddr
     ) internal onlyInitializing {

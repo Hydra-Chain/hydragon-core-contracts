@@ -17,10 +17,12 @@ abstract contract MacroFactor is IMacroFactor, Price {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __MacroFactor_init() internal onlyInitializing {
         __MacroFactor_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __MacroFactor_init_unchained() internal onlyInitializing {
         defaultMacroFactor = 7500;
         _initializeMacroFactor();
@@ -93,9 +95,9 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @notice Calculate the Simple Moving Average (SMA) ratio and set the macro factor accordingly.
      */
     function _calcSMA() private view returns (uint256 smaRatio) {
-        uint256 smaFast = smaFastSum / FAST_SMA;
+        uint256 smaFast = (smaFastSum * DENOMINATOR) / FAST_SMA;
         uint256 smaSlow = smaSlowSum / SLOW_SMA;
-        smaRatio = (smaFast * DENOMINATOR) / smaSlow;
+        smaRatio = smaFast / smaSlow;
     }
 
     /**

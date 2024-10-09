@@ -49,3 +49,17 @@ event Initialized(uint8 version)
 
 
 
+## Errors
+
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
+

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Epoch} from "../HydraChain/IHydraChain.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {ILiquidStaking} from "./modules/LiquidStaking/ILiquidStaking.sol";
 import {IDelegatedStaking} from "./modules/DelegatedStaking/IDelegatedStaking.sol";
@@ -14,6 +13,8 @@ struct StakerInit {
 }
 
 interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking {
+    error DistributeRewardFailed(string message);
+
     /**
      * @notice Distributes rewards for the given epoch
      * @dev The function updates the rewards in the Staking and Delegation contracts' state

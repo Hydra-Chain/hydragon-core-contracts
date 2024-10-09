@@ -451,6 +451,22 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
+### DistributeRewardFailed
+
+```solidity
+error DistributeRewardFailed(string message)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| message | string | undefined |
+
 ### InvalidMinStake
 
 ```solidity

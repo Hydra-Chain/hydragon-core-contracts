@@ -45,8 +45,9 @@ export function RunVestedDelegationTests(): void {
         const zeroAddress = hre.ethers.constants.AddressZero;
         await impersonateAccount(zeroAddress);
         const zeroAddrSigner = await hre.ethers.getSigner(zeroAddress);
-        await expect(vestingManagerFactory.connect(zeroAddrSigner).newVestingManager()).to.be.revertedWith(
-          "INVALID_OWNER"
+        await expect(vestingManagerFactory.connect(zeroAddrSigner).newVestingManager()).to.be.revertedWithCustomError(
+          vestingManagerFactory,
+          "InvalidOwner"
         );
       });
 
@@ -300,7 +301,7 @@ export function RunVestedDelegationTests(): void {
             .cutVestedDelegatePosition(validator.address, this.minDelegation)
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("_saveAccountParamsChange", "BALANCE_CHANGE_ALREADY_MADE");
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.balanceChangeMade);
       });
 
       it("should get staker penalty and rewards that will be burned, if closing from active position", async function () {
@@ -807,7 +808,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.invalidParamsIndex);
       });
 
       it("should revert when get reward with late balance", async function () {
@@ -839,7 +840,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "LATE_BALANCE_CHANGE");
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.lateBalanceChange);
       });
 
       it("should revert when get reward with early balance", async function () {
@@ -863,7 +864,7 @@ export function RunVestedDelegationTests(): void {
           hydraDelegation.calculatePositionClaimableReward(oldValidator.address, vestManager.address, epochNum, 0)
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.earlyBalanceChange);
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.earlyBalanceChange);
       });
 
       it("should return 0 reward if the position is non-existing one", async function () {
@@ -1262,7 +1263,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.invalidParamsIndex);
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.invalidParamsIndex);
       });
 
       it("should revert when calculate the total reward with earlier balance change index", async function () {
@@ -1284,7 +1285,7 @@ export function RunVestedDelegationTests(): void {
           hydraDelegation.calculatePositionTotalReward(oldValidator.address, vestManager.address, epochNum, 0)
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", ERRORS.vesting.earlyBalanceChange);
+          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.earlyBalanceChange);
       });
 
       it("should successfully calculate the total reward for still active position", async function () {

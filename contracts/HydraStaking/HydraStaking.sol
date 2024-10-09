@@ -2,11 +2,8 @@
 pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
-import {Governed} from "../common/Governed/Governed.sol";
-import {SafeMathUint} from "./../common/libs/SafeMathInt.sol";
-import {Unauthorized, StakeRequirement} from "../common/Errors.sol";
+import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {DelegationPool} from "..//HydraDelegation/modules/DelegationPoolLib/DelegationPoolLib.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
@@ -14,7 +11,6 @@ import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
-import {PenalizedStakeDistribution} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {Staking} from "./Staking.sol";
 
@@ -77,10 +73,14 @@ contract HydraStaking is
      * @inheritdoc IHydraStaking
      */
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime) external onlySystemCall {
-        require(distributedRewardPerEpoch[epochId] == 0, "REWARD_ALREADY_DISTRIBUTED");
+        if (distributedRewardPerEpoch[epochId] != 0) {
+            revert DistributeRewardFailed("REWARD_ALREADY_DISTRIBUTED");
+        }
 
         uint256 totalBlocks = hydraChainContract.totalBlocks(epochId);
-        require(totalBlocks != 0, "EPOCH_NOT_COMMITTED");
+        if (totalBlocks == 0) {
+            revert DistributeRewardFailed("NO_BLOCKS_COMMITTED");
+        }
 
         uint256 totalSupply = totalBalance();
         uint256 rewardIndex = _calcRewardIndex(totalSupply);
@@ -231,7 +231,9 @@ contract HydraStaking is
         uint256 totalSupply,
         uint256 totalBlocks
     ) private returns (uint256 reward) {
-        require(uptime.signedBlocks <= totalBlocks, "SIGNED_BLOCKS_EXCEEDS_TOTAL");
+        if (uptime.signedBlocks > totalBlocks) {
+            revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
+        }
 
         uint256 stake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);

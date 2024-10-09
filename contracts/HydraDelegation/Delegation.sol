@@ -34,6 +34,7 @@ contract Delegation is
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Delegation_init(address _governance, address _rewardWalletAddr) internal onlyInitializing {
         __Governed_init(_governance);
         __Withdrawal_init(_governance);
@@ -41,6 +42,7 @@ contract Delegation is
         __Delegation_init_unchained();
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __Delegation_init_unchained() internal onlyInitializing {
         _changeMinDelegation(MIN_DELEGATION_LIMIT);
     }

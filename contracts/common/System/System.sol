@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../common/Errors.sol";
+import {Unauthorized} from "../../common/Errors.sol";
 
 abstract contract System {
     // pre-compiled contracts

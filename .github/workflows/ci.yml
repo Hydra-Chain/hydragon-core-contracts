@@ -72,6 +72,8 @@ jobs:
           cache: "npm"
       - run: rm foundry.toml # force hardhat https://github.com/foundry-rs/foundry/issues/3827
       - uses: crytic/slither-action@v0.2.0
+        with:
+          fail-on: high
   coverage:
     runs-on: ubuntu-latest
     steps:

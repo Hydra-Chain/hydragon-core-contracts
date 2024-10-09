@@ -68,3 +68,17 @@ Creates new vesting manager which owner is the caller. Every new instance is pro
 
 
 
+## Errors
+
+### InvalidOwner
+
+```solidity
+error InvalidOwner()
+```
+
+
+
+
+
+
+

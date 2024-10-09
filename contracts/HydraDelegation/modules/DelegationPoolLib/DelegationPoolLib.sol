@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../common/libs/SafeMathInt.sol";
+import {SafeMathInt} from "../../../common/libs/SafeMathInt.sol";
+import {SafeMathUint} from "../../../common/libs/SafeMathUint.sol";
 import {DelegateRequirement} from "./../../../common/Errors.sol";
 import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegationPoolLib.sol";
 
@@ -142,7 +143,9 @@ library DelegationPoolLib {
         uint256 startEpoch,
         uint256 endEpoch
     ) internal view returns (RPS[] memory) {
-        require(startEpoch <= endEpoch, "Invalid args");
+        if (startEpoch > endEpoch) {
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "INVALID_ARGUMENTS"});
+        }
 
         RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
         uint256 itemIndex = 0;
@@ -268,7 +271,9 @@ library DelegationPoolLib {
      * @param epochNumber Epoch number
      */
     function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
-        require(pool.historyRPS[epochNumber].timestamp == 0, "RPS already saved");
+        if (pool.historyRPS[epochNumber].timestamp != 0) {
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "RPS_ALREADY_SAVED"});
+        }
 
         pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
     }
@@ -287,12 +292,12 @@ library DelegationPoolLib {
         uint256 paramsIndex
     ) private view returns (uint256 balance, int256 correction) {
         if (paramsIndex >= pool.delegatorsParamsHistory[delegator].length) {
-            revert DelegateRequirement({src: "vesting", msg: "INVALID_PARAMS_INDEX"});
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "INVALID_PARAMS_INDEX"});
         }
 
         DelegationPoolDelegatorParams memory params = pool.delegatorsParamsHistory[delegator][paramsIndex];
         if (params.epochNum > epochNumber) {
-            revert DelegateRequirement({src: "vesting", msg: "LATE_BALANCE_CHANGE"});
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "LATE_BALANCE_CHANGE"});
         } else if (params.epochNum < epochNumber && paramsIndex != pool.delegatorsParamsHistory[delegator].length - 1) {
             // If balance change is not made exactly in the epoch with the given index, but in earlier epoch
             // And if this is not the last balance change - there is a chance of having a better balance change
@@ -304,7 +309,7 @@ library DelegationPoolLib {
                 // If the next balance change is made in an epoch before the handled one or in the same epoch
                 // - the provided one is not valid.
                 // Because when the reward was distributed for the given epoch, the account balance was different
-                revert DelegateRequirement({src: "vesting", msg: "EARLY_BALANCE_CHANGE"});
+                revert DelegateRequirement({src: "DelegPoolLib", msg: "EARLY_BALANCE_CHANGE"});
             }
         }
 
@@ -319,7 +324,7 @@ library DelegationPoolLib {
     function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
         if (isBalanceChangeMade(pool, delegator, epochNumber)) {
             // balance can be changed only once per epoch
-            revert DelegateRequirement({src: "_saveAccountParamsChange", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "BALANCE_CHANGE_ALREADY_MADE"});
         }
 
         pool.delegatorsParamsHistory[delegator].push(

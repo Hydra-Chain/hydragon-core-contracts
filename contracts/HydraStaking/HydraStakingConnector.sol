@@ -11,10 +11,12 @@ abstract contract HydraStakingConnector is Initializable {
 
     // _______________ Initializer _______________
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraStakingConnector_init(address _hydraStakingAddr) internal onlyInitializing {
         __HydraStakingConnector_init_unchained(_hydraStakingAddr);
     }
 
+    // solhint-disable-next-line func-name-mixedcase
     function __HydraStakingConnector_init_unchained(address _hydraStakingAddr) internal onlyInitializing {
         hydraStakingContract = IHydraStaking(_hydraStakingAddr);
     }
