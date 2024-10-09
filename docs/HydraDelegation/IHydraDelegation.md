@@ -411,22 +411,23 @@ Returns true if the position is maturing.
 |---|---|---|
 | _0 | bool | undefined |
 
-### isPositionAvailableForSwap
+### isPositionAvailable
 
 ```solidity
-function isPositionAvailableForSwap(address newStaker, address delegator) external view returns (bool)
+function isPositionAvailable(address staker, address delegator, bool swap) external view returns (bool)
 ```
 
-Check if the new position that the user wants to swap to is available for the swap
+Check if the a position that the user wants to swap/delegate to is available
 
-*Available positions one that is not active, not maturing and doesn&#39;t have any left balance or rewards*
+*Available positions one that is not active and doesn&#39;t have any left balance or rewards (including maturing rewards)*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newStaker | address | The address of the new validator |
+| staker | address | The address of the new validator |
 | delegator | address | The address of the delegator |
+| swap | bool | True if the user want to see if the position is available for swap |
 
 #### Returns
 
@@ -843,23 +844,6 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 ## Errors
-
-### DelegateRequirement
-
-```solidity
-error DelegateRequirement(string src, string msg)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| src | string | undefined |
-| msg | string | undefined |
 
 ### InvalidCommission
 

@@ -153,7 +153,7 @@ export function RunVestedDelegationTests(): void {
           })
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "POSITION_MATURING");
+          .withArgs("vesting", "POSITION_UNAVAILABLE");
       });
 
       it("should revert when active position", async function () {
@@ -166,7 +166,7 @@ export function RunVestedDelegationTests(): void {
           })
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "POSITION_ACTIVE");
+          .withArgs("vesting", "POSITION_UNAVAILABLE");
       });
 
       it("should revert when reward not claimed", async function () {
@@ -188,7 +188,7 @@ export function RunVestedDelegationTests(): void {
           })
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("vesting", "REWARDS_NOT_CLAIMED");
+          .withArgs("vesting", "POSITION_UNAVAILABLE");
       });
 
       it("should successfully open vesting position again", async function () {
@@ -215,11 +215,71 @@ export function RunVestedDelegationTests(): void {
 
         await expect(tx)
           .to.emit(hydraDelegation, "PositionOpened")
-          .withArgs(vestManager.address, this.delegatedValidators[0], vestingDuration, amountToDelegate);
+          .withArgs(
+            vestManager.address,
+            this.delegatedValidators[0],
+            vestingDuration,
+            amountToDelegate.add(delegatedAmount)
+          );
 
         expect(await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address)).to.be.equal(
           delegatedAmount.add(amountToDelegate)
         );
+      });
+
+      it("should open position, when there is no maturing reward (even if maturing period is not ended)", async function () {
+        const {
+          systemHydraChain,
+          hydraDelegation,
+          vestManager,
+          vestManagerOwner,
+          oldValidator,
+          newValidator,
+          hydraStaking,
+        } = await loadFixture(this.fixtures.swappedPositionFixture);
+
+        // commit epochs and increase time to make the position matured & commit epochs
+        await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK);
+
+        // claim matured rewards from old position
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          oldValidator.address,
+          vestManager.address
+        );
+
+        await vestManager
+          .connect(vestManagerOwner)
+          .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
+
+        // check that there is no rewards left to claim
+        const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(
+          oldValidator.address,
+          vestManager.address
+        );
+        expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
+        // ensure that the position is still maturing (on time)
+        const position = await hydraDelegation.vestedDelegationPositions(oldValidator.address, vestManager.address);
+        expect(position.start, "position.start").to.be.gt(0);
+
+        // swap to old validator another position (while time is still maturing but no rewards left)
+        await expect(
+          vestManager
+            .connect(vestManagerOwner)
+            .openVestedDelegatePosition(oldValidator.address, 1, { value: this.minDelegation })
+        )
+          .to.emit(hydraDelegation, "PositionOpened")
+          .withArgs(vestManager.address, oldValidator.address, 1, this.minDelegation);
+
+        // check position balance
+        expect(await hydraDelegation.delegationOf(oldValidator.address, vestManager.address), "delegationOf").to.be.eq(
+          this.minDelegation
+        );
+        // check it it is active
+        expect(await hydraDelegation.isActiveDelegatePosition(oldValidator.address, vestManager.address), "isActive").to
+          .be.true;
       });
     });
 

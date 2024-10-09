@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {Governed} from "../common/Governed/Governed.sol";
 import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
+import {DelegateRequirement} from "../common/Errors.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";

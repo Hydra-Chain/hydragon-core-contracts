@@ -83,13 +83,17 @@ export function RunSwapVestedPositionStakerTests(): void {
       .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
   });
 
-  it("should revert when we try to swap to new position which still matures", async function () {
+  it("should revert when we try to swap to new position which still has reward maturing", async function () {
     const { systemHydraChain, vestManager, vestManagerOwner, hydraDelegation, hydraStaking } = await loadFixture(
       this.fixtures.vestManagerFixture
     );
 
     const oldValidator = this.signers.validators[0];
     const newValidator = this.signers.validators[1];
+
+    const rawRewardBefore = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    expect(rawRewardBefore, "rawRewardBefore").to.be.eq(0);
+
     await vestManager
       .connect(vestManagerOwner)
       .openVestedDelegatePosition(oldValidator.address, 2, { value: this.minDelegation });
@@ -97,8 +101,11 @@ export function RunSwapVestedPositionStakerTests(): void {
       .connect(vestManagerOwner)
       .openVestedDelegatePosition(newValidator.address, 1, { value: this.minDelegation });
 
-    // commit 8 epochs with 1 day increase before each, so, the first position gonna start maturing
-    await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 8, this.epochSize, DAY);
+    // commit 7 epochs with 1 day increase before each, so, the first position gonna start maturing
+    await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 1, this.epochSize, DAY);
+    const rawRewardNew = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    expect(rawRewardNew, "rawReward").to.be.gt(0); // make sure we have rewards maturing even while position is active
+    await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 6, this.epochSize, DAY);
 
     const newPosition = await hydraDelegation.vestedDelegationPositions(newValidator.address, vestManager.address);
     expect(newPosition.end.add(newPosition.duration).gt(await time.latest()), "Not matured").to.be.true;
@@ -401,5 +408,64 @@ export function RunSwapVestedPositionStakerTests(): void {
     )
       .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
       .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.balanceChangeMade);
+  });
+
+  it("should swap position, when there is no maturing reward (even if maturing period is not ended)", async function () {
+    const {
+      systemHydraChain,
+      hydraDelegation,
+      vestManager,
+      vestManagerOwner,
+      oldValidator,
+      newValidator,
+      hydraStaking,
+    } = await loadFixture(this.fixtures.swappedPositionFixture);
+
+    // commit epochs and increase time to make the position matured & commit epochs
+    await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK);
+
+    // open new position with 3rd validator
+    const thirdValidator = this.signers.validators[2];
+    await vestManager
+      .connect(vestManagerOwner)
+      .openVestedDelegatePosition(thirdValidator.address, 1, { value: this.minDelegation });
+
+    // commit epoch for balance change
+    await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 1, this.epochSize, 1);
+
+    // claim matured rewards from old position
+    // prepare params for call
+    const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
+      systemHydraChain,
+      hydraDelegation,
+      oldValidator.address,
+      vestManager.address
+    );
+
+    await vestManager
+      .connect(vestManagerOwner)
+      .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
+
+    // check that there is no rewards left to claim
+    const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
+    // ensure that the position is maturing
+    const position = await hydraDelegation.vestedDelegationPositions(oldValidator.address, vestManager.address);
+    expect(position.start, "position.start").to.be.gt(0);
+
+    // swap to old validator another position (while time is still maturing but no rewards left)
+    await expect(
+      vestManager.connect(vestManagerOwner).swapVestedPositionStaker(thirdValidator.address, oldValidator.address)
+    )
+      .to.emit(hydraDelegation, "PositionSwapped")
+      .withArgs(vestManager.address, thirdValidator.address, oldValidator.address, this.minDelegation);
+
+    // check position balance
+    expect(await hydraDelegation.delegationOf(oldValidator.address, vestManager.address), "delegationOf").to.be.eq(
+      this.minDelegation
+    );
+    // check it it is active
+    expect(await hydraDelegation.isActiveDelegatePosition(oldValidator.address, vestManager.address), "isActive").to.be
+      .true;
   });
 }
