@@ -72,9 +72,9 @@ interface IValidatorManager {
      * @return blsKey BLS public key
      * @return stake self-stake
      * @return totalStake self-stake + delegation
-     * @return commission
+     * @return commission validator's cut
      * @return withdrawableRewards withdrawable rewards
-     * @return active activity status
+     * @return status status of the validator
      */
     function getValidator(
         address validator
@@ -87,7 +87,7 @@ interface IValidatorManager {
             uint256 totalStake,
             uint256 commission,
             uint256 withdrawableRewards,
-            bool active
+            ValidatorStatus status
         );
 
     /**
