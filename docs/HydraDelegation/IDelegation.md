@@ -373,23 +373,6 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
-### DelegateRequirement
-
-```solidity
-error DelegateRequirement(string src, string msg)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| src | string | undefined |
-| msg | string | undefined |
-
 ### InvalidMinDelegation
 
 ```solidity

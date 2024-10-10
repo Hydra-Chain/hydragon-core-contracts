@@ -150,10 +150,11 @@ interface IVestedDelegation is IDelegation {
     ) external view returns (bool);
 
     /**
-     * @notice Check if the new position that the user wants to swap to is available for the swap
-     * @dev Available positions one that is not active, not maturing and doesn't have any left balance or rewards
-     * @param newStaker The address of the new validator
+     * @notice Check if the a position that the user wants to swap/delegate to is available
+     * @dev Available positions one that is not active and doesn't have any left balance or rewards (including maturing rewards)
+     * @param staker The address of the new validator
      * @param delegator The address of the delegator
+     * @param swap True if the user want to see if the position is available for swap
      */
-    function isPositionAvailableForSwap(address newStaker, address delegator) external view returns (bool);
+    function isPositionAvailable(address staker, address delegator, bool swap) external view returns (bool);
 }

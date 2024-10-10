@@ -205,7 +205,7 @@ export function RunValidatorManagerTests(): void {
       expect(validator.stake, "stake").to.equal(0);
       expect(validator.totalStake, "total stake").to.equal(0);
       expect(validator.commission, "commission").to.equal(0);
-      expect(validator.active, "active").to.equal(false);
+      expect(validator.status, "status").to.equal(VALIDATOR_STATUS.Registered);
       expect(
         validator.blsKey.map((x: any) => x.toHexString()),
         "blsKey"

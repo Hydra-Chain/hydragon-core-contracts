@@ -954,10 +954,7 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
 
   const rewardsBeforeSwap = await hydraDelegation.getRawDelegatorReward(validator.address, vestManager.address);
 
-  const amount = await hydraDelegation.delegationOf(validator.address, vestManager.address);
-
-  // give allowance & swap
-  await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+  // swap
   await vestManager.connect(vestManagerOwner).swapVestedPositionStaker(validator.address, newValidator.address);
 
   return {

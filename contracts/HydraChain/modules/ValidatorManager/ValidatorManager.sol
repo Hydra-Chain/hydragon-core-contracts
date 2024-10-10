@@ -129,7 +129,7 @@ abstract contract ValidatorManager is
             uint256 totalStake,
             uint256 commission,
             uint256 withdrawableRewards,
-            bool active
+            ValidatorStatus status
         )
     {
         Validator memory v = validators[validatorAddress];
@@ -138,7 +138,7 @@ abstract contract ValidatorManager is
         totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
-        active = v.status == ValidatorStatus.Active;
+        status = v.status;
     }
 
     /**

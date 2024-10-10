@@ -22,7 +22,7 @@ library VestedPositionLib {
         uint256 vestingEnd = position.end;
         uint256 matureEnd = vestingEnd + position.duration;
 
-        return vestingEnd < block.timestamp && block.timestamp < matureEnd;
+        return vestingEnd <= block.timestamp && block.timestamp < matureEnd;
     }
 
     /**
