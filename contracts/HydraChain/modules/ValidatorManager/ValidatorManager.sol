@@ -199,6 +199,7 @@ abstract contract ValidatorManager is
         return activeValidatorsCount;
     }
 
+    // solhint-disable-next-line no-empty-blocks
     function getValidatorPower(address validator) public view virtual returns (uint256) {}
 
     // _______________ Internal functions _______________
