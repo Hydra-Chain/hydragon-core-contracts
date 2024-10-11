@@ -339,28 +339,6 @@ Gets validator by address.
 | votingPower | uint256 | voting power of the validator |
 | status | enum ValidatorStatus | status of the validator |
 
-### getValidatorPower
-
-```solidity
-function getValidatorPower(address validator) external view returns (uint256)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| validator | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### getValidators
 
 ```solidity

@@ -118,11 +118,13 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
+    // solhint-disable-next-line no-empty-blocks
     function getValidator(
         address validatorAddress
     )
         external
         view
+        virtual
         returns (
             uint256[4] memory blsKey,
             uint256 stake,
@@ -132,16 +134,7 @@ abstract contract ValidatorManager is
             uint256 votingPower,
             ValidatorStatus status
         )
-    {
-        Validator memory v = validators[validatorAddress];
-        blsKey = v.blsKey;
-        stake = hydraStakingContract.stakeOf(validatorAddress);
-        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
-        commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
-        withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
-        votingPower = getValidatorPower(validatorAddress);
-        status = v.status;
-    }
+    {}
 
     /**
      * @inheritdoc IValidatorManager
@@ -198,9 +191,6 @@ abstract contract ValidatorManager is
     function getActiveValidatorsCount() public view returns (uint256) {
         return activeValidatorsCount;
     }
-
-    // solhint-disable-next-line no-empty-blocks
-    function getValidatorPower(address validator) public view virtual returns (uint256) {}
 
     // _______________ Internal functions _______________
 

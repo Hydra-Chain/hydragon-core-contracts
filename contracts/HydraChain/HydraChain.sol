@@ -8,10 +8,10 @@ import {IBLS} from "../BLS/IBLS.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
-import {ValidatorManager, ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {ValidatorManager, ValidatorInit, ValidatorStatus, Validator} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {IValidatorsData} from "./modules/ValidatorsData/IValidatorsData.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
-import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {Uptime, IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
@@ -125,16 +125,36 @@ contract HydraChain is
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }
 
-    // _______________ Public functions _______________
-
     /**
-     * @inheritdoc ValidatorsData
+     * @inheritdoc ValidatorManager
      */
-    function getValidatorPower(
-        address validator
-    ) public view override(ValidatorManager, ValidatorsData, IValidatorsData) returns (uint256) {
-        return validatorPower[validator];
+    function getValidator(
+        address validatorAddress
+    )
+        external
+        view
+        override(ValidatorManager, IValidatorManager)
+        returns (
+            uint256[4] memory blsKey,
+            uint256 stake,
+            uint256 totalStake,
+            uint256 commission,
+            uint256 withdrawableRewards,
+            uint256 votingPower,
+            ValidatorStatus status
+        )
+    {
+        Validator memory v = validators[validatorAddress];
+        blsKey = v.blsKey;
+        stake = hydraStakingContract.stakeOf(validatorAddress);
+        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
+        commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
+        withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
+        votingPower = validatorPower[validatorAddress];
+        status = v.status;
     }
+
+    // _______________ Public functions _______________
 
     /**
      * @notice Returns if a given validator is subject to a ban
