@@ -21,7 +21,7 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
      * @inheritdoc IValidatorsData
      */
     // solhint-disable-next-line no-empty-blocks
-    function getValidatorPower(address validator) public view returns (uint256) {}
+    function getValidatorPower(address validator) public view virtual returns (uint256) {}
 
     // _______________ External functions _______________
 
