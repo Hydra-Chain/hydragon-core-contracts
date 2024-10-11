@@ -414,12 +414,12 @@ Returns true if the position is maturing.
 ### isPositionAvailable
 
 ```solidity
-function isPositionAvailable(address staker, address delegator, bool swap) external view returns (bool)
+function isPositionAvailable(address staker, address delegator) external view returns (bool)
 ```
 
-Check if the a position that the user wants to swap/delegate to is available
+Check if the a position that the user wants to delegate to is available
 
-*Available positions one that is not active and doesn&#39;t have any left balance or rewards (including maturing rewards)*
+*Available positions are ones that are not active and don&#39;t have any rewards (including maturing rewards)*
 
 #### Parameters
 
@@ -427,7 +427,29 @@ Check if the a position that the user wants to swap/delegate to is available
 |---|---|---|
 | staker | address | The address of the new validator |
 | delegator | address | The address of the delegator |
-| swap | bool | True if the user want to see if the position is available for swap |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isPositionAvailableForSwap
+
+```solidity
+function isPositionAvailableForSwap(address staker, address delegator) external view returns (bool)
+```
+
+Check if the a position that the user wants to swap to is available
+
+*Available positions are ones that are not active and don&#39;t have any left balance or rewards (including maturing rewards)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Validator to delegate to |
+| delegator | address | Delegator that has delegated |
 
 #### Returns
 

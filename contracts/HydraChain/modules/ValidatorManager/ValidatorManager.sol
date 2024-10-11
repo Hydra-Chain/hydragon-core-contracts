@@ -129,6 +129,7 @@ abstract contract ValidatorManager is
             uint256 totalStake,
             uint256 commission,
             uint256 withdrawableRewards,
+            uint256 votingPower,
             ValidatorStatus status
         )
     {
@@ -138,6 +139,7 @@ abstract contract ValidatorManager is
         totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
         commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
         withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
+        votingPower = getValidatorPower(validatorAddress);
         status = v.status;
     }
 
@@ -196,6 +198,8 @@ abstract contract ValidatorManager is
     function getActiveValidatorsCount() public view returns (uint256) {
         return activeValidatorsCount;
     }
+
+    function getValidatorPower(address validator) public view virtual returns (uint256) {}
 
     // _______________ Internal functions _______________
 

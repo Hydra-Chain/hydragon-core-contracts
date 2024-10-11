@@ -15,14 +15,14 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     mapping(address => uint256) public validatorPower;
     uint256 public totalVotingPower;
 
-    // _______________ External functions _______________
+    // _______________ Public functions _______________
 
     /**
      * @inheritdoc IValidatorsData
      */
-    function getValidatorPower(address validator) external view returns (uint256) {
-        return validatorPower[validator];
-    }
+    function getValidatorPower(address validator) public view virtual returns (uint256) {}
+
+    // _______________ External functions _______________
 
     /**
      * @inheritdoc IValidatorsData

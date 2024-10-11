@@ -9,6 +9,7 @@ import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
 import {ValidatorManager, ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {IValidatorsData} from "./modules/ValidatorsData/IValidatorsData.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
@@ -125,6 +126,15 @@ contract HydraChain is
     }
 
     // _______________ Public functions _______________
+
+    /**
+     * @inheritdoc ValidatorsData
+     */
+    function getValidatorPower(
+        address validator
+    ) public view override(ValidatorManager, ValidatorsData, IValidatorsData) returns (uint256) {
+        return validatorPower[validator];
+    }
 
     /**
      * @notice Returns if a given validator is subject to a ban

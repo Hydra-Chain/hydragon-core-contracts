@@ -62,7 +62,7 @@ Gets the number of current validators
 ### getValidator
 
 ```solidity
-function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, enum ValidatorStatus status)
+function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status)
 ```
 
 Gets validator by address.
@@ -84,6 +84,7 @@ Gets validator by address.
 | totalStake | uint256 | self-stake + delegation |
 | commission | uint256 | validator&#39;s cut |
 | withdrawableRewards | uint256 | withdrawable rewards |
+| votingPower | uint256 | voting power of the validator |
 | status | enum ValidatorStatus | status of the validator |
 
 ### getValidators

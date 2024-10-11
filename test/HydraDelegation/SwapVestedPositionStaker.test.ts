@@ -453,6 +453,10 @@ export function RunSwapVestedPositionStakerTests(): void {
     const position = await hydraDelegation.vestedDelegationPositions(oldValidator.address, vestManager.address);
     expect(position.start, "position.start").to.be.gt(0);
 
+    // check if the position is available to swap
+    const isAvailable = await hydraDelegation.isPositionAvailableForSwap(oldValidator.address, vestManager.address);
+    expect(isAvailable, "isAvailable").to.be.true;
+
     // swap to old validator another position (while time is still maturing but no rewards left)
     await expect(
       vestManager.connect(vestManagerOwner).swapVestedPositionStaker(thirdValidator.address, oldValidator.address)

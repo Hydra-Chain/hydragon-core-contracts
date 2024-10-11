@@ -176,7 +176,7 @@ abstract contract VestedDelegation is
      */
     function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
         // ensure that the position is available
-        if (!isPositionAvailable(staker, msg.sender, false)) {
+        if (!isPositionAvailable(staker, msg.sender)) {
             revert DelegateRequirement({src: "vesting", msg: "POSITION_UNAVAILABLE"});
         }
 
@@ -213,7 +213,7 @@ abstract contract VestedDelegation is
         }
 
         // ensure that the new position is available
-        if (!isPositionAvailable(newStaker, msg.sender, true)) {
+        if (!isPositionAvailableForSwap(newStaker, msg.sender)) {
             revert DelegateRequirement({src: "vesting", msg: "NEW_POSITION_UNAVAILABLE"});
         }
 
@@ -321,7 +321,7 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function isPositionAvailable(address staker, address delegator, bool swap) public view returns (bool) {
+    function isPositionAvailable(address staker, address delegator) public view returns (bool) {
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         if (position.isActive()) {
             return false;
@@ -331,12 +331,21 @@ abstract contract VestedDelegation is
             return false;
         }
 
-        if (swap) {
-            DelegationPool storage delegation = delegationPools[staker];
-            uint256 balance = delegation.balanceOf(delegator);
-            if (balance != 0) {
-                return false;
-            }
+        return true;
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function isPositionAvailableForSwap(address staker, address delegator) public view returns (bool) {
+        if (!isPositionAvailable(staker, delegator)) {
+            return false;
+        }
+
+        DelegationPool storage delegation = delegationPools[staker];
+        uint256 balance = delegation.balanceOf(delegator);
+        if (balance != 0) {
+            return false;
         }
 
         return true;

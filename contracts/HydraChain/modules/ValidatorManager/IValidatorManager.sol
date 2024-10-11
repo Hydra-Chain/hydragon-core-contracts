@@ -74,6 +74,7 @@ interface IValidatorManager {
      * @return totalStake self-stake + delegation
      * @return commission validator's cut
      * @return withdrawableRewards withdrawable rewards
+     * @return votingPower voting power of the validator
      * @return status status of the validator
      */
     function getValidator(
@@ -87,6 +88,7 @@ interface IValidatorManager {
             uint256 totalStake,
             uint256 commission,
             uint256 withdrawableRewards,
+            uint256 votingPower,
             ValidatorStatus status
         );
 
