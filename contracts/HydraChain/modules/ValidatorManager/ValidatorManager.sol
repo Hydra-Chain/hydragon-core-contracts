@@ -118,7 +118,6 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    // solhint-disable-next-line no-empty-blocks
     function getValidator(
         address validatorAddress
     )
@@ -133,8 +132,7 @@ abstract contract ValidatorManager is
             uint256 withdrawableRewards,
             uint256 votingPower,
             ValidatorStatus status
-        )
-    {}
+        );
 
     /**
      * @inheritdoc IValidatorManager
