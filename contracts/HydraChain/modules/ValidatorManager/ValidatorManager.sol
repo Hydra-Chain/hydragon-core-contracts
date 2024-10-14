@@ -118,25 +118,6 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function getValidator(
-        address validatorAddress
-    )
-        external
-        view
-        virtual
-        returns (
-            uint256[4] memory blsKey,
-            uint256 stake,
-            uint256 totalStake,
-            uint256 commission,
-            uint256 withdrawableRewards,
-            uint256 votingPower,
-            ValidatorStatus status
-        );
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
     function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external onlyWhitelisted {
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
 
@@ -198,6 +179,39 @@ abstract contract ValidatorManager is
      */
     function _updateParticipation(address validator) internal {
         validatorsParticipation[validator] = block.number;
+    }
+
+    /**
+     * @notice Gets validator by address.
+     * @param validator Address of the validator
+     * @return blsKey BLS public key
+     * @return stake self-stake
+     * @return totalStake self-stake + delegation
+     * @return commission validator's cut
+     * @return withdrawableRewards withdrawable rewards
+     * @return status status of the validator
+     */
+    function _getValidator(
+        address validator
+    )
+        internal
+        view
+        returns (
+            uint256[4] memory blsKey,
+            uint256 stake,
+            uint256 totalStake,
+            uint256 commission,
+            uint256 withdrawableRewards,
+            ValidatorStatus status
+        )
+    {
+        Validator memory v = validators[validator];
+        blsKey = v.blsKey;
+        stake = hydraStakingContract.stakeOf(validator);
+        totalStake = hydraStakingContract.totalBalanceOf(validator);
+        commission = hydraDelegationContract.stakerDelegationCommission(validator);
+        withdrawableRewards = hydraStakingContract.unclaimedRewards(validator);
+        status = v.status;
     }
 
     // _______________ Private functions _______________

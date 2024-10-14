@@ -8,9 +8,9 @@ import {IBLS} from "../BLS/IBLS.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
-import {ValidatorManager, ValidatorInit, ValidatorStatus, Validator} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {ValidatorManager, ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
-import {Uptime, IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
@@ -125,14 +125,13 @@ contract HydraChain is
     }
 
     /**
-     * @inheritdoc ValidatorManager
+     * @inheritdoc IHydraChain
      */
     function getValidator(
         address validatorAddress
     )
         external
         view
-        override(ValidatorManager, IValidatorManager)
         returns (
             uint256[4] memory blsKey,
             uint256 stake,
@@ -143,14 +142,11 @@ contract HydraChain is
             ValidatorStatus status
         )
     {
-        Validator memory v = validators[validatorAddress];
-        blsKey = v.blsKey;
-        stake = hydraStakingContract.stakeOf(validatorAddress);
-        totalStake = hydraStakingContract.totalBalanceOf(validatorAddress);
-        commission = hydraDelegationContract.stakerDelegationCommission(validatorAddress);
-        withdrawableRewards = hydraStakingContract.unclaimedRewards(validatorAddress);
+        (blsKey, stake, totalStake, commission, withdrawableRewards, status) = _getValidator(validatorAddress);
+
         votingPower = validatorPower[validatorAddress];
-        status = v.status;
+
+        return (blsKey, stake, totalStake, commission, withdrawableRewards, votingPower, status);
     }
 
     // _______________ Public functions _______________

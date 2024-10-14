@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {IInspector} from "./modules/Inspector/IInspector.sol";
 import {IDaoIncentive} from "./modules/DaoIncentive/IDaoIncentive.sol";
 import {IValidatorsData} from "./modules/ValidatorsData/IValidatorsData.sol";
-import {IValidatorManager} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {IValidatorManager, ValidatorStatus} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
 struct Epoch {
@@ -46,4 +46,30 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
      * @param uptime uptime data for every validator
      */
     function commitEpoch(uint256 id, Epoch calldata epoch, uint256 epochSize, Uptime[] calldata uptime) external;
+
+    /**
+     * @notice Gets validator by address.
+     * @param validator Address of the validator
+     * @return blsKey BLS public key
+     * @return stake self-stake
+     * @return totalStake self-stake + delegation
+     * @return commission validator's cut
+     * @return withdrawableRewards withdrawable rewards
+     * @return votingPower voting power of the validator
+     * @return status status of the validator
+     */
+    function getValidator(
+        address validator
+    )
+        external
+        view
+        returns (
+            uint256[4] memory blsKey,
+            uint256 stake,
+            uint256 totalStake,
+            uint256 commission,
+            uint256 withdrawableRewards,
+            uint256 votingPower,
+            ValidatorStatus status
+        );
 }
