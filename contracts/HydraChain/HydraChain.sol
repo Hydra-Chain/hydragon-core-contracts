@@ -124,6 +124,31 @@ contract HydraChain is
         emit NewEpoch(id, epoch.startBlock, epoch.endBlock, epoch.epochRoot);
     }
 
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function getValidator(
+        address validatorAddress
+    )
+        external
+        view
+        returns (
+            uint256[4] memory blsKey,
+            uint256 stake,
+            uint256 totalStake,
+            uint256 commission,
+            uint256 withdrawableRewards,
+            uint256 votingPower,
+            ValidatorStatus status
+        )
+    {
+        (blsKey, stake, totalStake, commission, withdrawableRewards, status) = _getValidator(validatorAddress);
+
+        votingPower = validatorPower[validatorAddress];
+
+        return (blsKey, stake, totalStake, commission, withdrawableRewards, votingPower, status);
+    }
+
     // _______________ Public functions _______________
 
     /**

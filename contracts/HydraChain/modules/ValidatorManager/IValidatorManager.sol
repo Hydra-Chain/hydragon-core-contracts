@@ -67,30 +67,6 @@ interface IValidatorManager {
     function getActiveValidatorsCount() external view returns (uint256);
 
     /**
-     * @notice Gets validator by address.
-     * @param validator Address of the validator
-     * @return blsKey BLS public key
-     * @return stake self-stake
-     * @return totalStake self-stake + delegation
-     * @return commission
-     * @return withdrawableRewards withdrawable rewards
-     * @return active activity status
-     */
-    function getValidator(
-        address validator
-    )
-        external
-        view
-        returns (
-            uint256[4] memory blsKey,
-            uint256 stake,
-            uint256 totalStake,
-            uint256 commission,
-            uint256 withdrawableRewards,
-            bool active
-        );
-
-    /**
      * @notice Validates BLS signature with the provided pubkey and registers validators into the set.
      * @dev Validator must be whitelisted.
      * @param signature Signature to validate message against

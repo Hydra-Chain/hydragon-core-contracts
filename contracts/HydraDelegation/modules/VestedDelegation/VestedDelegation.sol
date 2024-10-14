@@ -6,6 +6,7 @@ import {Withdrawal} from "../../../common/Withdrawal/Withdrawal.sol";
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
+import {DelegateRequirement} from "../../../common/Errors.sol";
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
@@ -174,23 +175,15 @@ abstract contract VestedDelegation is
      * @inheritdoc IVestedDelegation
      */
     function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
-        VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
-        if (position.isMaturing()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_MATURING"});
+        // ensure that the position is available
+        if (!isPositionAvailable(staker, msg.sender)) {
+            revert DelegateRequirement({src: "vesting", msg: "POSITION_UNAVAILABLE"});
         }
 
-        if (position.isActive()) {
-            revert DelegateRequirement({src: "vesting", msg: "POSITION_ACTIVE"});
-        }
-
-        // ensure previous rewards are claimed
+        // get the current balance of the delegator
         DelegationPool storage delegation = delegationPools[staker];
-        if (delegation.claimableRewards(msg.sender) > 0) {
-            revert DelegateRequirement({src: "vesting", msg: "REWARDS_NOT_CLAIMED"});
-        }
-
-        // we delete the previous position historical data (in case any)
-        // to avoid any possible issues
+        uint256 balance = delegation.balanceOf(msg.sender);
+        // we delete the previous position historical data to avoid any possible issues
         delegation.cleanDelegatorHistoricalData(msg.sender);
 
         uint256 duration = durationWeeks * 1 weeks;
@@ -206,7 +199,7 @@ abstract contract VestedDelegation is
 
         _delegate(staker, msg.sender, msg.value);
 
-        emit PositionOpened(msg.sender, staker, durationWeeks, msg.value);
+        emit PositionOpened(msg.sender, staker, durationWeeks, msg.value + balance);
     }
 
     /**
@@ -227,6 +220,8 @@ abstract contract VestedDelegation is
         // update the old delegation position
         DelegationPool storage oldDelegation = delegationPools[oldStaker];
         uint256 amount = oldDelegation.balanceOf(msg.sender);
+        // we delete the previous position historical data to avoid any possible issues
+        delegationPools[newStaker].cleanDelegatorHistoricalData(msg.sender);
 
         // undelegate (withdraw & emit event) the old amount from the old position
         _baseUndelegate(oldStaker, msg.sender, amount);
@@ -241,7 +236,6 @@ abstract contract VestedDelegation is
             rsiBonus: oldPosition.rsiBonus
         });
 
-        delegationPools[newStaker].cleanDelegatorHistoricalData(msg.sender);
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
         _baseDelegate(newStaker, msg.sender, amount);
 
@@ -327,16 +321,30 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
-    function isPositionAvailableForSwap(address newStaker, address delegator) public view returns (bool) {
-        VestingPosition memory newPosition = vestedDelegationPositions[newStaker][delegator];
-        // TODO: maturing can be missed as condition because if there are no rewards that must mature after the end of the position - its fine to delete the position
-        if (newPosition.isActive() || newPosition.isMaturing()) {
+    function isPositionAvailable(address staker, address delegator) public view returns (bool) {
+        VestingPosition memory position = vestedDelegationPositions[staker][delegator];
+        if (position.isActive()) {
             return false;
         }
 
-        DelegationPool storage newDelegation = delegationPools[newStaker];
-        uint256 balance = newDelegation.balanceOf(delegator);
-        if (balance != 0 || getRawDelegatorReward(newStaker, delegator) > 0) {
+        if (getRawDelegatorReward(staker, delegator) != 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function isPositionAvailableForSwap(address staker, address delegator) public view returns (bool) {
+        if (!isPositionAvailable(staker, delegator)) {
+            return false;
+        }
+
+        DelegationPool storage delegation = delegationPools[staker];
+        uint256 balance = delegation.balanceOf(delegator);
+        if (balance != 0) {
             return false;
         }
 

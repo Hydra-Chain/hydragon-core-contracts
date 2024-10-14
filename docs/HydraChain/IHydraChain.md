@@ -175,7 +175,7 @@ Returns the total voting power of the validators
 ### getValidator
 
 ```solidity
-function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, bool active)
+function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status)
 ```
 
 Gets validator by address.
@@ -195,9 +195,10 @@ Gets validator by address.
 | blsKey | uint256[4] | BLS public key |
 | stake | uint256 | self-stake |
 | totalStake | uint256 | self-stake + delegation |
-| commission | uint256 | commission |
+| commission | uint256 | validator&#39;s cut |
 | withdrawableRewards | uint256 | withdrawable rewards |
-| active | bool | activity status |
+| votingPower | uint256 | voting power of the validator |
+| status | enum ValidatorStatus | status of the validator |
 
 ### getValidatorPower
 

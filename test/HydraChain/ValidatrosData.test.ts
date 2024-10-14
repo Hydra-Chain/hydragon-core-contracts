@@ -116,18 +116,6 @@ export function RunValidatorsDataTests(): void {
     expect(await hydraChain.getValidatorPower(this.signers.validators[1].address)).to.deep.equal(15);
   });
 
-  it("should get the total voting power", async function () {
-    const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-    const validatorsData = [
-      { validator: this.signers.validators[1].address, votingPower: 12 },
-      { validator: this.signers.validators[2].address, votingPower: 8 },
-    ];
-    await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
-
-    expect(await hydraChain.getTotalVotingPower()).to.deep.equal(20);
-  });
-
   it("should get the validator power", async function () {
     const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 

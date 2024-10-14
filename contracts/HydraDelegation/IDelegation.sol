@@ -9,7 +9,6 @@ interface IDelegation is IWithdrawal {
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
 
-    error DelegateRequirement(string src, string msg);
     error InvalidMinDelegation();
 
     /**
