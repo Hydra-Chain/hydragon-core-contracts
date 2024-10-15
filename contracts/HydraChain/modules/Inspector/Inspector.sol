@@ -11,8 +11,12 @@ abstract contract Inspector is IInspector, ValidatorManager {
     uint256 public validatorPenalty;
     /// @notice The reward for the person who reports a validator that have to be banned
     uint256 public reporterReward;
-    /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
+    /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to initiate ban for a validator
+    uint256 public initiateBanThreshold;
+    /// @notice Validator inactiveness (in milliseconds) threshold that needs to be passed to ban a validator
     uint256 public banThreshold;
+    /// @notice Mapping of the validators that bans has been initiated for (validator => timestamp)
+    mapping(address => uint256) public bansInitiated;
 
     // _______________ Initializer _______________
 
@@ -25,7 +29,8 @@ abstract contract Inspector is IInspector, ValidatorManager {
     function __Inspector_init_unchained() internal onlyInitializing {
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
-        banThreshold = 123428;
+        banThreshold = 24 hours;
+        initiateBanThreshold = 18000; // in blocks => 1 hour minimum
     }
 
     // _______________ Modifiers _______________
@@ -41,9 +46,41 @@ abstract contract Inspector is IInspector, ValidatorManager {
     /**
      * @inheritdoc IInspector
      */
+    function initiateBan(address validator) external {
+        if (bansInitiated[validator] != 0) {
+            revert BanAlreadyInitiated();
+        }
+
+        if (!isSubjectToInitiateBan(validator)) {
+            revert NoInitiateBanSubject();
+        }
+
+        bansInitiated[validator] = block.timestamp;
+        hydraStakingContract.temporaryRemove(validator);
+    }
+
+    /**
+     * @inheritdoc IInspector
+     */
+    function terminateBanProcedure() external {
+        if (bansInitiated[msg.sender] == 0) {
+            revert NoBanInititatedPhase();
+        }
+
+        bansInitiated[msg.sender] = 0;
+        hydraStakingContract.returnBack(msg.sender);
+    }
+
+    /**
+     * @inheritdoc IInspector
+     */
     function banValidator(address validator) external {
-        if (!isSubjectToBan(validator)) {
+        if (!isSubjectToFinishBan(validator)) {
             revert NoBanSubject();
+        }
+
+        if (bansInitiated[msg.sender] != 0) {
+            bansInitiated[msg.sender] = 0;
         }
 
         _ban(validator);
@@ -73,10 +110,29 @@ abstract contract Inspector is IInspector, ValidatorManager {
     // _______________ Public functions _______________
 
     /**
-     * @notice Returns if a given validator is subject to a ban
+     * @notice Returns true if a ban can be finally executed for a given validator
      * @dev override this function to apply your custom rules
      */
-    function isSubjectToBan(address account) public virtual returns (bool);
+    function isSubjectToFinishBan(address account) public view returns (bool) {
+        // check if the owner (governance) is calling
+        if (msg.sender == owner()) {
+            return true;
+        }
+
+        if (bansInitiated[account] == 0 || block.timestamp - bansInitiated[account] < banThreshold) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice Returns if a ban process can be initiated for a given validator
+     * @dev override this function to apply your custom rules
+     * @param account The address of the validator
+     * @return Returns true if the validator is subject to a ban
+     */
+    function isSubjectToInitiateBan(address account) public virtual returns (bool);
 
     // _______________ Private functions _______________
 

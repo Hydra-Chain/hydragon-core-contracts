@@ -5,6 +5,9 @@ interface IInspector {
     event ValidatorBanned(address indexed validator);
 
     error NoBanSubject();
+    error NoInitiateBanSubject();
+    error BanAlreadyInitiated();
+    error NoBanInititatedPhase();
 
     /**
      * @notice Set the penalty amount for the banned validators
@@ -23,6 +26,17 @@ interface IInspector {
      * @param newThreshold The new threshold in blocks
      */
     function setBanThreshold(uint256 newThreshold) external;
+
+    /**
+     * @notice Method used to initiate a ban for validator, if the initiate ban threshold is reached
+     * @param validator Address of the validator
+     */
+    function initiateBan(address validator) external;
+
+    /**
+     * @notice Method used to terminate the ban procedure
+     */
+    function terminateBanProcedure() external;
 
     /**
      * @notice Method used to ban a validator, if the ban threshold is reached
