@@ -181,15 +181,15 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
-### returnBack
+### recoverEjectedValidator
 
 ```solidity
-function returnBack(address account) external nonpayable
+function recoverEjectedValidator(address account) external nonpayable
 ```
 
 Return back a validator after temporary removal from the validator set by emiting a balance changed event
 
-*related to the temporaryRemove function*
+*related to the temporaryEjectValidator function*
 
 #### Parameters
 
@@ -230,10 +230,10 @@ Returns staked amount for the given account.
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### temporaryRemove
+### temporaryEjectValidator
 
 ```solidity
-function temporaryRemove(address account) external nonpayable
+function temporaryEjectValidator(address account) external nonpayable
 ```
 
 Allows temporary removal of a validator from the validator set by emiting a balance changed event

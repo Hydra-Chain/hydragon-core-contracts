@@ -29,14 +29,14 @@ interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenaliz
      * but is the fastest way to achieve two-step ban functionality
      * @param account address of the validator to be removed
      */
-    function temporaryRemove(address account) external;
+    function temporaryEjectValidator(address account) external;
 
     /**
      * Return back a validator after temporary removal from the validator set by emiting a balance changed event
-     * @dev related to the temporaryRemove function
+     * @dev related to the temporaryEjectValidator function
      * @param account address of the validator to be returned
      */
-    function returnBack(address account) external;
+    function recoverEjectedValidator(address account) external;
 
     // _______________ Public functions _______________
 

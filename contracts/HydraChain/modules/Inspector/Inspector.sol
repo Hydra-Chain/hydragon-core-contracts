@@ -56,7 +56,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         }
 
         bansInitiated[validator] = block.timestamp;
-        hydraStakingContract.temporaryRemove(validator);
+        hydraStakingContract.temporaryEjectValidator(validator);
     }
 
     /**
@@ -68,7 +68,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         }
 
         bansInitiated[msg.sender] = 0;
-        hydraStakingContract.returnBack(msg.sender);
+        hydraStakingContract.recoverEjectedValidator(msg.sender);
     }
 
     /**
@@ -126,7 +126,8 @@ abstract contract Inspector is IInspector, ValidatorManager {
             return true;
         }
 
-        if (bansInitiated[account] == 0 || block.timestamp - bansInitiated[account] < banThreshold) {
+        uint256 banInitiatedTimestamp = bansInitiated[account];
+        if (banInitiatedTimestamp == 0 || block.timestamp - banInitiatedTimestamp < banThreshold) {
             return false;
         }
 

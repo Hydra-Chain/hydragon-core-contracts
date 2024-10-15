@@ -98,14 +98,14 @@ contract HydraStaking is
     /**
      * @inheritdoc IHydraStaking
      */
-    function temporaryRemove(address account) external onlyHydraChain {
+    function temporaryEjectValidator(address account) external onlyHydraChain {
         emit BalanceChanged(account, 0);
     }
 
     /**
      * @inheritdoc IHydraStaking
      */
-    function returnBack(address account) external onlyHydraChain {
+    function recoverEjectedValidator(address account) external onlyHydraChain {
         _syncState(account);
     }
 
