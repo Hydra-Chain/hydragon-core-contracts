@@ -733,6 +733,22 @@ function renounceRole(bytes32 role, address account) external nonpayable
 | role | bytes32 | undefined |
 | account | address | undefined |
 
+### returnBack
+
+```solidity
+function returnBack(address account) external nonpayable
+```
+
+Return back a validator after temporary removal from the validator set by emiting a balance changed event
+
+*related to the temporaryRemove function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | address of the validator to be returned |
+
 ### revokeRole
 
 ```solidity
@@ -907,6 +923,22 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### temporaryRemove
+
+```solidity
+function temporaryRemove(address account) external nonpayable
+```
+
+Allows temporary removal of a validator from the validator set by emiting a balance changed event
+
+*It breaks the normal flow of the system contracts but is the fastest way to achieve two-step ban functionality*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | address of the validator to be removed |
 
 ### totalBalance
 

@@ -212,7 +212,7 @@ Adds addresses that are allowed to register as validators.
 function banThreshold() external view returns (uint256)
 ```
 
-Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
+Validator inactiveness (in milliseconds) threshold that needs to be passed to ban a validator
 
 
 
@@ -238,6 +238,28 @@ Method used to ban a validator, if the ban threshold is reached
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Address of the validator |
+
+### bansInitiated
+
+```solidity
+function bansInitiated(address) external view returns (uint256)
+```
+
+Mapping of the validators that bans has been initiated for (validator =&gt; timestamp)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### bls
 
@@ -362,13 +384,46 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 |---|---|---|
 | _0 | contract IHydraStaking | undefined |
 
-### isSubjectToBan
+### initiateBan
 
 ```solidity
-function isSubjectToBan(address account) external nonpayable returns (bool)
+function initiateBan(address validator) external nonpayable
 ```
 
-Returns if a given validator is subject to a ban
+Method used to initiate a ban for validator, if the initiate ban threshold is reached
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+### initiateBanThreshold
+
+```solidity
+function initiateBanThreshold() external view returns (uint256)
+```
+
+Validator inactiveness (in blocks) threshold that needs to be passed to initiate ban for a validator
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### isSubjectToFinishBan
+
+```solidity
+function isSubjectToFinishBan(address account) external view returns (bool)
+```
+
+Returns true if a ban can be finally executed for a given validator
 
 *override this function to apply your custom rules*
 
@@ -383,6 +438,28 @@ Returns if a given validator is subject to a ban
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### isSubjectToInitiateBan
+
+```solidity
+function isSubjectToInitiateBan(address account) external nonpayable returns (bool)
+```
+
+Returns if a ban process can be initiated for a given validator
+
+*override this function to apply your custom rules*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | Returns true if the validator is subject to a ban |
 
 ### isValidatorActive
 
@@ -607,7 +684,23 @@ The reward for the person who reports a validator that have to be banned
 function setBanThreshold(uint256 newThreshold) external nonpayable
 ```
 
-Set the threshold that needs to be reached to ban a validator
+Set the threshold that needs to be reached to finish the ban procedure (in milliseconds)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
+### setInitiateBanThreshold
+
+```solidity
+function setInitiateBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to initiate the ban procedure (in blocks)
 
 
 
@@ -648,6 +741,17 @@ Set the penalty amount for the banned validators
 | Name | Type | Description |
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
+
+### terminateBanProcedure
+
+```solidity
+function terminateBanProcedure() external nonpayable
+```
+
+Method used to terminate the ban procedure
+
+
+
 
 ### transferOwnership
 
@@ -904,6 +1008,17 @@ event ValidatorBanned(address indexed validator)
 
 ## Errors
 
+### BanAlreadyInitiated
+
+```solidity
+error BanAlreadyInitiated()
+```
+
+
+
+
+
+
 ### InvalidCommission
 
 ```solidity
@@ -969,10 +1084,32 @@ error MustBeWhitelisted()
 
 
 
+### NoBanInititated
+
+```solidity
+error NoBanInititated()
+```
+
+
+
+
+
+
 ### NoBanSubject
 
 ```solidity
 error NoBanSubject()
+```
+
+
+
+
+
+
+### NoInitiateBanSubject
+
+```solidity
+error NoInitiateBanSubject()
 ```
 
 

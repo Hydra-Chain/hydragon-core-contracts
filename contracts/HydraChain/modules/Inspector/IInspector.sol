@@ -7,7 +7,7 @@ interface IInspector {
     error NoBanSubject();
     error NoInitiateBanSubject();
     error BanAlreadyInitiated();
-    error NoBanInititatedPhase();
+    error NoBanInititated();
 
     /**
      * @notice Set the penalty amount for the banned validators
@@ -22,7 +22,13 @@ interface IInspector {
     function setReporterReward(uint256 newReward) external;
 
     /**
-     * @notice Set the threshold that needs to be reached to ban a validator
+     * @notice Set the threshold that needs to be reached to initiate the ban procedure (in blocks)
+     * @param newThreshold The new threshold in blocks
+     */
+    function setInitiateBanThreshold(uint256 newThreshold) external;
+
+    /**
+     * @notice Set the threshold that needs to be reached to finish the ban procedure (in milliseconds)
      * @param newThreshold The new threshold in blocks
      */
     function setBanThreshold(uint256 newThreshold) external;

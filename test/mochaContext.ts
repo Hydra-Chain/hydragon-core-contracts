@@ -280,6 +280,13 @@ export interface Fixtures {
       validatorToBan: SignerWithAddress;
     }>;
   };
+  banInitiatedFixtureFunction: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      hydraStaking: HydraStaking;
+      inBanProcessValidator: SignerWithAddress;
+    }>;
+  };
   bannedValidatorFixture: {
     (): Promise<{
       hydraChain: HydraChain;

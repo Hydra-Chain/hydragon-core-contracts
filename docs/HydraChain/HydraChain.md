@@ -229,7 +229,7 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 function banThreshold() external view returns (uint256)
 ```
 
-Validator inactiveness (in blocks) threshold that needs to be passed to ban a validator
+Validator inactiveness (in milliseconds) threshold that needs to be passed to ban a validator
 
 
 
@@ -255,6 +255,28 @@ Method used to ban a validator, if the ban threshold is reached
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Address of the validator |
+
+### bansInitiated
+
+```solidity
+function bansInitiated(address) external view returns (uint256)
+```
+
+Mapping of the validators that bans has been initiated for (validator =&gt; timestamp)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### bls
 
@@ -508,7 +530,7 @@ Returns the total voting power of the validators
 ### getValidator
 
 ```solidity
-function getValidator(address validatorAddress) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status)
+function getValidator(address validatorAddress) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status, bool isbanInitiated)
 ```
 
 Gets validator by address.
@@ -532,6 +554,7 @@ Gets validator by address.
 | withdrawableRewards | uint256 | withdrawable rewards |
 | votingPower | uint256 | voting power of the validator |
 | status | enum ValidatorStatus | status of the validator |
+| isbanInitiated | bool | undefined |
 
 ### getValidatorPower
 
@@ -629,13 +652,68 @@ function initialize(ValidatorInit[] newValidators, address governance, address h
 | daoIncentiveVaultAddr | address | undefined |
 | newBls | contract IBLS | undefined |
 
-### isSubjectToBan
+### initiateBan
 
 ```solidity
-function isSubjectToBan(address validator) external view returns (bool)
+function initiateBan(address validator) external nonpayable
 ```
 
-Returns if a given validator is subject to a ban
+Method used to initiate a ban for validator, if the initiate ban threshold is reached
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
+### initiateBanThreshold
+
+```solidity
+function initiateBanThreshold() external view returns (uint256)
+```
+
+Validator inactiveness (in blocks) threshold that needs to be passed to initiate ban for a validator
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### isSubjectToFinishBan
+
+```solidity
+function isSubjectToFinishBan(address account) external view returns (bool)
+```
+
+Returns true if a ban can be finally executed for a given validator
+
+*override this function to apply your custom rules*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isSubjectToInitiateBan
+
+```solidity
+function isSubjectToInitiateBan(address validator) external view returns (bool)
+```
+
+
 
 *Apply custom rules for ban eligibility*
 
@@ -643,13 +721,13 @@ Returns if a given validator is subject to a ban
 
 | Name | Type | Description |
 |---|---|---|
-| validator | address | The address of the validator |
+| validator | address | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | bool | Returns true if the validator is subject to a ban |
+| _0 | bool | undefined |
 
 ### isValidatorActive
 
@@ -908,7 +986,23 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 function setBanThreshold(uint256 newThreshold) external nonpayable
 ```
 
-Set the threshold that needs to be reached to ban a validator
+Set the threshold that needs to be reached to finish the ban procedure (in milliseconds)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
+### setInitiateBanThreshold
+
+```solidity
+function setInitiateBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to initiate the ban procedure (in blocks)
 
 
 
@@ -965,6 +1059,17 @@ function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayabl
 | Name | Type | Description |
 |---|---|---|
 | validatorsPower | ValidatorPower[] | undefined |
+
+### terminateBanProcedure
+
+```solidity
+function terminateBanProcedure() external nonpayable
+```
+
+Method used to terminate the ban procedure
+
+
+
 
 ### totalBlocks
 
@@ -1350,6 +1455,17 @@ event VaultFundsDistributed(uint256 amount)
 
 ## Errors
 
+### BanAlreadyInitiated
+
+```solidity
+error BanAlreadyInitiated()
+```
+
+
+
+
+
+
 ### CommitEpochFailed
 
 ```solidity
@@ -1431,10 +1547,32 @@ error MustBeWhitelisted()
 
 
 
+### NoBanInititated
+
+```solidity
+error NoBanInititated()
+```
+
+
+
+
+
+
 ### NoBanSubject
 
 ```solidity
 error NoBanSubject()
+```
+
+
+
+
+
+
+### NoInitiateBanSubject
+
+```solidity
+error NoInitiateBanSubject()
 ```
 
 

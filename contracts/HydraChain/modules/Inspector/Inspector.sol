@@ -64,7 +64,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
      */
     function terminateBanProcedure() external {
         if (bansInitiated[msg.sender] == 0) {
-            revert NoBanInititatedPhase();
+            revert NoBanInititated();
         }
 
         bansInitiated[msg.sender] = 0;
@@ -79,8 +79,8 @@ abstract contract Inspector is IInspector, ValidatorManager {
             revert NoBanSubject();
         }
 
-        if (bansInitiated[msg.sender] != 0) {
-            bansInitiated[msg.sender] = 0;
+        if (bansInitiated[validator] != 0) {
+            bansInitiated[validator] = 0;
         }
 
         _ban(validator);
@@ -98,6 +98,13 @@ abstract contract Inspector is IInspector, ValidatorManager {
      */
     function setReporterReward(uint256 newReward) external onlyOwner {
         reporterReward = newReward;
+    }
+
+    /**
+     * @inheritdoc IInspector
+     */
+    function setInitiateBanThreshold(uint256 newThreshold) external onlyOwner {
+        initiateBanThreshold = newThreshold;
     }
 
     /**
