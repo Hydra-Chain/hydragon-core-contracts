@@ -69,6 +69,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
         bansInitiated[msg.sender] = 0;
         hydraStakingContract.recoverEjectedValidator(msg.sender);
+        _updateParticipation(msg.sender);
     }
 
     /**
