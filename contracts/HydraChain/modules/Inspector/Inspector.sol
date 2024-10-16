@@ -13,7 +13,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
     uint256 public reporterReward;
     /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to initiate ban for a validator
     uint256 public initiateBanThreshold;
-    /// @notice Validator inactiveness (in milliseconds) threshold that needs to be passed to ban a validator
+    /// @notice Validator inactiveness (in seconds) threshold that needs to be passed to ban a validator
     uint256 public banThreshold;
     /// @notice Mapping of the validators that bans has been initiated for (validator => timestamp)
     mapping(address => uint256) public bansInitiated;
