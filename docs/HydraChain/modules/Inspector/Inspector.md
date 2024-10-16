@@ -212,7 +212,7 @@ Adds addresses that are allowed to register as validators.
 function banThreshold() external view returns (uint256)
 ```
 
-Validator inactiveness (in milliseconds) threshold that needs to be passed to ban a validator
+Validator inactiveness (in seconds) threshold that needs to be passed to ban a validator
 
 
 

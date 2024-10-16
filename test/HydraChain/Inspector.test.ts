@@ -254,9 +254,19 @@ export function RunInspectorTests(): void {
         this.fixtures.banInitiatedFixtureFunction
       );
 
-      await expect(hydraChain.connect(inBanProcessValidator).terminateBanProcedure())
+      const validatorParticipationBefore = await hydraChain.validatorsParticipation(inBanProcessValidator.address);
+
+      await expect(hydraChain.connect(inBanProcessValidator).terminateBanProcedure(), "emit BalanceChanged")
         .to.emit(hydraStaking, "BalanceChanged")
         .withArgs(inBanProcessValidator.address, this.minStake.mul(2));
+
+      expect(
+        (await hydraChain.getValidator(inBanProcessValidator.address)).isbanInitiated,
+        "isbanInitiated"
+      ).to.be.equal(false);
+
+      const validatorParticipationAfter = await hydraChain.validatorsParticipation(inBanProcessValidator.address);
+      expect(validatorParticipationAfter).to.not.be.equal(validatorParticipationBefore);
     });
 
     it("should finish ban and penalize the validator", async function () {
