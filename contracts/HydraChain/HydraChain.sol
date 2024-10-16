@@ -139,37 +139,28 @@ contract HydraChain is
             uint256 commission,
             uint256 withdrawableRewards,
             uint256 votingPower,
-            ValidatorStatus status
+            ValidatorStatus status,
+            bool isbanInitiated
         )
     {
         (blsKey, stake, totalStake, commission, withdrawableRewards, status) = _getValidator(validatorAddress);
-
         votingPower = validatorPower[validatorAddress];
-
-        return (blsKey, stake, totalStake, commission, withdrawableRewards, votingPower, status);
+        isbanInitiated = bansInitiated[validatorAddress] != 0;
     }
 
     // _______________ Public functions _______________
 
     /**
-     * @notice Returns if a given validator is subject to a ban
      * @dev Apply custom rules for ban eligibility
-     * @param validator The address of the validator
-     * @return Returns true if the validator is subject to a ban
      */
-    function isSubjectToBan(address validator) public view override returns (bool) {
-        // check if the owner (governance) is calling or the validator is already subject to ban on previous exit
-        if (msg.sender == owner()) {
-            return true;
-        }
-
+    function isSubjectToInitiateBan(address validator) public view override returns (bool) {
         uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];
         uint256 validatorParticipation = validatorsParticipation[validator];
         // check if the validator is active and the last participation is less than the threshold
         if (
             validators[validator].status == ValidatorStatus.Active &&
             lastCommittedEndBlock > validatorParticipation &&
-            lastCommittedEndBlock - validatorParticipation >= banThreshold
+            lastCommittedEndBlock - validatorParticipation >= initiateBanThreshold
         ) {
             return true;
         }

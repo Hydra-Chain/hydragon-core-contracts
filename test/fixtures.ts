@@ -556,7 +556,7 @@ async function validatorToBanFixtureFunction(this: Mocha.Context) {
   // lower the threshold in order to easily reach it
   const banThreshold = hre.ethers.BigNumber.from(100);
   const hydraChainGov = hydraChain.connect(this.signers.governance);
-  await hydraChainGov.setBanThreshold(banThreshold);
+  await hydraChainGov.setInitiateBanThreshold(banThreshold);
 
   // commit epochs, but without the validator that will be banned
   await commitEpochs(
@@ -577,6 +577,18 @@ async function validatorToBanFixtureFunction(this: Mocha.Context) {
     hydraChain,
     hydraStaking,
     validatorToBan: validator,
+  };
+}
+
+async function banInitiatedFixtureFunction(this: Mocha.Context) {
+  const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+
+  await hydraChain.connect(this.signers.governance).initiateBan(validatorToBan.address);
+
+  return {
+    hydraChain,
+    hydraStaking,
+    inBanProcessValidator: validatorToBan,
   };
 }
 
@@ -992,6 +1004,7 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.vestedDelegationFixture = vestedDelegationFixtureFunction.bind(context);
   context.fixtures.weeklyVestedDelegationFixture = weeklyVestedDelegationFixtureFunction.bind(context);
   context.fixtures.validatorToBanFixture = validatorToBanFixtureFunction.bind(context);
+  context.fixtures.banInitiatedFixtureFunction = banInitiatedFixtureFunction.bind(context);
   context.fixtures.bannedValidatorFixture = bannedValidatorFixtureFunction.bind(context);
   context.fixtures.swappedPositionFixture = swappedPositionFixtureFunction.bind(context);
 }

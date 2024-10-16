@@ -705,6 +705,22 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
+### recoverEjectedValidator
+
+```solidity
+function recoverEjectedValidator(address account) external nonpayable
+```
+
+Return back a validator after temporary removal from the validator set by emiting a balance changed event
+
+*related to the temporaryEjectValidator function*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | address of the validator to be returned |
+
 ### renounceOwnership
 
 ```solidity
@@ -907,6 +923,22 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bool | undefined |
+
+### temporaryEjectValidator
+
+```solidity
+function temporaryEjectValidator(address account) external nonpayable
+```
+
+Allows temporary removal of a validator from the validator set by emiting a balance changed event
+
+*It breaks the normal flow of the system contracts but is the fastest way to achieve two-step ban functionality*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | address of the validator to be removed |
 
 ### totalBalance
 

@@ -23,6 +23,21 @@ interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenaliz
      */
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime) external;
 
+    /**
+     * Allows temporary removal of a validator from the validator set by emiting a balance changed event
+     * @dev It breaks the normal flow of the system contracts
+     * but is the fastest way to achieve two-step ban functionality
+     * @param account address of the validator to be removed
+     */
+    function temporaryEjectValidator(address account) external;
+
+    /**
+     * Return back a validator after temporary removal from the validator set by emiting a balance changed event
+     * @dev related to the temporaryEjectValidator function
+     * @param account address of the validator to be returned
+     */
+    function recoverEjectedValidator(address account) external;
+
     // _______________ Public functions _______________
 
     /**

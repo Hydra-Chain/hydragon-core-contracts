@@ -70,6 +70,7 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
             uint256 commission,
             uint256 withdrawableRewards,
             uint256 votingPower,
-            ValidatorStatus status
+            ValidatorStatus status,
+            bool isbanInitiated
         );
 }

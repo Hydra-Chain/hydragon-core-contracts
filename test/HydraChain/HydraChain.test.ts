@@ -147,7 +147,8 @@ export function RunHydraChainTests(): void {
         // Inspector
         expect(await hydraChain.validatorPenalty()).to.equal(hre.ethers.utils.parseEther("700"));
         expect(await hydraChain.reporterReward()).to.equal(hre.ethers.utils.parseEther("300"));
-        expect(await hydraChain.banThreshold()).to.equal(123428);
+        expect(await hydraChain.initiateBanThreshold()).to.equal(18000);
+        expect(await hydraChain.banThreshold()).to.equal(60 * 60 * 24);
       });
 
       it("should revert on re-initialization attempt", async function () {

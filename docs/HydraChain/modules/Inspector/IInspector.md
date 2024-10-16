@@ -26,13 +26,45 @@ Method used to ban a validator, if the ban threshold is reached
 |---|---|---|
 | validator | address | Address of the validator |
 
+### initiateBan
+
+```solidity
+function initiateBan(address validator) external nonpayable
+```
+
+Method used to initiate a ban for validator, if the initiate ban threshold is reached
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
+
 ### setBanThreshold
 
 ```solidity
 function setBanThreshold(uint256 newThreshold) external nonpayable
 ```
 
-Set the threshold that needs to be reached to ban a validator
+Set the threshold that needs to be reached to finish the ban procedure (in milliseconds)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
+### setInitiateBanThreshold
+
+```solidity
+function setInitiateBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to initiate the ban procedure (in blocks)
 
 
 
@@ -74,6 +106,17 @@ Set the penalty amount for the banned validators
 |---|---|---|
 | newPenalty | uint256 | Amount of the penalty |
 
+### terminateBanProcedure
+
+```solidity
+function terminateBanProcedure() external nonpayable
+```
+
+Method used to terminate the ban procedure
+
+
+
+
 
 
 ## Events
@@ -98,10 +141,43 @@ event ValidatorBanned(address indexed validator)
 
 ## Errors
 
+### BanAlreadyInitiated
+
+```solidity
+error BanAlreadyInitiated()
+```
+
+
+
+
+
+
+### NoBanInititated
+
+```solidity
+error NoBanInititated()
+```
+
+
+
+
+
+
 ### NoBanSubject
 
 ```solidity
 error NoBanSubject()
+```
+
+
+
+
+
+
+### NoInitiateBanSubject
+
+```solidity
+error NoInitiateBanSubject()
 ```
 
 

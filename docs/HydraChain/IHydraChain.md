@@ -175,7 +175,7 @@ Returns the total voting power of the validators
 ### getValidator
 
 ```solidity
-function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status)
+function getValidator(address validator) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status, bool isbanInitiated)
 ```
 
 Gets validator by address.
@@ -199,6 +199,7 @@ Gets validator by address.
 | withdrawableRewards | uint256 | withdrawable rewards |
 | votingPower | uint256 | voting power of the validator |
 | status | enum ValidatorStatus | status of the validator |
+| isbanInitiated | bool | undefined |
 
 ### getValidatorPower
 
@@ -238,6 +239,22 @@ Gets all validators. Returns already unactive validators as well.
 | Name | Type | Description |
 |---|---|---|
 | _0 | address[] | Returns array of addresses |
+
+### initiateBan
+
+```solidity
+function initiateBan(address validator) external nonpayable
+```
+
+Method used to initiate a ban for validator, if the initiate ban threshold is reached
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | Address of the validator |
 
 ### isValidatorActive
 
@@ -328,7 +345,23 @@ Validates BLS signature with the provided pubkey and registers validators into t
 function setBanThreshold(uint256 newThreshold) external nonpayable
 ```
 
-Set the threshold that needs to be reached to ban a validator
+Set the threshold that needs to be reached to finish the ban procedure (in milliseconds)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newThreshold | uint256 | The new threshold in blocks |
+
+### setInitiateBanThreshold
+
+```solidity
+function setInitiateBanThreshold(uint256 newThreshold) external nonpayable
+```
+
+Set the threshold that needs to be reached to initiate the ban procedure (in blocks)
 
 
 
@@ -385,6 +418,17 @@ function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayabl
 | Name | Type | Description |
 |---|---|---|
 | validatorsPower | ValidatorPower[] | undefined |
+
+### terminateBanProcedure
+
+```solidity
+function terminateBanProcedure() external nonpayable
+```
+
+Method used to terminate the ban procedure
+
+
+
 
 ### totalBlocks
 
@@ -532,6 +576,17 @@ event VaultFundsDistributed(uint256 amount)
 
 ## Errors
 
+### BanAlreadyInitiated
+
+```solidity
+error BanAlreadyInitiated()
+```
+
+
+
+
+
+
 ### CommitEpochFailed
 
 ```solidity
@@ -602,10 +657,32 @@ error MaxValidatorsReached()
 
 
 
+### NoBanInititated
+
+```solidity
+error NoBanInititated()
+```
+
+
+
+
+
+
 ### NoBanSubject
 
 ```solidity
 error NoBanSubject()
+```
+
+
+
+
+
+
+### NoInitiateBanSubject
+
+```solidity
+error NoInitiateBanSubject()
 ```
 
 
