@@ -30,9 +30,18 @@ Easy verify thru RemixIDE:
 ```bash
 remixd
 ```
-1 - connect to localhost
-2 - right-click to the file you want to verify and click "Flatten"
-3 - use the _flattened.sol file for verifying
+
+1 - connect to localhost <br>
+2 - right-click to the file you want to verify and click "Flatten" <br>
+3 - use the _flattened.sol file for verifying <br>
+
+Verify info:
+
+```bash
+optimizer: 200
+EVM: London
+v0.8.17
+```
 
 ## Contents
 
