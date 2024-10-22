@@ -5,6 +5,35 @@
 
 **_Note: This repo is based on Polygon Edge core contracts._**
 
+# Verify Contracts
+
+If using imports like (@openzeppelin) we need to merge contracts in one
+
+```bash
+sol-merger ./contracts/HydraChain/HydraChain.sol ./merged
+```
+
+command - path - output folder for the result
+Result could have missing structures, adding them on top of the contract solves the problem (do not need to fix multiple License)
+
+Generate flatten code:
+
+```bash
+npm run flattener ./merged/HydraChain.sol
+```
+
+script command for "./node_modules/.bin/poa-solidity-flattener" with added path of the file to flatten.
+If you have not fixed structures problem before, you can also add the structures in the flatten file!
+
+Easy verify thru RemixIDE:
+
+```bash
+remixd
+```
+1 - connect to localhost
+2 - right-click to the file you want to verify and click "Flatten"
+3 - use the _flattened.sol file for verifying
+
 ## Contents
 
 - [Known discrepancies](#known-discrepancies)
