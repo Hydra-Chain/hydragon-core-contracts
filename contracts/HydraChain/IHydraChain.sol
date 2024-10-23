@@ -57,6 +57,7 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
      * @return withdrawableRewards withdrawable rewards
      * @return votingPower voting power of the validator
      * @return status status of the validator
+     * @return isBanInitiated is ban initiated for validator
      */
     function getValidator(
         address validator
@@ -71,6 +72,6 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
             uint256 withdrawableRewards,
             uint256 votingPower,
             ValidatorStatus status,
-            bool isbanInitiated
+            bool isBanInitiated
         );
 }

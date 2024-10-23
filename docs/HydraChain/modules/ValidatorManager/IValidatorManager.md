@@ -216,22 +216,6 @@ event PowerExponentUpdated(uint256 newPowerExponent)
 
 ## Errors
 
-### InvalidCommission
-
-```solidity
-error InvalidCommission(uint256 commission)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| commission | uint256 | undefined |
-
 ### InvalidPowerExponent
 
 ```solidity

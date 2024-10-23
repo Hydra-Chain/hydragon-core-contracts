@@ -751,22 +751,6 @@ event RemovedFromWhitelist(address indexed validator)
 
 ## Errors
 
-### InvalidCommission
-
-```solidity
-error InvalidCommission(uint256 commission)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| commission | uint256 | undefined |
-
 ### InvalidPowerExponent
 
 ```solidity

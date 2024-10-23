@@ -19,7 +19,7 @@ abstract contract DaoIncentive is
 {
     address public daoIncentiveVaultAddr;
     uint256 public vaultDistribution;
-    uint256 public lastDistribution; // timestamp of the last distribution
+    uint256 public lastDistribution;
 
     // _______________ Initializer _______________
 
