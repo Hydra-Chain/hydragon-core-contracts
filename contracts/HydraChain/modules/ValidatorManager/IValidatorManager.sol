@@ -29,10 +29,9 @@ interface IValidatorManager {
     event NewValidator(address indexed validator, uint256[4] blsKey);
     event PowerExponentUpdated(uint256 newPowerExponent);
 
-    error InvalidSignature(address signer);
     error MaxValidatorsReached();
-    error InvalidCommission(uint256 commission);
     error InvalidPowerExponent();
+    error InvalidSignature(address signer);
 
     /**
      * @notice Retruns bool indicating if validator is Active.

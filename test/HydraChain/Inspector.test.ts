@@ -188,7 +188,7 @@ export function RunInspectorTests(): void {
         .to.emit(hydraStaking, "BalanceChanged")
         .withArgs(validatorToBan.address, 0);
 
-      expect((await hydraChain.getValidator(validatorToBan.address)).isbanInitiated).to.be.equal(true);
+      expect((await hydraChain.getValidator(validatorToBan.address)).isBanInitiated).to.be.equal(true);
     });
 
     it("should ban a validator that has a vested staking position", async function () {
@@ -261,8 +261,8 @@ export function RunInspectorTests(): void {
         .withArgs(inBanProcessValidator.address, this.minStake.mul(2));
 
       expect(
-        (await hydraChain.getValidator(inBanProcessValidator.address)).isbanInitiated,
-        "isbanInitiated"
+        (await hydraChain.getValidator(inBanProcessValidator.address)).isBanInitiated,
+        "isBanInitiated"
       ).to.be.equal(false);
 
       const validatorParticipationAfter = await hydraChain.validatorsParticipation(inBanProcessValidator.address);

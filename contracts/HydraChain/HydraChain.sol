@@ -140,12 +140,12 @@ contract HydraChain is
             uint256 withdrawableRewards,
             uint256 votingPower,
             ValidatorStatus status,
-            bool isbanInitiated
+            bool isBanInitiated
         )
     {
         (blsKey, stake, totalStake, commission, withdrawableRewards, status) = _getValidator(validatorAddress);
         votingPower = validatorPower[validatorAddress];
-        isbanInitiated = bansInitiated[validatorAddress] != 0;
+        isBanInitiated = bansInitiated[validatorAddress] != 0;
     }
 
     // _______________ Public functions _______________
