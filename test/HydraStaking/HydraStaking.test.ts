@@ -1,10 +1,11 @@
 /* eslint-disable node/no-extraneous-import */
 import * as hre from "hardhat";
+import * as mcl from "../../ts/mcl";
 import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { commitEpoch } from "../helper";
-import { ERRORS, WEEK } from "../constants";
+import { CHAIN_ID, DAY, DOMAIN, ERRORS, WEEK } from "../constants";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegatedStakingTests } from "./DelegatedStaking.test";
 import { RunVestedStakingTests } from "./VestedStaking.test";
@@ -360,6 +361,142 @@ export function RunHydraStakingTests(): void {
           const validatorData = await hydraChain.getValidator(validator.address);
           expect(validatorData.stake, "stake").to.equal(stakeAmount.sub(unstakeAmount));
         });
+      });
+    });
+
+    describe.only("Table reward test staking", async function () {
+      it("should stake and claim rewards", async function () {
+        const { hydraChain, systemHydraChain, hydraStaking, aprCalculator } = await loadFixture(
+          this.fixtures.initializedWithSpecificBonusesStateFixture
+        );
+
+        // Make sure APR and bonuses are set correctly
+        expect(await aprCalculator.getBaseAPR()).to.be.equal(500);
+        expect(await aprCalculator.getMacroFactor()).to.be.equal(2500);
+        expect(await aprCalculator.getRSIBonus()).to.be.equal(11500);
+
+        // Disable whitelisting
+        await hydraChain.connect(this.signers.governance).disableWhitelisting();
+        expect(await hydraChain.isWhitelistingEnabled()).to.be.false;
+
+        // Commit epoch
+        const epochId = hre.ethers.BigNumber.from(1);
+        const epoch = {
+          startBlock: hre.ethers.BigNumber.from(1),
+          endBlock: hre.ethers.BigNumber.from(500),
+          epochRoot: this.epoch.epochRoot,
+        };
+        const uptime = [
+          {
+            validator: this.signers.admin.address,
+            signedBlocks: hre.ethers.BigNumber.from(10),
+          },
+        ];
+        await systemHydraChain.commitEpoch(epochId, epoch, 500, uptime);
+        await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime);
+
+        // register validators
+        const keyPair = mcl.newKeyPair();
+        const validator1signature = mcl.signValidatorMessage(
+          DOMAIN,
+          CHAIN_ID,
+          this.signers.validators[0].address,
+          keyPair.secret
+        ).signature;
+
+        const validator2signature = mcl.signValidatorMessage(
+          DOMAIN,
+          CHAIN_ID,
+          this.signers.validators[1].address,
+          keyPair.secret
+        ).signature;
+
+        const validator3signature = mcl.signValidatorMessage(
+          DOMAIN,
+          CHAIN_ID,
+          this.signers.validators[2].address,
+          keyPair.secret
+        ).signature;
+
+        await hydraChain
+          .connect(this.signers.validators[0])
+          .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
+        await hydraChain
+          .connect(this.signers.validators[1])
+          .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
+        await hydraChain
+          .connect(this.signers.validators[2])
+          .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
+
+        // Stake
+        await hydraStaking
+          .connect(this.signers.validators[0])
+          .stakeWithVesting(1, { value: hre.ethers.utils.parseEther("250") });
+        await hydraStaking.connect(this.signers.validators[1]).stake({ value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking
+          .connect(this.signers.validators[2])
+          .stakeWithVesting(52, { value: hre.ethers.utils.parseEther("950") });
+
+        // Commit epoch
+        const validatorsUptime = [
+          {
+            validator: this.signers.validators[0].address,
+            signedBlocks: hre.ethers.BigNumber.from(475),
+          },
+          {
+            validator: this.signers.validators[1].address,
+            signedBlocks: hre.ethers.BigNumber.from(500),
+          },
+          {
+            validator: this.signers.validators[2].address,
+            signedBlocks: hre.ethers.BigNumber.from(450),
+          },
+        ];
+        const currEpochId = await systemHydraChain.currentEpochId();
+        const prevEpochId = currEpochId.sub(1);
+        const previousEpoch = await systemHydraChain.epochs(prevEpochId);
+        const newEpoch = {
+          startBlock: previousEpoch.endBlock.add(1),
+          endBlock: previousEpoch.endBlock.add(500),
+          epochRoot: hre.ethers.utils.randomBytes(32),
+        };
+
+        await time.increase(WEEK - 100);
+
+        await systemHydraChain.commitEpoch(currEpochId, newEpoch, 500, validatorsUptime);
+
+        await expect(
+          hydraStaking.connect(systemHydraChain.signer).distributeRewardsFor(currEpochId, validatorsUptime)
+        ).to.emit(hydraStaking, "StakingRewardDistributed");
+
+        const newEpoch2 = {
+          startBlock: previousEpoch.endBlock.add(501),
+          endBlock: previousEpoch.endBlock.add(1000),
+          epochRoot: hre.ethers.utils.randomBytes(32),
+        };
+
+        await time.increase(363 * DAY + 2400 - WEEK - 100);
+
+        await systemHydraChain.commitEpoch(currEpochId.add(1), newEpoch2, 500, validatorsUptime);
+
+        await expect(
+          hydraStaking.connect(systemHydraChain.signer).distributeRewardsFor(currEpochId.add(1), validatorsUptime)
+        ).to.emit(hydraStaking, "StakingRewardDistributed");
+
+        // Claim Rewards
+        await hydraStaking.connect(this.signers.validators[0])["claimStakingRewards()"]();
+        await hydraStaking.connect(this.signers.validators[1])["claimStakingRewards()"]();
+        // calculate up to which epoch rewards are matured
+        await time.increase(365 * DAY + 1);
+        await hydraStaking.connect(this.signers.validators[2])["claimStakingRewards()"]();
+
+        // Show claimed rewards
+        const rewards1 = await hydraStaking.stakingRewards(this.signers.validators[0].address);
+        console.log(rewards1.total);
+        const rewards2 = await hydraStaking.stakingRewards(this.signers.validators[1].address);
+        console.log(rewards2.total);
+        const rewards3 = await hydraStaking.stakingRewards(this.signers.validators[2].address);
+        console.log(rewards3.total);
       });
     });
 
