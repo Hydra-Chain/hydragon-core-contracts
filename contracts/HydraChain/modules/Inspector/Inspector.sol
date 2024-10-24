@@ -27,10 +27,10 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
     // solhint-disable-next-line func-name-mixedcase
     function __Inspector_init_unchained() internal onlyInitializing {
+        initiateBanThreshold = 18000; // in blocks => 1 hour minimum
         validatorPenalty = 700 ether;
         reporterReward = 300 ether;
         banThreshold = 24 hours;
-        initiateBanThreshold = 18000; // in blocks => 1 hour minimum
     }
 
     // _______________ Modifiers _______________
@@ -68,8 +68,8 @@ abstract contract Inspector is IInspector, ValidatorManager {
         }
 
         bansInitiated[msg.sender] = 0;
-        hydraStakingContract.recoverEjectedValidator(msg.sender);
         _updateParticipation(msg.sender);
+        hydraStakingContract.recoverEjectedValidator(msg.sender);
     }
 
     /**
