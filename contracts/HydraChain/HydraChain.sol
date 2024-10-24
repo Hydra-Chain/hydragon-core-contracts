@@ -26,10 +26,10 @@ contract HydraChain is
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
-    /// @notice Epoch data linked with the epoch id
-    mapping(uint256 => Epoch) public epochs;
     /// @notice Array with epoch ending blocks
     uint256[] public epochEndBlocks;
+    /// @notice Epoch data linked with the epoch id
+    mapping(uint256 => Epoch) public epochs;
 
     mapping(uint256 => uint256) internal _commitBlockNumbers;
 
@@ -112,8 +112,8 @@ contract HydraChain is
         }
 
         epochs[newEpochId] = epoch;
-        _commitBlockNumbers[newEpochId] = block.number;
         epochEndBlocks.push(epoch.endBlock);
+        _commitBlockNumbers[newEpochId] = block.number;
 
         // Update participations
         uint256 uptimesCount = uptime.length;

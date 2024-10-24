@@ -73,7 +73,7 @@ export function RunVestedDelegationTests(): void {
         const { vestManager, vestingManagerFactory } = await loadFixture(this.fixtures.vestManagerFixture);
 
         expect(
-          await vestingManagerFactory.userVestManagers(this.vestManagerOwners[0].address, 0),
+          await vestingManagerFactory.userVestingManagers(this.vestManagerOwners[0].address, 0),
           "userVestManagers"
         ).to.equal(vestManager.address);
         expect(

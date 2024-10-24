@@ -49,18 +49,18 @@ export function RunVestManagerFactoryTests(): void {
         );
         const { newManager } = await createNewVestManager(vestingManagerFactory, vestManagerOwner);
 
-        expect(await vestingManagerFactory.vestingManagerOwners(vestManager.address)).to.be.equal(
+        expect(await vestingManagerFactory.vestingManagerOwner(vestManager.address)).to.be.equal(
           vestManagerOwner.address
         );
 
-        expect(await vestingManagerFactory.vestingManagerOwners(newManager.address)).to.be.equal(
+        expect(await vestingManagerFactory.vestingManagerOwner(newManager.address)).to.be.equal(
           vestManagerOwner.address
         );
 
-        expect(await vestingManagerFactory.userVestManagers(vestManagerOwner.address, 0)).to.be.equal(
+        expect(await vestingManagerFactory.userVestingManagers(vestManagerOwner.address, 0)).to.be.equal(
           vestManager.address
         );
-        expect(await vestingManagerFactory.userVestManagers(vestManagerOwner.address, 1)).to.be.equal(
+        expect(await vestingManagerFactory.userVestingManagers(vestManagerOwner.address, 1)).to.be.equal(
           newManager.address
         );
       });

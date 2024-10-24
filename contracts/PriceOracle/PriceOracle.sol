@@ -17,12 +17,12 @@ import {SortedPriceList} from "./libs/SortedPriceList.sol";
  */
 contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector, APRCalculatorConnector {
     using SortedPriceList for List;
-    mapping(uint256 => List) public priceVotesForDay;
     mapping(uint256 => uint256) public pricePerDay;
+    mapping(uint256 => List) public priceVotesForDay;
 
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
-    uint256 public constant DAILY_VOTING_START_TIME = 36 minutes; // 36 minutes in seconds
-    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + 3 hours; // start time + 3 hours in seconds
+    uint256 public constant DAILY_VOTING_START_TIME = 36 minutes;
+    uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + 3 hours;
 
     // _______________ Initializer _______________
 
@@ -111,10 +111,10 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
         uint256 neededVotingPower = (hydraChainContract.getTotalVotingPower() * VOTING_POWER_PERCENTAGE_NEEDED) / 100;
 
         // Iterate through the sorted list directly
-        address current = priceList.head;
         uint256 count = 1;
-        uint256 sumPrice = 0;
         uint256 powerSum = 0;
+        uint256 sumPrice = 0;
+        address current = priceList.head;
 
         while (current != address(0)) {
             uint256 currentPrice = priceList.nodes[current].price;

@@ -29,16 +29,16 @@ abstract contract VestedDelegation is
     using VestedPositionLib for VestingPosition;
 
     /**
-     * @notice The vesting positions for every delegator
-     * @dev Staker => Delegator => VestingPosition
-     */
-    mapping(address => mapping(address => VestingPosition)) public vestedDelegationPositions;
-
-    /**
      * @notice The threshold for the maximum number of allowed balance changes
      * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
      */
     uint256 public balanceChangeThreshold;
+
+    /**
+     * @notice The vesting positions for every delegator
+     * @dev Staker => Delegator => VestingPosition
+     */
+    mapping(address => mapping(address => VestingPosition)) public vestedDelegationPositions;
 
     // _______________ Initializer _______________
 

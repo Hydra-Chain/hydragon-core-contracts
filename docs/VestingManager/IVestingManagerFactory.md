@@ -60,11 +60,31 @@ Claims that a delegator is a vest manager or not.
 function newVestingManager() external nonpayable
 ```
 
-Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, so users need to create a manager first to be able to vest.
+Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, So users need to create a manager first to be able to vest.
 
 
 
 
+
+
+## Events
+
+### NewVestingManager
+
+```solidity
+event NewVestingManager(address indexed owner, address newClone)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| owner `indexed` | address | undefined |
+| newClone  | address | undefined |
 
 
 

@@ -195,15 +195,15 @@ Claims that a delegator is a vest manager or not.
 function newVestingManager() external nonpayable
 ```
 
-Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, so users need to create a manager first to be able to vest.
+Creates new vesting manager which owner is the caller. Every new instance is proxy leading to base impl, so minimal fees are applied. Only Vesting manager can use the vesting functionality, So users need to create a manager first to be able to vest.
 
 
 
 
-### userVestManagers
+### userVestingManagers
 
 ```solidity
-function userVestManagers(address, uint256) external view returns (address)
+function userVestingManagers(address, uint256) external view returns (address)
 ```
 
 Additional mapping to store all vesting managers per user address for fast off-chain lookup
@@ -223,10 +223,10 @@ Additional mapping to store all vesting managers per user address for fast off-c
 |---|---|---|
 | _0 | address | undefined |
 
-### vestingManagerOwners
+### vestingManagerOwner
 
 ```solidity
-function vestingManagerOwners(address) external view returns (address)
+function vestingManagerOwner(address) external view returns (address)
 ```
 
 A vesting manager pointing to its owner
