@@ -364,8 +364,8 @@ export function RunHydraStakingTests(): void {
       });
     });
 
-    describe.only("Table reward test staking", async function () {
-      it("should stake and claim rewards", async function () {
+    describe("Table driven tests for rewards", async function () {
+      it("should have less than 1% difference with data table rewards", async function () {
         const { hydraChain, systemHydraChain, hydraStaking, aprCalculator, hydraDelegation, vestingManagerFactory } =
           await loadFixture(this.fixtures.initializedWithSpecificBonusesStateFixture);
 
@@ -509,22 +509,18 @@ export function RunHydraStakingTests(): void {
         expect(rewards1.total)
           .to.be.lt(Math.round((rewardsForStakers[0] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[0] * 99) / 100));
-        console.log(rewards1.total);
         const rewards2 = await hydraStaking.stakingRewards(this.signers.validators[1].address);
         expect(rewards2.total)
           .to.be.lt(Math.round((rewardsForStakers[1] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[1] * 99) / 100));
-        console.log(rewards2.total);
         const rewards3 = await hydraStaking.stakingRewards(this.signers.validators[2].address);
         expect(rewards3.total.div(10))
           .to.be.lt(Math.round((rewardsForStakers[2] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[2] * 99) / 100));
-        console.log(rewards3.total);
         const rewards4 = await hydraStaking.stakingRewards(this.signers.validators[3].address);
         expect(rewards4.total)
-          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100)) // 10% commission
-          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100)); // not correct data
-        console.log(rewards4.total);
+          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100)) // TODO: Now commission is applied before vesting bonus, and the data is not accurate
+          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100)); // TODO: Make sure the amount difference is smaller than 1%
 
         // Delegator rewards
         const delegatorRewards1 = await hydraDelegation.getDelegatorReward(
@@ -534,7 +530,6 @@ export function RunHydraStakingTests(): void {
         expect(delegatorRewards1)
           .to.be.lt(Math.round((rewardsForDelegators[0] * 101) / 100))
           .and.gt(Math.round((rewardsForDelegators[0] * 99) / 100));
-        console.log(delegatorRewards1);
         const delegatorRewards2 = await hydraDelegation.calculatePositionTotalReward(
           this.signers.validators[3].address,
           manager1.address,
@@ -544,7 +539,6 @@ export function RunHydraStakingTests(): void {
         expect(delegatorRewards2)
           .to.be.lt(Math.round((rewardsForDelegators[1] * 101) / 100))
           .and.gt(Math.round((rewardsForDelegators[1] * 99) / 100));
-        console.log(delegatorRewards2);
         const delegatorRewards3 = await hydraDelegation.calculatePositionTotalReward(
           this.signers.validators[3].address,
           manager2.address,
@@ -554,7 +548,6 @@ export function RunHydraStakingTests(): void {
         expect(delegatorRewards3)
           .to.be.lt(Math.round((rewardsForDelegators[2] * 101) / 100))
           .and.gt(Math.round((rewardsForDelegators[2] * 99) / 100));
-        console.log(delegatorRewards3);
       });
     });
 
