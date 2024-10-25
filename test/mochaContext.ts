@@ -82,6 +82,9 @@ export interface Fixtures {
         signature: [BigNumberish, BigNumberish];
         stake: BigNumberish;
       };
+      validator1: SignerWithAddress;
+      validator2: SignerWithAddress;
+      validator3: SignerWithAddress;
     }>;
   };
   commitEpochTxFixture: {

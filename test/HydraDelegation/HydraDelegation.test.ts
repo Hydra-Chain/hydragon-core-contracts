@@ -4,7 +4,16 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { ERRORS, WEEK, MAX_COMMISSION, INITIAL_COMMISSION, DEADLINE } from "../constants";
+import {
+  ERRORS,
+  WEEK,
+  MAX_COMMISSION,
+  INITIAL_COMMISSION,
+  DEADLINE,
+  rewardsForStakers,
+  rewardsForDelegators,
+  DAY,
+} from "../constants";
 import {
   commitEpochs,
   getClaimableRewardRPSData,
@@ -12,6 +21,7 @@ import {
   applyVestingAPR,
   getPermitSignature,
   calcLiquidTokensToDistributeOnVesting,
+  createNewVestManager,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -686,6 +696,70 @@ export function RunHydraDelegationTests(): void {
             totalStake.sub(this.minDelegation)
           );
         });
+      });
+    });
+
+    describe("Table driven tests for delegation rewards", async function () {
+      it("should have less than 1% difference with delegation data table rewards", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory, validator1 } =
+          await loadFixture(this.fixtures.initializedWithSpecificBonusesStateFixture);
+
+        // Stake & Set commission & Delegate
+        await hydraStaking.connect(validator1).stake({ value: hre.ethers.utils.parseEther("150") });
+        await hydraDelegation.connect(validator1).setCommission(10);
+
+        await hydraDelegation
+          .connect(this.signers.delegator)
+          .delegate(validator1.address, { value: hre.ethers.utils.parseEther("10") });
+
+        const { newManager: manager1 } = await createNewVestManager(vestingManagerFactory, this.signers.accounts[4]);
+        const { newManager: manager2 } = await createNewVestManager(vestingManagerFactory, this.signers.accounts[3]);
+
+        await manager1.connect(this.signers.accounts[4]).openVestedDelegatePosition(validator1.address, 26, {
+          value: hre.ethers.utils.parseEther("10"),
+        });
+
+        await manager2.connect(this.signers.accounts[3]).openVestedDelegatePosition(validator1.address, 52, {
+          value: hre.ethers.utils.parseEther("10"),
+        });
+
+        // Commit epoch and distribute rewards
+        const moreAccurateTime = Math.ceil((DAY * 1003) / 1000);
+        await commitEpoch(systemHydraChain, hydraStaking, [validator1], this.epochSize, moreAccurateTime);
+        const currEpochId = await systemHydraChain.currentEpochId();
+
+        // Staker rewards
+        const stakerRewards = await hydraStaking.stakingRewards(validator1.address);
+        expect(stakerRewards.total)
+          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100)) // TODO: Now commission is applied before vesting bonus, and the data is not accurate
+          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100)); // TODO: Make sure the amount difference is smaller than 1%
+
+        // Delegator rewards
+        const delegatorRewards1 = await hydraDelegation.getDelegatorReward(
+          validator1.address,
+          this.signers.delegator.address
+        );
+        expect(delegatorRewards1)
+          .to.be.lt(Math.round((rewardsForDelegators[0] * 101) / 100))
+          .and.gt(Math.round((rewardsForDelegators[0] * 99) / 100));
+        const delegatorRewards2 = await hydraDelegation.calculatePositionTotalReward(
+          validator1.address,
+          manager1.address,
+          currEpochId,
+          1
+        );
+        expect(delegatorRewards2)
+          .to.be.lt(Math.round((rewardsForDelegators[1] * 101) / 100))
+          .and.gt(Math.round((rewardsForDelegators[1] * 99) / 100));
+        const delegatorRewards3 = await hydraDelegation.calculatePositionTotalReward(
+          validator1.address,
+          manager2.address,
+          currEpochId,
+          1
+        );
+        expect(delegatorRewards3)
+          .to.be.lt(Math.round((rewardsForDelegators[2] * 101) / 100))
+          .and.gt(Math.round((rewardsForDelegators[2] * 99) / 100));
       });
     });
 

@@ -1,11 +1,10 @@
 /* eslint-disable node/no-extraneous-import */
 import * as hre from "hardhat";
-import * as mcl from "../../ts/mcl";
 import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
-import { commitEpoch, createNewVestManager } from "../helper";
-import { CHAIN_ID, DAY, DOMAIN, ERRORS, rewardsForDelegators, rewardsForStakers, WEEK } from "../constants";
+import { commitEpoch } from "../helper";
+import { DAY, ERRORS, rewardsForStakers, WEEK } from "../constants";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegatedStakingTests } from "./DelegatedStaking.test";
 import { RunVestedStakingTests } from "./VestedStaking.test";
@@ -364,190 +363,40 @@ export function RunHydraStakingTests(): void {
       });
     });
 
-    describe("Table driven tests for rewards", async function () {
-      it("should have less than 1% difference with data table rewards", async function () {
-        const { hydraChain, systemHydraChain, hydraStaking, aprCalculator, hydraDelegation, vestingManagerFactory } =
-          await loadFixture(this.fixtures.initializedWithSpecificBonusesStateFixture);
+    describe("Table driven tests for staker rewards", async function () {
+      it("should have less than 1% difference with staker data table rewards", async function () {
+        const { systemHydraChain, hydraStaking, validator1, validator2, validator3 } = await loadFixture(
+          this.fixtures.initializedWithSpecificBonusesStateFixture
+        );
 
-        // Make sure APR and bonuses are set correctly
-        expect(await aprCalculator.getBaseAPR()).to.be.equal(500);
-        expect(await aprCalculator.getMacroFactor()).to.be.equal(2500);
-        expect(await aprCalculator.getRSIBonus()).to.be.equal(11500);
+        // Stake
+        await hydraStaking.connect(validator1).stakeWithVesting(2, { value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking.connect(validator2).stake({ value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking.connect(validator3).stakeWithVesting(26, { value: hre.ethers.utils.parseEther("150") });
 
-        // Disable whitelisting
-        await hydraChain.connect(this.signers.governance).disableWhitelisting();
-        expect(await hydraChain.isWhitelistingEnabled()).to.be.false;
-
-        // Commit epoch
-        const epochId = hre.ethers.BigNumber.from(1);
-        const epoch = {
-          startBlock: hre.ethers.BigNumber.from(1),
-          endBlock: hre.ethers.BigNumber.from(500),
-          epochRoot: this.epoch.epochRoot,
-        };
-        const uptime = [
-          {
-            validator: this.signers.admin.address,
-            signedBlocks: hre.ethers.BigNumber.from(10),
-          },
-        ];
-        await systemHydraChain.commitEpoch(epochId, epoch, 500, uptime);
-        await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime);
-
-        // register validators
-        const keyPair = mcl.newKeyPair();
-        const validator1signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[0].address,
-          keyPair.secret
-        ).signature;
-
-        const validator2signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[1].address,
-          keyPair.secret
-        ).signature;
-
-        const validator3signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[2].address,
-          keyPair.secret
-        ).signature;
-
-        const validator4signature = mcl.signValidatorMessage(
-          DOMAIN,
-          CHAIN_ID,
-          this.signers.validators[3].address,
-          keyPair.secret
-        ).signature;
-
-        await hydraChain
-          .connect(this.signers.validators[0])
-          .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
-        await hydraChain
-          .connect(this.signers.validators[1])
-          .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
-        await hydraChain
-          .connect(this.signers.validators[2])
-          .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
-        await hydraChain
-          .connect(this.signers.validators[3])
-          .register(mcl.g1ToHex(validator4signature), mcl.g2ToHex(keyPair.pubkey));
-
-        // Stake & Set commission & Delegate
-        await hydraStaking
-          .connect(this.signers.validators[0])
-          .stakeWithVesting(2, { value: hre.ethers.utils.parseEther("150") });
-        await hydraStaking.connect(this.signers.validators[1]).stake({ value: hre.ethers.utils.parseEther("150") });
-        await hydraStaking
-          .connect(this.signers.validators[2])
-          .stakeWithVesting(26, { value: hre.ethers.utils.parseEther("150") });
-        await hydraStaking.connect(this.signers.validators[3]).stake({ value: hre.ethers.utils.parseEther("150") });
-        await hydraDelegation.connect(this.signers.validators[3]).setCommission(10);
-
-        await hydraDelegation
-          .connect(this.signers.delegator)
-          .delegate(this.signers.validators[3].address, { value: hre.ethers.utils.parseEther("10") });
-
-        const { newManager: manager1 } = await createNewVestManager(vestingManagerFactory, this.signers.accounts[4]);
-        const { newManager: manager2 } = await createNewVestManager(vestingManagerFactory, this.signers.accounts[3]);
-
-        await manager1
-          .connect(this.signers.accounts[4])
-          .openVestedDelegatePosition(this.signers.validators[3].address, 26, {
-            value: hre.ethers.utils.parseEther("10"),
-          });
-
-        await manager2
-          .connect(this.signers.accounts[3])
-          .openVestedDelegatePosition(this.signers.validators[3].address, 52, {
-            value: hre.ethers.utils.parseEther("10"),
-          });
-
-        // Commit epoch
-        const validatorsUptime = [
-          {
-            validator: this.signers.validators[0].address,
-            signedBlocks: hre.ethers.BigNumber.from(500),
-          },
-          {
-            validator: this.signers.validators[1].address,
-            signedBlocks: hre.ethers.BigNumber.from(500),
-          },
-          {
-            validator: this.signers.validators[2].address,
-            signedBlocks: hre.ethers.BigNumber.from(500),
-          },
-          {
-            validator: this.signers.validators[3].address,
-            signedBlocks: hre.ethers.BigNumber.from(500),
-          },
-        ];
-        const currEpochId = await systemHydraChain.currentEpochId();
-        const prevEpochId = currEpochId.sub(1);
-        const previousEpoch = await systemHydraChain.epochs(prevEpochId);
-        const newEpoch = {
-          startBlock: previousEpoch.endBlock.add(1),
-          endBlock: previousEpoch.endBlock.add(500),
-          epochRoot: hre.ethers.utils.randomBytes(32),
-        };
-
+        // Commit epoch and distribute rewards
         const moreAccurateTime = Math.ceil((DAY * 1003) / 1000);
-        await time.increase(moreAccurateTime);
-
-        await systemHydraChain.commitEpoch(currEpochId, newEpoch, 500, validatorsUptime);
-
-        await expect(
-          hydraStaking.connect(systemHydraChain.signer).distributeRewardsFor(currEpochId, validatorsUptime)
-        ).to.emit(hydraStaking, "StakingRewardDistributed");
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          moreAccurateTime
+        );
 
         // Show claimed rewards
-        const rewards1 = await hydraStaking.stakingRewards(this.signers.validators[0].address);
-        expect(rewards1.total)
+        const stakerReward1 = await hydraStaking.stakingRewards(validator1.address);
+        expect(stakerReward1.total)
           .to.be.lt(Math.round((rewardsForStakers[0] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[0] * 99) / 100));
-        const rewards2 = await hydraStaking.stakingRewards(this.signers.validators[1].address);
-        expect(rewards2.total)
+        const stakerReward2 = await hydraStaking.stakingRewards(validator2.address);
+        expect(stakerReward2.total)
           .to.be.lt(Math.round((rewardsForStakers[1] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[1] * 99) / 100));
-        const rewards3 = await hydraStaking.stakingRewards(this.signers.validators[2].address);
-        expect(rewards3.total.div(10))
+        const stakerReward3 = await hydraStaking.stakingRewards(validator3.address);
+        expect(stakerReward3.total.div(10))
           .to.be.lt(Math.round((rewardsForStakers[2] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[2] * 99) / 100));
-        const rewards4 = await hydraStaking.stakingRewards(this.signers.validators[3].address);
-        expect(rewards4.total)
-          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100)) // TODO: Now commission is applied before vesting bonus, and the data is not accurate
-          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100)); // TODO: Make sure the amount difference is smaller than 1%
-
-        // Delegator rewards
-        const delegatorRewards1 = await hydraDelegation.getDelegatorReward(
-          this.signers.validators[3].address,
-          this.signers.delegator.address
-        );
-        expect(delegatorRewards1)
-          .to.be.lt(Math.round((rewardsForDelegators[0] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[0] * 99) / 100));
-        const delegatorRewards2 = await hydraDelegation.calculatePositionTotalReward(
-          this.signers.validators[3].address,
-          manager1.address,
-          currEpochId,
-          1
-        );
-        expect(delegatorRewards2)
-          .to.be.lt(Math.round((rewardsForDelegators[1] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[1] * 99) / 100));
-        const delegatorRewards3 = await hydraDelegation.calculatePositionTotalReward(
-          this.signers.validators[3].address,
-          manager2.address,
-          currEpochId,
-          1
-        );
-        expect(delegatorRewards3)
-          .to.be.lt(Math.round((rewardsForDelegators[2] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[2] * 99) / 100));
       });
     });
 
