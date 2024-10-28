@@ -151,6 +151,6 @@ export const pricesToReachNeededBonuses = [
   23732609, 23293966, 23234958, 22828615, 22707768, 21808949, 21392035, 21370805, 21239237, 20847768, 20923316,
   22663669, 22673055,
 ];
-
-export const rewardsForStakers = [6118050513698630, 5151050513698630, 1504905051369863, 5497050513698630]; // last element is after commission and 3rd element is / by 10
-export const rewardsForDelegators = [309203767123287, 903203767123287, 1904050513698630]; // 3 elements are after commission
+// 1st element Divided by 10 & 3rd Divided by 10 - so it fits the number 2^53, also 1st element is reward for 9 days, other are daily
+export const rewardsForStakers = [5225005051369863, 5151050513698630, 1504905051369863, 5497050513698630];
+export const rewardsForDelegators = [309203767123287, 903203767123287, 1904050513698630];

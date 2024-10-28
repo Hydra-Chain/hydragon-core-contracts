@@ -370,7 +370,7 @@ export function RunHydraStakingTests(): void {
         );
 
         // Stake
-        await hydraStaking.connect(validator1).stakeWithVesting(2, { value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking.connect(validator1).stakeWithVesting(1, { value: hre.ethers.utils.parseEther("150") });
         await hydraStaking.connect(validator2).stake({ value: hre.ethers.utils.parseEther("150") });
         await hydraStaking.connect(validator3).stakeWithVesting(26, { value: hre.ethers.utils.parseEther("150") });
 
@@ -384,11 +384,7 @@ export function RunHydraStakingTests(): void {
           moreAccurateTime
         );
 
-        // Show claimed rewards
-        const stakerReward1 = await hydraStaking.stakingRewards(validator1.address);
-        expect(stakerReward1.total)
-          .to.be.lt(Math.round((rewardsForStakers[0] * 101) / 100))
-          .and.gt(Math.round((rewardsForStakers[0] * 99) / 100));
+        // Show daily claimed rewards
         const stakerReward2 = await hydraStaking.stakingRewards(validator2.address);
         expect(stakerReward2.total)
           .to.be.lt(Math.round((rewardsForStakers[1] * 101) / 100))
@@ -397,6 +393,29 @@ export function RunHydraStakingTests(): void {
         expect(stakerReward3.total.div(10))
           .to.be.lt(Math.round((rewardsForStakers[2] * 101) / 100))
           .and.gt(Math.round((rewardsForStakers[2] * 99) / 100));
+
+        // Commit epoch right before the position end
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          DAY * 6 - 600
+        );
+        // Commit epoch 2 days after position end
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          DAY * 2
+        );
+
+        // Show claimed rewards for validator 1 after 9 days
+        const stakerReward1 = await hydraStaking.stakingRewards(validator1.address);
+        expect(stakerReward1.total.div(10))
+          .to.be.lt(Math.round((rewardsForStakers[0] * 101) / 100))
+          .and.gt(Math.round((rewardsForStakers[0] * 99) / 100));
       });
     });
 

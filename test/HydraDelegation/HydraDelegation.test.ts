@@ -729,10 +729,11 @@ export function RunHydraDelegationTests(): void {
         const currEpochId = await systemHydraChain.currentEpochId();
 
         // Staker rewards
+        // TODO: Now commission is applied before vesting bonus, and the data is not accurate, make sure the amount difference is smaller than 1%
         const stakerRewards = await hydraStaking.stakingRewards(validator1.address);
         expect(stakerRewards.total)
-          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100)) // TODO: Now commission is applied before vesting bonus, and the data is not accurate
-          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100)); // TODO: Make sure the amount difference is smaller than 1%
+          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100))
+          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100));
 
         // Delegator rewards
         const delegatorRewards1 = await hydraDelegation.getDelegatorReward(
