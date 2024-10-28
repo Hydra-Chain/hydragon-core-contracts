@@ -174,6 +174,13 @@ abstract contract VestedDelegation is
     /**
      * @inheritdoc IVestedDelegation
      */
+    function isInVestingCycleDelegatePosition(address staker, address delegator) external view returns (bool) {
+        return vestedDelegationPositions[staker][delegator].isInVestingCycle();
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
     function delegateWithVesting(address staker, uint256 durationWeeks) external payable onlyManager {
         // ensure that the position is available
         if (!isPositionAvailable(staker, msg.sender)) {
@@ -366,7 +373,7 @@ abstract contract VestedDelegation is
         address delegator,
         uint256 amount
     ) internal virtual override {
-        // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
+        // If it is a vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
         if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
             return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());

@@ -100,6 +100,13 @@ interface IVestedDelegation is IDelegation {
     function isMaturingDelegatePosition(address staker, address delegator) external view returns (bool);
 
     /**
+     * @notice Returns true if the position is in the vesting cycle. (Active or maturing)
+     * @param staker Validator for the position
+     * @param delegator Delegator for the position
+     */
+    function isInVestingCycleDelegatePosition(address staker, address delegator) external view returns (bool);
+
+    /**
      * @notice Delegates sent amount to staker. Set vesting position data.
      * Delete old pool params data, if exists.
      * Can be used by vesting positions' managers only.

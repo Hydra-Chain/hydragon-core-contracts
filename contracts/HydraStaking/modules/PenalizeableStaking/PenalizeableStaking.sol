@@ -67,8 +67,8 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
                 return 0;
             }
 
-            _handleWithdrawal(stakeDistribution.account, stakeDistribution.amount);
             availableToWithdraw -= stakeDistribution.amount;
+            _handleWithdrawal(stakeDistribution.account, stakeDistribution.amount);
         }
 
         return availableToWithdraw;

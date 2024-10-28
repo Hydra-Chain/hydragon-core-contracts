@@ -83,7 +83,7 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
      * @param staker The staker address
      * @return The commission for the staker
      */
-    function _getstakerDelegationCommission(address staker) internal view returns (uint256) {
+    function _getStakerDelegationCommission(address staker) internal view returns (uint256) {
         return delegationContract.stakerDelegationCommission(staker);
     }
 

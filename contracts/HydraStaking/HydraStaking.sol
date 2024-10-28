@@ -251,7 +251,7 @@ contract HydraStaking is
 
         uint256 stake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
-        uint256 commission = _getstakerDelegationCommission(uptime.validator);
+        uint256 commission = _getStakerDelegationCommission(uptime.validator);
         // slither-disable-next-line divide-before-multiply
         uint256 stakerRewardIndex = (fullRewardIndex * (stake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
