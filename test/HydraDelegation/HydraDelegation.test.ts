@@ -10,8 +10,8 @@ import {
   MAX_COMMISSION,
   INITIAL_COMMISSION,
   DEADLINE,
-  rewardsForStakers,
-  rewardsForDelegators,
+  TABLE_DATA_REWARDS_FOR_STAKER,
+  TABLE_DATA_REWARDS_FOR_DELEGATORS,
   DAY,
 } from "../constants";
 import {
@@ -732,8 +732,8 @@ export function RunHydraDelegationTests(): void {
         // TODO: Now commission is applied before vesting bonus, and the data is not accurate, make sure the amount difference is smaller than 1%
         const stakerRewards = await hydraStaking.stakingRewards(validator1.address);
         expect(stakerRewards.total)
-          .to.be.lt(Math.round((rewardsForStakers[3] * 105) / 100))
-          .and.gt(Math.round((rewardsForStakers[3] * 95) / 100));
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[3] * 105) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[3] * 95) / 100));
 
         // Delegator rewards
         const delegatorRewards1 = await hydraDelegation.getDelegatorReward(
@@ -741,8 +741,8 @@ export function RunHydraDelegationTests(): void {
           this.signers.delegator.address
         );
         expect(delegatorRewards1)
-          .to.be.lt(Math.round((rewardsForDelegators[0] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[0] * 99) / 100));
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[0] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[0] * 99) / 100));
         const delegatorRewards2 = await hydraDelegation.calculatePositionTotalReward(
           validator1.address,
           manager1.address,
@@ -750,8 +750,8 @@ export function RunHydraDelegationTests(): void {
           1
         );
         expect(delegatorRewards2)
-          .to.be.lt(Math.round((rewardsForDelegators[1] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[1] * 99) / 100));
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[1] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[1] * 99) / 100));
         const delegatorRewards3 = await hydraDelegation.calculatePositionTotalReward(
           validator1.address,
           manager2.address,
@@ -759,8 +759,8 @@ export function RunHydraDelegationTests(): void {
           1
         );
         expect(delegatorRewards3)
-          .to.be.lt(Math.round((rewardsForDelegators[2] * 101) / 100))
-          .and.gt(Math.round((rewardsForDelegators[2] * 99) / 100));
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[2] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_DELEGATORS[2] * 99) / 100));
       });
     });
 

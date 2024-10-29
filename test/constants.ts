@@ -37,11 +37,11 @@ export enum VALIDATOR_STATUS {
 }
 
 /// @notice This bytecode is used to mock and return true with any input
-export const alwaysTrueBytecode = "0x600160005260206000F3";
+export const ALWAYS_TRUE_BYTECODE = "0x600160005260206000F3";
 /// @notice This bytecode is used to mock and return false with any input
-export const alwaysFalseBytecode = "0x60206000F3";
+export const ALWAYS_FALSE_BYTECODE = "0x60206000F3";
 /// @notice This bytecode is used to mock and revert with any input
-export const alwaysRevertBytecode = "0x60006000FD";
+export const ALWAYS_REVERT_BYTECODE = "0x60006000FD";
 
 export const ERRORS = {
   initialized: "Initializable: contract is already initialized",
@@ -75,9 +75,9 @@ export const ERRORS = {
   },
 };
 
-export const initialDataPrices = [169, 169, 168, 187, 167, 169, 151, 149, 149, 157, 162, 162, 176, 200, 188];
+export const INITIAL_DATA_PRICES = [169, 169, 168, 187, 167, 169, 151, 149, 149, 157, 162, 162, 176, 200, 188];
 
-export const tableDataPrices = [
+export const TABLE_DATA_PRICES = [
   0, 176, 168, 154, 149, 148, 148, 144, 142, 200, 215, 296, 284, 316, 391, 421, 416, 356, 323, 347, 384, 383, 437, 468,
   493, 512, 471, 487, 490, 492, 531, 688, 718, 841, 895, 796, 825, 735, 827, 831, 728, 762, 747, 717, 685, 741, 1096,
   1496, 1379, 1404, 1428, 1376, 1520, 1757, 1795, 1850, 1858, 1712, 1839, 1687, 1895, 1865, 1901, 2176, 2332, 2427,
@@ -98,7 +98,7 @@ export const tableDataPrices = [
   865, 834, 885, 855, 802, 750, 731, 804, 785, 809, 769, 724,
 ];
 
-export const tableDataRSI = [
+export const TABLE_DATA_RSI = [
   0, 0, 0, 0, 0, 0, 0, 0, 11500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -114,13 +114,13 @@ export const tableDataRSI = [
   12500, 11500, 11500, 11500, 11500, 11500,
 ];
 
-export const tableDataMacroFactor = [
+export const TABLE_DATA_MACRO_FACTOR = [
   7500, 7500, 7500, 7500, 7500, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000,
   5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000,
   5000, 5000, 5000, 5000, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500,
 ];
 
-export const pricesToReachNeededBonuses = [
+export const INITIAL_PRICES_TO_REACH_BONUSES = [
   87788796, 88088430, 89487397, 84470755, 83453991, 81359600, 79444816, 77772912, 77838706, 76136634, 75471265,
   75755867, 76289059, 78167815, 80680751, 83068266, 85159342, 83139396, 81191796, 80143827, 79694684, 80346869,
   76547834, 77682709, 75779343, 76583844, 73945392, 70141402, 69398037, 68690347, 66176131, 63186492, 64311843,
@@ -152,5 +152,5 @@ export const pricesToReachNeededBonuses = [
   22663669, 22673055,
 ];
 // 1st element Divided by 10 & 3rd Divided by 10 - so it fits the number 2^53, also 1st element is reward for 9 days, other are daily
-export const rewardsForStakers = [5225005051369863, 5151050513698630, 1504905051369863, 5497050513698630];
-export const rewardsForDelegators = [309203767123287, 903203767123287, 1904050513698630];
+export const TABLE_DATA_REWARDS_FOR_STAKER = [5225005051369863, 5151050513698630, 1504905051369863, 5497050513698630];
+export const TABLE_DATA_REWARDS_FOR_DELEGATORS = [309203767123287, 903203767123287, 1904050513698630];
