@@ -546,6 +546,29 @@ Checks if balance change was already made in the current epoch
 |---|---|---|
 | _0 | bool | undefined |
 
+### isInVestingCycleDelegatePosition
+
+```solidity
+function isInVestingCycleDelegatePosition(address staker, address delegator) external view returns (bool)
+```
+
+Returns true if the position is in the vesting cycle. (Active or maturing)
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Validator for the position |
+| delegator | address | Delegator for the position |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### isMaturingDelegatePosition
 
 ```solidity
