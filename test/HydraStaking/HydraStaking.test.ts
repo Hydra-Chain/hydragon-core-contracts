@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { commitEpoch } from "../helper";
-import { ERRORS, WEEK } from "../constants";
+import { DAY, ERRORS, TABLE_DATA_REWARDS_FOR_STAKER, WEEK } from "../constants";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegatedStakingTests } from "./DelegatedStaking.test";
 import { RunVestedStakingTests } from "./VestedStaking.test";
@@ -360,6 +360,62 @@ export function RunHydraStakingTests(): void {
           const validatorData = await hydraChain.getValidator(validator.address);
           expect(validatorData.stake, "stake").to.equal(stakeAmount.sub(unstakeAmount));
         });
+      });
+    });
+
+    describe("Table driven tests for staker rewards", async function () {
+      it("should have less than 1% difference with staker data table rewards", async function () {
+        const { systemHydraChain, hydraStaking, validator1, validator2, validator3 } = await loadFixture(
+          this.fixtures.initializedWithSpecificBonusesStateFixture
+        );
+
+        // Stake
+        await hydraStaking.connect(validator1).stakeWithVesting(1, { value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking.connect(validator2).stake({ value: hre.ethers.utils.parseEther("150") });
+        await hydraStaking.connect(validator3).stakeWithVesting(26, { value: hre.ethers.utils.parseEther("150") });
+
+        // Commit epoch and distribute rewards
+        const moreAccurateTime = Math.ceil((DAY * 1003) / 1000);
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          moreAccurateTime
+        );
+
+        // Show daily claimed rewards
+        const stakerReward2 = await hydraStaking.stakingRewards(validator2.address);
+        expect(stakerReward2.total)
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[1] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[1] * 99) / 100));
+        const stakerReward3 = await hydraStaking.stakingRewards(validator3.address);
+        expect(stakerReward3.total.div(10))
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[2] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[2] * 99) / 100));
+
+        // Commit epoch right before the position end
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          DAY * 6 - 600
+        );
+        // Commit epoch 2 days after position end
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [validator1, validator2, validator3],
+          this.epochSize,
+          DAY * 2
+        );
+
+        // Show claimed rewards for validator 1 after 9 days
+        const stakerReward1 = await hydraStaking.stakingRewards(validator1.address);
+        expect(stakerReward1.total.div(10))
+          .to.be.lt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[0] * 101) / 100))
+          .and.gt(Math.round((TABLE_DATA_REWARDS_FOR_STAKER[0] * 99) / 100));
       });
     });
 

@@ -63,6 +63,30 @@ export interface Fixtures {
       };
     }>;
   };
+  initializedWithSpecificBonusesStateFixture: {
+    (): Promise<{
+      hydraChain: HydraChain;
+      systemHydraChain: HydraChain;
+      bls: BLS;
+      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStaking;
+      liquidToken: LiquidityToken;
+      aprCalculator: APRCalculator;
+      vestingManagerFactory: VestingManagerFactory;
+      priceOracle: PriceOracle;
+      rewardWallet: RewardWallet;
+      DAOIncentiveVault: HydraVault;
+      validatorInit: {
+        addr: string;
+        pubkey: [BigNumberish, BigNumberish, BigNumberish, BigNumberish];
+        signature: [BigNumberish, BigNumberish];
+        stake: BigNumberish;
+      };
+      validator1: SignerWithAddress;
+      validator2: SignerWithAddress;
+      validator3: SignerWithAddress;
+    }>;
+  };
   commitEpochTxFixture: {
     (): Promise<{
       hydraChain: HydraChain;

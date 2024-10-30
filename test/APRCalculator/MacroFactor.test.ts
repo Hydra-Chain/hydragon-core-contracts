@@ -5,12 +5,12 @@ import {
   DAY,
   ERRORS,
   INITIAL_DEFAULT_MACRO_FACTOR,
-  initialDataPrices,
+  INITIAL_DATA_PRICES,
   MAX_MACRO_FACTOR,
   MIN_MACRO_FACTOR,
   SLOW_SMA,
-  tableDataMacroFactor,
-  tableDataPrices,
+  TABLE_DATA_MACRO_FACTOR,
+  TABLE_DATA_PRICES,
 } from "../constants";
 import { ethers } from "hardhat";
 import { commitEpoch, getCorrectVotingTimestamp } from "../helper";
@@ -90,11 +90,11 @@ export function RunMacroFactorTests(): void {
       const newAprCalculator = await (await ethers.getContractFactory("APRCalculator")).deploy();
       const prices: number[] = [];
 
-      for (let i = 0; i < initialDataPrices.length; i++) {
-        prices.push(initialDataPrices[i]);
+      for (let i = 0; i < INITIAL_DATA_PRICES.length; i++) {
+        prices.push(INITIAL_DATA_PRICES[i]);
       }
-      for (let i = 0; i < SLOW_SMA - initialDataPrices.length; i++) {
-        prices.push(tableDataPrices[i]);
+      for (let i = 0; i < SLOW_SMA - INITIAL_DATA_PRICES.length; i++) {
+        prices.push(TABLE_DATA_PRICES[i]);
       }
 
       // Initialize the new contracts
@@ -106,20 +106,20 @@ export function RunMacroFactorTests(): void {
         .initialize(systemHydraChain.address, newAprCalculator.address);
 
       expect(await newAprCalculator.latestDailyPrice()).to.be.equal(
-        tableDataPrices[SLOW_SMA - initialDataPrices.length - 1]
+        TABLE_DATA_PRICES[SLOW_SMA - INITIAL_DATA_PRICES.length - 1]
       );
       expect(await newAprCalculator.macroFactor()).to.be.equal(7500);
       await time.setNextBlockTimestamp(correctVotingTime);
 
-      for (let i = SLOW_SMA - initialDataPrices.length; i < tableDataPrices.length; i++) {
+      for (let i = SLOW_SMA - INITIAL_DATA_PRICES.length; i < TABLE_DATA_PRICES.length; i++) {
         for (let j = 0; j !== 3; j++) {
-          await newPriceOracleContract.connect(this.signers.validators[j]).vote(tableDataPrices[i]);
+          await newPriceOracleContract.connect(this.signers.validators[j]).vote(TABLE_DATA_PRICES[i]);
         }
 
         expect(await newAprCalculator.macroFactor()).to.be.equal(
-          tableDataMacroFactor[i - SLOW_SMA + initialDataPrices.length]
+          TABLE_DATA_MACRO_FACTOR[i - SLOW_SMA + INITIAL_DATA_PRICES.length]
         );
-        expect(await newAprCalculator.latestDailyPrice()).to.be.equal(tableDataPrices[i]);
+        expect(await newAprCalculator.latestDailyPrice()).to.be.equal(TABLE_DATA_PRICES[i]);
         await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[1]], this.epochSize, DAY - 133);
       }
     });

@@ -23,6 +23,7 @@ import {
   DOMAIN,
   INITIAL_COMMISSION,
   INITIAL_PRICE,
+  INITIAL_PRICES_TO_REACH_BONUSES,
   SLOW_SMA,
   SYSTEM,
   VESTING_DURATION_WEEKS,
@@ -36,6 +37,7 @@ import {
   commitEpoch,
   getCorrectVotingTimestamp,
 } from "./helper";
+import { expect } from "chai";
 
 // --------------- Deploying Contracts ---------------
 
@@ -267,6 +269,176 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     priceOracle,
     rewardWallet,
     DAOIncentiveVault,
+  };
+}
+
+async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Context) {
+  const {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraDelegation,
+    hydraStaking,
+    liquidToken,
+    aprCalculator,
+    vestingManagerFactory,
+    priceOracle,
+    rewardWallet,
+    DAOIncentiveVault,
+  } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+
+  await mcl.init();
+  const validatorBls = generateValidatorBls(this.signers.admin);
+  const validatorInit = {
+    addr: this.signers.admin.address,
+    pubkey: validatorBls.pubkey,
+    signature: validatorBls.signature,
+    stake: this.minStake.mul(2),
+  };
+
+  await liquidToken
+    .connect(this.signers.system)
+    .initialize(
+      "Liquidity Token",
+      "LQT",
+      this.signers.governance.address,
+      hydraStaking.address,
+      hydraDelegation.address
+    );
+
+  await aprCalculator
+    .connect(this.signers.system)
+    .initialize(
+      this.signers.governance.address,
+      hydraChain.address,
+      priceOracle.address,
+      INITIAL_PRICES_TO_REACH_BONUSES
+    );
+
+  await systemHydraChain.initialize(
+    [validatorInit],
+    this.signers.governance.address,
+    hydraStaking.address,
+    hydraDelegation.address,
+    aprCalculator.address,
+    rewardWallet.address,
+    DAOIncentiveVault.address,
+    bls.address
+  );
+
+  await hydraStaking
+    .connect(this.signers.system)
+    .initialize(
+      [validatorInit],
+      this.signers.governance.address,
+      this.minStake,
+      liquidToken.address,
+      hydraChain.address,
+      aprCalculator.address,
+      hydraDelegation.address,
+      rewardWallet.address
+    );
+
+  await hydraDelegation
+    .connect(this.signers.system)
+    .initialize(
+      [validatorInit],
+      this.signers.governance.address,
+      INITIAL_COMMISSION,
+      liquidToken.address,
+      aprCalculator.address,
+      hydraStaking.address,
+      hydraChain.address,
+      vestingManagerFactory.address,
+      rewardWallet.address
+    );
+
+  await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
+
+  await priceOracle.connect(this.signers.system).initialize(hydraChain.address, aprCalculator.address);
+
+  await rewardWallet
+    .connect(this.signers.system)
+    .initialize([hydraChain.address, hydraStaking.address, hydraDelegation.address]);
+
+  await rewardWallet.fund({
+    value: this.minStake.mul(500),
+  });
+
+  // Check if the bonuses are set correctly
+  expect(await aprCalculator.getBaseAPR()).to.be.equal(500);
+  expect(await aprCalculator.getMacroFactor()).to.be.equal(2500);
+  expect(await aprCalculator.getRSIBonus()).to.be.equal(11500);
+
+  // Disable whitelisting
+  await hydraChain.connect(this.signers.governance).disableWhitelisting();
+  expect(await hydraChain.isWhitelistingEnabled()).to.be.false;
+
+  // Commit epoch
+  const epochId = hre.ethers.BigNumber.from(1);
+  const epoch = {
+    startBlock: hre.ethers.BigNumber.from(1),
+    endBlock: hre.ethers.BigNumber.from(500),
+    epochRoot: this.epoch.epochRoot,
+  };
+  const uptime = [
+    {
+      validator: this.signers.admin.address,
+      signedBlocks: hre.ethers.BigNumber.from(10),
+    },
+  ];
+  await systemHydraChain.commitEpoch(epochId, epoch, 500, uptime);
+  await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime);
+
+  // register validators
+  const keyPair = mcl.newKeyPair();
+  const validator1signature = mcl.signValidatorMessage(
+    DOMAIN,
+    CHAIN_ID,
+    this.signers.validators[0].address,
+    keyPair.secret
+  ).signature;
+
+  const validator2signature = mcl.signValidatorMessage(
+    DOMAIN,
+    CHAIN_ID,
+    this.signers.validators[1].address,
+    keyPair.secret
+  ).signature;
+
+  const validator3signature = mcl.signValidatorMessage(
+    DOMAIN,
+    CHAIN_ID,
+    this.signers.validators[2].address,
+    keyPair.secret
+  ).signature;
+
+  await hydraChain
+    .connect(this.signers.validators[0])
+    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
+  await hydraChain
+    .connect(this.signers.validators[1])
+    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
+  await hydraChain
+    .connect(this.signers.validators[2])
+    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
+
+  return {
+    hydraChain,
+    systemHydraChain,
+    bls,
+    hydraStaking,
+    hydraDelegation,
+    liquidToken,
+    aprCalculator,
+    validatorInit,
+    vestingManagerFactory,
+    priceOracle,
+    rewardWallet,
+    DAOIncentiveVault,
+    validator1: this.signers.validators[0],
+    validator2: this.signers.validators[1],
+    validator3: this.signers.validators[2],
   };
 }
 
@@ -988,6 +1160,8 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
 export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.presetHydraChainStateFixture = presetHydraChainStateFixtureFunction.bind(context);
   context.fixtures.initializedHydraChainStateFixture = initializedHydraChainStateFixtureFunction.bind(context);
+  context.fixtures.initializedWithSpecificBonusesStateFixture =
+    initializedWithSpecificBonusesStateFixtureFunction.bind(context);
   context.fixtures.commitEpochTxFixture = commitEpochTxFixtureFunction.bind(context);
   context.fixtures.distributeVaultFundsFixture = distributeVaultFundsFixtureFunction.bind(context);
   context.fixtures.rsiOverSoldConditionFixture = rsiOverSoldConditionFixtureFunction.bind(context);
