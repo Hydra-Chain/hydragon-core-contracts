@@ -308,7 +308,12 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
 
   await aprCalculator
     .connect(this.signers.system)
-    .initialize(this.signers.governance.address, hydraChain.address, priceOracle.address, INITIAL_PRICES_TO_REACH_BONUSES);
+    .initialize(
+      this.signers.governance.address,
+      hydraChain.address,
+      priceOracle.address,
+      INITIAL_PRICES_TO_REACH_BONUSES
+    );
 
   await systemHydraChain.initialize(
     [validatorInit],

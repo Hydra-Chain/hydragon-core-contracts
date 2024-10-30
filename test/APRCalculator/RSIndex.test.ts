@@ -137,7 +137,9 @@ export function RunRSIndexTests(): void {
         .connect(this.signers.system)
         .initialize(systemHydraChain.address, newAprCalculator.address);
 
-      expect(await newAprCalculator.latestDailyPrice()).to.be.equal(INITIAL_DATA_PRICES[INITIAL_DATA_PRICES.length - 1]);
+      expect(await newAprCalculator.latestDailyPrice()).to.be.equal(
+        INITIAL_DATA_PRICES[INITIAL_DATA_PRICES.length - 1]
+      );
       expect(await newAprCalculator.rsi()).to.be.equal(0);
       expect(TABLE_DATA_PRICES.length, "Array length").to.be.equal(TABLE_DATA_RSI.length);
       await time.setNextBlockTimestamp(correctVotingTime);
