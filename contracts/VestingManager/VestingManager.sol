@@ -93,7 +93,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
     // _______________ Internal functions _______________
 
     /**
-     * Fulfill position with the needed tokens and undelegates
+     * @notice Fulfill position with the needed tokens and undelegates
      * @param staker Staker address
      * @param amount Amount to be cut
      * @param owedLiquidTokens Amount of liquid tokens owed

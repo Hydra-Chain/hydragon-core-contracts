@@ -6,12 +6,12 @@ import {WithdrawalQueue, WithdrawalData} from "./IWithdrawalQueueLib.sol";
 /**
  * @title Withdrawal Queue Lib
  * @author Polygon Technology (Daniel Gretzke @gretzke)
- * @notice queue for withdrawals
+ * @notice Queue for withdrawals
  * Unstaking, undelegating, and rewards withdrawal have delays associated with them. The Withdrawal Queue library exists to manage withdrawals. Each address has their own separate queue to manage their individual withdrawals.
  */
 library WithdrawalQueueLib {
     /**
-     * @notice update queue with new withdrawal data
+     * @notice Update queue with new withdrawal data
      * @dev every time a new struct will be sumbited for withdrawal in the queue
      * @param self the WithdrawalQueue struct
      * @param amount the amount to withdraw
@@ -41,7 +41,7 @@ library WithdrawalQueueLib {
     }
 
     /**
-     * @notice returns the length between the head and tail of the queue
+     * @notice Returns the length between the head and tail of the queue
      * (which is the amount of unprocessed withdrawals)
      * @param self the WithdrawalQueue struct
      * @return uint256 the length between head and tail (unproceesed withdrawals)
@@ -52,7 +52,7 @@ library WithdrawalQueueLib {
     }
 
     /**
-     * @notice returns the amount withdrawable through a specified time
+     * @notice Returns the amount withdrawable through a specified time
      * and new head index at that point
      * @dev meant to be used with the current timestamp
      * @param self the WithdrawalQueue struct
@@ -69,7 +69,7 @@ library WithdrawalQueueLib {
     }
 
     /**
-     * @notice returns the amount withdrawable beyond a specified time
+     * @notice Returns the amount withdrawable beyond a specified time
      * @dev meant to be used with the current timestamp
      * @param self the WithdrawalQueue struct
      * @return amount the amount withdrawable from beyond the specified time

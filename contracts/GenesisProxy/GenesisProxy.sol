@@ -7,8 +7,8 @@ import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transpa
 /**
     @title GenesisProxy
     @author Polygon Technology
-    @notice wrapper for OpenZeppelin's Transparent Upgreadable Proxy, intended for use during genesis for genesis contracts
-    @notice one GenesisProxy should be deployed for each genesis contract
+    @notice Wrapper for OpenZeppelin's Transparent Upgreadable Proxy, intended for use during genesis for genesis contracts
+    @notice One GenesisProxy should be deployed for each genesis contract
  */
 contract GenesisProxy is TransparentUpgradeableProxy {
     // keccak256("GenesisProxy INITIATOR_SLOT")

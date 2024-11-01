@@ -335,7 +335,7 @@ contract BLS is IBLS {
     }
 
     /**
-     * @notice returns square root of a uint256 value
+     * @notice Returns square root of a uint256 value
      * @param xx the value to take the square root of
      * @return x the uint256 value of the root
      * @return hasRoot a bool indicating if there is a square root
@@ -346,7 +346,7 @@ contract BLS is IBLS {
     }
 
     /**
-     * @notice inverts a uint256 value
+     * @notice Inverts a uint256 value
      * @param a uint256 value to invert
      * @return uint256 of the value of the inverse
      */

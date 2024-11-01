@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 /**
- * @notice data type for withdrawals
+ * @notice Data type for withdrawals
  * @param amount the amount to withdraw
  * @param time the timestamp of the withdrawal
  */
@@ -12,7 +12,7 @@ struct WithdrawalData {
 }
 
 /**
- * @notice data type for managing the withdrawal queue
+ * @notice Data type for managing the withdrawal queue
  * @param head earliest unprocessed index
  * (which is also the most recently filled witrhdrawal)
  * @param tail index of most recent withdrawal

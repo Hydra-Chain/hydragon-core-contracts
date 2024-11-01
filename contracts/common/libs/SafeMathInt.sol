@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 library SafeMathInt {
     /**
-     * @notice converts an int256 to uint256
+     * @notice Converts an int256 to uint256
      * @param a int256 to convert
      * @return uint256 of the input
      */

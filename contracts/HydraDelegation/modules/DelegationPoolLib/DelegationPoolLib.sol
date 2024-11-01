@@ -23,7 +23,7 @@ library DelegationPoolLib {
     // _______________ Internal functions _______________
 
     /**
-     * @notice distributes an amount to a pool
+     * @notice Distributes an amount to a pool
      * @param pool the DelegationPool for rewards to be distributed to
      * @param amount the total amount to be distributed
      * @param epochId The epoch number for which the reward is distributed
@@ -37,7 +37,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice credits the balance of a specific pool member
+     * @notice Credits the balance of a specific pool member
      * @param pool the DelegationPool of the account to credit
      * @param account the address to be credited
      * @param amount the amount to credit the account by
@@ -54,7 +54,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice credits the balance of a specific pool member and saves the historical data
+     * @notice Credits the balance of a specific pool member and saves the historical data
      * @param pool the DelegationPool of the account to credit
      * @param account the address to be credited
      * @param amount the amount to credit the account by
@@ -67,7 +67,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice decrements the balance of a specific pool member
+     * @notice Decrements the balance of a specific pool member
      * @param pool the DelegationPool of the account to decrement the balance of
      * @param account the address to decrement the balance of
      * @param amount the amount to decrement the balance by
@@ -82,7 +82,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice decrements the balance of a specific pool member and saves the historical data
+     * @notice Decrements the balance of a specific pool member and saves the historical data
      * @param pool the DelegationPool of the account to decrement the balance of
      * @param account the address to decrement the balance of
      * @param amount the amount to decrement the balance by
@@ -95,7 +95,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the balance (eg amount delegated) of an account in a specific pool
+     * @notice Returns the balance (eg amount delegated) of an account in a specific pool
      * @param pool the DelegationPool to query the balance from
      * @param account the address to query the balance of
      * @return uint256 the balance of the account
@@ -106,7 +106,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the correction of rewards for an account in a specific pool
+     * @notice Returns the correction of rewards for an account in a specific pool
      * @param pool the DelegationPool to query the correction from
      * @param account the address to query the correction of
      * @return int256 the correction of the account
@@ -116,7 +116,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the amount of rewards earned by an account in a pool
+     * @notice Returns the amount of rewards earned by an account in a pool
      * @param rps the reward per share
      * @param balance the balance of the account
      * @param correction the correction of the account
@@ -129,7 +129,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the historical total rewards earned by an account in a specific pool
+     * @notice Returns the historical total rewards earned by an account in a specific pool
      * @param pool the DelegationPool to query the total from
      * @param account the address to query the balance of
      * @return uint256 the total claimed by the account
@@ -141,7 +141,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the current amount of claimable rewards for an address in a pool
+     * @notice Returns the current amount of claimable rewards for an address in a pool
      * @param pool the DelegationPool to query the claimable rewards from
      * @param account the address for which query the amount of claimable rewards
      * @return uint256 the amount of claimable rewards for the address
@@ -151,7 +151,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice increments the amount rewards claimed by an account
+     * @notice Increments the amount rewards claimed by an account
      * @param pool the DelegationPool the rewards have been claimed from
      * @param account the address claiming the rewards
      * @return reward the amount of rewards claimed
@@ -162,7 +162,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the amount of claimable rewards for an address in a pool
+     * @notice Returns the amount of claimable rewards for an address in a pool
      * @param pool the DelegationPool to query the claimable rewards from
      * @param account the address for which query the amount of claimable rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
@@ -192,7 +192,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice claims the rewards for an address in a pool
+     * @notice Claims the rewards for an address in a pool
      * @param pool the DelegationPool to claim the rewards from
      * @param account the address for which to claim the rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
@@ -211,7 +211,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the RPS values for a given range of epochs
+     * @notice Returns the RPS values for a given range of epochs
      * @param pool the DelegationPool to get the RPS values from
      * @param startEpoch the start epoch to get the RPS values from
      * @param endEpoch the end epoch to get the RPS values from
@@ -266,7 +266,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice Deletes  the historical data of a delegator
+     * @notice Deletes the historical data of a delegator
      * @param pool the DelegationPool to clean the historical data from
      * @param account the address of the  delegator to clean the historical data from
      */
@@ -373,7 +373,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the scaling factor used for decimal places
+     * @notice Returns the scaling factor used for decimal places
      * @dev this means the last 18 places in a number are to the right of the decimal point
      * @return uint256 the scaling factor
      */
