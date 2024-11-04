@@ -79,6 +79,13 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
     /**
      * @inheritdoc IStaking
      */
+    function claimStakingRewards() public {
+        rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
+    }
+
+    /**
+     * @inheritdoc IStaking
+     */
     function stakeOf(address account) public view returns (uint256) {
         return stakes[account];
     }
@@ -88,13 +95,6 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
      */
     function unclaimedRewards(address account) public view returns (uint256) {
         return stakingRewards[account].total - stakingRewards[account].taken;
-    }
-
-    /**
-     * @inheritdoc IStaking
-     */
-    function claimStakingRewards() public {
-        rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
     }
 
     // _______________ Internal functions _______________

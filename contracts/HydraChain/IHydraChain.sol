@@ -19,25 +19,6 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
     error CommitEpochFailed(string reason);
 
     /**
-     * @notice Get current epoch ID
-     */
-    function getCurrentEpochId() external view returns (uint256);
-
-    /**
-     * @notice Total amount of blocks in a given epoch
-     * @param epochId The number of the epoch
-     * @return length Total blocks for an epoch
-     */
-    function totalBlocks(uint256 epochId) external view returns (uint256 length);
-
-    /**
-     * @notice Look up an epoch by block number. Searches in O(log n) time.
-     * @param blockNumber ID of epoch to be committed
-     * @return Epoch Returns epoch if found, or else, the last epoch
-     */
-    function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory);
-
-    /**
      * @notice Commits an epoch
      * @dev Only callable by the system
      * @param id The number of the epoch
@@ -74,4 +55,23 @@ interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidato
             ValidatorStatus status,
             bool isBanInitiated
         );
+
+    /**
+     * @notice Get current epoch ID
+     */
+    function getCurrentEpochId() external view returns (uint256);
+
+    /**
+     * @notice Total amount of blocks in a given epoch
+     * @param epochId The number of the epoch
+     * @return length Total blocks for an epoch
+     */
+    function totalBlocks(uint256 epochId) external view returns (uint256 length);
+
+    /**
+     * @notice Look up an epoch by block number. Searches in O(log n) time.
+     * @param blockNumber ID of epoch to be committed
+     * @return Epoch Returns epoch if found, or else, the last epoch
+     */
+    function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory);
 }

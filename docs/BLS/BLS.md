@@ -16,7 +16,7 @@ BLS signature aggregation reduces the size of signature data to store on-chain T
 function expandMsgTo96(bytes32 domain, bytes message) external pure returns (bytes)
 ```
 
-pads messages less than 96 bytes to 96 bytes for hashing
+Pads messages less than 96 bytes to 96 bytes for hashing
 
 
 
@@ -39,7 +39,7 @@ pads messages less than 96 bytes to 96 bytes for hashing
 function hashToField(bytes32 domain, bytes messages) external view returns (uint256[2])
 ```
 
-hashes an arbitrary message to a field element
+Hashes an arbitrary message to a field element
 
 
 
@@ -62,7 +62,7 @@ hashes an arbitrary message to a field element
 function hashToPoint(bytes32 domain, bytes message) external view returns (uint256[2])
 ```
 
-hashes an arbitrary message to a point on the curve
+Hashes an arbitrary message to a point on the curve
 
 *Fouque-Tibouchi Hash to Curve*
 
@@ -85,7 +85,7 @@ hashes an arbitrary message to a point on the curve
 function isOnCurveG1(uint256[2] point) external pure returns (bool _isOnCurve)
 ```
 
-checks if point in the finite field Fq (x,y) is on the G1 curve
+Checks if point in the finite field Fq (x,y) is on the G1 curve
 
 
 
@@ -107,7 +107,7 @@ checks if point in the finite field Fq (x,y) is on the G1 curve
 function isOnCurveG2(uint256[4] point) external pure returns (bool _isOnCurve)
 ```
 
-checks if point in the finite field Fq (x,y) is on the G2 curve
+Checks if point in the finite field Fq (x,y) is on the G2 curve
 
 
 
@@ -129,7 +129,7 @@ checks if point in the finite field Fq (x,y) is on the G2 curve
 function isValidSignature(uint256[2] signature) external view returns (bool)
 ```
 
-checks if a signature is formatted correctly and valid
+Checks if a signature is formatted correctly and valid
 
 *will revert if improperly formatted, will return false if invalid*
 
@@ -151,7 +151,7 @@ checks if a signature is formatted correctly and valid
 function mapToPoint(uint256 _x) external pure returns (uint256[2] p)
 ```
 
-maps a field element to the curve
+Maps a field element to the curve
 
 
 
@@ -173,7 +173,7 @@ maps a field element to the curve
 function verifyMultiple(uint256[2] signature, uint256[4][] pubkeys, uint256[2][] messages) external view returns (bool checkResult, bool callSuccess)
 ```
 
-verifies multiple non-aggregated signatures where each message is unique
+Verifies multiple non-aggregated signatures where each message is unique
 
 
 
@@ -198,7 +198,7 @@ verifies multiple non-aggregated signatures where each message is unique
 function verifyMultipleSameMsg(uint256[2] signature, uint256[4][] pubkeys, uint256[2] message) external view returns (bool checkResult, bool callSuccess)
 ```
 
-verifies an aggregated signature where the same message is signed
+Verifies an aggregated signature where the same message is signed
 
 
 
@@ -223,7 +223,7 @@ verifies an aggregated signature where the same message is signed
 function verifySingle(uint256[2] signature, uint256[4] pubkey, uint256[2] message) external view returns (bool, bool)
 ```
 
-verifies a single signature
+Verifies a single signature
 
 
 

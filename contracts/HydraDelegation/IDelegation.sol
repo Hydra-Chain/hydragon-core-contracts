@@ -19,11 +19,6 @@ interface IDelegation is IWithdrawal {
     function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
-     * @notice Returns the total delegation amount
-     */
-    function totalDelegation() external view returns (uint256);
-
-    /**
      * @notice Claims rewards for delegator for staker
      * @param staker Address of the validator
      */
@@ -35,6 +30,11 @@ interface IDelegation is IWithdrawal {
      * @param amount The amount to undelegate
      */
     function undelegate(address staker, uint256 amount) external;
+
+    /**
+     * @notice Returns the total delegation amount
+     */
+    function totalDelegation() external view returns (uint256);
 
     // _______________ Public functions _______________
 

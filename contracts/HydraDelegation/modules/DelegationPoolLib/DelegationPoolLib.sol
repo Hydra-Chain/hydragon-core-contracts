@@ -277,6 +277,40 @@ library DelegationPoolLib {
     // _______________ Private functions _______________
 
     /**
+     * @notice Saves the RPS for the given staker for the epoch
+     * @param pool the DelegationPool to save the RPS for
+     * @param rewardPerShare Amount of tokens to be withdrawn
+     * @param epochNumber Epoch number
+     */
+    function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
+        if (pool.historyRPS[epochNumber].timestamp != 0) {
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "RPS_ALREADY_SAVED"});
+        }
+
+        pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
+    }
+
+    /**
+     * @notice Saves the account specific pool params change
+     * * @param pool the DelegationPool to save the account params for
+     * @param delegator Address of the delegator
+     */
+    function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
+        if (isBalanceChangeMade(pool, delegator, epochNumber)) {
+            // balance can be changed only once per epoch
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+        }
+
+        pool.delegatorsParamsHistory[delegator].push(
+            DelegationPoolDelegatorParams({
+                balance: balanceOf(pool, delegator),
+                correction: correctionOf(pool, delegator),
+                epochNum: epochNumber
+            })
+        );
+    }
+
+    /**
      * @notice Gets the account specific pool params for the given epoch
      * @param pool the DelegationPool to query the account params from
      * @param delegator Address of the vest manager
@@ -336,40 +370,6 @@ library DelegationPoolLib {
         );
 
         return (rewardPerShare, balanceData, correctionData);
-    }
-
-    /**
-     * @notice Saves the RPS for the given staker for the epoch
-     * @param pool the DelegationPool to save the RPS for
-     * @param rewardPerShare Amount of tokens to be withdrawn
-     * @param epochNumber Epoch number
-     */
-    function _saveEpochRPS(DelegationPool storage pool, uint256 rewardPerShare, uint256 epochNumber) private {
-        if (pool.historyRPS[epochNumber].timestamp != 0) {
-            revert DelegateRequirement({src: "DelegPoolLib", msg: "RPS_ALREADY_SAVED"});
-        }
-
-        pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
-    }
-
-    /**
-     * @notice Saves the account specific pool params change
-     * * @param pool the DelegationPool to save the account params for
-     * @param delegator Address of the delegator
-     */
-    function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
-        if (isBalanceChangeMade(pool, delegator, epochNumber)) {
-            // balance can be changed only once per epoch
-            revert DelegateRequirement({src: "DelegPoolLib", msg: "BALANCE_CHANGE_ALREADY_MADE"});
-        }
-
-        pool.delegatorsParamsHistory[delegator].push(
-            DelegationPoolDelegatorParams({
-                balance: balanceOf(pool, delegator),
-                correction: correctionOf(pool, delegator),
-                epochNum: epochNumber
-            })
-        );
     }
 
     /**

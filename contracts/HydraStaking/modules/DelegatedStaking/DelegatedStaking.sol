@@ -62,6 +62,16 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     function _onUndelegate(address staker) internal virtual;
 
     /**
+     * @notice Distributes the delegation rewards
+     * @param staker The staker address
+     * @param reward The reward amount
+     * @param epochId The epoch id
+     */
+    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
+        delegationContract.distributeDelegationRewards(staker, reward, epochId);
+    }
+
+    /**
      * @notice Returns the total amount of delegation
      * @return The total amount of delegation
      */
@@ -85,16 +95,6 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
      */
     function _getStakerDelegationCommission(address staker) internal view returns (uint256) {
         return delegationContract.stakerDelegationCommission(staker);
-    }
-
-    /**
-     * @notice Distributes the delegation rewards
-     * @param staker The staker address
-     * @param reward The reward amount
-     * @param epochId The epoch id
-     */
-    function _distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) internal {
-        delegationContract.distributeDelegationRewards(staker, reward, epochId);
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -28,6 +28,45 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     /**
      * @inheritdoc IVestedStaking
      */
+    function stakeWithVesting(uint256 durationWeeks) external payable {
+        if (vestedStakingPositions[msg.sender].isInVestingCycle()) {
+            revert StakeRequirement({src: "stakeWithVesting", msg: "ALREADY_IN_VESTING_CYCLE"});
+        }
+
+        uint256 duration = durationWeeks * 1 weeks;
+        vestedStakingPositions[msg.sender] = VestingPosition({
+            duration: duration,
+            start: block.timestamp,
+            end: block.timestamp + duration,
+            base: aprCalculatorContract.getBaseAPR(),
+            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
+        });
+
+        _stake(msg.sender, msg.value);
+    }
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
+    function claimStakingRewards(uint256 rewardHistoryIndex) external {
+        if (!vestedStakingPositions[msg.sender].isMaturing()) {
+            revert StakeRequirement({src: "vesting", msg: "NOT_MATURING"});
+        }
+
+        uint256 rewards = _calcStakingRewards(msg.sender, rewardHistoryIndex);
+        if (rewards == 0) revert NoRewards();
+
+        stakingRewards[msg.sender].taken += rewards;
+
+        rewardWalletContract.distributeReward(msg.sender, rewards);
+
+        emit StakingRewardsClaimed(msg.sender, rewards);
+    }
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
     function calculatePositionClaimableReward(
         address staker,
         uint256 rewardHistoryIndex
@@ -72,45 +111,6 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
             // if active position, reward is burned
             reward = 0;
         }
-    }
-
-    /**
-     * @inheritdoc IVestedStaking
-     */
-    function stakeWithVesting(uint256 durationWeeks) external payable {
-        if (vestedStakingPositions[msg.sender].isInVestingCycle()) {
-            revert StakeRequirement({src: "stakeWithVesting", msg: "ALREADY_IN_VESTING_CYCLE"});
-        }
-
-        uint256 duration = durationWeeks * 1 weeks;
-        vestedStakingPositions[msg.sender] = VestingPosition({
-            duration: duration,
-            start: block.timestamp,
-            end: block.timestamp + duration,
-            base: aprCalculatorContract.getBaseAPR(),
-            vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
-        });
-
-        _stake(msg.sender, msg.value);
-    }
-
-    /**
-     * @inheritdoc IVestedStaking
-     */
-    function claimStakingRewards(uint256 rewardHistoryIndex) external {
-        if (!vestedStakingPositions[msg.sender].isMaturing()) {
-            revert StakeRequirement({src: "vesting", msg: "NOT_MATURING"});
-        }
-
-        uint256 rewards = _calcStakingRewards(msg.sender, rewardHistoryIndex);
-        if (rewards == 0) revert NoRewards();
-
-        stakingRewards[msg.sender].taken += rewards;
-
-        rewardWalletContract.distributeReward(msg.sender, rewards);
-
-        emit StakingRewardsClaimed(msg.sender, rewards);
     }
 
     // _______________ Internal functions _______________
@@ -179,6 +179,21 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     }
 
     /**
+     * @notice Saves the staker reward data
+     * @param staker The staker to save the data for
+     * @param epoch The epoch to save the data for
+     */
+    function _saveStakerRewardData(address staker, uint256 epoch) internal {
+        StakingRewardsHistory memory rewardData = StakingRewardsHistory({
+            totalReward: stakingRewards[staker].total,
+            epoch: epoch,
+            timestamp: block.timestamp
+        });
+
+        stakingRewardsHistory[staker].push(rewardData);
+    }
+
+    /**
      * @notice Calculates the staking rewards for the given account
      * @dev Ensure the function is executed for maturing positions only
      * @param account The account to calculate the rewards for
@@ -200,21 +215,6 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
         }
 
         return 0;
-    }
-
-    /**
-     * @notice Saves the staker reward data
-     * @param staker The staker to save the data for
-     * @param epoch The epoch to save the data for
-     */
-    function _saveStakerRewardData(address staker, uint256 epoch) internal {
-        StakingRewardsHistory memory rewardData = StakingRewardsHistory({
-            totalReward: stakingRewards[staker].total,
-            epoch: epoch,
-            timestamp: block.timestamp
-        });
-
-        stakingRewardsHistory[staker].push(rewardData);
     }
 
     // slither-disable-next-line unused-state,naming-convention

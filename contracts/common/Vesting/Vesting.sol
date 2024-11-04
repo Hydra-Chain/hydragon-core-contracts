@@ -23,6 +23,17 @@ abstract contract Vesting is APRCalculatorConnector {
     // _______________ Internal functions _______________
 
     /**
+     * @notice Method used to burn funds
+     * @param amount The amount to be burned
+     */
+    function _burnAmount(uint256 amount) internal {
+        (bool success, ) = address(0).call{value: amount}("");
+        if (!success) {
+            revert FailedToBurnAmount();
+        }
+    }
+
+    /**
      * @notice Calculates what part of the provided amount of tokens to be slashed
      * @dev Invoke only when position is active, otherwise - underflow
      * @param position The vesting position of the staker
@@ -53,17 +64,6 @@ abstract contract Vesting is APRCalculatorConnector {
         }
 
         return (reward * bonus) / divider;
-    }
-
-    /**
-     * @notice Method used to burn funds
-     * @param amount The amount to be burned
-     */
-    function _burnAmount(uint256 amount) internal {
-        (bool success, ) = address(0).call{value: amount}("");
-        if (!success) {
-            revert FailedToBurnAmount();
-        }
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -840,7 +840,7 @@ function isWhitelistingEnabled() external view returns (bool)
 function lastDistribution() external view returns (uint256)
 ```
 
-
+last rewards distribution timestamp
 
 
 

@@ -20,20 +20,6 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
     /**
      * @inheritdoc IValidatorsData
      */
-    function getValidatorPower(address validator) external view returns (uint256) {
-        return validatorPower[validator];
-    }
-
-    /**
-     * @inheritdoc IValidatorsData
-     */
-    function getTotalVotingPower() external view returns (uint256) {
-        return totalVotingPower;
-    }
-
-    /**
-     * @inheritdoc IValidatorsData
-     */
     function syncValidatorsData(ValidatorPower[] calldata validatorsPower) external onlySystemCall {
         uint256 arrLength = validatorsPower.length;
         uint256 totalNewPower = 0;
@@ -49,6 +35,20 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
         } else {
             totalVotingPower -= totalOldPower - totalNewPower;
         }
+    }
+
+    /**
+     * @inheritdoc IValidatorsData
+     */
+    function getValidatorPower(address validator) external view returns (uint256) {
+        return validatorPower[validator];
+    }
+
+    /**
+     * @inheritdoc IValidatorsData
+     */
+    function getTotalVotingPower() external view returns (uint256) {
+        return totalVotingPower;
     }
 
     // slither-disable-next-line unused-state,naming-convention

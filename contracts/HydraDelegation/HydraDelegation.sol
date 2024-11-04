@@ -76,15 +76,15 @@ contract HydraDelegation is
     /**
      * @inheritdoc IHydraDelegation
      */
-    function stakerDelegationCommission(address staker) external view returns (uint256) {
-        return delegationCommissionPerStaker[staker];
+    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
+        _distributeDelegationRewards(staker, reward, epochId);
     }
 
     /**
      * @inheritdoc IHydraDelegation
      */
-    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
-        _distributeDelegationRewards(staker, reward, epochId);
+    function stakerDelegationCommission(address staker) external view returns (uint256) {
+        return delegationCommissionPerStaker[staker];
     }
 
     // _______________ Internal functions _______________
@@ -149,10 +149,6 @@ contract HydraDelegation is
 
     // _______________ Private functions _______________
 
-    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
-        return position.start == block.timestamp;
-    }
-
     /**
      * @notice Set commission for staker
      * @param staker Address of the validator
@@ -164,6 +160,10 @@ contract HydraDelegation is
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);
+    }
+
+    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
+        return position.start == block.timestamp;
     }
 
     // slither-disable-next-line unused-state,naming-convention
