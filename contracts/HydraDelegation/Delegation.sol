@@ -154,6 +154,12 @@ contract Delegation is
         emit Delegated(staker, delegator, amount);
     }
 
+    /**
+     * @notice Deposits funds in stakers pool
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to deposit
+     */
     function _depositDelegation(
         address /**staker*/,
         DelegationPool storage delegation,
@@ -200,6 +206,12 @@ contract Delegation is
         emit Undelegated(staker, delegator, amount);
     }
 
+    /**
+     * @notice Withdraws funds from stakers pool
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to withdraw
+     */
     function _withdrawDelegation(
         address /**staker*/,
         DelegationPool storage delegation,

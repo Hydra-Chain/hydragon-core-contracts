@@ -367,6 +367,9 @@ abstract contract VestedDelegation is
         super._delegate(staker, delegator, amount);
     }
 
+    /**
+     * @inheritdoc Delegation
+     */
     function _depositDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -382,6 +385,9 @@ abstract contract VestedDelegation is
         super._depositDelegation(staker, delegation, delegator, amount);
     }
 
+    /**
+     * @inheritdoc Delegation
+     */
     function _withdrawDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -441,6 +447,13 @@ abstract contract VestedDelegation is
         reward = aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
     }
 
+    /**
+     * @notice Verifies if the rewards for the given position are matured
+     * @param staker The staker address
+     * @param position The vesting position
+     * @param epochNum The epoch number to check the rewards
+     * @dev Reverts if the rewards are not matured
+     */
     function _verifyPositionRewardsMatured(
         address staker,
         VestingPosition memory position,
@@ -460,6 +473,13 @@ abstract contract VestedDelegation is
         _verifyRewardsMatured(staker, alreadyMatured, epochNum);
     }
 
+    /**
+     * @notice Verifies if the rewards for the given position are matured
+     * @param staker The staker address
+     * @param alreadyMatured The timestamp when the rewards are matured
+     * @param epochNum The epoch number to check the rewards
+     * @dev Reverts if the rewards are not matured
+     */
     function _verifyRewardsMatured(address staker, uint256 alreadyMatured, uint256 epochNum) private view {
         RPS memory rpsData = delegationPools[staker].historyRPS[epochNum];
         if (rpsData.timestamp == 0) {

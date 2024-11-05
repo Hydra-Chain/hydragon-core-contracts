@@ -129,6 +129,13 @@ contract HydraDelegation is
         super._distributeTokens(staker, account, amount);
     }
 
+    /**
+     * @notice Deposits the delegation amount to the staker's delegation pool
+     * @param staker Address of the staker
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to deposit
+     */
     function _depositDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -137,6 +144,14 @@ contract HydraDelegation is
     ) internal virtual override(Delegation, VestedDelegation) {
         super._depositDelegation(staker, delegation, delegator, amount);
     }
+
+    /**
+     * @notice Withdraws the delegation amount from the staker's delegation pool
+     * @param staker Address of the staker
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to withdraw
+     */
 
     function _withdrawDelegation(
         address staker,
