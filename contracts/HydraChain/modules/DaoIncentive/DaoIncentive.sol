@@ -17,9 +17,10 @@ abstract contract DaoIncentive is
     RewardWalletConnector,
     HydraStakingConnector
 {
-    address public daoIncentiveVaultAddr;
+    /// @notice last rewards distribution timestamp
+    uint256 public lastDistribution;
     uint256 public vaultDistribution;
-    uint256 public lastDistribution; // timestamp of the last distribution
+    address public daoIncentiveVaultAddr;
 
     // _______________ Initializer _______________
 

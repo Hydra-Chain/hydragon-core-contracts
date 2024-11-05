@@ -191,7 +191,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 function lastDistribution() external view returns (uint256)
 ```
 
-
+last rewards distribution timestamp
 
 
 

@@ -60,13 +60,6 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function totalDelegation() external view returns (uint256) {
-        return _totalDelegation;
-    }
-
-    /**
-     * @inheritdoc IDelegation
-     */
     function claimDelegatorReward(address staker) external {
         _claimDelegatorReward(staker, msg.sender);
     }
@@ -78,6 +71,13 @@ contract Delegation is
         _claimDelegatorReward(staker, msg.sender);
         _undelegate(staker, msg.sender, amount);
         _registerWithdrawal(msg.sender, amount);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function totalDelegation() external view returns (uint256) {
+        return _totalDelegation;
     }
 
     // _______________ Public functions _______________
@@ -154,6 +154,12 @@ contract Delegation is
         emit Delegated(staker, delegator, amount);
     }
 
+    /**
+     * @notice Deposits funds in stakers pool
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to deposit
+     */
     function _depositDelegation(
         address /**staker*/,
         DelegationPool storage delegation,
@@ -200,6 +206,12 @@ contract Delegation is
         emit Undelegated(staker, delegator, amount);
     }
 
+    /**
+     * @notice Withdraws funds from stakers pool
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to withdraw
+     */
     function _withdrawDelegation(
         address /**staker*/,
         DelegationPool storage delegation,

@@ -45,6 +45,13 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     /**
      * @inheritdoc IWithdrawal
      */
+    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
+        _changeWithdrawalWaitPeriod(newWaitPeriod);
+    }
+
+    /**
+     * @inheritdoc IWithdrawal
+     */
     function withdrawable(address account) external view returns (uint256 amount) {
         (amount, ) = _withdrawals[account].withdrawable();
     }
@@ -54,13 +61,6 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
      */
     function pendingWithdrawals(address account) external view returns (uint256) {
         return _withdrawals[account].pending();
-    }
-
-    /**
-     * @inheritdoc IWithdrawal
-     */
-    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
-        _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
 
     // _______________ Internal functions _______________

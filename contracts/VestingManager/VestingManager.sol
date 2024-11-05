@@ -92,6 +92,12 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
 
     // _______________ Internal functions _______________
 
+    /**
+     * @notice Fulfill position with the needed tokens and undelegates
+     * @param staker Staker address
+     * @param amount Amount to be cut
+     * @param owedLiquidTokens Amount of liquid tokens owed
+     */
     function _cutVestedPosition(address staker, uint256 amount, uint256 owedLiquidTokens) internal {
         _fulfillLiquidTokens(msg.sender, owedLiquidTokens);
         HYDRA_DELEGATION.undelegateWithVesting(staker, amount);

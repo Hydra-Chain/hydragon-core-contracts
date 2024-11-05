@@ -90,34 +90,6 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function isValidatorActive(address validator) external view returns (bool) {
-        return validators[validator].status == ValidatorStatus.Active;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
-    function isValidatorRegistered(address validator) external view returns (bool) {
-        return validators[validator].status == ValidatorStatus.Registered;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
-    function isValidatorBanned(address validator) external view returns (bool) {
-        return validators[validator].status == ValidatorStatus.Banned;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
-    function getValidators() external view returns (address[] memory) {
-        return validatorsAddresses;
-    }
-
-    /**
-     * @inheritdoc IValidatorManager
-     */
     function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external onlyWhitelisted {
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
 
@@ -160,6 +132,34 @@ abstract contract ValidatorManager is
         powerExponent = newValue;
 
         emit PowerExponentUpdated(newValue);
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function getValidators() external view returns (address[] memory) {
+        return validatorsAddresses;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function isValidatorActive(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Active;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function isValidatorRegistered(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Registered;
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function isValidatorBanned(address validator) external view returns (bool) {
+        return validators[validator].status == ValidatorStatus.Banned;
     }
 
     // _______________ Public functions _______________

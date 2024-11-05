@@ -73,7 +73,7 @@ export function RunVestedDelegationTests(): void {
         const { vestManager, vestingManagerFactory } = await loadFixture(this.fixtures.vestManagerFixture);
 
         expect(
-          await vestingManagerFactory.userVestManagers(this.vestManagerOwners[0].address, 0),
+          await vestingManagerFactory.userVestingManagers(this.vestManagerOwners[0].address, 0),
           "userVestManagers"
         ).to.equal(vestManager.address);
         expect(
@@ -224,6 +224,59 @@ export function RunVestedDelegationTests(): void {
 
         expect(await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address)).to.be.equal(
           delegatedAmount.add(amountToDelegate)
+        );
+      });
+
+      it("should successfully open vesting position even if balance change is made before that (we delete history data)", async function () {
+        const { hydraChain, hydraDelegation, vestManager, vestManagerOwner, liquidToken } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        // go in the maturing phase
+        await time.increase(WEEK * 16);
+
+        const vestingDuration = 52; // in weeks
+
+        await claimPositionRewards(hydraChain, hydraDelegation, vestManager, this.delegatedValidators[0]);
+
+        // check if position is maturing
+        const mature = await hydraDelegation.isMaturingDelegatePosition(
+          this.delegatedValidators[0],
+          vestManager.address
+        );
+        expect(mature, "mature").to.be.true;
+
+        const delegatedAmount = await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address);
+        const amountToDelegate = this.minDelegation.mul(2);
+        const amount = await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedAmount.div(2));
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+        await vestManager
+          .connect(vestManagerOwner)
+          .cutVestedDelegatePosition(this.delegatedValidators[0], delegatedAmount.div(2));
+
+        // check if the balance change is made
+        const epochNum = await hydraChain.getCurrentEpochId();
+        const isBalanceMadeChange = await hydraDelegation.isBalanceChangeMade(
+          this.delegatedValidators[0],
+          vestManager.address,
+          epochNum
+        );
+        expect(isBalanceMadeChange, "isBalanceMadeChange").to.be.true;
+        const tx = await vestManager.openVestedDelegatePosition(this.delegatedValidators[0], vestingDuration, {
+          value: amountToDelegate,
+        });
+
+        await expect(tx)
+          .to.emit(hydraDelegation, "PositionOpened")
+          .withArgs(
+            vestManager.address,
+            this.delegatedValidators[0],
+            vestingDuration,
+            amountToDelegate.add(delegatedAmount.div(2))
+          );
+
+        expect(await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address)).to.be.equal(
+          delegatedAmount.add(amountToDelegate.sub(delegatedAmount.div(2)))
         );
       });
 

@@ -11,7 +11,6 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
 
     // _______________ Initializer _______________
 
-    // TODO: We must be able to enable/disable this feature
     // solhint-disable-next-line func-name-mixedcase
     function __AccessControl_init(address _governance) internal onlyInitializing {
         __AccessControl_init_unchained(_governance);

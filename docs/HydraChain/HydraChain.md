@@ -530,7 +530,7 @@ Returns the total voting power of the validators
 ### getValidator
 
 ```solidity
-function getValidator(address validatorAddress) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status, bool isbanInitiated)
+function getValidator(address validatorAddress) external view returns (uint256[4] blsKey, uint256 stake, uint256 totalStake, uint256 commission, uint256 withdrawableRewards, uint256 votingPower, enum ValidatorStatus status, bool isBanInitiated)
 ```
 
 Gets validator by address.
@@ -554,7 +554,7 @@ Gets validator by address.
 | withdrawableRewards | uint256 | withdrawable rewards |
 | votingPower | uint256 | voting power of the validator |
 | status | enum ValidatorStatus | status of the validator |
-| isbanInitiated | bool | undefined |
+| isBanInitiated | bool | is ban initiated for validator |
 
 ### getValidatorPower
 
@@ -840,7 +840,7 @@ function isWhitelistingEnabled() external view returns (bool)
 function lastDistribution() external view returns (uint256)
 ```
 
-
+last rewards distribution timestamp
 
 
 
@@ -1481,22 +1481,6 @@ error CommitEpochFailed(string reason)
 | Name | Type | Description |
 |---|---|---|
 | reason | string | undefined |
-
-### InvalidCommission
-
-```solidity
-error InvalidCommission(uint256 commission)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| commission | uint256 | undefined |
 
 ### InvalidPowerExponent
 

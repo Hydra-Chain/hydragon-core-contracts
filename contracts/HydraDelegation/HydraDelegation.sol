@@ -76,15 +76,15 @@ contract HydraDelegation is
     /**
      * @inheritdoc IHydraDelegation
      */
-    function stakerDelegationCommission(address staker) external view returns (uint256) {
-        return delegationCommissionPerStaker[staker];
+    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
+        _distributeDelegationRewards(staker, reward, epochId);
     }
 
     /**
      * @inheritdoc IHydraDelegation
      */
-    function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
-        _distributeDelegationRewards(staker, reward, epochId);
+    function stakerDelegationCommission(address staker) external view returns (uint256) {
+        return delegationCommissionPerStaker[staker];
     }
 
     // _______________ Internal functions _______________
@@ -129,6 +129,13 @@ contract HydraDelegation is
         super._distributeTokens(staker, account, amount);
     }
 
+    /**
+     * @notice Deposits the delegation amount to the staker's delegation pool
+     * @param staker Address of the staker
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to deposit
+     */
     function _depositDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -137,6 +144,14 @@ contract HydraDelegation is
     ) internal virtual override(Delegation, VestedDelegation) {
         super._depositDelegation(staker, delegation, delegator, amount);
     }
+
+    /**
+     * @notice Withdraws the delegation amount from the staker's delegation pool
+     * @param staker Address of the staker
+     * @param delegation Delegation pool
+     * @param delegator Address of the delegator
+     * @param amount Amount to withdraw
+     */
 
     function _withdrawDelegation(
         address staker,
@@ -149,10 +164,6 @@ contract HydraDelegation is
 
     // _______________ Private functions _______________
 
-    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
-        return position.start == block.timestamp;
-    }
-
     /**
      * @notice Set commission for staker
      * @param staker Address of the validator
@@ -164,6 +175,10 @@ contract HydraDelegation is
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);
+    }
+
+    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
+        return position.start == block.timestamp;
     }
 
     // slither-disable-next-line unused-state,naming-convention

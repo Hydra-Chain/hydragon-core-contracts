@@ -278,6 +278,36 @@ export function RunHydraStakingTests(): void {
           .to.emit(hydraStaking, "StakingRewardsClaimed")
           .withArgs(rewardingValidator.address, reward);
       });
+
+      // TODO: update _claimStakingRewards in VestedStaking so we can claim rewards from the normal position
+      it.skip("should claim validator reward when having opened VestedPosition", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const rewardingValidator = this.signers.validators[0];
+
+        await hydraStaking.connect(this.signers.validators[0]).stakeWithVesting(3, {
+          value: this.minStake,
+        });
+
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [rewardingValidator, this.signers.validators[1]],
+          this.epochSize
+        );
+
+        const reward = await hydraStaking.unclaimedRewards(rewardingValidator.address);
+        const tx = await hydraStaking.connect(rewardingValidator)["claimStakingRewards()"]();
+        const receipt = await tx.wait();
+
+        const event = receipt.events?.find((log: any) => log.event === "StakingRewardsClaimed");
+        expect(event?.args?.account, "event.arg.account").to.equal(rewardingValidator.address);
+        expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
+
+        await expect(tx, "StakingRewardsClaimed")
+          .to.emit(hydraStaking, "StakingRewardsClaimed")
+          .withArgs(rewardingValidator.address, reward);
+      });
     });
 
     describe("StakeSyncer", function () {

@@ -9,6 +9,18 @@ struct StakingRewardsHistory {
 
 interface IVestedStaking {
     /**
+     * @notice Stakes sent amount with vesting period.
+     * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.
+     */
+    function stakeWithVesting(uint256 durationWeeks) external payable;
+
+    /**
+     * @notice Claims staking rewards for the sender.
+     * @param rewardHistoryIndex The index of the reward history to claim rewards from
+     */
+    function claimStakingRewards(uint256 rewardHistoryIndex) external;
+
+    /**
      * @notice Calculates the staker's vested position claimable (already matured) rewards.
      * @param staker The address of the staker
      * @param rewardHistoryIndex The index of the reward history at time that is already matured
@@ -46,16 +58,4 @@ interface IVestedStaking {
         address staker,
         uint256 amount
     ) external view returns (uint256 penalty, uint256 reward);
-
-    /**
-     * @notice Stakes sent amount with vesting period.
-     * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.
-     */
-    function stakeWithVesting(uint256 durationWeeks) external payable;
-
-    /**
-     * @notice Claims staking rewards for the sender.
-     * @param rewardHistoryIndex The index of the reward history to claim rewards from
-     */
-    function claimStakingRewards(uint256 rewardHistoryIndex) external;
 }

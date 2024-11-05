@@ -39,6 +39,11 @@ interface IStaking is IWithdrawal {
     // _______________ Public functions _______________
 
     /**
+     * @notice Claims staking rewards for the sender.
+     */
+    function claimStakingRewards() external;
+
+    /**
      * @notice Returns staked amount for the given account.
      * @param account Staker address
      */
@@ -49,9 +54,4 @@ interface IStaking is IWithdrawal {
      * @param account Staker address
      */
     function unclaimedRewards(address account) external view returns (uint256);
-
-    /**
-     * @notice Claims staking rewards for the sender.
-     */
-    function claimStakingRewards() external;
 }

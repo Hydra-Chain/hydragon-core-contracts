@@ -13,11 +13,9 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
     UpgradeableBeacon public beacon;
 
     /// @notice A vesting manager pointing to its owner
-    mapping(address => address) public vestingManagerOwners;
+    mapping(address => address) public vestingManagerOwner;
     /// @notice Additional mapping to store all vesting managers per user address for fast off-chain lookup
-    mapping(address => address[]) public userVestManagers;
-
-    event NewVestingManager(address indexed owner, address newClone);
+    mapping(address => address[]) public userVestingManagers;
 
     // _______________ Initializer _______________
 
@@ -31,20 +29,6 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
     }
 
     // _______________ External functions _______________
-
-    /**
-     * @inheritdoc IVestingManagerFactory
-     */
-    function isVestingManager(address account) external view returns (bool) {
-        return vestingManagerOwners[account] != address(0);
-    }
-
-    /**
-     * @inheritdoc IVestingManagerFactory
-     */
-    function getUserVestingManagers(address user) external view returns (address[] memory) {
-        return userVestManagers[user];
-    }
 
     /**
      * @inheritdoc IVestingManagerFactory
@@ -64,6 +48,20 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
         emit NewVestingManager(msg.sender, address(manager));
     }
 
+    /**
+     * @inheritdoc IVestingManagerFactory
+     */
+    function isVestingManager(address account) external view returns (bool) {
+        return vestingManagerOwner[account] != address(0);
+    }
+
+    /**
+     * @inheritdoc IVestingManagerFactory
+     */
+    function getUserVestingManagers(address user) external view returns (address[] memory) {
+        return userVestingManagers[user];
+    }
+
     // _______________ Private functions _______________
 
     /**
@@ -72,8 +70,8 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
      * @param owner Address of the vest manager owner
      */
     function _storeVestManagerData(address vestManager, address owner) private {
-        vestingManagerOwners[vestManager] = owner;
-        userVestManagers[owner].push(vestManager);
+        vestingManagerOwner[vestManager] = owner;
+        userVestingManagers[owner].push(vestManager);
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -26,10 +26,10 @@ contract HydraChain is
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
-    /// @notice Epoch data linked with the epoch id
-    mapping(uint256 => Epoch) public epochs;
     /// @notice Array with epoch ending blocks
     uint256[] public epochEndBlocks;
+    /// @notice Epoch data linked with the epoch id
+    mapping(uint256 => Epoch) public epochs;
 
     mapping(uint256 => uint256) internal _commitBlockNumbers;
 
@@ -68,29 +68,6 @@ contract HydraChain is
     /**
      * @inheritdoc IHydraChain
      */
-    function getCurrentEpochId() external view returns (uint256) {
-        return currentEpochId;
-    }
-
-    /**
-     * @inheritdoc IHydraChain
-     */
-    function totalBlocks(uint256 epochId) external view returns (uint256 length) {
-        uint256 endBlock = epochs[epochId].endBlock;
-        length = endBlock == 0 ? 0 : endBlock - epochs[epochId].startBlock + 1;
-    }
-
-    /**
-     * @inheritdoc IHydraChain
-     */
-    function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory) {
-        uint256 epochIndex = epochEndBlocks.findUpperBound(blockNumber);
-        return epochs[epochIndex];
-    }
-
-    /**
-     * @inheritdoc IHydraChain
-     */
     function commitEpoch(
         uint256 id,
         Epoch calldata epoch,
@@ -112,8 +89,8 @@ contract HydraChain is
         }
 
         epochs[newEpochId] = epoch;
-        _commitBlockNumbers[newEpochId] = block.number;
         epochEndBlocks.push(epoch.endBlock);
+        _commitBlockNumbers[newEpochId] = block.number;
 
         // Update participations
         uint256 uptimesCount = uptime.length;
@@ -140,12 +117,35 @@ contract HydraChain is
             uint256 withdrawableRewards,
             uint256 votingPower,
             ValidatorStatus status,
-            bool isbanInitiated
+            bool isBanInitiated
         )
     {
         (blsKey, stake, totalStake, commission, withdrawableRewards, status) = _getValidator(validatorAddress);
         votingPower = validatorPower[validatorAddress];
-        isbanInitiated = bansInitiated[validatorAddress] != 0;
+        isBanInitiated = bansInitiated[validatorAddress] != 0;
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function getCurrentEpochId() external view returns (uint256) {
+        return currentEpochId;
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function totalBlocks(uint256 epochId) external view returns (uint256 length) {
+        uint256 endBlock = epochs[epochId].endBlock;
+        length = endBlock == 0 ? 0 : endBlock - epochs[epochId].startBlock + 1;
+    }
+
+    /**
+     * @inheritdoc IHydraChain
+     */
+    function getEpochByBlock(uint256 blockNumber) external view returns (Epoch memory) {
+        uint256 epochIndex = epochEndBlocks.findUpperBound(blockNumber);
+        return epochs[epochIndex];
     }
 
     // _______________ Public functions _______________

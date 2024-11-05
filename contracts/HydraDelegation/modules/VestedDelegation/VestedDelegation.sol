@@ -29,16 +29,16 @@ abstract contract VestedDelegation is
     using VestedPositionLib for VestingPosition;
 
     /**
-     * @notice The vesting positions for every delegator
-     * @dev Staker => Delegator => VestingPosition
-     */
-    mapping(address => mapping(address => VestingPosition)) public vestedDelegationPositions;
-
-    /**
      * @notice The threshold for the maximum number of allowed balance changes
      * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
      */
     uint256 public balanceChangeThreshold;
+
+    /**
+     * @notice The vesting positions for every delegator
+     * @dev Staker => Delegator => VestingPosition
+     */
+    mapping(address => mapping(address => VestingPosition)) public vestedDelegationPositions;
 
     // _______________ Initializer _______________
 
@@ -169,6 +169,13 @@ abstract contract VestedDelegation is
      */
     function isMaturingDelegatePosition(address staker, address delegator) external view returns (bool) {
         return vestedDelegationPositions[staker][delegator].isMaturing();
+    }
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function isInVestingCycleDelegatePosition(address staker, address delegator) external view returns (bool) {
+        return vestedDelegationPositions[staker][delegator].isInVestingCycle();
     }
 
     /**
@@ -360,13 +367,16 @@ abstract contract VestedDelegation is
         super._delegate(staker, delegator, amount);
     }
 
+    /**
+     * @inheritdoc Delegation
+     */
     function _depositDelegation(
         address staker,
         DelegationPool storage delegation,
         address delegator,
         uint256 amount
     ) internal virtual override {
-        // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
+        // If it is a vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
         if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
             return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());
@@ -375,6 +385,9 @@ abstract contract VestedDelegation is
         super._depositDelegation(staker, delegation, delegator, amount);
     }
 
+    /**
+     * @inheritdoc Delegation
+     */
     function _withdrawDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -434,6 +447,13 @@ abstract contract VestedDelegation is
         reward = aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
     }
 
+    /**
+     * @notice Verifies if the rewards for the given position are matured
+     * @param staker The staker address
+     * @param position The vesting position
+     * @param epochNum The epoch number to check the rewards
+     * @dev Reverts if the rewards are not matured
+     */
     function _verifyPositionRewardsMatured(
         address staker,
         VestingPosition memory position,
@@ -453,6 +473,13 @@ abstract contract VestedDelegation is
         _verifyRewardsMatured(staker, alreadyMatured, epochNum);
     }
 
+    /**
+     * @notice Verifies if the rewards for the given position are matured
+     * @param staker The staker address
+     * @param alreadyMatured The timestamp when the rewards are matured
+     * @param epochNum The epoch number to check the rewards
+     * @dev Reverts if the rewards are not matured
+     */
     function _verifyRewardsMatured(address staker, uint256 alreadyMatured, uint256 epochNum) private view {
         RPS memory rpsData = delegationPools[staker].historyRPS[epochNum];
         if (rpsData.timestamp == 0) {

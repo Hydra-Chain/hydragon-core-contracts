@@ -16,7 +16,7 @@
 function applyBaseAPR(uint256 amount) external view returns (uint256)
 ```
 
-applies the base APR for the given amount
+Applies the base APR for the given amount
 
 
 
@@ -38,7 +38,7 @@ applies the base APR for the given amount
 function applyMacro(uint256 totalStaked) external view returns (uint256 reward)
 ```
 
-applies macro factor for the given total staked amount
+Applies macro factor for the given total staked amount
 
 
 
@@ -87,7 +87,7 @@ Enables the RSI bonus and Macro factor updates again
 function getBaseAPR() external view returns (uint256)
 ```
 
-returns base APR
+Returns base APR
 
 
 
@@ -104,7 +104,7 @@ returns base APR
 function getDENOMINATOR() external pure returns (uint256)
 ```
 
-returns the denominator for the APR calculation
+Returns the denominator for the APR calculation
 
 
 
@@ -138,7 +138,7 @@ Get the macro factor
 function getMaxAPR() external view returns (uint256 nominator, uint256 denominator)
 ```
 
-returns the max APR for 52 weeks
+Returns the max APR for 52 weeks
 
 
 
@@ -156,7 +156,7 @@ returns the max APR for 52 weeks
 function getMaxYearlyReward(uint256 totalStaked) external view returns (uint256 reward)
 ```
 
-returns the max yearly reward for the given total staked amount
+Returns the max yearly reward for the given total staked amount
 
 
 
@@ -195,7 +195,7 @@ Get the rsi
 function getVestingBonus(uint256 weeksCount) external view returns (uint256 nominator)
 ```
 
-returns the vesting bonus for the given weeks count
+Returns the vesting bonus for the given weeks count
 
 
 
@@ -228,7 +228,7 @@ Protects RSI bonus and Macro factor updates and set them to default values
 function setBase(uint256 newBase) external nonpayable
 ```
 
-sets new base APR
+Sets new base APR
 
 *only owner can call this function*
 

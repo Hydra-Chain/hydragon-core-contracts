@@ -16,6 +16,14 @@ interface IWithdrawal {
     function withdraw(address to) external;
 
     /**
+     * @notice Changes the withdrawal wait period.
+     * @dev This function should be called only by the Governed contract.
+     * @param newWaitPeriod The new withdrawal wait period. MUST be longer than a single
+     * epoch (in some realistic worst-case scenario) in case somebody's stake needs to be penalized.
+     */
+    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external;
+
+    /**
      * @notice Calculates how much can be withdrawn for account at this time.
      * @param account The account to calculate amount for
      * @return Amount withdrawable (in wei)
@@ -28,12 +36,4 @@ interface IWithdrawal {
      * @return Amount not yet withdrawable (in wei)
      */
     function pendingWithdrawals(address account) external view returns (uint256);
-
-    /**
-     * @notice Changes the withdrawal wait period.
-     * @dev This function should be called only by the Governed contract.
-     * @param newWaitPeriod The new withdrawal wait period. MUST be longer than a single
-     * epoch (in some realistic worst-case scenario) in case somebody's stake needs to be penalized.
-     */
-    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external;
 }

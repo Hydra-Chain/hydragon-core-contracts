@@ -4,7 +4,7 @@
 
 > GenesisProxy
 
-wrapper for OpenZeppelin&#39;s Transparent Upgreadable Proxy, intended for use during genesis for genesis contractsone GenesisProxy should be deployed for each genesis contract
+Wrapper for OpenZeppelin&#39;s Transparent Upgreadable Proxy, intended for use during genesis for genesis contractsOne GenesisProxy should be deployed for each genesis contract
 
 
 

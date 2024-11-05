@@ -20,22 +20,24 @@ library DelegationPoolLib {
     using SafeMathUint for uint256;
     using SafeMathInt for int256;
 
+    // _______________ Internal functions _______________
+
     /**
-     * @notice distributes an amount to a pool
+     * @notice Distributes an amount to a pool
      * @param pool the DelegationPool for rewards to be distributed to
      * @param amount the total amount to be distributed
      * @param epochId The epoch number for which the reward is distributed
      */
     function distributeReward(DelegationPool storage pool, uint256 amount, uint256 epochId) internal {
         if (amount == 0 || pool.virtualSupply == 0) return;
-        pool.magnifiedRewardPerShare += (amount * magnitude()) / pool.virtualSupply;
+        pool.magnifiedRewardPerShare += (amount * _magnitude()) / pool.virtualSupply;
 
         // Keep history record of the rewardPerShare to be used on reward claim
         _saveEpochRPS(pool, pool.magnifiedRewardPerShare, epochId);
     }
 
     /**
-     * @notice credits the balance of a specific pool member
+     * @notice Credits the balance of a specific pool member
      * @param pool the DelegationPool of the account to credit
      * @param account the address to be credited
      * @param amount the amount to credit the account by
@@ -51,6 +53,13 @@ library DelegationPoolLib {
         pool.magnifiedRewardCorrections[account] -= (pool.magnifiedRewardPerShare * share).toInt256Safe();
     }
 
+    /**
+     * @notice Credits the balance of a specific pool member and saves the historical data
+     * @param pool the DelegationPool of the account to credit
+     * @param account the address to be credited
+     * @param amount the amount to credit the account by
+     * @param epochId The epoch number for which the account deposits
+     */
     function deposit(DelegationPool storage pool, address account, uint256 amount, uint256 epochId) internal {
         deposit(pool, account, amount);
         // Update delegator params history
@@ -58,7 +67,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice decrements the balance of a specific pool member
+     * @notice Decrements the balance of a specific pool member
      * @param pool the DelegationPool of the account to decrement the balance of
      * @param account the address to decrement the balance of
      * @param amount the amount to decrement the balance by
@@ -73,10 +82,11 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice decrements the balance of a specific pool member
+     * @notice Decrements the balance of a specific pool member and saves the historical data
      * @param pool the DelegationPool of the account to decrement the balance of
      * @param account the address to decrement the balance of
      * @param amount the amount to decrement the balance by
+     * @param epochNumber Epoch which the withdrawal is made
      */
     function withdraw(DelegationPool storage pool, address account, uint256 amount, uint256 epochNumber) internal {
         withdraw(pool, account, amount);
@@ -85,18 +95,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice increments the amount rewards claimed by an account
-     * @param pool the DelegationPool the rewards have been claimed from
-     * @param account the address claiming the rewards
-     * @return reward the amount of rewards claimed
-     */
-    function claimRewards(DelegationPool storage pool, address account) internal returns (uint256 reward) {
-        reward = claimableRewards(pool, account);
-        pool.claimedRewards[account] += reward;
-    }
-
-    /**
-     * @notice returns the balance (eg amount delegated) of an account in a specific pool
+     * @notice Returns the balance (eg amount delegated) of an account in a specific pool
      * @param pool the DelegationPool to query the balance from
      * @param account the address to query the balance of
      * @return uint256 the balance of the account
@@ -107,7 +106,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the correction of rewards for an account in a specific pool
+     * @notice Returns the correction of rewards for an account in a specific pool
      * @param pool the DelegationPool to query the correction from
      * @param account the address to query the correction of
      * @return int256 the correction of the account
@@ -117,60 +116,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice returns the historical total rewards earned by an account in a specific pool
-     * @param pool the DelegationPool to query the total from
-     * @param account the address to query the balance of
-     * @return uint256 the total claimed by the account
-     */
-    function totalRewardsEarned(DelegationPool storage pool, address account) internal view returns (uint256) {
-        int256 magnifiedRewards = (pool.magnifiedRewardPerShare * pool.balances[account]).toInt256Safe();
-        uint256 correctedRewards = (magnifiedRewards + pool.magnifiedRewardCorrections[account]).toUint256Safe();
-        return correctedRewards / magnitude();
-    }
-
-    /**
-     * @notice returns the current amount of claimable rewards for an address in a pool
-     * @param pool the DelegationPool to query the claimable rewards from
-     * @param account the address for which query the amount of claimable rewards
-     * @return uint256 the amount of claimable rewards for the address
-     */
-    function claimableRewards(DelegationPool storage pool, address account) internal view returns (uint256) {
-        return totalRewardsEarned(pool, account) - pool.claimedRewards[account];
-    }
-
-    function getRPSValues(
-        DelegationPool storage pool,
-        uint256 startEpoch,
-        uint256 endEpoch
-    ) internal view returns (RPS[] memory) {
-        if (startEpoch > endEpoch) {
-            revert DelegateRequirement({src: "DelegPoolLib", msg: "INVALID_ARGUMENTS"});
-        }
-
-        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
-        uint256 itemIndex = 0;
-        for (uint256 i = startEpoch; i <= endEpoch; i++) {
-            if (pool.historyRPS[i].value != 0) {
-                values[itemIndex] = (pool.historyRPS[i]);
-            }
-
-            itemIndex++;
-        }
-
-        return values;
-    }
-
-    /**
-     * @notice returns the scaling factor used for decimal places
-     * @dev this means the last 18 places in a number are to the right of the decimal point
-     * @return uint256 the scaling factor
-     */
-    function magnitude() private pure returns (uint256) {
-        return 1e18;
-    }
-
-    /**
-     * @notice returns the amount of rewards earned by an account in a pool
+     * @notice Returns the amount of rewards earned by an account in a pool
      * @param rps the reward per share
      * @param balance the balance of the account
      * @param correction the correction of the account
@@ -179,11 +125,44 @@ library DelegationPoolLib {
     function rewardsEarned(uint256 rps, uint256 balance, int256 correction) internal pure returns (uint256) {
         int256 magnifiedRewards = (rps * balance).toInt256Safe();
         uint256 correctedRewards = (magnifiedRewards + correction).toUint256Safe();
-        return correctedRewards / magnitude();
+        return correctedRewards / _magnitude();
     }
 
     /**
-     * @notice returns the amount of claimable rewards for an address in a pool
+     * @notice Returns the historical total rewards earned by an account in a specific pool
+     * @param pool the DelegationPool to query the total from
+     * @param account the address to query the balance of
+     * @return uint256 the total claimed by the account
+     */
+    function totalRewardsEarned(DelegationPool storage pool, address account) internal view returns (uint256) {
+        int256 magnifiedRewards = (pool.magnifiedRewardPerShare * pool.balances[account]).toInt256Safe();
+        uint256 correctedRewards = (magnifiedRewards + pool.magnifiedRewardCorrections[account]).toUint256Safe();
+        return correctedRewards / _magnitude();
+    }
+
+    /**
+     * @notice Returns the current amount of claimable rewards for an address in a pool
+     * @param pool the DelegationPool to query the claimable rewards from
+     * @param account the address for which query the amount of claimable rewards
+     * @return uint256 the amount of claimable rewards for the address
+     */
+    function claimableRewards(DelegationPool storage pool, address account) internal view returns (uint256) {
+        return totalRewardsEarned(pool, account) - pool.claimedRewards[account];
+    }
+
+    /**
+     * @notice Increments the amount rewards claimed by an account
+     * @param pool the DelegationPool the rewards have been claimed from
+     * @param account the address claiming the rewards
+     * @return reward the amount of rewards claimed
+     */
+    function claimRewards(DelegationPool storage pool, address account) internal returns (uint256 reward) {
+        reward = claimableRewards(pool, account);
+        pool.claimedRewards[account] += reward;
+    }
+
+    /**
+     * @notice Returns the amount of claimable rewards for an address in a pool
      * @param pool the DelegationPool to query the claimable rewards from
      * @param account the address for which query the amount of claimable rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
@@ -213,7 +192,7 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice claims the rewards for an address in a pool
+     * @notice Claims the rewards for an address in a pool
      * @param pool the DelegationPool to claim the rewards from
      * @param account the address for which to claim the rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
@@ -232,7 +211,62 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice Deletes  the historical data of a delegator
+     * @notice Returns the RPS values for a given range of epochs
+     * @param pool the DelegationPool to get the RPS values from
+     * @param startEpoch the start epoch to get the RPS values from
+     * @param endEpoch the end epoch to get the RPS values from
+     */
+    function getRPSValues(
+        DelegationPool storage pool,
+        uint256 startEpoch,
+        uint256 endEpoch
+    ) internal view returns (RPS[] memory) {
+        if (startEpoch > endEpoch) {
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "INVALID_ARGUMENTS"});
+        }
+
+        RPS[] memory values = new RPS[](endEpoch - startEpoch + 1);
+        uint256 itemIndex = 0;
+        for (uint256 i = startEpoch; i <= endEpoch; i++) {
+            if (pool.historyRPS[i].value != 0) {
+                values[itemIndex] = (pool.historyRPS[i]);
+            }
+
+            itemIndex++;
+        }
+
+        return values;
+    }
+
+    /**
+     * @notice Checks if the balance change is made for the given delegator in the current epoch
+     * @param pool the DelegationPool to check the balance change from
+     * @param delegator the address of the delegator to check the balance change for
+     * @param currentEpochNum the current epoch number
+     * @return bool whether the balance change is made
+     */
+    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
+    function isBalanceChangeMade(
+        DelegationPool storage pool,
+        address delegator,
+        uint256 currentEpochNum
+    ) internal view returns (bool) {
+        uint256 length = pool.delegatorsParamsHistory[delegator].length;
+        if (length == 0) {
+            return false;
+        }
+
+        DelegationPoolDelegatorParams memory data = pool.delegatorsParamsHistory[delegator][length - 1];
+
+        if (data.epochNum == currentEpochNum) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @notice Deletes the historical data of a delegator
      * @param pool the DelegationPool to clean the historical data from
      * @param account the address of the  delegator to clean the historical data from
      */
@@ -240,29 +274,7 @@ library DelegationPoolLib {
         delete pool.delegatorsParamsHistory[account];
     }
 
-    /**
-     * @notice Gets the delegator's reward at past moment based on a given epoch number and balance change index
-     * @param pool the DelegationPool to query the claimable rewards from
-     * @param delegator Address of the delegator
-     * @param epochNumber Epoch number
-     * @param balanceChangeIndex Index of the balance change
-     */
-    function _getRewardParams(
-        DelegationPool storage pool,
-        address delegator,
-        uint256 epochNumber,
-        uint256 balanceChangeIndex
-    ) private view returns (uint256 rps, uint256 balance, int256 correction) {
-        uint256 rewardPerShare = pool.historyRPS[epochNumber].value;
-        (uint256 balanceData, int256 correctionData) = _getAccountParams(
-            pool,
-            delegator,
-            epochNumber,
-            balanceChangeIndex
-        );
-
-        return (rewardPerShare, balanceData, correctionData);
-    }
+    // _______________ Private functions _______________
 
     /**
      * @notice Saves the RPS for the given staker for the epoch
@@ -276,6 +288,26 @@ library DelegationPoolLib {
         }
 
         pool.historyRPS[epochNumber] = RPS({value: uint192(rewardPerShare), timestamp: uint64(block.timestamp)});
+    }
+
+    /**
+     * @notice Saves the account specific pool params change
+     * * @param pool the DelegationPool to save the account params for
+     * @param delegator Address of the delegator
+     */
+    function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
+        if (isBalanceChangeMade(pool, delegator, epochNumber)) {
+            // balance can be changed only once per epoch
+            revert DelegateRequirement({src: "DelegPoolLib", msg: "BALANCE_CHANGE_ALREADY_MADE"});
+        }
+
+        pool.delegatorsParamsHistory[delegator].push(
+            DelegationPoolDelegatorParams({
+                balance: balanceOf(pool, delegator),
+                correction: correctionOf(pool, delegator),
+                epochNum: epochNumber
+            })
+        );
     }
 
     /**
@@ -317,42 +349,35 @@ library DelegationPoolLib {
     }
 
     /**
-     * @notice Saves the account specific pool params change
-     * * @param pool the DelegationPool to save the account params for
+     * @notice Gets the delegator's reward at past moment based on a given epoch number and balance change index
+     * @param pool the DelegationPool to query the claimable rewards from
      * @param delegator Address of the delegator
+     * @param epochNumber Epoch number
+     * @param balanceChangeIndex Index of the balance change
      */
-    function _saveAccountParamsChange(DelegationPool storage pool, address delegator, uint256 epochNumber) private {
-        if (isBalanceChangeMade(pool, delegator, epochNumber)) {
-            // balance can be changed only once per epoch
-            revert DelegateRequirement({src: "DelegPoolLib", msg: "BALANCE_CHANGE_ALREADY_MADE"});
-        }
-
-        pool.delegatorsParamsHistory[delegator].push(
-            DelegationPoolDelegatorParams({
-                balance: balanceOf(pool, delegator),
-                correction: correctionOf(pool, delegator),
-                epochNum: epochNumber
-            })
-        );
-    }
-
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
-    function isBalanceChangeMade(
+    function _getRewardParams(
         DelegationPool storage pool,
         address delegator,
-        uint256 currentEpochNum
-    ) internal view returns (bool) {
-        uint256 length = pool.delegatorsParamsHistory[delegator].length;
-        if (length == 0) {
-            return false;
-        }
+        uint256 epochNumber,
+        uint256 balanceChangeIndex
+    ) private view returns (uint256 rps, uint256 balance, int256 correction) {
+        uint256 rewardPerShare = pool.historyRPS[epochNumber].value;
+        (uint256 balanceData, int256 correctionData) = _getAccountParams(
+            pool,
+            delegator,
+            epochNumber,
+            balanceChangeIndex
+        );
 
-        DelegationPoolDelegatorParams memory data = pool.delegatorsParamsHistory[delegator][length - 1];
+        return (rewardPerShare, balanceData, correctionData);
+    }
 
-        if (data.epochNum == currentEpochNum) {
-            return true;
-        }
-
-        return false;
+    /**
+     * @notice Returns the scaling factor used for decimal places
+     * @dev this means the last 18 places in a number are to the right of the decimal point
+     * @return uint256 the scaling factor
+     */
+    function _magnitude() private pure returns (uint256) {
+        return 1e18;
     }
 }
