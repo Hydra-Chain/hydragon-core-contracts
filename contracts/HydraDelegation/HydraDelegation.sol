@@ -30,6 +30,8 @@ contract HydraDelegation is
     uint256 public constant MAX_COMMISSION = 100;
 
     mapping(address => uint256) public delegationCommissionPerStaker;
+    /// @notice Timestamp after which the commission can be updated
+    mapping(address => uint256) public commissionUpdateAvailableAt;
 
     // _______________ Initializer _______________
 
@@ -79,7 +81,7 @@ contract HydraDelegation is
      * @inheritdoc IHydraDelegation
      */
     function stakerDelegationCommission(address staker) external view returns (uint256) {
-        return delegationCommissionPerStaker[staker];
+        return _getCommission(staker);
     }
 
     // _______________ Internal functions _______________
@@ -124,11 +126,7 @@ contract HydraDelegation is
     }
 
     /**
-     * @notice Deposits the delegation amount to the staker's delegation pool
-     * @param staker Address of the staker
-     * @param delegation Delegation pool
-     * @param delegator Address of the delegator
-     * @param amount Amount to deposit
+     * @inheritdoc Delegation
      */
     function _depositDelegation(
         address staker,
@@ -140,13 +138,8 @@ contract HydraDelegation is
     }
 
     /**
-     * @notice Withdraws the delegation amount from the staker's delegation pool
-     * @param staker Address of the staker
-     * @param delegation Delegation pool
-     * @param delegator Address of the delegator
-     * @param amount Amount to withdraw
+     * @inheritdoc Delegation
      */
-
     function _withdrawDelegation(
         address staker,
         DelegationPool storage delegation,
@@ -154,6 +147,13 @@ contract HydraDelegation is
         uint256 amount
     ) internal virtual override(Delegation, VestedDelegation) {
         super._withdrawDelegation(staker, delegation, delegator, amount);
+    }
+
+    /**
+     * @inheritdoc Delegation
+     */
+    function _getCommission(address staker) internal view override returns (uint256) {
+        return delegationCommissionPerStaker[staker];
     }
 
     // _______________ Private functions _______________
@@ -165,7 +165,9 @@ contract HydraDelegation is
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
+        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
 
+        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);

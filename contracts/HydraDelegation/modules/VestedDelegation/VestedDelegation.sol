@@ -94,7 +94,8 @@ abstract contract VestedDelegation is
             reward += _calcPositionAdditionalReward(delegationPool, delegator, rewardIndex);
         }
 
-        return reward;
+        (, uint256 delegatorReward) = _applyCommission(reward, position.commission);
+        return delegatorReward;
     }
 
     /**
@@ -109,7 +110,9 @@ abstract contract VestedDelegation is
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         // if the position is still active apply the vesting APR to the generated raw reward
         if (_noRewardConditions(position)) {
-            return _applyVestingAPR(position, getRawDelegatorReward(staker, delegator));
+            uint256 rawReward = _applyVestingAPR(position, getRawReward(staker, delegator));
+            (, uint256 delegatorReward) = _applyCommission(rawReward, position.commission);
+            return delegatorReward;
         }
 
         _verifyRewardsMatured(staker, position.end, epochNumber);
@@ -124,7 +127,9 @@ abstract contract VestedDelegation is
         //  reward made after the vesting period
         reward += _calcPositionAdditionalReward(delegationPool, delegator, vestingRewardIndex);
 
-        return reward;
+        (, uint256 maturedDelegatorReward) = _applyCommission(reward, position.commission);
+
+        return maturedDelegatorReward;
     }
 
     /**
@@ -202,7 +207,8 @@ abstract contract VestedDelegation is
             end: block.timestamp + duration,
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
+            commission: _getCommission(staker)
         });
 
         _delegate(staker, msg.sender, msg.value);
@@ -241,7 +247,8 @@ abstract contract VestedDelegation is
             end: oldPosition.end,
             base: oldPosition.base,
             vestBonus: oldPosition.vestBonus,
-            rsiBonus: oldPosition.rsiBonus
+            rsiBonus: oldPosition.rsiBonus,
+            commission: _getCommission(newStaker)
         });
 
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
@@ -307,9 +314,14 @@ abstract contract VestedDelegation is
 
         if (reward == 0) return;
 
-        rewardWalletContract.distributeReward(to, reward);
+        // apply the commission to the reward
+        (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, position.commission);
 
-        emit PositionRewardClaimed(msg.sender, staker, reward);
+        rewardWalletContract.distributeReward(staker, stakerCut);
+        rewardWalletContract.distributeReward(to, delegatorReward);
+
+        emit CommissionClaimed(staker, msg.sender, stakerCut);
+        emit PositionRewardClaimed(msg.sender, staker, delegatorReward);
     }
 
     // _______________ Public functions _______________
@@ -335,7 +347,7 @@ abstract contract VestedDelegation is
             return false;
         }
 
-        if (getRawDelegatorReward(staker, delegator) != 0) {
+        if (getRawReward(staker, delegator) != 0) {
             return false;
         }
 

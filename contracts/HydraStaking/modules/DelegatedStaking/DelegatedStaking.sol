@@ -88,15 +88,6 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
         return delegationContract.totalDelegationOf(staker);
     }
 
-    /**
-     * @notice Returns the commission for a staker
-     * @param staker The staker address
-     * @return The commission for the staker
-     */
-    function _getStakerDelegationCommission(address staker) internal view returns (uint256) {
-        return delegationContract.stakerDelegationCommission(staker);
-    }
-
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;
 }

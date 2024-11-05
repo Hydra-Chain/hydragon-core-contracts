@@ -12,7 +12,7 @@ import {DelegationPoolLib} from "./modules/DelegationPoolLib/DelegationPoolLib.s
 import {DelegationPool} from "./modules/DelegationPoolLib/IDelegationPoolLib.sol";
 import {IDelegation} from "./IDelegation.sol";
 
-contract Delegation is
+abstract contract Delegation is
     IDelegation,
     Governed,
     Withdrawal,
@@ -80,6 +80,27 @@ contract Delegation is
         return _totalDelegation;
     }
 
+    /**
+     * @inheritdoc IDelegation
+     */
+    function getRawDelegatorReward(address staker, address delegator) external view returns (uint256) {
+        uint256 reward = getRawReward(staker, delegator);
+        (, uint256 rawDelegatorReward) = _applyCommission(reward, _getCommission(staker));
+
+        return rawDelegatorReward;
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
+        uint256 reward = getRawReward(staker, delegator);
+        uint256 aprReward = aprCalculatorContract.applyBaseAPR(reward);
+        (, uint256 delegatorReward) = _applyCommission(aprReward, _getCommission(staker));
+
+        return delegatorReward;
+    }
+
     // _______________ Public functions _______________
 
     /**
@@ -107,18 +128,9 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function getRawDelegatorReward(address staker, address delegator) public view returns (uint256) {
+    function getRawReward(address staker, address delegator) public view returns (uint256) {
         DelegationPool storage delegation = delegationPools[staker];
         return delegation.claimableRewards(delegator);
-    }
-
-    /**
-     * @inheritdoc IDelegation
-     */
-    function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
-        DelegationPool storage delegation = delegationPools[staker];
-        uint256 reward = delegation.claimableRewards(delegator);
-        return aprCalculatorContract.applyBaseAPR(reward);
     }
 
     // _______________ Internal functions _______________
@@ -233,6 +245,28 @@ contract Delegation is
         emit DelegatorRewardDistributed(staker, reward);
     }
 
+    /**
+     * @notice Applies the commission to the reward
+     * @param reward The reward to apply the commission
+     * @param commission The commission to apply
+     * @return stakerCut The commission cut for the staker
+     * @return delegatorReward The reward for the delegator
+     */
+    function _applyCommission(
+        uint256 reward,
+        uint256 commission
+    ) internal pure returns (uint256 stakerCut, uint256 delegatorReward) {
+        stakerCut = (reward * commission) / 100;
+        delegatorReward = reward - stakerCut;
+    }
+
+    /**
+     * @notice Returns the commission for a validator
+     * @param staker Address of the validator
+     * @return commission Commission for the validator
+     */
+    function _getCommission(address staker) internal view virtual returns (uint256);
+
     // _______________ Private functions _______________
 
     /**
@@ -255,9 +289,13 @@ contract Delegation is
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        rewardWalletContract.distributeReward(delegator, reward);
+        (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, _getCommission(staker));
 
-        emit DelegatorRewardsClaimed(staker, delegator, reward);
+        rewardWalletContract.distributeReward(staker, stakerCut);
+        rewardWalletContract.distributeReward(delegator, delegatorReward);
+
+        emit CommissionClaimed(staker, delegator, stakerCut);
+        emit DelegatorRewardsClaimed(staker, delegator, delegatorReward);
     }
 
     // slither-disable-next-line unused-state,naming-convention

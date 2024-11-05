@@ -133,6 +133,7 @@ interface IVestedDelegation is IDelegation {
 
     /**
      * @notice Claims reward for the vest manager (delegator) and distribute it to the desired address.
+     * Also commission is distributed to the validator.
      * @dev It can be called only by the vest manager
      * @param staker Validator to claim from
      * @param to Address to transfer the reward to

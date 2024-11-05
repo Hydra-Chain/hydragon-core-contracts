@@ -8,6 +8,7 @@ import {IDelegation} from "./IDelegation.sol";
 interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
     event CommissionUpdated(address indexed staker, uint256 newCommission);
 
+    error CommissionUpdateNotAvailable();
     error InvalidCommission(uint256 commission);
 
     /**

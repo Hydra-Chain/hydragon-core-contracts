@@ -6,6 +6,7 @@ import {IWithdrawal} from "../common/Withdrawal/IWithdrawal.sol";
 interface IDelegation is IWithdrawal {
     event Delegated(address indexed staker, address indexed delegator, uint256 amount);
     event Undelegated(address indexed staker, address indexed delegator, uint256 amount);
+    event CommissionClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
 
@@ -19,13 +20,13 @@ interface IDelegation is IWithdrawal {
     function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
-     * @notice Claims rewards for delegator for staker
+     * @notice Claims rewards for delegator and commissions for staker
      * @param staker Address of the validator
      */
     function claimDelegatorReward(address staker) external;
 
     /**
-     * @notice Undelegates amount from staker for sender and claims rewards.
+     * @notice Undelegates amount from staker for sender, claims rewards and validator comission.
      * @param staker Validator to undelegate from
      * @param amount The amount to undelegate
      */
@@ -36,10 +37,26 @@ interface IDelegation is IWithdrawal {
      */
     function totalDelegation() external view returns (uint256);
 
+    /**
+     * @notice Gets delegator's unclaimed rewards (without custom APR params)
+     * @param staker Address of validator
+     * @param delegator Address of delegator
+     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
+     */
+    function getRawDelegatorReward(address staker, address delegator) external view returns (uint256);
+
+    /**
+     * @notice Gets delegator's unclaimed rewards (with custom APR params)
+     * @param staker Address of validator
+     * @param delegator Address of delegator
+     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
+     */
+    function getDelegatorReward(address staker, address delegator) external view returns (uint256);
+
     // _______________ Public functions _______________
 
     /**
-     * @notice Delegates sent amount to staker and claims rewards.
+     * @notice Delegates sent amount to staker, claims rewards and validator comission.
      * @param staker Validator to delegate to
      */
     function delegate(address staker) external payable;
@@ -58,18 +75,10 @@ interface IDelegation is IWithdrawal {
     function delegationOf(address staker, address delegator) external view returns (uint256);
 
     /**
-     * @notice Gets delegator's unclaimed rewards (without custom APR params applied)
-     * @param staker Address of validator
-     * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
+     * @notice Returns the raw reward before applying the commission and APR
+     * @param staker Address of the validator
+     * @param delegator Address of the delegator
+     * @return Raw reward for the delegator before applying APR and commission
      */
-    function getRawDelegatorReward(address staker, address delegator) external view returns (uint256);
-
-    /**
-     * @notice Gets delegator's unclaimed rewards (with custom APR params applied)
-     * @param staker Address of validator
-     * @param delegator Address of delegator
-     * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
-     */
-    function getDelegatorReward(address staker, address delegator) external view returns (uint256);
+    function getRawReward(address staker, address delegator) external view returns (uint256);
 }

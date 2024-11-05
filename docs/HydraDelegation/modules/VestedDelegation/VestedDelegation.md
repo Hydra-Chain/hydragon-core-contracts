@@ -218,7 +218,7 @@ Changes the withdrawal wait period.
 function claimDelegatorReward(address staker) external nonpayable
 ```
 
-Claims rewards for delegator for staker
+Claims rewards for delegator and commissions for staker
 
 
 
@@ -234,7 +234,7 @@ Claims rewards for delegator for staker
 function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external nonpayable
 ```
 
-Claims reward for the vest manager (delegator) and distribute it to the desired address.
+Claims reward for the vest manager (delegator) and distribute it to the desired address. Also commission is distributed to the validator.
 
 *It can be called only by the vest manager*
 
@@ -253,7 +253,7 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker and claims rewards.
+Delegates sent amount to staker, claims rewards and validator comission.
 
 
 
@@ -356,7 +356,7 @@ Gets the delegation pool params history for a staker and delegator.
 function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (with custom APR params)
 
 
 
@@ -403,7 +403,7 @@ Gets the RPS values for a staker in a given epoch range.
 function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (without custom APR params)
 
 
 
@@ -419,6 +419,29 @@ Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
+
+### getRawReward
+
+```solidity
+function getRawReward(address staker, address delegator) external view returns (uint256)
+```
+
+Returns the raw reward before applying the commission and APR
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Raw reward for the delegator before applying APR and commission |
 
 ### getRoleAdmin
 
@@ -890,7 +913,7 @@ function transferOwnership(address newOwner) external nonpayable
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender and claims rewards.
+Undelegates amount from staker for sender, claims rewards and validator comission.
 
 
 
@@ -921,7 +944,7 @@ Undelegates amount from staker for vesting position. Apply penalty in case vesti
 ### vestedDelegationPositions
 
 ```solidity
-function vestedDelegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus)
+function vestedDelegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus, uint256 commission)
 ```
 
 The vesting positions for every delegator
@@ -945,6 +968,7 @@ The vesting positions for every delegator
 | base | uint256 | undefined |
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
+| commission | uint256 | undefined |
 
 ### vestingLiquidityDecreasePerWeek
 
@@ -1038,6 +1062,24 @@ Calculates how much can be withdrawn for account at this time.
 
 
 ## Events
+
+### CommissionClaimed
+
+```solidity
+event CommissionClaimed(address indexed staker, address indexed delegator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
 
 ### Delegated
 

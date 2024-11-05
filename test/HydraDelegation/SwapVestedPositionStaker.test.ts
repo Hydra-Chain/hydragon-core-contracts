@@ -210,13 +210,17 @@ export function RunSwapVestedPositionStakerTests(): void {
       .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
   });
 
-  it("should transfer old position parameters to the new one on successful swap", async function () {
+  it("should transfer old position parameters (except commission) to the new one on successful swap", async function () {
     const { systemHydraChain, hydraDelegation, vestManager, vestManagerOwner, hydraStaking } = await loadFixture(
       this.fixtures.vestManagerFixture
     );
 
     const validator = this.signers.validators[0];
     const newValidator = this.signers.validators[1];
+
+    // change commission to make sure it is not transferred
+    time.increase(30 * DAY); // increase time to be able to change commission
+    await hydraDelegation.connect(newValidator).setCommission(50);
 
     const vestingDuration = 2; // 2 weeks
     await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
@@ -231,13 +235,15 @@ export function RunSwapVestedPositionStakerTests(): void {
     const oldPosition = await hydraDelegation.vestedDelegationPositions(validator.address, vestManager.address);
     const newPosition = await hydraDelegation.vestedDelegationPositions(newValidator.address, vestManager.address);
 
-    // expect new position to be like the old position
+    // expect new position to be like the old position (except commission)
     expect(oldPosition.duration, "oldPosition.duration").to.be.eq(newPosition.duration);
     expect(oldPosition.start, "oldPosition.start").to.be.eq(newPosition.start);
     expect(oldPosition.end, "oldPosition.end").to.be.eq(newPosition.end);
     expect(oldPosition.base, "oldPosition.base").to.be.eq(newPosition.base);
     expect(oldPosition.vestBonus, "oldPosition.vestBonus").to.be.eq(newPosition.vestBonus);
     expect(oldPosition.rsiBonus, "oldPosition.rsiBonus").to.be.eq(newPosition.rsiBonus);
+    expect(oldPosition.commission, "oldPosition.commission").to.not.be.eq(newPosition.commission);
+    expect(newPosition.commission, "newPosition.commission").to.be.eq(50);
   });
 
   it("should start earning rewards on new position after swap", async function () {
