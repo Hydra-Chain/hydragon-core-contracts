@@ -41,6 +41,16 @@ abstract contract StateSyncStaking is Staking {
     }
 
     /**
+     * @notice Emit a BalanceChanged event
+     * @param account The address of the account
+     */
+    function _checkBanBeforeSync(address account) internal {
+        if (!_isBanIntiated(account)) {
+            _syncState(account);
+        }
+    }
+
+    /**
      * @dev override to set how the balance must be fetched
      */
     function _getBalanceToSync(address account) internal virtual returns (uint256);

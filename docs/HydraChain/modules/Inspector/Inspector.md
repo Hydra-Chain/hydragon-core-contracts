@@ -206,6 +206,28 @@ Adds addresses that are allowed to register as validators.
 |---|---|---|
 | whitelistAddreses | address[] | Array of address to whitelist |
 
+### banIsInitiated
+
+```solidity
+function banIsInitiated(address validator) external view returns (bool)
+```
+
+Returns if a ban process is initiated for a given validator
+
+*funtion is overriden in the hydra chain contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | Returns true if the ban is initiated |
+
 ### banThreshold
 
 ```solidity
@@ -425,13 +447,13 @@ function isSubjectToFinishBan(address account) external view returns (bool)
 
 Returns true if a ban can be finally executed for a given validator
 
-*override this function to apply your custom rules*
+
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| account | address | undefined |
+| account | address | The address of the validator |
 
 #### Returns
 
@@ -447,7 +469,7 @@ function isSubjectToInitiateBan(address account) external nonpayable returns (bo
 
 Returns if a ban process can be initiated for a given validator
 
-*override this function to apply your custom rules*
+*funtion is overriden in the hydra chain contract*
 
 #### Parameters
 
@@ -459,7 +481,7 @@ Returns if a ban process can be initiated for a given validator
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | bool | Returns true if the validator is subject to a ban |
+| _0 | bool | Returns true if the validator is subject to initiate ban |
 
 ### isValidatorActive
 

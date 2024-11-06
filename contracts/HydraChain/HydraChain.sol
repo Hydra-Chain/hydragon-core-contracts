@@ -151,7 +151,7 @@ contract HydraChain is
     // _______________ Public functions _______________
 
     /**
-     * @dev Apply custom rules for ban eligibility
+     * @inheritdoc Inspector
      */
     function isSubjectToInitiateBan(address validator) public view override returns (bool) {
         uint256 lastCommittedEndBlock = _commitBlockNumbers[currentEpochId - 1];

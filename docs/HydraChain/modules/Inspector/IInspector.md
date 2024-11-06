@@ -10,6 +10,28 @@
 
 ## Methods
 
+### banIsInitiated
+
+```solidity
+function banIsInitiated(address account) external view returns (bool)
+```
+
+Returns if a ban process is initiated for a given validator
+
+*funtion is overriden in the hydra chain contract*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | Returns true if the ban is initiated |
+
 ### banValidator
 
 ```solidity
@@ -41,6 +63,28 @@ Method used to initiate a ban for validator, if the initiate ban threshold is re
 | Name | Type | Description |
 |---|---|---|
 | validator | address | Address of the validator |
+
+### isSubjectToFinishBan
+
+```solidity
+function isSubjectToFinishBan(address account) external view returns (bool)
+```
+
+Returns true if a ban can be finally executed for a given validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| account | address | The address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
 
 ### setBanThreshold
 

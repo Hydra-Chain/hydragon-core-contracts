@@ -414,7 +414,7 @@ export function RunInspectorTests(): void {
       expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(stakedAmount);
     });
 
-    it("should get reporter reward, but to penalyze the whole stake when penalty is more than the stake", async function () {
+    it("should get reporter reward, but to penalize the whole stake when penalty is more than the stake", async function () {
       const { hydraChain, inBanProcessValidator, hydraStaking } = await loadFixture(
         this.fixtures.banInitiatedFixtureFunction
       );
@@ -453,6 +453,73 @@ export function RunInspectorTests(): void {
 
       await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
         .to.not.be.reverted;
+    });
+
+    it("should set bansInitiate to 0 on ban", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.banInitiatedFixtureFunction);
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.not.be.equal(0);
+
+      await expect(hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)).to.not
+        .be.reverted;
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.be.equal(0);
+    });
+
+    it("should revert stake when ban in initiated", async function () {
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.banInitiatedFixtureFunction);
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.not.be.equal(0);
+
+      await expect(hydraStaking.connect(this.signers.validators[0]).stake({ value: this.minStake }))
+        .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+        .withArgs("BAN_INITIATED");
+    });
+
+    it("should revert unstake when ban in initiated", async function () {
+      const { hydraChain, hydraStaking } = await loadFixture(this.fixtures.banInitiatedFixtureFunction);
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.not.be.equal(0);
+
+      await expect(
+        hydraStaking
+          .connect(this.signers.validators[0])
+          .unstake(await hydraStaking.stakeOf(this.signers.validators[0].address))
+      )
+        .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+        .withArgs("BAN_INITIATED");
+    });
+
+    it("should not emit event BalanceChanged on delegate if ban is initiated", async function () {
+      const { hydraChain, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.banInitiatedFixtureFunction
+      );
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.not.be.equal(0);
+
+      await expect(
+        hydraDelegation
+          .connect(this.signers.delegator)
+          .delegate(this.signers.validators[0].address, { value: this.minDelegation })
+      ).to.not.emit(hydraStaking, "BalanceChanged");
+    });
+
+    it("should not emit event BalanceChanged on undelegate if ban is initiated", async function () {
+      const { hydraChain, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.banInitiatedFixtureFunction
+      );
+
+      await hydraDelegation
+        .connect(this.signers.delegator)
+        .delegate(this.signers.validators[0].address, { value: this.minDelegation });
+
+      expect(await hydraChain.bansInitiated(this.signers.validators[0].address)).to.not.be.equal(0);
+
+      await expect(
+        hydraDelegation
+          .connect(this.signers.delegator)
+          .undelegate(this.signers.validators[0].address, this.minDelegation)
+      ).to.not.emit(hydraStaking, "BalanceChanged");
     });
   });
 
