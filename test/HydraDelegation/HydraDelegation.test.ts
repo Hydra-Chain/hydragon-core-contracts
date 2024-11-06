@@ -325,6 +325,49 @@ export function RunHydraDelegationTests(): void {
         expect(event?.args?.amount, "event.arg.amount").to.equal(reward);
       });
 
+      it("should claim delegator reward, but no commission if 0 when on base delegation", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          2, // number of epochs to commit
+          this.epochSize
+        );
+
+        const reward = await hydraDelegation.getDelegatorReward(
+          this.signers.validators[0].address,
+          this.signers.delegator.address
+        );
+
+        await expect(
+          hydraDelegation.connect(this.signers.delegator).claimDelegatorReward(this.signers.validators[0].address)
+        )
+          .to.emit(hydraDelegation, "DelegatorRewardsClaimed")
+          .withArgs(this.signers.validators[0].address, this.signers.delegator.address, reward);
+      });
+
+      it("should claim delegator reward and commission when on base delegation", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
+
+        await hydraDelegation.connect(this.signers.validators[0]).setCommission(10);
+
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.signers.validators[2]],
+          2, // number of epochs to commit
+          this.epochSize
+        );
+
+        await expect(
+          hydraDelegation.connect(this.signers.delegator).claimDelegatorReward(this.signers.validators[0].address)
+        )
+          .to.emit(hydraDelegation, "CommissionClaimed")
+          .and.to.emit(hydraDelegation, "DelegatorRewardsClaimed");
+      });
+
       it("should revert when not the vest manager owner", async function () {
         const { vestManager, delegatedValidator } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
