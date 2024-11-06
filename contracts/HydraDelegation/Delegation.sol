@@ -85,8 +85,10 @@ abstract contract Delegation is
      */
     function getRawDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 reward = getRawReward(staker, delegator);
-        (, uint256 rawDelegatorReward) = _applyCommission(reward, _getCommission(staker));
+        uint256 commission = _getCommission(staker);
+        if (commission == 0) return reward;
 
+        (, uint256 rawDelegatorReward) = _applyCommission(reward, commission);
         return rawDelegatorReward;
     }
 
@@ -96,8 +98,10 @@ abstract contract Delegation is
     function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 reward = getRawReward(staker, delegator);
         uint256 aprReward = aprCalculatorContract.applyBaseAPR(reward);
-        (, uint256 delegatorReward) = _applyCommission(aprReward, _getCommission(staker));
+        uint256 commission = _getCommission(staker);
+        if (commission == 0) return aprReward;
 
+        (, uint256 delegatorReward) = _applyCommission(aprReward, commission);
         return delegatorReward;
     }
 
@@ -289,13 +293,19 @@ abstract contract Delegation is
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, _getCommission(staker));
+        uint256 commission = _getCommission(staker);
+        if (commission == 0) {
+            rewardWalletContract.distributeReward(delegator, reward);
+            emit DelegatorRewardsClaimed(staker, delegator, reward);
+        } else {
+            (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, commission);
 
-        rewardWalletContract.distributeReward(staker, stakerCut);
-        rewardWalletContract.distributeReward(delegator, delegatorReward);
+            rewardWalletContract.distributeReward(staker, stakerCut);
+            rewardWalletContract.distributeReward(delegator, delegatorReward);
 
-        emit CommissionClaimed(staker, delegator, stakerCut);
-        emit DelegatorRewardsClaimed(staker, delegator, delegatorReward);
+            emit CommissionClaimed(staker, delegator, stakerCut);
+            emit DelegatorRewardsClaimed(staker, delegator, delegatorReward);
+        }
     }
 
     // slither-disable-next-line unused-state,naming-convention

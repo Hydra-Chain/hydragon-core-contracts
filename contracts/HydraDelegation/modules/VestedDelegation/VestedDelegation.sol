@@ -94,6 +94,8 @@ abstract contract VestedDelegation is
             reward += _calcPositionAdditionalReward(delegationPool, delegator, rewardIndex);
         }
 
+        if (position.commission == 0) return reward;
+
         (, uint256 delegatorReward) = _applyCommission(reward, position.commission);
         return delegatorReward;
     }
@@ -111,6 +113,8 @@ abstract contract VestedDelegation is
         // if the position is still active apply the vesting APR to the generated raw reward
         if (_noRewardConditions(position)) {
             uint256 rawReward = _applyVestingAPR(position, getRawReward(staker, delegator));
+            if (position.commission == 0) return rawReward;
+
             (, uint256 delegatorReward) = _applyCommission(rawReward, position.commission);
             return delegatorReward;
         }
@@ -126,6 +130,8 @@ abstract contract VestedDelegation is
         // the position has entered the maturing period, so, we have to calculate the additional
         //  reward made after the vesting period
         reward += _calcPositionAdditionalReward(delegationPool, delegator, vestingRewardIndex);
+
+        if (position.commission == 0) return reward;
 
         (, uint256 maturedDelegatorReward) = _applyCommission(reward, position.commission);
 
@@ -314,14 +320,20 @@ abstract contract VestedDelegation is
 
         if (reward == 0) return;
 
-        // apply the commission to the reward
-        (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, position.commission);
+        if (position.commission == 0) {
+            rewardWalletContract.distributeReward(to, reward);
+            emit PositionRewardClaimed(msg.sender, staker, reward);
+        } else {
+            (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, position.commission);
 
-        rewardWalletContract.distributeReward(staker, stakerCut);
-        rewardWalletContract.distributeReward(to, delegatorReward);
+            if (stakerCut == 0 && delegatorReward == 0) return;
 
-        emit CommissionClaimed(staker, msg.sender, stakerCut);
-        emit PositionRewardClaimed(msg.sender, staker, delegatorReward);
+            rewardWalletContract.distributeReward(staker, stakerCut);
+            rewardWalletContract.distributeReward(to, delegatorReward);
+
+            emit CommissionClaimed(staker, msg.sender, stakerCut);
+            emit PositionRewardClaimed(msg.sender, staker, delegatorReward);
+        }
     }
 
     // _______________ Public functions _______________

@@ -23,7 +23,6 @@ import {
   getPermitSignature,
   calcLiquidTokensToDistributeOnVesting,
   createNewVestManager,
-  calculateCommissionCut,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -533,21 +532,18 @@ export function RunHydraDelegationTests(): void {
         );
       });
 
-      it("should distribute commission to the validator on claim", async function () {
-        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator, aprCalculator } =
-          await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
-
-        // make sure that the vested position does not take the current commission, but the one at the time of delegation
-        const oldCommission = await hydraDelegation.delegationCommissionPerStaker(delegatedValidator.address);
-        const newCommission = oldCommission.add(10);
-        await hydraDelegation.connect(this.signers.validators[0]).setCommission(newCommission);
+      it("should not distribute commission to the validator on claim for vested position with 0 commission", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
+          this.fixtures.weeklyVestedDelegationFixture
+        );
 
         // commit epoch
         await commitEpoch(
           systemHydraChain,
           hydraStaking,
           [this.signers.validators[0], this.signers.validators[1], delegatedValidator],
-          this.epochSize
+          this.epochSize,
+          WEEK + DAY
         );
 
         // prepare params for call
@@ -558,19 +554,59 @@ export function RunHydraDelegationTests(): void {
           vestManager.address
         );
 
-        // See claimable reward
-        const baseReward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
-        const base = await aprCalculator.base();
-        const vestBonus = await aprCalculator.getVestingBonus(1);
-        const rsi = await aprCalculator.rsi();
-        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
-        const commission = calculateCommissionCut(expectedReward, oldCommission);
+        // claim & check balance
+        await expect(
+          vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex)
+        ).to.not.emit(hydraDelegation, "CommissionClaimed");
+      });
+
+      it("should distribute the right commission to the validator on claim for vested position", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager } = await loadFixture(
+          this.fixtures.vestManagerFixture
+        );
+        const validator = this.signers.validators[2];
+        const oldCommission = 10;
+        await hydraDelegation.connect(validator).setCommission(oldCommission);
+        time.increase(DAY * 30);
+
+        await vestManager.openVestedDelegatePosition(validator.address, 1, {
+          value: this.minDelegation.mul(2),
+        });
+        // Commit epochs so rewards to be distributed
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], validator],
+          5, // number of epochs to commit
+          this.epochSize
+        );
+
+        // make sure that the vested position does not take the current commission, but the one at the time of delegation
+        const newCommission = oldCommission * 3;
+        await hydraDelegation.connect(validator).setCommission(newCommission);
+
+        // commit epoch
+        await commitEpoch(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], validator],
+          this.epochSize,
+          WEEK
+        );
+
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          validator.address,
+          vestManager.address
+        );
 
         // claim & check balance
-        const validatorBalanceBefore = await delegatedValidator.getBalance();
-        await vestManager.claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex);
-        const validatorBalanceAfter = await delegatedValidator.getBalance();
-        expect(validatorBalanceAfter).to.be.eq(validatorBalanceBefore.add(commission));
+        await expect(vestManager.claimVestedPositionReward(validator.address, epochNum, balanceChangeIndex)).to.emit(
+          hydraDelegation,
+          "CommissionClaimed"
+        );
       });
     });
 
