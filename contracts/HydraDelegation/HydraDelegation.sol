@@ -26,13 +26,6 @@ contract HydraDelegation is
 {
     using SafeMathUint for uint256;
 
-    /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
-    uint256 public constant MAX_COMMISSION = 100;
-
-    mapping(address => uint256) public delegationCommissionPerStaker;
-    /// @notice Timestamp after which the commission can be updated
-    mapping(address => uint256) public commissionUpdateAvailableAt;
-
     // _______________ Initializer _______________
 
     function initialize(
@@ -48,17 +41,15 @@ contract HydraDelegation is
     ) external initializer onlySystemCall {
         __APRCalculatorConnector_init(aprCalculatorAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
-        __Delegation_init(governance, rewardWalletAddr);
+        __Delegation_init(governance, rewardWalletAddr, initialStakers, initialCommission);
         __LiquidDelegation_init(liquidToken);
         __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
 
-        _initialize(initialStakers, initialCommission);
+        _initialize();
     }
 
-    function _initialize(StakerInit[] calldata initialStakers, uint256 initialCommission) private {
-        for (uint256 i = 0; i < initialStakers.length; i++) {
-            _setCommission(initialStakers[i].addr, initialCommission);
-        }
+    function _initialize() private {
+        vestingLiquidityDecreasePerWeek = 133; // 0.0133
     }
 
     // _______________ External functions _______________
@@ -66,22 +57,8 @@ contract HydraDelegation is
     /**
      * @inheritdoc IHydraDelegation
      */
-    function setCommission(uint256 newCommission) external {
-        _setCommission(msg.sender, newCommission);
-    }
-
-    /**
-     * @inheritdoc IHydraDelegation
-     */
     function distributeDelegationRewards(address staker, uint256 reward, uint256 epochId) external onlyHydraStaking {
         _distributeDelegationRewards(staker, reward, epochId);
-    }
-
-    /**
-     * @inheritdoc IHydraDelegation
-     */
-    function stakerDelegationCommission(address staker) external view returns (uint256) {
-        return _getCommission(staker);
     }
 
     // _______________ Internal functions _______________
@@ -149,29 +126,8 @@ contract HydraDelegation is
         super._withdrawDelegation(staker, delegation, delegator, amount);
     }
 
-    /**
-     * @inheritdoc Delegation
-     */
-    function _getCommission(address staker) internal view override returns (uint256) {
-        return delegationCommissionPerStaker[staker];
-    }
-
     // _______________ Private functions _______________
 
-    /**
-     * @notice Set commission for staker
-     * @param staker Address of the validator
-     * @param newCommission New commission (100 = 100%)
-     */
-    function _setCommission(address staker, uint256 newCommission) private {
-        if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
-        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
-
-        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
-        delegationCommissionPerStaker[staker] = newCommission;
-
-        emit CommissionUpdated(staker, newCommission);
-    }
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;

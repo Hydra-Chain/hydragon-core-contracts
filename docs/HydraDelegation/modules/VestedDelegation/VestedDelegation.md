@@ -247,6 +247,28 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
+### commissionUpdateAvailableAt
+
+```solidity
+function commissionUpdateAvailableAt(address) external view returns (uint256)
+```
+
+Timestamp after which the commission can be updated
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### delegate
 
 ```solidity
@@ -279,6 +301,28 @@ Delegates sent amount to staker. Set vesting position data. Delete old pool para
 |---|---|---|
 | staker | address | Validator to delegate to |
 | durationWeeks | uint256 | Duration of the vesting in weeks |
+
+### delegationCommissionPerStaker
+
+```solidity
+function delegationCommissionPerStaker(address) external view returns (uint256)
+```
+
+The commission per staker in percentage
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### delegationOf
 
@@ -813,6 +857,44 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 |---|---|---|
 | _0 | contract IRewardWallet | undefined |
 
+### setCommission
+
+```solidity
+function setCommission(uint256 newCommission) external nonpayable
+```
+
+Sets commission for staker.
+
+*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
+
+### stakerDelegationCommission
+
+```solidity
+function stakerDelegationCommission(address staker) external view returns (uint256)
+```
+
+Returns commission for staker.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | commission Commission for staker |
+
 ### supportsInterface
 
 ```solidity
@@ -1080,6 +1162,23 @@ event CommissionClaimed(address indexed staker, address indexed delegator, uint2
 | staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+### CommissionUpdated
+
+```solidity
+event CommissionUpdated(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### Delegated
 
@@ -1369,6 +1468,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
+### CommissionUpdateNotAvailable
+
+```solidity
+error CommissionUpdateNotAvailable()
+```
+
+
+
+
+
+
 ### DelegateRequirement
 
 ```solidity
@@ -1396,6 +1506,22 @@ error FailedToBurnAmount()
 
 
 
+
+### InvalidCommission
+
+```solidity
+error InvalidCommission(uint256 commission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| commission | uint256 | undefined |
 
 ### InvalidMinDelegation
 

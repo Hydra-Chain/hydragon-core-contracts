@@ -484,6 +484,44 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
+### setCommission
+
+```solidity
+function setCommission(uint256 newCommission) external nonpayable
+```
+
+Sets commission for staker.
+
+*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
+
+### stakerDelegationCommission
+
+```solidity
+function stakerDelegationCommission(address staker) external view returns (uint256)
+```
+
+Returns commission for staker.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | commission Commission for staker |
+
 ### swapVestedPositionStaker
 
 ```solidity
@@ -633,6 +671,23 @@ event CommissionClaimed(address indexed staker, address indexed delegator, uint2
 | staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+### CommissionUpdated
+
+```solidity
+event CommissionUpdated(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### Delegated
 
@@ -817,6 +872,33 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 ## Errors
+
+### CommissionUpdateNotAvailable
+
+```solidity
+error CommissionUpdateNotAvailable()
+```
+
+
+
+
+
+
+### InvalidCommission
+
+```solidity
+error InvalidCommission(uint256 commission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| commission | uint256 | undefined |
 
 ### InvalidMinDelegation
 

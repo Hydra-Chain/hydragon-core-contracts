@@ -9,8 +9,11 @@ interface IDelegation is IWithdrawal {
     event CommissionClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
+    event CommissionUpdated(address indexed staker, uint256 newCommission);
 
     error InvalidMinDelegation();
+    error CommissionUpdateNotAvailable();
+    error InvalidCommission(uint256 commission);
 
     /**
      * @notice Changes the minimum delegation amount
@@ -18,6 +21,13 @@ interface IDelegation is IWithdrawal {
      * @param newMinDelegation New minimum delegation amount
      */
     function changeMinDelegation(uint256 newMinDelegation) external;
+
+    /**
+     * @notice Sets commission for staker.
+     * @dev Anyone can set commission, but if the caller is not active validator, it will not have any effect.
+     * @param newCommission New commission (100 = 100%)
+     */
+    function setCommission(uint256 newCommission) external;
 
     /**
      * @notice Claims rewards for delegator and commissions for staker
@@ -52,6 +62,13 @@ interface IDelegation is IWithdrawal {
      * @return Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function getDelegatorReward(address staker, address delegator) external view returns (uint256);
+
+    /**
+     * @notice Returns commission for staker.
+     * @param staker Address of the validator
+     * @return commission Commission for staker
+     */
+    function stakerDelegationCommission(address staker) external view returns (uint256);
 
     // _______________ Public functions _______________
 

@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {Governed} from "../common/Governed/Governed.sol";
 import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
 import {DelegateRequirement} from "../common/Errors.sol";
+import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
@@ -12,7 +13,7 @@ import {DelegationPoolLib} from "./modules/DelegationPoolLib/DelegationPoolLib.s
 import {DelegationPool} from "./modules/DelegationPoolLib/IDelegationPoolLib.sol";
 import {IDelegation} from "./IDelegation.sol";
 
-abstract contract Delegation is
+contract Delegation is
     IDelegation,
     Governed,
     Withdrawal,
@@ -25,7 +26,13 @@ abstract contract Delegation is
 
     /// @notice A constant for the minimum delegation limit
     uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
+    /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
+    uint256 public constant MAX_COMMISSION = 100;
 
+    /// @notice The commission per staker in percentage
+    mapping(address => uint256) public delegationCommissionPerStaker;
+    /// @notice Timestamp after which the commission can be updated
+    mapping(address => uint256) public commissionUpdateAvailableAt;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     /// @notice The minimum delegation amount to be delegated
@@ -36,16 +43,27 @@ abstract contract Delegation is
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Delegation_init(address _governance, address _rewardWalletAddr) internal onlyInitializing {
+    function __Delegation_init(
+        address _governance,
+        address _rewardWalletAddr,
+        StakerInit[] calldata _initialStakers,
+        uint256 _initialCommission
+    ) internal onlyInitializing {
         __Governed_init(_governance);
         __Withdrawal_init(_governance);
         __RewardWalletConnector_init(_rewardWalletAddr);
-        __Delegation_init_unchained();
+        __Delegation_init_unchained(_initialStakers, _initialCommission);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Delegation_init_unchained() internal onlyInitializing {
+    function __Delegation_init_unchained(
+        StakerInit[] calldata _initialStakers,
+        uint256 _initialCommission
+    ) internal onlyInitializing {
         _changeMinDelegation(MIN_DELEGATION_LIMIT);
+        for (uint256 i = 0; i < _initialStakers.length; i++) {
+            _setCommission(_initialStakers[i].addr, _initialCommission);
+        }
     }
 
     // _______________ External functions _______________
@@ -55,6 +73,13 @@ abstract contract Delegation is
      */
     function changeMinDelegation(uint256 newMinDelegation) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _changeMinDelegation(newMinDelegation);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function setCommission(uint256 newCommission) external {
+        _setCommission(msg.sender, newCommission);
     }
 
     /**
@@ -85,7 +110,7 @@ abstract contract Delegation is
      */
     function getRawDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 reward = getRawReward(staker, delegator);
-        uint256 commission = _getCommission(staker);
+        uint256 commission = delegationCommissionPerStaker[staker];
         if (commission == 0) return reward;
 
         (, uint256 rawDelegatorReward) = _applyCommission(reward, commission);
@@ -98,11 +123,18 @@ abstract contract Delegation is
     function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 reward = getRawReward(staker, delegator);
         uint256 aprReward = aprCalculatorContract.applyBaseAPR(reward);
-        uint256 commission = _getCommission(staker);
+        uint256 commission = delegationCommissionPerStaker[staker];
         if (commission == 0) return aprReward;
 
         (, uint256 delegatorReward) = _applyCommission(aprReward, commission);
         return delegatorReward;
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function stakerDelegationCommission(address staker) external view returns (uint256) {
+        return delegationCommissionPerStaker[staker];
     }
 
     // _______________ Public functions _______________
@@ -264,13 +296,6 @@ abstract contract Delegation is
         delegatorReward = reward - stakerCut;
     }
 
-    /**
-     * @notice Returns the commission for a validator
-     * @param staker Address of the validator
-     * @return commission Commission for the validator
-     */
-    function _getCommission(address staker) internal view virtual returns (uint256);
-
     // _______________ Private functions _______________
 
     /**
@@ -280,6 +305,21 @@ abstract contract Delegation is
     function _changeMinDelegation(uint256 newMinDelegation) private {
         if (newMinDelegation < MIN_DELEGATION_LIMIT) revert InvalidMinDelegation();
         minDelegation = newMinDelegation;
+    }
+
+    /**
+     * @notice Set commission for staker
+     * @param staker Address of the validator
+     * @param newCommission New commission (100 = 100%)
+     */
+    function _setCommission(address staker, uint256 newCommission) private {
+        if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
+        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
+
+        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
+        delegationCommissionPerStaker[staker] = newCommission;
+
+        emit CommissionUpdated(staker, newCommission);
     }
 
     /**
@@ -293,7 +333,7 @@ abstract contract Delegation is
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
-        uint256 commission = _getCommission(staker);
+        uint256 commission = delegationCommissionPerStaker[staker];
         if (commission == 0) {
             rewardWalletContract.distributeReward(delegator, reward);
             emit DelegatorRewardsClaimed(staker, delegator, reward);

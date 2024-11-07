@@ -214,7 +214,7 @@ abstract contract VestedDelegation is
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
-            commission: _getCommission(staker)
+            commission: delegationCommissionPerStaker[staker]
         });
 
         _delegate(staker, msg.sender, msg.value);
@@ -254,7 +254,7 @@ abstract contract VestedDelegation is
             base: oldPosition.base,
             vestBonus: oldPosition.vestBonus,
             rsiBonus: oldPosition.rsiBonus,
-            commission: _getCommission(newStaker)
+            commission: delegationCommissionPerStaker[newStaker]
         });
 
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
@@ -316,7 +316,7 @@ abstract contract VestedDelegation is
         uint256 baseRewardComission;
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp >= position.end + position.duration) {
-            uint256 baseCommission = _getCommission(staker);
+            uint256 baseCommission = delegationCommissionPerStaker[staker];
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
             uint256 baseReward = aprCalculatorContract.applyBaseAPR(additionalReward);
 
