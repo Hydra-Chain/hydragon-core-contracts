@@ -312,27 +312,48 @@ abstract contract VestedDelegation is
         uint256 reward = delegationPool.claimRewards(msg.sender, epochNumber, balanceChangeIndex);
         reward = _applyVestingAPR(position, reward);
 
+        uint256 baseRewardDelegator;
+        uint256 baseRewardComission;
         // If the full maturing period is finished, withdraw also the reward made after the vesting period
         if (block.timestamp >= position.end + position.duration) {
+            uint256 baseCommission = _getCommission(staker);
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            reward += aprCalculatorContract.applyBaseAPR(additionalReward);
+            uint256 baseReward = aprCalculatorContract.applyBaseAPR(additionalReward);
+
+            if (baseCommission == 0) {
+                baseRewardDelegator = baseReward;
+            } else {
+                (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(baseReward, baseCommission);
+                baseRewardComission = stakerCut;
+                baseRewardDelegator = delegatorReward;
+            }
         }
 
-        if (reward == 0) return;
+        if (reward == 0 && baseRewardDelegator == 0 && baseRewardComission == 0) return;
 
-        if (position.commission == 0) {
+        if (position.commission == 0 && baseRewardComission == 0) {
+            reward += baseRewardDelegator;
+
             rewardWalletContract.distributeReward(to, reward);
+            emit PositionRewardClaimed(msg.sender, staker, reward);
+        } else if (position.commission == 0 && baseRewardComission != 0) {
+            reward += baseRewardDelegator;
+
+            rewardWalletContract.distributeReward(staker, baseRewardComission);
+            rewardWalletContract.distributeReward(to, reward);
+
+            emit CommissionClaimed(staker, msg.sender, baseRewardComission);
             emit PositionRewardClaimed(msg.sender, staker, reward);
         } else {
             (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, position.commission);
-
-            if (stakerCut == 0 && delegatorReward == 0) return;
+            uint256 totalDeletorReward = delegatorReward + baseRewardDelegator;
+            stakerCut += baseRewardComission;
 
             rewardWalletContract.distributeReward(staker, stakerCut);
-            rewardWalletContract.distributeReward(to, delegatorReward);
+            rewardWalletContract.distributeReward(to, totalDeletorReward);
 
             emit CommissionClaimed(staker, msg.sender, stakerCut);
-            emit PositionRewardClaimed(msg.sender, staker, delegatorReward);
+            emit PositionRewardClaimed(msg.sender, staker, totalDeletorReward);
         }
     }
 
