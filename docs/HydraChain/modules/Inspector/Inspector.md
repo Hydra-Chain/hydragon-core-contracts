@@ -214,7 +214,7 @@ function banIsInitiated(address validator) external view returns (bool)
 
 Returns if a ban process is initiated for a given validator
 
-*funtion is overriden in the hydra chain contract*
+
 
 #### Parameters
 

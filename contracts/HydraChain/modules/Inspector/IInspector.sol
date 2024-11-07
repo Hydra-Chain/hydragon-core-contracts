@@ -53,7 +53,6 @@ interface IInspector {
 
     /**
      * @notice Returns if a ban process is initiated for a given validator
-     * @dev funtion is overriden in the hydra chain contract
      * @param account The address of the validator
      * @return Returns true if the ban is initiated
      */
