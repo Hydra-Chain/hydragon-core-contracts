@@ -23,6 +23,8 @@ import {
   getPermitSignature,
   calcLiquidTokensToDistributeOnVesting,
   createNewVestManager,
+  calculateCommissionCutFromFinalReward,
+  calculateCommissionCutFromDelegatorReward,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -361,11 +363,29 @@ export function RunHydraDelegationTests(): void {
           this.epochSize
         );
 
+        const reward = await hydraDelegation.getDelegatorReward(
+          this.signers.validators[0].address,
+          this.signers.delegator.address
+        );
+        const commission = calculateCommissionCutFromDelegatorReward(
+          reward,
+          await hydraDelegation.delegationCommissionPerStaker(this.signers.validators[0].address)
+        );
+
+        // claim & check balance
+        const balanceBeforeDelegator = await this.signers.delegator.getBalance();
+        const balanceBeforeValidator = await this.signers.delegator.getBalance();
         await expect(
           hydraDelegation.connect(this.signers.delegator).claimDelegatorReward(this.signers.validators[0].address)
         )
           .to.emit(hydraDelegation, "CommissionClaimed")
           .and.to.emit(hydraDelegation, "DelegatorRewardsClaimed");
+        const balanceAfterDelegator = await this.signers.delegator.getBalance();
+        const balanceAfterValidator = await this.signers.delegator.getBalance();
+        expect(balanceAfterDelegator).to.be.gt(balanceBeforeDelegator.add(reward).mul(99).div(100));
+        expect(balanceAfterDelegator).to.be.lt(balanceBeforeDelegator.add(reward).mul(101).div(100));
+        expect(balanceAfterValidator).to.be.gt(balanceBeforeValidator.add(commission).mul(99).div(100));
+        expect(balanceAfterValidator).to.be.lt(balanceBeforeValidator.add(commission).mul(101).div(100));
       });
 
       it("should revert when not the vest manager owner", async function () {
@@ -634,7 +654,7 @@ export function RunHydraDelegationTests(): void {
           hydraStaking,
           [this.signers.validators[0], this.signers.validators[1], validator],
           this.epochSize,
-          WEEK
+          WEEK * 2 + DAY
         );
 
         // prepare params for call
@@ -645,11 +665,21 @@ export function RunHydraDelegationTests(): void {
           vestManager.address
         );
 
+        // check claimable rewards for the position
+        const expectedReward = await hydraDelegation.getRawReward(validator.address, vestManager.address);
+        const position = await hydraDelegation.vestedDelegationPositions(validator.address, vestManager.address);
+        const rewardApr = applyVestingAPR(position.base, position.vestBonus, position.rsiBonus, expectedReward);
+        const commission = calculateCommissionCutFromFinalReward(rewardApr, hre.ethers.BigNumber.from(oldCommission));
+
         // claim & check balance
+        const balanceBefore = await validator.getBalance();
         await expect(vestManager.claimVestedPositionReward(validator.address, epochNum, balanceChangeIndex)).to.emit(
           hydraDelegation,
           "CommissionClaimed"
         );
+        const balanceAfter = await validator.getBalance();
+        expect(balanceAfter).to.be.gt(balanceBefore.add(commission).mul(99).div(100));
+        expect(balanceAfter).to.be.lt(balanceBefore.add(commission).mul(101).div(100));
       });
     });
 
