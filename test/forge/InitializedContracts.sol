@@ -292,6 +292,10 @@ contract TestInitlizedContracts is InitializedContracts {
         assert(hydraStaking.stakeOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) == 2000000000000000000);
     }
 
+    function test_getVestingLiquidityDecreasePerWeekStaking() public view {
+        assert(hydraStaking.vestingLiquidityDecreasePerWeek() == 133);
+    }
+
     // HydraDelegation
 
     function test_getGovernanceFromHydraDelegation() public view {

@@ -23,6 +23,13 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
      */
     mapping(address => StakingRewardsHistory[]) public stakingRewardsHistory;
 
+    // _______________ Initializer _______________
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __VestedStaking_init() internal onlyInitializing {
+        __Vesting_init();
+    }
+
     // _______________ External functions _______________
 
     /**

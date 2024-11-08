@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { commitEpoch } from "../helper";
-import { DAY, ERRORS, TABLE_DATA_REWARDS_FOR_STAKER, WEEK } from "../constants";
+import { DAY, DENOMINATOR, ERRORS, TABLE_DATA_REWARDS_FOR_STAKER, WEEK } from "../constants";
 import { RunStakingTests } from "./Staking.test";
 import { RunDelegatedStakingTests } from "./DelegatedStaking.test";
 import { RunVestedStakingTests } from "./VestedStaking.test";
@@ -29,7 +29,10 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
 
         // Liquid Delegation
+        expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(0);
         expect(await hydraStaking.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
+
+        expect(await hydraStaking.DENOMINATOR()).to.equal(DENOMINATOR);
 
         // Withdrawable
         expect(await hydraStaking.withdrawWaitPeriod()).to.equal(0);
@@ -116,6 +119,7 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.lastDistribution()).to.not.equal(0);
 
         // Liquid Delegation
+        expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(133);
         expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);
 
         // Withdrawable

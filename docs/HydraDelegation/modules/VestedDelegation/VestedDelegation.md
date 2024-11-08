@@ -27,6 +27,23 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### DENOMINATOR
+
+```solidity
+function DENOMINATOR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_DELEGATION_LIMIT
 
 ```solidity
@@ -928,6 +945,23 @@ The vesting positions for every delegator
 | base | uint256 | undefined |
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
+
+### vestingLiquidityDecreasePerWeek
+
+```solidity
+function vestingLiquidityDecreasePerWeek() external view returns (uint256)
+```
+
+A fraction&#39;s numerator representing the rate at which the liquidity tokens&#39; distribution is decreased on a weekly basis
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### vestingManagerFactoryContract
 

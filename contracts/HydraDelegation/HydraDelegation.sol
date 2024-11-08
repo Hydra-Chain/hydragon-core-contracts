@@ -28,11 +28,7 @@ contract HydraDelegation is
 
     /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
-    uint256 public constant DENOMINATOR = 10000;
 
-    /// A fraction's numerator representing the rate
-    /// at which the liquidity tokens' distribution is decreased on a weekly basis
-    uint256 public vestingLiquidityDecreasePerWeek;
     mapping(address => uint256) public delegationCommissionPerStaker;
 
     // _______________ Initializer _______________
@@ -58,7 +54,6 @@ contract HydraDelegation is
     }
 
     function _initialize(StakerInit[] calldata initialStakers, uint256 initialCommission) private {
-        vestingLiquidityDecreasePerWeek = 133; // 0.0133
         for (uint256 i = 0; i < initialStakers.length; i++) {
             _setCommission(initialStakers[i].addr, initialCommission);
         }
@@ -119,9 +114,8 @@ contract HydraDelegation is
      */
     function _distributeTokens(address staker, address account, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
-        if (_isDelegateWithVesting(position)) {
-            uint256 positionDurationInWeeks = position.duration / 1 weeks;
-            uint256 debt = (amount * positionDurationInWeeks * vestingLiquidityDecreasePerWeek) / DENOMINATOR;
+        if (_isOpeningPosition(position)) {
+            uint256 debt = _calculatePostionDebt(amount, position.duration);
             liquidityDebts[account] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;
         }
@@ -175,10 +169,6 @@ contract HydraDelegation is
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);
-    }
-
-    function _isDelegateWithVesting(VestingPosition memory position) private view returns (bool) {
-        return position.start == block.timestamp;
     }
 
     // slither-disable-next-line unused-state,naming-convention
