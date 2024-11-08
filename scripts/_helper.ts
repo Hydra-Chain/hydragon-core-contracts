@@ -16,7 +16,12 @@ export async function getTransactionsByBlock(blockNumber: number) {
   return block;
 }
 // ------------------------- Decode the input data of a transaction -------------------------
-export async function decodeTransaction(_contractAddress: string, _transactionHash: string, _functionName: string) {
+export async function decodeTransaction(
+  _contractName: string,
+  _contractAddress: string,
+  _transactionHash: string,
+  _functionName: string
+) {
   // Step 1: Get the transaction details
   const transaction = await provider.getTransaction(_transactionHash);
   if (!transaction) {
@@ -24,7 +29,7 @@ export async function decodeTransaction(_contractAddress: string, _transactionHa
     return;
   }
   // Step 2: Decode the input data using the contract's details
-  const Contract = await ethers.getContractFactory("RewardPool");
+  const Contract = await ethers.getContractFactory(_contractName);
   const contractInstance = Contract.attach(_contractAddress);
   const decodedData = contractInstance.interface.decodeFunctionData(_functionName, transaction.data);
   return decodedData;
