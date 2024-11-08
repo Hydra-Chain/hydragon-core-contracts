@@ -32,6 +32,8 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
         if (vestedStakingPositions[msg.sender].isInVestingCycle()) {
             revert StakeRequirement({src: "stakeWithVesting", msg: "ALREADY_IN_VESTING_CYCLE"});
         }
+        // Claim the rewards before opening a new position, to avoid locking them during vesting cycle
+        if (unclaimedRewards(msg.sender) != 0) _claimStakingRewards(msg.sender);
 
         uint256 duration = durationWeeks * 1 weeks;
         vestedStakingPositions[msg.sender] = VestingPosition({
