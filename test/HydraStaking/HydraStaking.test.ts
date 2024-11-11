@@ -28,11 +28,12 @@ export function RunHydraStakingTests(): void {
 
         expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
 
-        // Liquid Delegation
+        // Vested Staking
         expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(0);
-        expect(await hydraStaking.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
-
         expect(await hydraStaking.DENOMINATOR()).to.equal(DENOMINATOR);
+
+        // Liquid Delegation
+        expect(await hydraStaking.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
 
         // Withdrawable
         expect(await hydraStaking.withdrawWaitPeriod()).to.equal(0);
@@ -118,8 +119,10 @@ export function RunHydraStakingTests(): void {
         ).to.be.true;
         expect(await hydraStaking.lastDistribution()).to.not.equal(0);
 
-        // Liquid Delegation
+        // Vested Staking
         expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(133);
+
+        // Liquid Delegation
         expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);
 
         // Withdrawable
