@@ -301,6 +301,7 @@ export interface Fixtures {
     (): Promise<{
       hydraChain: HydraChain;
       hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       validatorToBan: SignerWithAddress;
     }>;
   };
@@ -308,6 +309,7 @@ export interface Fixtures {
     (): Promise<{
       hydraChain: HydraChain;
       hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegation;
       inBanProcessValidator: SignerWithAddress;
     }>;
   };

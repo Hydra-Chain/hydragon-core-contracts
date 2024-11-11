@@ -50,4 +50,19 @@ interface IInspector {
      * @param validator Address of the validator
      */
     function banValidator(address validator) external;
+
+    /**
+     * @notice Returns if a ban process is initiated for a given validator
+     * @param account The address of the validator
+     * @return Returns true if the ban is initiated
+     */
+    function banIsInitiated(address account) external view returns (bool);
+
+    // _______________ Public functions _______________
+
+    /**
+     * @notice Returns true if a ban can be finally executed for a given validator
+     * @param account The address of the validator
+     */
+    function isSubjectToFinishBan(address account) external view returns (bool);
 }

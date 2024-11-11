@@ -115,11 +115,17 @@ abstract contract Inspector is IInspector, ValidatorManager {
         banThreshold = newThreshold;
     }
 
+    /**
+     * @inheritdoc IInspector
+     */
+    function banIsInitiated(address validator) external view returns (bool) {
+        return bansInitiated[validator] != 0;
+    }
+
     // _______________ Public functions _______________
 
     /**
-     * @notice Returns true if a ban can be finally executed for a given validator
-     * @dev override this function to apply your custom rules
+     * @inheritdoc IInspector
      */
     function isSubjectToFinishBan(address account) public view returns (bool) {
         // check if the owner (governance) is calling
@@ -137,9 +143,9 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
     /**
      * @notice Returns if a ban process can be initiated for a given validator
-     * @dev override this function to apply your custom rules
+     * @dev funtion is overriden in the hydra chain contract
      * @param account The address of the validator
-     * @return Returns true if the validator is subject to a ban
+     * @return Returns true if the validator is subject to initiate ban
      */
     function isSubjectToInitiateBan(address account) public virtual returns (bool);
 

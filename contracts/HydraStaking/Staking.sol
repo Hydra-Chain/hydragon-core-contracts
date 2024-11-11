@@ -4,11 +4,12 @@ pragma solidity 0.8.17;
 import {Unauthorized} from "../common/Errors.sol";
 import {Governed} from "../common/Governed/Governed.sol";
 import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
+import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
 
-contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, RewardWalletConnector {
+contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalculatorConnector, RewardWalletConnector {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
 
@@ -26,10 +27,12 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
         uint256 _newMinStake,
         address _aprCalculatorAddr,
         address _rewardWalletAddr,
+        address _hydraChainAddr,
         address _governance
     ) internal onlyInitializing {
         __Governed_init(_governance);
         __Withdrawal_init(_governance);
+        __HydraChainConnector_init(_hydraChainAddr);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
         __RewardWalletConnector_init(_rewardWalletAddr);
         __Staking_init_unchained(_newMinStake);
@@ -42,6 +45,11 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
 
     // _______________ Modifiers _______________
 
+    /**
+     * @notice Modifier that checks if the staker meets the current min-stake.
+     * @dev This state is determined by the minimum stake required. If the min stake is increased,
+     * The staker needs to meet the new min stake requirement so he can continue having new delegators or top up delegations.
+     */
     modifier onlyActiveStaker(address staker) {
         if (stakeOf(staker) < minStake) {
             revert Unauthorized("INACTIVE_STAKER");
@@ -106,6 +114,8 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
      * @param amount The amount to stake
      */
     function _stake(address account, uint256 amount) internal virtual {
+        if (_isBanIntiated(account)) revert Unauthorized("BAN_INITIATED");
+
         uint256 currentBalance = stakeOf(account);
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
 
@@ -125,6 +135,8 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
         address account,
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
+        if (_isBanIntiated(account)) revert Unauthorized("BAN_INITIATED");
+
         uint256 accountStake = stakeOf(account);
         if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
@@ -167,6 +179,14 @@ contract Staking is IStaking, Governed, Withdrawal, APRCalculatorConnector, Rewa
         stakingRewards[staker].taken += rewards;
 
         emit StakingRewardsClaimed(staker, rewards);
+    }
+
+    /**
+     * @notice Check if the ban is initiated for the given account
+     * @param account The address of the account
+     */
+    function _isBanIntiated(address account) internal view returns (bool) {
+        return hydraChainContract.banIsInitiated(account);
     }
 
     // _______________ Private functions _______________

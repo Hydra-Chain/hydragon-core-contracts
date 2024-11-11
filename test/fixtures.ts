@@ -712,7 +712,9 @@ async function votedValidatorsStateFixtureFunction(this: Mocha.Context) {
 }
 
 async function validatorToBanFixtureFunction(this: Mocha.Context) {
-  const { hydraChain, systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+  const { hydraChain, systemHydraChain, hydraStaking, hydraDelegation } = await loadFixture(
+    this.fixtures.stakedValidatorsStateFixture
+  );
 
   const validator = this.signers.validators[0];
 
@@ -748,18 +750,22 @@ async function validatorToBanFixtureFunction(this: Mocha.Context) {
   return {
     hydraChain,
     hydraStaking,
+    hydraDelegation,
     validatorToBan: validator,
   };
 }
 
 async function banInitiatedFixtureFunction(this: Mocha.Context) {
-  const { hydraChain, hydraStaking, validatorToBan } = await loadFixture(this.fixtures.validatorToBanFixture);
+  const { hydraChain, hydraStaking, validatorToBan, hydraDelegation } = await loadFixture(
+    this.fixtures.validatorToBanFixture
+  );
 
-  await hydraChain.connect(this.signers.governance).initiateBan(validatorToBan.address);
+  await hydraChain.initiateBan(validatorToBan.address);
 
   return {
     hydraChain,
     hydraStaking,
+    hydraDelegation,
     inBanProcessValidator: validatorToBan,
   };
 }

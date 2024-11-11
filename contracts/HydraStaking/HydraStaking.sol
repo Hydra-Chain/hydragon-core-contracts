@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
-import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
 import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
@@ -19,7 +18,6 @@ import {Staking} from "./Staking.sol";
 contract HydraStaking is
     IHydraStaking,
     System,
-    HydraChainConnector,
     RewardWalletConnector,
     Staking,
     VestedStaking,
@@ -50,8 +48,7 @@ contract HydraStaking is
         address hydraDelegationAddr,
         address rewardWalletAddr
     ) external initializer onlySystemCall {
-        __HydraChainConnector_init(hydraChainAddr);
-        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, governance);
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
         __LiquidStaking_init(newLiquidToken);
         __DelegatedStaking_init(hydraDelegationAddr);
 
@@ -159,14 +156,18 @@ contract HydraStaking is
      * @inheritdoc DelegatedStaking
      */
     function _onDelegate(address staker) internal virtual override {
-        _syncState(staker);
+        if (!_isBanIntiated(staker)) {
+            _syncState(staker);
+        }
     }
 
     /**
      * @inheritdoc DelegatedStaking
      */
     function _onUndelegate(address staker) internal virtual override {
-        _syncState(staker);
+        if (!_isBanIntiated(staker)) {
+            _syncState(staker);
+        }
     }
 
     function _executeUnstake(
