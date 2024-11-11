@@ -111,23 +111,25 @@ contract Delegation is
     function getRawDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 reward = getRawReward(staker, delegator);
         uint256 commission = delegationCommissionPerStaker[staker];
-        if (commission == 0) return reward;
+        if (commission != 0) {
+            (, reward) = _applyCommission(reward, commission);
+        }
 
-        (, uint256 rawDelegatorReward) = _applyCommission(reward, commission);
-        return rawDelegatorReward;
+        return reward;
     }
 
     /**
      * @inheritdoc IDelegation
      */
     function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
-        uint256 reward = getRawReward(staker, delegator);
-        uint256 aprReward = aprCalculatorContract.applyBaseAPR(reward);
+        uint256 rawReward = getRawReward(staker, delegator);
+        uint256 reward = aprCalculatorContract.applyBaseAPR(rawReward);
         uint256 commission = delegationCommissionPerStaker[staker];
-        if (commission == 0) return aprReward;
+        if (commission != 0) {
+            (, reward) = _applyCommission(reward, commission);
+        }
 
-        (, uint256 delegatorReward) = _applyCommission(aprReward, commission);
-        return delegatorReward;
+        return reward;
     }
 
     /**
@@ -333,19 +335,18 @@ contract Delegation is
         uint256 reward = aprCalculatorContract.applyBaseAPR(rewardIndex);
         if (reward == 0) return;
 
+        // Distribute commission to staker if available
         uint256 commission = delegationCommissionPerStaker[staker];
-        if (commission == 0) {
-            rewardWalletContract.distributeReward(delegator, reward);
-            emit DelegatorRewardsClaimed(staker, delegator, reward);
-        } else {
-            (uint256 stakerCut, uint256 delegatorReward) = _applyCommission(reward, commission);
-
+        if (commission != 0) {
+            uint256 stakerCut;
+            (stakerCut, reward) = _applyCommission(reward, commission);
             rewardWalletContract.distributeReward(staker, stakerCut);
-            rewardWalletContract.distributeReward(delegator, delegatorReward);
-
             emit CommissionClaimed(staker, delegator, stakerCut);
-            emit DelegatorRewardsClaimed(staker, delegator, delegatorReward);
         }
+
+        // Distribute reward to delegator
+        rewardWalletContract.distributeReward(delegator, reward);
+        emit DelegatorRewardsClaimed(staker, delegator, reward);
     }
 
     // slither-disable-next-line unused-state,naming-convention

@@ -13,7 +13,7 @@
 ### calculatePositionClaimableReward
 
 ```solidity
-function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
 Calculates position&#39;s claimable rewards
@@ -33,7 +33,7 @@ Calculates position&#39;s claimable rewards
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+| reward | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
 
 ### calculatePositionPenalty
 

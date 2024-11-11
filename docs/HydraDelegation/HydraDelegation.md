@@ -251,7 +251,7 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 ### calculatePositionClaimableReward
 
 ```solidity
-function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
 Calculates position&#39;s claimable rewards
@@ -271,7 +271,7 @@ Calculates position&#39;s claimable rewards
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+| reward | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
 
 ### calculatePositionPenalty
 
@@ -300,7 +300,7 @@ Calculates the penalty for the position.
 ### calculatePositionTotalReward
 
 ```solidity
-function calculatePositionTotalReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+function calculatePositionTotalReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
 Calculates the delegators&#39;s total rewards distributed (pending and claimable). Pending - such that are not matured so not claimable yet. Claimable - such that are matured and claimable.
@@ -320,7 +320,7 @@ Calculates the delegators&#39;s total rewards distributed (pending and claimable
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Pending rewards expected by the delegator from a staker (in HYDRA wei) |
+| reward | uint256 | Pending rewards expected by the delegator from a staker (in HYDRA wei) |
 
 ### changeMinDelegation
 

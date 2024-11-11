@@ -473,10 +473,8 @@ export function calculateCommissionCutFromDelegatorReward(
 ): BigNumber {
   // Calculate the factor for the percentage left after commission: (100 - commissionPercent)
   const percentFactor = BigNumber.from(100).sub(commissionPercent);
-
   // Calculate the original amount before commission was deducted
   const originalAmount = delegatorReward.mul(100).div(percentFactor);
-
   // Calculate the commission cut: commissionCut = originalAmount - finalAmount
   const commissionCut = originalAmount.sub(delegatorReward);
 

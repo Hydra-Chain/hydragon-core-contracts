@@ -594,7 +594,7 @@ export function RunHydraDelegationTests(): void {
           [expectedFinalReward, expectedFinalReward.mul(-1)]
         );
       });
-
+      // Todo: Commission
       it("should not distribute commission to the validator on claim for vested position with 0 commission", async function () {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
           this.fixtures.weeklyVestedDelegationFixture
