@@ -725,14 +725,12 @@ export function RunHydraDelegationTests(): void {
         expect(commission).to.be.gt(0);
 
         // claim & check balance
-        const balanceBefore = await this.signers.validators[0].getBalance();
         await expect(
           hydraDelegation.connect(this.signers.validators[0]).claimCommission(this.signers.validators[0].address)
         )
           .to.emit(hydraDelegation, "CommissionClaimed")
-          .withArgs(this.signers.validators[0].address, this.signers.validators[0].address, commission);
-        const balanceAfter = await this.signers.validators[0].getBalance();
-        expect(balanceAfter).to.be.eq(balanceBefore.add(commission));
+          .withArgs(this.signers.validators[0].address, this.signers.validators[0].address, commission)
+          .and.to.changeEtherBalance(this.signers.validators[0], commission);
       });
     });
 
