@@ -331,8 +331,8 @@ abstract contract VestedDelegation is
 
         // If the staker has a commission, distribute it
         if (stakerCommission != 0) {
-            rewardWalletContract.distributeReward(staker, stakerCommission);
-            emit CommissionClaimed(staker, msg.sender, stakerCommission);
+            commissionReward[staker] += stakerCommission;
+            emit CommissionDistributed(staker, msg.sender, stakerCommission);
         }
 
         rewardWalletContract.distributeReward(to, delegatorReward);

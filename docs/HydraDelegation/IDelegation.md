@@ -42,6 +42,22 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
+### claimCommission
+
+```solidity
+function claimCommission(address to) external nonpayable
+```
+
+Claims commission for staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| to | address | Address to send the commission to |
+
 ### claimDelegatorReward
 
 ```solidity
@@ -304,7 +320,25 @@ Calculates how much can be withdrawn for account at this time.
 ### CommissionClaimed
 
 ```solidity
-event CommissionClaimed(address indexed staker, address indexed delegator, uint256 amount)
+event CommissionClaimed(address indexed staker, address indexed to, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| to `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### CommissionDistributed
+
+```solidity
+event CommissionDistributed(address indexed staker, address indexed delegator, uint256 amount)
 ```
 
 
@@ -460,18 +494,13 @@ error CommissionUpdateNotAvailable()
 ### InvalidCommission
 
 ```solidity
-error InvalidCommission(uint256 commission)
+error InvalidCommission()
 ```
 
 
 
 
 
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| commission | uint256 | undefined |
 
 ### InvalidMinDelegation
 

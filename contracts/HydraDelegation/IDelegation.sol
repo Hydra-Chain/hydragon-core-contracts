@@ -6,14 +6,15 @@ import {IWithdrawal} from "../common/Withdrawal/IWithdrawal.sol";
 interface IDelegation is IWithdrawal {
     event Delegated(address indexed staker, address indexed delegator, uint256 amount);
     event Undelegated(address indexed staker, address indexed delegator, uint256 amount);
-    event CommissionClaimed(address indexed staker, address indexed delegator, uint256 amount);
+    event CommissionClaimed(address indexed staker, address indexed to, uint256 amount);
+    event CommissionDistributed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
     event CommissionUpdated(address indexed staker, uint256 newCommission);
 
+    error InvalidCommission();
     error InvalidMinDelegation();
     error CommissionUpdateNotAvailable();
-    error InvalidCommission(uint256 commission);
 
     /**
      * @notice Changes the minimum delegation amount
@@ -28,6 +29,12 @@ interface IDelegation is IWithdrawal {
      * @param newCommission New commission (100 = 100%)
      */
     function setCommission(uint256 newCommission) external;
+
+    /**
+     * @notice Claims commission for staker
+     * @param to Address to send the commission to
+     */
+    function claimCommission(address to) external;
 
     /**
      * @notice Claims rewards for delegator and commissions for staker

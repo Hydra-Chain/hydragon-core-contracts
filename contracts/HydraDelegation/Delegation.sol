@@ -33,6 +33,8 @@ contract Delegation is
     mapping(address => uint256) public delegationCommissionPerStaker;
     /// @notice Timestamp after which the commission can be updated
     mapping(address => uint256) public commissionUpdateAvailableAt;
+    /// @notice The commission reward for the staker
+    mapping(address => uint256) public commissionReward;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     /// @notice The minimum delegation amount to be delegated
@@ -80,6 +82,13 @@ contract Delegation is
      */
     function setCommission(uint256 newCommission) external {
         _setCommission(msg.sender, newCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function claimCommission(address to) external {
+        _claimCommission(msg.sender, to);
     }
 
     /**
@@ -302,13 +311,24 @@ contract Delegation is
      * @param newCommission New commission (100 = 100%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
-        if (newCommission > MAX_COMMISSION) revert InvalidCommission(newCommission);
+        if (newCommission > MAX_COMMISSION) revert InvalidCommission();
         if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
 
         commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);
+    }
+
+    /**
+     * @notice Claims rewards for a delegator
+     */
+    function _claimCommission(address staker, address to) private {
+        uint256 stakerCut = commissionReward[staker];
+        if (stakerCut == 0) revert InvalidCommission();
+
+        rewardWalletContract.distributeReward(to, stakerCut);
+        emit CommissionClaimed(staker, to, stakerCut);
     }
 
     /**
@@ -327,8 +347,8 @@ contract Delegation is
         if (commission != 0) {
             uint256 stakerCut;
             (stakerCut, reward) = _applyCommission(reward, commission);
-            rewardWalletContract.distributeReward(staker, stakerCut);
-            emit CommissionClaimed(staker, delegator, stakerCut);
+            commissionReward[staker] += stakerCut;
+            emit CommissionDistributed(staker, delegator, stakerCut);
         }
 
         // Distribute reward to delegator

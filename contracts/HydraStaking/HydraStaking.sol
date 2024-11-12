@@ -158,7 +158,7 @@ contract HydraStaking is
      * @inheritdoc DelegatedStaking
      */
     function _onDelegate(address staker) internal virtual override {
-        if (!_isBanIntiated(staker)) {
+        if (!_isBanInitiated(staker)) {
             _syncState(staker);
         }
     }
@@ -167,7 +167,7 @@ contract HydraStaking is
      * @inheritdoc DelegatedStaking
      */
     function _onUndelegate(address staker) internal virtual override {
-        if (!_isBanIntiated(staker)) {
+        if (!_isBanInitiated(staker)) {
             _syncState(staker);
         }
     }
