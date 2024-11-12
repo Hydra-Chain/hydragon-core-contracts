@@ -89,13 +89,11 @@ abstract contract VestedDelegation is
         uint256 rewardIndex = delegationPool.claimableRewards(delegator, epochNumber, balanceChangeIndex);
         reward = _applyVestingAPR(position, rewardIndex);
 
+        if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
+
         // If the full maturing period is finished, calculate also the reward made after the vesting period
         if (block.timestamp >= position.end + position.duration) {
             reward += _calcPositionAdditionalReward(delegationPool, staker, delegator, rewardIndex);
-        }
-
-        if (position.commission != 0) {
-            (, reward) = _applyCommission(reward, position.commission);
         }
 
         return reward;
@@ -114,6 +112,7 @@ abstract contract VestedDelegation is
         // if the position is still active apply the vesting APR to the generated raw reward
         if (_noRewardConditions(position)) {
             reward = _applyVestingAPR(position, getRawReward(staker, delegator));
+            if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
         } else {
             _verifyRewardsMatured(staker, position.end, epochNumber);
 
@@ -123,13 +122,11 @@ abstract contract VestedDelegation is
             // apply the vesting APR for the reward
             reward = _applyVestingAPR(position, vestingRewardIndex);
 
+            if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
+
             // the position has entered the maturing period, so, we have to calculate the additional
             // reward made after the vesting period with the base APR and current commission
             reward += _calcPositionAdditionalReward(delegationPool, staker, delegator, vestingRewardIndex);
-        }
-
-        if (position.commission != 0) {
-            (, reward) = _applyCommission(reward, position.commission);
         }
 
         return reward;
