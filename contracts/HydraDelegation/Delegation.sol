@@ -108,19 +108,6 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function getRawDelegatorReward(address staker, address delegator) external view returns (uint256) {
-        uint256 reward = getRawReward(staker, delegator);
-        uint256 commission = delegationCommissionPerStaker[staker];
-        if (commission != 0) {
-            (, reward) = _applyCommission(reward, commission);
-        }
-
-        return reward;
-    }
-
-    /**
-     * @inheritdoc IDelegation
-     */
     function getDelegatorReward(address staker, address delegator) external view returns (uint256) {
         uint256 rawReward = getRawReward(staker, delegator);
         uint256 reward = aprCalculatorContract.applyBaseAPR(rawReward);

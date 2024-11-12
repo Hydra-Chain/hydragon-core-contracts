@@ -267,29 +267,6 @@ Gets delegator&#39;s unclaimed rewards (with custom APR params)
 |---|---|---|
 | _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
-### getRawDelegatorReward
-
-```solidity
-function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
-```
-
-Gets delegator&#39;s unclaimed rewards (without custom APR params)
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| staker | address | Address of validator |
-| delegator | address | Address of delegator |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
-
 ### getRawReward
 
 ```solidity

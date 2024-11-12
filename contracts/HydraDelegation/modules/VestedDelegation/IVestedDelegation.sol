@@ -29,7 +29,7 @@ interface IVestedDelegation is IDelegation {
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
      * @param balanceChangeIndex Whether to redelegate the claimed rewards
-     * @return reward Delegator's unclaimed rewards with staker (in HYDRA wei)
+     * @return reward Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function calculatePositionClaimableReward(
         address staker,

@@ -25,6 +25,8 @@ import {
   createNewVestManager,
   calculateCommissionCutFromFinalReward,
   calculateCommissionCutFromDelegatorReward,
+  applyCommissionToReward,
+  calcExpectedPositionRewardForActivePosition,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -417,8 +419,8 @@ export function RunHydraDelegationTests(): void {
         );
 
         expect(
-          await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
-          "getRawDelegatorReward"
+          await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address),
+          "getRawReward"
         ).to.be.gt(0);
 
         // claim & check balance
@@ -449,8 +451,8 @@ export function RunHydraDelegationTests(): void {
 
         // check reward
         expect(
-          await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address),
-          "getRawDelegatorReward"
+          await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address),
+          "getRawReward"
         ).to.be.eq(0);
         expect(await hydraDelegation.withdrawable(vestManager.address), "withdrawable").to.eq(0);
       });
@@ -502,16 +504,15 @@ export function RunHydraDelegationTests(): void {
           vestManager,
           vestManagerOwner,
           delegatedValidator,
-          aprCalculator,
           rewardWallet,
         } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
-        // calculate base rewards
-        const baseReward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
-        const base = await aprCalculator.base();
-        const vestBonus = await aprCalculator.getVestingBonus(1);
-        const rsi = await aprCalculator.rsi();
-        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
+        // calculate position rewards
+        const expectedReward = await calcExpectedPositionRewardForActivePosition(
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
 
         // commit epoch, so more reward is added that must not be claimed now
         await commitEpoch(
@@ -551,12 +552,21 @@ export function RunHydraDelegationTests(): void {
           rewardWallet,
         } = await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
-        // calculate base rewards
-        const baseReward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+        // Get raw reward before vesting
+        const positionData = await hydraDelegation.vestedDelegationPositions(
+          delegatedValidator.address,
+          vestManager.address
+        );
+        const baseReward = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
+        const baseRewardAfterCommission = applyCommissionToReward(baseReward, positionData.commission);
         const base = await aprCalculator.base();
-        const vestBonus = await aprCalculator.getVestingBonus(1);
-        const rsi = await aprCalculator.rsi();
-        const expectedReward = applyVestingAPR(base, vestBonus, rsi, baseReward);
+
+        // calculate position rewards
+        const expectedReward = await calcExpectedPositionRewardForActivePosition(
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
 
         // more rewards to be distributed
         await commitEpoch(
@@ -567,9 +577,14 @@ export function RunHydraDelegationTests(): void {
           WEEK * 2 + 1
         );
 
-        const additionalReward = (
-          await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address)
-        ).sub(baseReward);
+        const validatorCurrentCommission = await hydraDelegation.delegationCommissionPerStaker(
+          delegatedValidator.address
+        );
+        const additionalRewardBeforeCommission = (
+          await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address)
+        ).sub(baseRewardAfterCommission);
+
+        const additionalReward = applyCommissionToReward(additionalRewardBeforeCommission, validatorCurrentCommission);
 
         const expectedAdditionalReward = base.mul(additionalReward).div(10000);
         const expectedFinalReward = expectedReward.add(expectedAdditionalReward);
@@ -678,7 +693,7 @@ export function RunHydraDelegationTests(): void {
           "CommissionClaimed"
         );
         const balanceAfter = await validator.getBalance();
-        expect(balanceAfter).to.be.gt(balanceBefore.add(commission).mul(99).div(100));
+        expect(balanceAfter).to.be.gt(balanceBefore.add(commission).mul(100).div(100));
         expect(balanceAfter).to.be.lt(balanceBefore.add(commission).mul(101).div(100));
       });
     });

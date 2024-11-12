@@ -176,7 +176,7 @@ export function RunVestedDelegationTests(): void {
         await time.increase(WEEK * 110);
 
         const vestingDuration = 52; // in weeks
-        const currentReward = await hydraDelegation.getRawDelegatorReward(
+        const currentReward = await hydraDelegation.getRawReward(
           this.signers.validators[2].address,
           vestManager.address
         );
@@ -201,7 +201,7 @@ export function RunVestedDelegationTests(): void {
 
         await claimPositionRewards(hydraChain, hydraDelegation, vestManager, this.delegatedValidators[0]);
 
-        const currentReward = await hydraDelegation.getRawDelegatorReward(
+        const currentReward = await hydraDelegation.getRawReward(
           this.signers.validators[2].address,
           vestManager.address
         );
@@ -308,10 +308,7 @@ export function RunVestedDelegationTests(): void {
           .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
 
         // check that there is no rewards left to claim
-        const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(
-          oldValidator.address,
-          vestManager.address
-        );
+        const rewardsAfterClaim = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
         expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
         // ensure that the position is still maturing (on time)
         const position = await hydraDelegation.vestedDelegationPositions(oldValidator.address, vestManager.address);
@@ -523,10 +520,7 @@ export function RunVestedDelegationTests(): void {
         expect(delegatedBalanceAfter, "delegatedBalanceAfter").to.be.eq(delegatedBalanceBefore.sub(cutAmount));
 
         // claimableRewards must be 0
-        const claimableRewards = await hydraDelegation.getRawDelegatorReward(
-          delegatedValidator.address,
-          vestManager.address
-        );
+        const claimableRewards = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
         // increase time so reward is available to be withdrawn
@@ -579,10 +573,7 @@ export function RunVestedDelegationTests(): void {
         expect(delegatedBalanceAfter, "delegatedBalanceAfter").to.be.eq(0);
 
         // claimableRewards must be 0
-        const claimableRewards = await hydraDelegation.getRawDelegatorReward(
-          delegatedValidator.address,
-          vestManager.address
-        );
+        const claimableRewards = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(claimableRewards, "claimableRewards").to.be.eq(0);
 
         // increase time so reward is available to be withdrawn
@@ -614,7 +605,7 @@ export function RunVestedDelegationTests(): void {
           this.epochSize
         );
 
-        const reward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+        const reward = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(reward, "reward").to.not.be.eq(0);
 
         // Finish the vesting period
@@ -642,10 +633,7 @@ export function RunVestedDelegationTests(): void {
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
 
         // ensure reward is still available for withdrawal
-        const rewardAfter = await hydraDelegation.getRawDelegatorReward(
-          delegatedValidator.address,
-          vestManager.address
-        );
+        const rewardAfter = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(rewardAfter).to.be.eq(reward);
       });
 
@@ -779,7 +767,7 @@ export function RunVestedDelegationTests(): void {
           this.epochSize
         );
 
-        const reward = await hydraDelegation.getRawDelegatorReward(delegatedValidator.address, vestManager.address);
+        const reward = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(reward, "reward").to.not.be.eq(0);
 
         // Finish the vesting period
@@ -823,10 +811,7 @@ export function RunVestedDelegationTests(): void {
         expect(await hydraDelegation.delegationOf(delegatedValidator.address, vestManager.address)).to.be.eq(0);
 
         // ensure reward is still available for withdrawal
-        const rewardAfter = await hydraDelegation.getRawDelegatorReward(
-          delegatedValidator.address,
-          vestManager.address
-        );
+        const rewardAfter = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         expect(rewardAfter).to.be.eq(reward);
       });
     });

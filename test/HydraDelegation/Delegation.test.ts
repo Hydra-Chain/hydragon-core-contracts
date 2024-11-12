@@ -288,34 +288,6 @@ export function RunDelegationTests(): void {
       expect(delegatorRewardAfterFullCut).to.eq(0);
     });
 
-    it("should change getRawDelegatorReward according to the commission", async function () {
-      const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
-
-      const delegatorReward = await hydraDelegation.getRawDelegatorReward(
-        this.signers.validators[0].address,
-        this.signers.delegator.address
-      );
-
-      expect(delegatorReward).to.gt(0);
-      expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.validators[0].address)).to.eq(0);
-      await hydraDelegation.connect(this.signers.validators[0]).setCommission(50);
-
-      const delegatorRewardAfter10Cut = await hydraDelegation.getRawDelegatorReward(
-        this.signers.validators[0].address,
-        this.signers.delegator.address
-      );
-
-      expect(delegatorRewardAfter10Cut).to.eq(delegatorReward.div(2));
-
-      time.increase(WEEK * 5); // Increase time allow commission to change
-      await hydraDelegation.connect(this.signers.validators[0]).setCommission(100);
-      const delegatorRewardAfterFullCut = await hydraDelegation.getRawDelegatorReward(
-        this.signers.validators[0].address,
-        this.signers.delegator.address
-      );
-      expect(delegatorRewardAfterFullCut).to.eq(0);
-    });
-
     it("should not change effect getRawReward on commission change", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
