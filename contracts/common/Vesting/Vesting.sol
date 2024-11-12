@@ -89,7 +89,7 @@ abstract contract Vesting is APRCalculatorConnector {
      * @param duration The duration of the vesting position
      * @return debt The debt of the vesting position
      */
-    function _calculatePostionDebt(uint256 amount, uint256 duration) internal view returns (uint256 debt) {
+    function _calculatePositionDebt(uint256 amount, uint256 duration) internal view returns (uint256 debt) {
         uint256 positionDurationInWeeks = duration / 1 weeks;
         debt = (amount * positionDurationInWeeks * vestingLiquidityDecreasePerWeek) / DENOMINATOR;
     }

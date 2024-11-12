@@ -187,7 +187,7 @@ contract HydraStaking is
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
         // the unstake amount of liquid tokens must be paid at the time of withdrawal
         // but only the leftForStaker will be automatically requested,
-        // so we have to set the unstake amount - leftForStaker as liquidity debt
+        // so we have to set the unstake amount - leftForStaker as liquidity debt that must be paid as well
         liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
     }
 
@@ -224,7 +224,7 @@ contract HydraStaking is
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
         if (_isOpeningPosition(position)) {
-            uint256 debt = _calculatePostionDebt(amount, position.duration);
+            uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[staker] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;
         }

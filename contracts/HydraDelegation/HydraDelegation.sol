@@ -115,7 +115,7 @@ contract HydraDelegation is
     function _distributeTokens(address staker, address account, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
         if (_isOpeningPosition(position)) {
-            uint256 debt = _calculatePostionDebt(amount, position.duration);
+            uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[account] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;
         }
