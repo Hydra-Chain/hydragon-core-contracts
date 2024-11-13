@@ -1078,6 +1078,17 @@ error InvalidWaitPeriod()
 
 
 
+### NoCommissionToClaim
+
+```solidity
+error NoCommissionToClaim()
+```
+
+
+
+
+
+
 ### NoWithdrawalAvailable
 
 ```solidity

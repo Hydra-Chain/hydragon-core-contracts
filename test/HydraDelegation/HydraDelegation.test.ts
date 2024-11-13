@@ -711,7 +711,7 @@ export function RunHydraDelegationTests(): void {
 
         await expect(
           hydraDelegation.connect(this.signers.delegator).claimCommission(this.signers.delegator.address)
-        ).to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission");
+        ).to.be.revertedWithCustomError(hydraDelegation, "NoCommissionToClaim");
       });
 
       it("should claim commission and set it to 0", async function () {

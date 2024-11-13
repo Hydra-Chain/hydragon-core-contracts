@@ -321,11 +321,13 @@ contract Delegation is
     }
 
     /**
-     * @notice Claims rewards for a delegator
+     * @notice Claims distributed commission for staker
+     * @param staker Address of the validator
+     * @param to Address of person to send the commission to
      */
     function _claimCommission(address staker, address to) private {
         uint256 commissionReward = distributedCommissions[staker];
-        if (commissionReward == 0) revert InvalidCommission();
+        if (commissionReward == 0) revert NoCommissionToClaim();
 
         distributedCommissions[staker] = 0;
         rewardWalletContract.distributeReward(to, commissionReward);

@@ -13,6 +13,7 @@ interface IDelegation is IWithdrawal {
     event CommissionUpdated(address indexed staker, uint256 newCommission);
 
     error InvalidCommission();
+    error NoCommissionToClaim();
     error InvalidMinDelegation();
     error CommissionUpdateNotAvailable();
 
