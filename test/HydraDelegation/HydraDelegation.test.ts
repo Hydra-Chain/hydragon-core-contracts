@@ -13,6 +13,7 @@ import {
   TABLE_DATA_REWARDS_FOR_STAKER,
   TABLE_DATA_REWARDS_FOR_DELEGATORS,
   DAY,
+  DENOMINATOR,
 } from "../constants";
 import {
   commitEpochs,
@@ -47,7 +48,10 @@ export function RunHydraDelegationTests(): void {
         expect(await hydraDelegation.MIN_DELEGATION_LIMIT()).to.equal(this.minDelegation);
 
         // Vested Delegation
+        expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(0);
         expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(hre.ethers.constants.AddressZero);
+
+        expect(await hydraDelegation.DENOMINATOR()).to.equal(DENOMINATOR);
 
         // Liquid Delegation
         expect(await hydraDelegation.liquidToken()).to.equal(hre.ethers.constants.AddressZero);
@@ -142,6 +146,7 @@ export function RunHydraDelegationTests(): void {
         ).to.be.true;
 
         // Vested Delegation
+        expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(133);
         expect(await hydraDelegation.vestingManagerFactoryContract(), "vestingManagerFactoryContract").to.equal(
           vestingManagerFactory.address
         );

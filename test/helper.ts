@@ -545,9 +545,7 @@ export async function calcExpectedPositionRewardForActivePosition(
 
 export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, delegateAmount: BigNumber) {
   const decrease = durationWeeks * 133;
-  const denominator = 10000;
-
-  return delegateAmount.sub(delegateAmount.mul(decrease).div(denominator));
+  return delegateAmount.sub(delegateAmount.mul(decrease).div(DENOMINATOR));
 }
 
 export function getCorrectVotingTimestamp() {

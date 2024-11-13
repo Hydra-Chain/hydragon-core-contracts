@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
+import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
@@ -51,6 +52,7 @@ contract HydraStaking is
         __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
         __LiquidStaking_init(newLiquidToken);
         __DelegatedStaking_init(hydraDelegationAddr);
+        __VestedStaking_init();
 
         _initialize(initialStakers);
     }
@@ -174,7 +176,7 @@ contract HydraStaking is
         address staker,
         uint256 unstakeAmount
     ) internal virtual override returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        // this will call only StateSyncStaking._unstake(), VestedStaking._unstake() and staking._unstake()
+        // this will call only StateSyncStaking._unstake(), VestedStaking._unstake() and Staking._unstake()
         // because this is the order in the Linearization of the inheritance graph
         return StateSyncStaking._unstake(staker, unstakeAmount);
     }
@@ -185,9 +187,8 @@ contract HydraStaking is
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
         // the unstake amount of liquid tokens must be paid at the time of withdrawal
         // but only the leftForStaker will be automatically requested,
-        // so we have to set the unstake amount - leftForStaker as liquidity debt
+        // so we have to set the unstake amount - leftForStaker as liquidity debt that must be paid as well
         liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
-        _syncState(staker);
     }
 
     /**
@@ -212,6 +213,23 @@ contract HydraStaking is
      */
     function _distributeStakingReward(address account, uint256 rewardIndex) internal override(Staking, VestedStaking) {
         return super._distributeStakingReward(account, rewardIndex);
+    }
+
+    /**
+     * This function is called to distribute tokens to a staker. If the staker is opening a vested position,
+     * the amount of liquid tokens distributed is decreased based on the vesting duration. Specifically, the amount is
+     * reduced by a percentage per week of vesting. The corresponding negative debt is also added to the account's liquidity debts,
+     * ensuring that the user must return the appropriate decreased amount.
+     */
+    function _distributeTokens(address staker, uint256 amount) internal virtual override {
+        VestingPosition memory position = vestedStakingPositions[staker];
+        if (_isOpeningPosition(position)) {
+            uint256 debt = _calculatePositionDebt(amount, position.duration);
+            liquidityDebts[staker] -= debt.toInt256Safe(); // Add negative debt
+            amount -= debt;
+        }
+
+        super._distributeTokens(staker, amount);
     }
 
     /**

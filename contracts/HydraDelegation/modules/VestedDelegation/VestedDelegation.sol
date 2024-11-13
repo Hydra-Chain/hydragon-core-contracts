@@ -49,6 +49,7 @@ abstract contract VestedDelegation is
     ) internal onlyInitializing {
         __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
         __HydraChainConnector_init(_hydraChainAddr);
+        __Vesting_init();
         __VestedDelegation_init_unchained();
     }
 

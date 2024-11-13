@@ -4,6 +4,7 @@ import { expect } from "chai";
 import { loadFixture, time, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 import {
+  calcLiquidTokensToDistributeOnVesting,
   calculatePenalty,
   calculatePenaltyByWeeks,
   commitEpochs,
@@ -66,6 +67,17 @@ export function RunVestedStakingTests(): void {
           .to.be.revertedWithCustomError(stakerHydraStaking, "StakeRequirement")
           .withArgs("stakeWithVesting", "ALREADY_IN_VESTING_CYCLE");
       });
+
+      it("should add debt to staker when opening a vested position", async function () {
+        const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.newVestingValidatorFixture);
+
+        const liquidTokens = calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, this.minStake);
+
+        expect(await liquidToken.balanceOf(this.staker.address)).to.be.equal(liquidTokens);
+        expect(await hydraStaking.liquidityDebts(this.staker.address)).to.be.equal(
+          this.minStake.sub(liquidTokens).mul(-1)
+        );
+      });
     });
 
     describe("decrease staking position with unstake()", function () {
@@ -77,6 +89,33 @@ export function RunVestedStakingTests(): void {
         )
           .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
           .withArgs("ONLY_HYDRA_CHAIN");
+      });
+
+      it("should lower the debt on unstake", async function () {
+        const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+
+        await hydraStaking
+          .connect(this.signers.validators[0])
+          .stakeWithVesting(VESTING_DURATION_WEEKS, { value: this.minStake.mul(2) });
+
+        const liquidTokens = calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, this.minStake.mul(2));
+        const liquidDebt = await hydraStaking.liquidityDebts(this.signers.validators[0].address);
+
+        expect(liquidDebt).to.be.equal(this.minStake.mul(2).sub(liquidTokens).mul(-1));
+
+        const ownedTokens = await hydraStaking.calculateOwedLiquidTokens(
+          this.signers.validators[0].address,
+          this.minStake.div(2)
+        );
+
+        const balanceBefore = await liquidToken.balanceOf(this.signers.validators[0].address);
+
+        await hydraStaking.connect(this.signers.validators[0]).unstake(this.minStake.div(2));
+
+        expect(await hydraStaking.liquidityDebts(this.signers.validators[0].address)).to.be.equal(0);
+        expect(await liquidToken.balanceOf(this.signers.validators[0].address)).to.be.equal(
+          balanceBefore.sub(ownedTokens)
+        );
       });
 
       it("should get staker penalty and rewards must return 0 (burned), if closing from active position", async function () {

@@ -14,11 +14,28 @@ abstract contract Vesting is APRCalculatorConnector {
 
     error FailedToBurnAmount();
 
+    uint256 public constant DENOMINATOR = 10000;
     /**
      * @notice A constant for the calculation of the weeks left of a vesting period
      * @dev Representing a week in seconds - 1
      */
     uint256 private constant WEEK_MINUS_SECOND = 604799;
+
+    /// A fraction's numerator representing the rate
+    /// at which the liquidity tokens' distribution is decreased on a weekly basis
+    uint256 public vestingLiquidityDecreasePerWeek;
+
+    // _______________ Initializer _______________
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __Vesting_init() internal onlyInitializing {
+        __Vesting_init_unchainded();
+    }
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __Vesting_init_unchainded() internal onlyInitializing {
+        vestingLiquidityDecreasePerWeek = 133; // 0.0133
+    }
 
     // _______________ Internal functions _______________
 
@@ -64,6 +81,25 @@ abstract contract Vesting is APRCalculatorConnector {
         }
 
         return (reward * bonus) / divider;
+    }
+
+    /**
+     * @notice Function that calculates the debt vesting position
+     * @param amount The amount of tokens for the position
+     * @param duration The duration of the vesting position
+     * @return debt The debt of the vesting position
+     */
+    function _calculatePositionDebt(uint256 amount, uint256 duration) internal view returns (uint256 debt) {
+        uint256 positionDurationInWeeks = duration / 1 weeks;
+        debt = (amount * positionDurationInWeeks * vestingLiquidityDecreasePerWeek) / DENOMINATOR;
+    }
+
+    /**
+     * Returns whether if we have just opened a vesting position
+     * @param position The vesting position of the account
+     */
+    function _isOpeningPosition(VestingPosition memory position) internal view returns (bool) {
+        return position.start == block.timestamp;
     }
 
     // slither-disable-next-line unused-state,naming-convention
