@@ -315,10 +315,9 @@ abstract contract VestedDelegation is
 
         // Handle additional rewards if the vesting period has ended
         if (block.timestamp >= position.end + position.duration) {
-            uint256 baseCommission = delegationCommissionPerStaker[staker];
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
             additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
-
+            uint256 baseCommission = delegationCommissionPerStaker[staker];
             if (baseCommission != 0) {
                 uint256 additionalCommission;
                 (additionalCommission, additionalReward) = _applyCommission(additionalReward, baseCommission);
