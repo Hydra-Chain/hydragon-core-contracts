@@ -136,4 +136,23 @@ export function RunValidatorsDataTests(): void {
 
     expect(await hydraChain.getTotalVotingPower()).to.deep.equal(20);
   });
+
+  it("should emit event on syncValidatorsData", async function () {
+    const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+    const validatorsData = [{ validator: this.signers.validators[1].address, votingPower: 12 }];
+    await expect(hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData)).to.emit(
+      hydraChain,
+      "ValidatorsDataSynced"
+    );
+  });
+
+  it("should return if we pass empty validators data", async function () {
+    const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+    await expect(hydraChain.connect(this.signers.system).syncValidatorsData([])).to.not.emit(
+      hydraChain,
+      "ValidatorsDataSynced"
+    );
+  });
 }
