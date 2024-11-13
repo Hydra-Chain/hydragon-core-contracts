@@ -405,28 +405,6 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
-### commissionReward
-
-```solidity
-function commissionReward(address) external view returns (uint256)
-```
-
-The commission reward for the staker
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### commissionUpdateAvailableAt
 
 ```solidity
@@ -568,6 +546,28 @@ Distributes rewards to delegators.
 | staker | address | Address of the validator |
 | reward | uint256 | Amount of rewards to distribute |
 | epochId | uint256 | Epoch ID |
+
+### distributedCommissions
+
+```solidity
+function distributedCommissions(address) external view returns (uint256)
+```
+
+The commission reward for the staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### getDelegationPoolParamsHistory
 

@@ -331,7 +331,7 @@ abstract contract VestedDelegation is
 
         // If the staker has a commission, distribute it
         if (stakerCommission != 0) {
-            commissionReward[staker] += stakerCommission;
+            distributedCommissions[staker] += stakerCommission;
             emit CommissionDistributed(staker, msg.sender, stakerCommission);
         }
 

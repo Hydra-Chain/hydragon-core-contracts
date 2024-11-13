@@ -153,28 +153,6 @@ Claims rewards for delegator and commissions for staker
 |---|---|---|
 | staker | address | Address of the validator |
 
-### commissionReward
-
-```solidity
-function commissionReward(address) external view returns (uint256)
-```
-
-The commission reward for the staker
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### commissionUpdateAvailableAt
 
 ```solidity
@@ -281,6 +259,28 @@ Keeps the delegation pools
 | supply | uint256 | undefined |
 | virtualSupply | uint256 | undefined |
 | magnifiedRewardPerShare | uint256 | undefined |
+
+### distributedCommissions
+
+```solidity
+function distributedCommissions(address) external view returns (uint256)
+```
+
+The commission reward for the staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### getDelegatorReward
 

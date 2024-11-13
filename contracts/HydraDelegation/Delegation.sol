@@ -34,7 +34,7 @@ contract Delegation is
     /// @notice Timestamp after which the commission can be updated
     mapping(address => uint256) public commissionUpdateAvailableAt;
     /// @notice The commission reward for the staker
-    mapping(address => uint256) public commissionReward;
+    mapping(address => uint256) public distributedCommissions;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     /// @notice The minimum delegation amount to be delegated
@@ -324,11 +324,12 @@ contract Delegation is
      * @notice Claims rewards for a delegator
      */
     function _claimCommission(address staker, address to) private {
-        uint256 stakerCut = commissionReward[staker];
-        if (stakerCut == 0) revert InvalidCommission();
+        uint256 commissionReward = distributedCommissions[staker];
+        if (commissionReward == 0) revert InvalidCommission();
 
-        rewardWalletContract.distributeReward(to, stakerCut);
-        emit CommissionClaimed(staker, to, stakerCut);
+        distributedCommissions[staker] = 0;
+        rewardWalletContract.distributeReward(to, commissionReward);
+        emit CommissionClaimed(staker, to, commissionReward);
     }
 
     /**
@@ -347,7 +348,7 @@ contract Delegation is
         if (commission != 0) {
             uint256 stakerCut;
             (stakerCut, reward) = _applyCommission(reward, commission);
-            commissionReward[staker] += stakerCut;
+            distributedCommissions[staker] += stakerCut;
             emit CommissionDistributed(staker, delegator, stakerCut);
         }
 
