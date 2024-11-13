@@ -308,25 +308,24 @@ abstract contract VestedDelegation is
 
         if (reward == 0) return;
 
-        uint256 delegatorReward;
         uint256 stakerCommission;
+        if (position.commission != 0) {
+            (stakerCommission, reward) = _applyCommission(reward, position.commission);
+        }
+
         // Handle additional rewards if the vesting period has ended
         if (block.timestamp >= position.end + position.duration) {
             uint256 baseCommission = delegationCommissionPerStaker[staker];
             uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            delegatorReward = aprCalculatorContract.applyBaseAPR(additionalReward);
+            additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
 
             if (baseCommission != 0) {
-                (stakerCommission, delegatorReward) = _applyCommission(delegatorReward, baseCommission);
+                (uint256 stakerCut, uint256 rewardLeft) = _applyCommission(additionalReward, baseCommission);
+                reward += rewardLeft;
+                stakerCommission += stakerCut;
+            } else {
+                reward += additionalReward;
             }
-        }
-
-        if (position.commission != 0) {
-            (uint256 stakerCut, uint256 rewardAfterCut) = _applyCommission(reward, position.commission);
-            delegatorReward += rewardAfterCut;
-            stakerCommission += stakerCut;
-        } else {
-            delegatorReward += reward;
         }
 
         // If the staker has a commission, distribute it
@@ -335,8 +334,8 @@ abstract contract VestedDelegation is
             emit CommissionDistributed(staker, msg.sender, stakerCommission);
         }
 
-        rewardWalletContract.distributeReward(to, delegatorReward);
-        emit PositionRewardClaimed(msg.sender, staker, delegatorReward);
+        rewardWalletContract.distributeReward(to, reward);
+        emit PositionRewardClaimed(msg.sender, staker, reward);
     }
 
     // _______________ Public functions _______________
