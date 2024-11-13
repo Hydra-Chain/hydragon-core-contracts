@@ -44,12 +44,6 @@ contract HydraDelegation is
         __Delegation_init(governance, rewardWalletAddr, initialStakers, initialCommission);
         __LiquidDelegation_init(liquidToken);
         __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
-
-        _initialize();
-    }
-
-    function _initialize() private {
-        vestingLiquidityDecreasePerWeek = 133; // 0.0133
     }
 
     // _______________ External functions _______________
@@ -125,9 +119,6 @@ contract HydraDelegation is
     ) internal virtual override(Delegation, VestedDelegation) {
         super._withdrawDelegation(staker, delegation, delegator, amount);
     }
-
-    // _______________ Private functions _______________
-
 
     // slither-disable-next-line unused-state,naming-convention
     uint256[50] private __gap;

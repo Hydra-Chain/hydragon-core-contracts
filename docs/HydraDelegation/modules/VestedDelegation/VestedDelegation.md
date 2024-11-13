@@ -44,6 +44,23 @@ function DENOMINATOR() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### MAX_COMMISSION
+
+```solidity
+function MAX_COMMISSION() external view returns (uint256)
+```
+
+A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_DELEGATION_LIMIT
 
 ```solidity
