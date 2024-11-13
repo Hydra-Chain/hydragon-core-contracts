@@ -320,12 +320,12 @@ abstract contract VestedDelegation is
             additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
 
             if (baseCommission != 0) {
-                (uint256 stakerCut, uint256 rewardLeft) = _applyCommission(additionalReward, baseCommission);
-                reward += rewardLeft;
-                stakerCommission += stakerCut;
-            } else {
-                reward += additionalReward;
+                uint256 additionalCommission;
+                (additionalCommission, additionalReward) = _applyCommission(additionalReward, baseCommission);
+                stakerCommission += additionalCommission;
             }
+
+            reward += additionalReward;
         }
 
         // If the staker has a commission, distribute it
