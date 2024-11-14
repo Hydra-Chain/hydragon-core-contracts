@@ -563,7 +563,7 @@ export function RunHydraDelegationTests(): void {
         );
         const baseReward = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         const baseRewardAfterCommission = applyCommissionToReward(baseReward, positionData.commission);
-        const base = await aprCalculator.base();
+        const base = await aprCalculator.BASE_APR();
 
         // calculate position rewards
         const expectedReward = await calcExpectedPositionRewardForActivePosition(

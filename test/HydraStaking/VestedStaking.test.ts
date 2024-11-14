@@ -44,7 +44,7 @@ export function RunVestedStakingTests(): void {
         const start = await time.latest();
         expect(vestingData.start, "start").to.be.equal(start);
         expect(vestingData.end, "end").to.be.equal(start + vestingDuration);
-        expect(vestingData.base, "base").to.be.equal(await aprCalculator.base());
+        expect(vestingData.base, "base").to.be.equal(await aprCalculator.BASE_APR());
         expect(vestingData.vestBonus, "vestBonus").to.be.equal(await aprCalculator.getVestingBonus(10));
         expect(vestingData.rsiBonus, "rsiBonus").to.be.equal(await aprCalculator.rsi());
 

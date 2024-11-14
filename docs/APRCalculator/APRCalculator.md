@@ -10,6 +10,23 @@
 
 ## Methods
 
+### BASE_APR
+
+```solidity
+function BASE_APR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### DEFAULT_ADMIN_ROLE
 
 ```solidity
@@ -61,23 +78,6 @@ function FAST_SMA() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### INITIAL_BASE_APR
-
-```solidity
-function INITIAL_BASE_APR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### MANAGER_ROLE
 
 ```solidity
@@ -94,23 +94,6 @@ function MANAGER_ROLE() external view returns (bytes32)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes32 | undefined |
-
-### MAX_BASE_APR
-
-```solidity
-function MAX_BASE_APR() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 ### MAX_MACRO_FACTOR
 
@@ -285,7 +268,7 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 ### applyBaseAPR
 
 ```solidity
-function applyBaseAPR(uint256 amount) external view returns (uint256)
+function applyBaseAPR(uint256 amount) external pure returns (uint256)
 ```
 
 Applies the base APR for the given amount
@@ -347,23 +330,6 @@ function averageGain() external view returns (uint256)
 
 ```solidity
 function averageLoss() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### base
-
-```solidity
-function base() external view returns (uint256)
 ```
 
 
@@ -441,7 +407,7 @@ function disabledBonusesUpdates() external view returns (bool)
 ### getBaseAPR
 
 ```solidity
-function getBaseAPR() external view returns (uint256)
+function getBaseAPR() external pure returns (uint256)
 ```
 
 Returns base APR
@@ -801,22 +767,6 @@ function rsi() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### setBase
-
-```solidity
-function setBase(uint256 newBase) external nonpayable
-```
-
-Sets new base APR
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newBase | uint256 | new base APR |
-
 ### smaFastSum
 
 ```solidity
@@ -1076,17 +1026,6 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
-
-### BaseAPRTooHigh
-
-```solidity
-error BaseAPRTooHigh()
-```
-
-
-
-
-
 
 ### GuardAlreadyDisabled
 

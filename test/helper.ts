@@ -386,7 +386,7 @@ export async function attachAddressToVestingManager(address: string) {
 }
 
 export async function applyMaxReward(aprCalculator: APRCalculator, reward: BigNumber) {
-  const base = await aprCalculator.base();
+  const base = await aprCalculator.BASE_APR();
   const rsi = await aprCalculator.rsi();
   const vestBonus = await aprCalculator.getVestingBonus(52);
 

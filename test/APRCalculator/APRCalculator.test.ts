@@ -6,10 +6,9 @@ import {
   DENOMINATOR,
   ERRORS,
   FAST_SMA,
-  INITIAL_BASE_APR,
+  BASE_APR,
   INITIAL_DEFAULT_MACRO_FACTOR,
   INITIAL_PRICE,
-  MAX_BASE_APR,
   MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
   MIN_MACRO_FACTOR,
@@ -27,10 +26,8 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
-        expect(await aprCalculator.base()).to.equal(0);
-        expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
-        expect(await aprCalculator.MAX_BASE_APR()).to.equal(MAX_BASE_APR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
+        expect(await aprCalculator.BASE_APR()).to.equal(BASE_APR);
 
         // RSIndex
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
@@ -79,7 +76,6 @@ export function RunAPRCalculatorTests(): void {
 
         expect(await aprCalculator.hasRole(managerRole, this.signers.governance.address)).to.be.true;
         expect(await aprCalculator.hasRole(adminRole, this.signers.governance.address)).to.be.true;
-        expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
 
         // Macro Factor
         expect(await aprCalculator.defaultMacroFactor()).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);
@@ -127,7 +123,7 @@ export function RunAPRCalculatorTests(): void {
       it("should get max APR", async function () {
         const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        const base = await aprCalculator.base();
+        const base = await aprCalculator.BASE_APR();
         const macroFactor = await aprCalculator.MAX_MACRO_FACTOR();
         const vestingBonus = await aprCalculator.getVestingBonus(52);
         const rsiBonus = await aprCalculator.MAX_RSI_BONUS();
@@ -147,34 +143,6 @@ export function RunAPRCalculatorTests(): void {
         const maxYearlyReward = totalStaked.mul(maxAPR.nominator).div(maxAPR.denominator);
 
         expect(await aprCalculator.getMaxYearlyReward(totalStaked)).to.be.equal(maxYearlyReward);
-      });
-    });
-
-    describe("Set base", function () {
-      it("should revert when trying to set base without manager role", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-        const managerRole = await aprCalculator.MANAGER_ROLE();
-
-        await expect(aprCalculator.setBase(1500)).to.be.revertedWith(
-          ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
-        );
-      });
-
-      it("should revert set base if too big", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await expect(aprCalculator.connect(this.signers.governance).setBase(8500)).to.be.revertedWithCustomError(
-          aprCalculator,
-          "BaseAPRTooHigh"
-        );
-      });
-
-      it("should set base", async function () {
-        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
-
-        await aprCalculator.connect(this.signers.governance).setBase(1500);
-
-        expect(await aprCalculator.base()).to.be.equal(1500);
       });
     });
 
