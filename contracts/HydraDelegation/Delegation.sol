@@ -31,6 +31,8 @@ contract Delegation is
 
     /// @notice The commission per staker in percentage
     mapping(address => uint256) public delegationCommissionPerStaker;
+    /// @notice The pending commission per staker in percentage
+    mapping(address => uint256) public pendingCommissionPerStaker;
     /// @notice Timestamp after which the commission can be updated
     mapping(address => uint256) public commissionUpdateAvailableAt;
     /// @notice The commission reward for the staker
@@ -82,8 +84,15 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function setCommission(uint256 newCommission) external {
-        _setCommission(msg.sender, newCommission);
+    function setPendingCommission(uint256 newCommission) external {
+        _setPendingCommission(msg.sender, newCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function applyPendingCommission() external {
+        _applyPendingCommission(msg.sender);
     }
 
     /**
@@ -323,18 +332,42 @@ contract Delegation is
     }
 
     /**
+     * @notice Set commission for staker from pending commission
+     * @param staker Address of the validator
+     */
+    function _applyPendingCommission(address staker) private {
+        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
+
+        uint256 pendingCommission = pendingCommissionPerStaker[staker];
+        if (pendingCommission == delegationCommissionPerStaker[staker]) revert AppliedCommissionIsTheSame();
+
+        delegationCommissionPerStaker[staker] = pendingCommission;
+
+        emit CommissionUpdated(staker, pendingCommission);
+    }
+
+    /**
+     * @notice Set pending commission for staker (to be applied later)
+     * @param staker Address of the validator
+     * @param newCommission New commission (100 = 100%)
+     */
+    function _setPendingCommission(address staker, uint256 newCommission) private {
+        if (newCommission > MAX_COMMISSION) revert InvalidCommission();
+
+        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
+        pendingCommissionPerStaker[staker] = newCommission;
+
+        emit PendingCommissionAdded(staker, newCommission);
+    }
+
+    /**
      * @notice Set commission for staker
      * @param staker Address of the validator
      * @param newCommission New commission (100 = 100%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission();
-        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
-
-        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
         delegationCommissionPerStaker[staker] = newCommission;
-
-        emit CommissionUpdated(staker, newCommission);
     }
 
     /**

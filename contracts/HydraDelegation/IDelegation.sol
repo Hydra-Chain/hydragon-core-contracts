@@ -11,11 +11,13 @@ interface IDelegation is IWithdrawal {
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
     event CommissionUpdated(address indexed staker, uint256 newCommission);
+    event PendingCommissionAdded(address indexed staker, uint256 newCommission);
 
     error InvalidCommission();
     error NoCommissionToClaim();
     error InvalidMinDelegation();
     error CommissionRewardLocked();
+    error AppliedCommissionIsTheSame();
     error CommissionUpdateNotAvailable();
 
     /**
@@ -26,11 +28,18 @@ interface IDelegation is IWithdrawal {
     function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
-     * @notice Sets commission for staker.
-     * @dev Anyone can set commission, but if the caller is not active validator, it will not have any effect.
+     * @notice Sets pending commission for staker.
+     * @dev The pending commission can be applied by after 30 days.
+     * @dev The pending commission can be updated any time, but the 30 days period will be reset.
      * @param newCommission New commission (100 = 100%)
      */
-    function setCommission(uint256 newCommission) external;
+    function setPendingCommission(uint256 newCommission) external;
+
+    /**
+     * @notice Applies pending commission for staker.
+     * @dev Anyone can apply commission, but if the caller is not active validator, it will not have any effect.
+     */
+    function applyPendingCommission() external;
 
     /**
      * @notice Claims commission for staker
