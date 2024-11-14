@@ -24,6 +24,8 @@ abstract contract Vesting is APRCalculatorConnector {
     /// A fraction's numerator representing the rate
     /// at which the liquidity tokens' distribution is decreased on a weekly basis
     uint256 public vestingLiquidityDecreasePerWeek;
+    /// The penalty decrease per week
+    uint256 public penaltyDecreasePerWeek;
 
     // _______________ Initializer _______________
 
@@ -35,6 +37,7 @@ abstract contract Vesting is APRCalculatorConnector {
     // solhint-disable-next-line func-name-mixedcase
     function __Vesting_init_unchainded() internal onlyInitializing {
         vestingLiquidityDecreasePerWeek = 133; // 0.0133
+        penaltyDecreasePerWeek = 50; // 0.5%
     }
 
     // _______________ Internal functions _______________
@@ -60,7 +63,7 @@ abstract contract Vesting is APRCalculatorConnector {
     function _calcPenalty(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
         uint256 leftPeriod = position.end - block.timestamp;
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = 100 * leftWeeks; // 1% * left weeks
+        uint256 bps = penaltyDecreasePerWeek * leftWeeks; // 0.5% per week after initilization
 
         return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }

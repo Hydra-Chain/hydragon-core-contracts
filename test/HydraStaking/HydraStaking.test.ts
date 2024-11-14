@@ -30,6 +30,7 @@ export function RunHydraStakingTests(): void {
 
         // Vested Staking
         expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(0);
+        expect(await hydraStaking.penaltyDecreasePerWeek()).to.equal(0);
         expect(await hydraStaking.DENOMINATOR()).to.equal(DENOMINATOR);
 
         // Liquid Delegation
@@ -121,6 +122,7 @@ export function RunHydraStakingTests(): void {
 
         // Vested Staking
         expect(await hydraStaking.vestingLiquidityDecreasePerWeek()).to.equal(133);
+        expect(await hydraStaking.penaltyDecreasePerWeek()).to.equal(50);
 
         // Liquid Delegation
         expect(await hydraStaking.liquidToken(), "liquidToken").to.equal(liquidToken.address);

@@ -44,6 +44,23 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
+### penaltyDecreasePerWeek
+
+```solidity
+function penaltyDecreasePerWeek() external view returns (uint256)
+```
+
+The penalty decrease per week
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### vestingLiquidityDecreasePerWeek
 
 ```solidity

@@ -9,6 +9,14 @@ struct StakingRewardsHistory {
 
 interface IVestedStaking {
     /**
+     * @dev Should be called by the Governance.
+     * @notice sets a new penalty rate
+     * @param newRate the new penalty rate
+     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
+     */
+    function setPenaltyDecreasePerWeek(uint256 newRate) external;
+
+    /**
      * @notice Stakes sent amount with vesting period.
      * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.
      */

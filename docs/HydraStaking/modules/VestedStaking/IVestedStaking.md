@@ -117,6 +117,22 @@ Returns historical records of the staking rewards of the user
 |---|---|---|
 | _0 | StakingRewardsHistory[] | stakingRewardsHistory array with the historical records of the staking rewards of the user |
 
+### setPenaltyDecreasePerWeek
+
+```solidity
+function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
+```
+
+sets a new penalty rate
+
+*Should be called by the Governance.the rate should be between 10 and 150 (0.1% and 1.5%)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRate | uint256 | the new penalty rate |
+
 ### stakeWithVesting
 
 ```solidity

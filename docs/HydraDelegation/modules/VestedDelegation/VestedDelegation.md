@@ -788,6 +788,23 @@ function owner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### penaltyDecreasePerWeek
+
+```solidity
+function penaltyDecreasePerWeek() external view returns (uint256)
+```
+
+The penalty decrease per week
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### pendingOwner
 
 ```solidity
@@ -904,6 +921,22 @@ Sets commission for staker.
 | Name | Type | Description |
 |---|---|---|
 | newCommission | uint256 | New commission (100 = 100%) |
+
+### setPenaltyDecreasePerWeek
+
+```solidity
+function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
+```
+
+sets a new penalty rate
+
+*Only callable by the adminthe rate should be between 10 and 150 (0.1% and 1.5%)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRate | uint256 | the new penalty rate |
 
 ### stakerDelegationCommission
 
@@ -1616,6 +1649,17 @@ error NoWithdrawalAvailable()
 
 ```solidity
 error NotVestingManager()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
 ```
 
 

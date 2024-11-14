@@ -52,6 +52,7 @@ export function RunHydraDelegationTests(): void {
         expect(await hydraDelegation.MIN_DELEGATION_LIMIT()).to.equal(this.minDelegation);
 
         // Vested Delegation
+        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.equal(0);
         expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(0);
         expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(hre.ethers.constants.AddressZero);
 
@@ -148,6 +149,7 @@ export function RunHydraDelegationTests(): void {
         ).to.be.true;
 
         // Vested Delegation
+        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.equal(50);
         expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(133);
         expect(await hydraDelegation.vestingManagerFactoryContract(), "vestingManagerFactoryContract").to.equal(
           vestingManagerFactory.address

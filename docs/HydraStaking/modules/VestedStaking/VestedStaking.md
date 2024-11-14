@@ -352,6 +352,23 @@ function owner() external view returns (address)
 |---|---|---|
 | _0 | address | undefined |
 
+### penaltyDecreasePerWeek
+
+```solidity
+function penaltyDecreasePerWeek() external view returns (uint256)
+```
+
+The penalty decrease per week
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### pendingOwner
 
 ```solidity
@@ -452,6 +469,22 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 | Name | Type | Description |
 |---|---|---|
 | _0 | contract IRewardWallet | undefined |
+
+### setPenaltyDecreasePerWeek
+
+```solidity
+function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
+```
+
+sets a new penalty rate
+
+*Should be called by the Governance.the rate should be between 10 and 150 (0.1% and 1.5%)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRate | uint256 | the new penalty rate |
 
 ### stake
 
@@ -1028,6 +1061,17 @@ error NoRewards()
 
 ```solidity
 error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
 ```
 
 

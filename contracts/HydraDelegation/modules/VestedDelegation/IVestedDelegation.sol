@@ -23,6 +23,14 @@ interface IVestedDelegation is IDelegation {
     error NotVestingManager();
 
     /**
+     * @notice sets a new penalty rate
+     * @param newRate the new penalty rate
+     * @dev Only callable by the admin
+     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
+     */
+    function setPenaltyDecreasePerWeek(uint256 newRate) external;
+
+    /**
      * @notice Calculates position's claimable rewards
      * @param staker Address of validator
      * @param delegator Address of delegator

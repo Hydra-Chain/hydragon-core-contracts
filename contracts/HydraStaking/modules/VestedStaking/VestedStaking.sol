@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
+import {PenaltyRateOutOfRange} from "../../../common/Errors.sol";
 import {Staking} from "../../Staking.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 
@@ -31,6 +32,14 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IVestedStaking
+     */
+    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyOwner {
+        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
+        penaltyDecreasePerWeek = newRate;
+    }
 
     /**
      * @inheritdoc IVestedStaking

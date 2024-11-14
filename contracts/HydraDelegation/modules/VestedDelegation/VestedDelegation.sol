@@ -6,7 +6,7 @@ import {Withdrawal} from "../../../common/Withdrawal/Withdrawal.sol";
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
-import {DelegateRequirement} from "../../../common/Errors.sol";
+import {DelegateRequirement, PenaltyRateOutOfRange} from "../../../common/Errors.sol";
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
@@ -68,6 +68,14 @@ abstract contract VestedDelegation is
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IVestedDelegation
+     */
+    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
+        penaltyDecreasePerWeek = newRate;
+    }
 
     /**
      * @inheritdoc IVestedDelegation
