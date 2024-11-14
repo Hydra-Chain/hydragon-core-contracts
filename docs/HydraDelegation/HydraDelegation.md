@@ -1094,15 +1094,15 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 |---|---|---|
 | _0 | contract IRewardWallet | undefined |
 
-### setCommission
+### setPendingCommission
 
 ```solidity
-function setCommission(uint256 newCommission) external nonpayable
+function setPendingCommission(uint256 newCommission) external nonpayable
 ```
 
-Sets commission for staker.
+Sets pending commission for staker.
 
-*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+*The pending commission can be applied by after 30 days.The pending commission can be updated any time, but the 30 days period will be reset.*
 
 #### Parameters
 

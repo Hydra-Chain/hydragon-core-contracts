@@ -10,6 +10,17 @@
 
 ## Methods
 
+### applyPendingCommission
+
+```solidity
+function applyPendingCommission() external nonpayable
+```
+
+Applies pending commission for staker.
+
+*Anyone can apply commission, but if the caller is not active validator, it will not have any effect.*
+
+
 ### calculateOwedLiquidTokens
 
 ```solidity
@@ -551,15 +562,15 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
-### setCommission
+### setPendingCommission
 
 ```solidity
-function setCommission(uint256 newCommission) external nonpayable
+function setPendingCommission(uint256 newCommission) external nonpayable
 ```
 
-Sets commission for staker.
+Sets pending commission for staker.
 
-*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+*The pending commission can be applied by after 30 days.The pending commission can be updated any time, but the 30 days period will be reset.*
 
 #### Parameters
 
@@ -858,6 +869,23 @@ event DelegatorRewardsClaimed(address indexed staker, address indexed delegator,
 | staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+### PendingCommissionAdded
+
+```solidity
+event PendingCommissionAdded(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### PositionCut
 
