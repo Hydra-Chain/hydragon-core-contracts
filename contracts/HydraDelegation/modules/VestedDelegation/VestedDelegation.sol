@@ -77,7 +77,7 @@ abstract contract VestedDelegation is
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
-    ) external view returns (uint256) {
+    ) external view returns (uint256 reward) {
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         if (_noRewardConditions(position)) {
             return 0;
@@ -87,11 +87,13 @@ abstract contract VestedDelegation is
 
         DelegationPool storage delegationPool = delegationPools[staker];
         uint256 rewardIndex = delegationPool.claimableRewards(delegator, epochNumber, balanceChangeIndex);
-        uint256 reward = _applyVestingAPR(position, rewardIndex);
+        reward = _applyVestingAPR(position, rewardIndex);
+
+        if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
 
         // If the full maturing period is finished, calculate also the reward made after the vesting period
         if (block.timestamp >= position.end + position.duration) {
-            reward += _calcPositionAdditionalReward(delegationPool, delegator, rewardIndex);
+            reward += _calcPositionAdditionalReward(delegationPool, staker, delegator, rewardIndex);
         }
 
         return reward;
@@ -105,24 +107,27 @@ abstract contract VestedDelegation is
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
-    ) external view returns (uint256) {
+    ) external view returns (uint256 reward) {
         VestingPosition memory position = vestedDelegationPositions[staker][delegator];
         // if the position is still active apply the vesting APR to the generated raw reward
         if (_noRewardConditions(position)) {
-            return _applyVestingAPR(position, getRawDelegatorReward(staker, delegator));
+            reward = _applyVestingAPR(position, getRawReward(staker, delegator));
+            if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
+        } else {
+            _verifyRewardsMatured(staker, position.end, epochNumber);
+
+            DelegationPool storage delegationPool = delegationPools[staker];
+            // get the reward index for the vesting period
+            uint256 vestingRewardIndex = delegationPool.claimableRewards(delegator, epochNumber, balanceChangeIndex);
+            // apply the vesting APR for the reward
+            reward = _applyVestingAPR(position, vestingRewardIndex);
+
+            if (position.commission != 0) (, reward) = _applyCommission(reward, position.commission);
+
+            // the position has entered the maturing period, so, we have to calculate the additional
+            // reward made after the vesting period with the base APR and current commission
+            reward += _calcPositionAdditionalReward(delegationPool, staker, delegator, vestingRewardIndex);
         }
-
-        _verifyRewardsMatured(staker, position.end, epochNumber);
-
-        DelegationPool storage delegationPool = delegationPools[staker];
-        // get the reward index for the vesting period
-        uint256 vestingRewardIndex = delegationPool.claimableRewards(delegator, epochNumber, balanceChangeIndex);
-        // apply the vesting APR for the reward
-        uint256 reward = _applyVestingAPR(position, vestingRewardIndex);
-
-        // the position has entered the maturing period, so, we have to calculate the additional
-        //  reward made after the vesting period
-        reward += _calcPositionAdditionalReward(delegationPool, delegator, vestingRewardIndex);
 
         return reward;
     }
@@ -202,7 +207,8 @@ abstract contract VestedDelegation is
             end: block.timestamp + duration,
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
-            rsiBonus: uint248(aprCalculatorContract.getRSIBonus())
+            rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
+            commission: delegationCommissionPerStaker[staker]
         });
 
         _delegate(staker, msg.sender, msg.value);
@@ -241,7 +247,8 @@ abstract contract VestedDelegation is
             end: oldPosition.end,
             base: oldPosition.base,
             vestBonus: oldPosition.vestBonus,
-            rsiBonus: oldPosition.rsiBonus
+            rsiBonus: oldPosition.rsiBonus,
+            commission: delegationCommissionPerStaker[newStaker]
         });
 
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position
@@ -299,16 +306,34 @@ abstract contract VestedDelegation is
         uint256 reward = delegationPool.claimRewards(msg.sender, epochNumber, balanceChangeIndex);
         reward = _applyVestingAPR(position, reward);
 
-        // If the full maturing period is finished, withdraw also the reward made after the vesting period
-        if (block.timestamp >= position.end + position.duration) {
-            uint256 additionalReward = delegationPool.claimRewards(msg.sender);
-            reward += aprCalculatorContract.applyBaseAPR(additionalReward);
-        }
-
         if (reward == 0) return;
 
-        rewardWalletContract.distributeReward(to, reward);
+        uint256 stakerCommission;
+        if (position.commission != 0) {
+            (stakerCommission, reward) = _applyCommission(reward, position.commission);
+        }
 
+        // Handle additional rewards if the vesting period has ended
+        if (block.timestamp >= position.end + position.duration) {
+            uint256 additionalReward = delegationPool.claimRewards(msg.sender);
+            additionalReward = aprCalculatorContract.applyBaseAPR(additionalReward);
+            uint256 baseCommission = delegationCommissionPerStaker[staker];
+            if (baseCommission != 0) {
+                uint256 additionalCommission;
+                (additionalCommission, additionalReward) = _applyCommission(additionalReward, baseCommission);
+                stakerCommission += additionalCommission;
+            }
+
+            reward += additionalReward;
+        }
+
+        // If the staker has a commission, distribute it
+        if (stakerCommission != 0) {
+            distributedCommissions[staker] += stakerCommission;
+            emit CommissionDistributed(staker, msg.sender, stakerCommission);
+        }
+
+        rewardWalletContract.distributeReward(to, reward);
         emit PositionRewardClaimed(msg.sender, staker, reward);
     }
 
@@ -335,7 +360,7 @@ abstract contract VestedDelegation is
             return false;
         }
 
-        if (getRawDelegatorReward(staker, delegator) != 0) {
+        if (getRawReward(staker, delegator) != 0) {
             return false;
         }
 
@@ -441,11 +466,16 @@ abstract contract VestedDelegation is
      */
     function _calcPositionAdditionalReward(
         DelegationPool storage delegationPool,
+        address staker,
         address delegator,
         uint256 vestedRewardIndex
     ) private view returns (uint256 reward) {
         uint256 additionalRewardIndex = delegationPool.claimableRewards(delegator) - vestedRewardIndex;
         reward = aprCalculatorContract.applyBaseAPR(additionalRewardIndex);
+        uint256 commission = delegationCommissionPerStaker[staker];
+        if (commission != 0) {
+            (, reward) = _applyCommission(reward, commission);
+        }
     }
 
     /**

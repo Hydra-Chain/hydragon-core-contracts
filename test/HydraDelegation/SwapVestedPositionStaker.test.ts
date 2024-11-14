@@ -91,7 +91,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     const oldValidator = this.signers.validators[0];
     const newValidator = this.signers.validators[1];
 
-    const rawRewardBefore = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    const rawRewardBefore = await hydraDelegation.getRawReward(newValidator.address, vestManager.address);
     expect(rawRewardBefore, "rawRewardBefore").to.be.eq(0);
 
     await vestManager
@@ -103,7 +103,7 @@ export function RunSwapVestedPositionStakerTests(): void {
 
     // commit 7 epochs with 1 day increase before each, so, the first position gonna start maturing
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 1, this.epochSize, DAY);
-    const rawRewardNew = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    const rawRewardNew = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
     expect(rawRewardNew, "rawReward").to.be.gt(0); // make sure we have rewards maturing even while position is active
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 6, this.epochSize, DAY);
 
@@ -210,13 +210,17 @@ export function RunSwapVestedPositionStakerTests(): void {
       .withArgs("vesting", ERRORS.swap.newPositionUnavailable);
   });
 
-  it("should transfer old position parameters to the new one on successful swap", async function () {
+  it("should transfer old position parameters (except commission) to the new one on successful swap", async function () {
     const { systemHydraChain, hydraDelegation, vestManager, vestManagerOwner, hydraStaking } = await loadFixture(
       this.fixtures.vestManagerFixture
     );
 
     const validator = this.signers.validators[0];
     const newValidator = this.signers.validators[1];
+
+    // change commission to make sure it is not transferred
+    time.increase(30 * DAY); // increase time to be able to change commission
+    await hydraDelegation.connect(newValidator).setCommission(50);
 
     const vestingDuration = 2; // 2 weeks
     await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
@@ -231,13 +235,15 @@ export function RunSwapVestedPositionStakerTests(): void {
     const oldPosition = await hydraDelegation.vestedDelegationPositions(validator.address, vestManager.address);
     const newPosition = await hydraDelegation.vestedDelegationPositions(newValidator.address, vestManager.address);
 
-    // expect new position to be like the old position
+    // expect new position to be like the old position (except commission)
     expect(oldPosition.duration, "oldPosition.duration").to.be.eq(newPosition.duration);
     expect(oldPosition.start, "oldPosition.start").to.be.eq(newPosition.start);
     expect(oldPosition.end, "oldPosition.end").to.be.eq(newPosition.end);
     expect(oldPosition.base, "oldPosition.base").to.be.eq(newPosition.base);
     expect(oldPosition.vestBonus, "oldPosition.vestBonus").to.be.eq(newPosition.vestBonus);
     expect(oldPosition.rsiBonus, "oldPosition.rsiBonus").to.be.eq(newPosition.rsiBonus);
+    expect(oldPosition.commission, "oldPosition.commission").to.not.be.eq(newPosition.commission);
+    expect(newPosition.commission, "newPosition.commission").to.be.eq(50);
   });
 
   it("should start earning rewards on new position after swap", async function () {
@@ -246,7 +252,7 @@ export function RunSwapVestedPositionStakerTests(): void {
 
     await commitEpoch(systemHydraChain, hydraStaking, [oldValidator, newValidator], this.epochSize);
 
-    const rewardsAfterSwap = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    const rewardsAfterSwap = await hydraDelegation.getRawReward(newValidator.address, vestManager.address);
     expect(rewardsAfterSwap, "rewardsAfterSwap").to.be.gt(0);
   });
 
@@ -289,7 +295,7 @@ export function RunSwapVestedPositionStakerTests(): void {
 
     await commitEpoch(systemHydraChain, hydraStaking, [oldValidator, newValidator], this.epochSize);
 
-    const rewardsAfterSwap = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    const rewardsAfterSwap = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
     expect(rewardsAfterSwap, "rewardsAfterSwap").to.be.eq(rewardsBeforeSwap).and.to.be.gt(0);
   });
 
@@ -307,7 +313,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     // commit epochs and increase time to make the position matured & commit epochs
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK);
 
-    const rewardsBeforeClaim = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    const rewardsBeforeClaim = await hydraDelegation.getRawReward(newValidator.address, vestManager.address);
     expect(rewardsBeforeClaim).to.be.gt(0);
 
     // prepare params for call
@@ -341,7 +347,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     // commit epochs and increase time to make the position matured & commit epochs
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 4, this.epochSize, WEEK);
 
-    const rewardsBeforeClaim = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    const rewardsBeforeClaim = await hydraDelegation.getRawReward(newValidator.address, vestManager.address);
     expect(rewardsBeforeClaim).to.be.gt(0);
 
     // prepare params for call
@@ -356,7 +362,7 @@ export function RunSwapVestedPositionStakerTests(): void {
       .connect(vestManagerOwner)
       .claimVestedPositionReward(newValidator.address, epochNum, balanceChangeIndex);
 
-    const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(newValidator.address, vestManager.address);
+    const rewardsAfterClaim = await hydraDelegation.getRawReward(newValidator.address, vestManager.address);
     expect(rewardsAfterClaim).to.be.eq(0);
   });
 
@@ -374,7 +380,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     // commit epochs and increase time to make the position matured & commit epochs
     await commitEpochs(systemHydraChain, hydraStaking, [oldValidator, newValidator], 3, this.epochSize, WEEK);
 
-    const rewardsBeforeClaim = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    const rewardsBeforeClaim = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
     expect(rewardsBeforeClaim, "rewardsBeforeClaim").to.be.gt(0);
 
     // prepare params for call
@@ -389,7 +395,7 @@ export function RunSwapVestedPositionStakerTests(): void {
       .connect(vestManagerOwner)
       .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
 
-    const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    const rewardsAfterClaim = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
     expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
   });
 
@@ -447,7 +453,7 @@ export function RunSwapVestedPositionStakerTests(): void {
       .claimVestedPositionReward(oldValidator.address, epochNum, balanceChangeIndex);
 
     // check that there is no rewards left to claim
-    const rewardsAfterClaim = await hydraDelegation.getRawDelegatorReward(oldValidator.address, vestManager.address);
+    const rewardsAfterClaim = await hydraDelegation.getRawReward(oldValidator.address, vestManager.address);
     expect(rewardsAfterClaim, "rewardsAfterClaim").to.be.eq(0);
     // ensure that the position is maturing
     const position = await hydraDelegation.vestedDelegationPositions(oldValidator.address, vestManager.address);

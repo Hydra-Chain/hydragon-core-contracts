@@ -158,7 +158,7 @@ contract HydraStaking is
      * @inheritdoc DelegatedStaking
      */
     function _onDelegate(address staker) internal virtual override {
-        if (!_isBanIntiated(staker)) {
+        if (!_isBanInitiated(staker)) {
             _syncState(staker);
         }
     }
@@ -167,7 +167,7 @@ contract HydraStaking is
      * @inheritdoc DelegatedStaking
      */
     function _onUndelegate(address staker) internal virtual override {
-        if (!_isBanIntiated(staker)) {
+        if (!_isBanInitiated(staker)) {
             _syncState(staker);
         }
     }
@@ -270,15 +270,13 @@ contract HydraStaking is
 
         uint256 stake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
-        uint256 commission = _getStakerDelegationCommission(uptime.validator);
         // slither-disable-next-line divide-before-multiply
         uint256 stakerRewardIndex = (fullRewardIndex * (stake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
             stake,
             delegation,
-            stakerRewardIndex,
-            commission
+            stakerRewardIndex
         );
 
         _distributeStakingReward(uptime.validator, stakerShares);
@@ -297,21 +295,18 @@ contract HydraStaking is
      * @param stakedBalance The staked balance
      * @param delegatedBalance The delegated balance
      * @param totalReward The total reward
-     * @param commission The commission of the staker
      */
     function _calculateStakerAndDelegatorShares(
         uint256 stakedBalance,
         uint256 delegatedBalance,
-        uint256 totalReward,
-        uint256 commission
+        uint256 totalReward
     ) private pure returns (uint256, uint256) {
         if (stakedBalance == 0) return (0, totalReward);
         if (delegatedBalance == 0) return (totalReward, 0);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
         uint256 delegatorReward = totalReward - stakerReward;
-        uint256 stakerCommission = (commission * delegatorReward) / 100;
 
-        return (stakerReward + stakerCommission, delegatorReward - stakerCommission);
+        return (stakerReward, delegatorReward);
     }
 
     /**

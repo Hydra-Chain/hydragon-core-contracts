@@ -8,4 +8,5 @@ struct VestingPosition {
     uint256 base;
     uint256 vestBonus;
     uint256 rsiBonus;
+    uint256 commission;
 }

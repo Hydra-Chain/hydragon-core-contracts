@@ -466,6 +466,35 @@ export async function getDelegatorPositionReward(
   return await hydraDelegation.calculatePositionClaimableReward(validator, delegator, epochNum, balanceChangeIndex);
 }
 
+// function that calculates the commission cut from the delegator reward
+export function calculateCommissionCutFromDelegatorReward(
+  delegatorReward: BigNumber,
+  commissionPercent: BigNumber
+): BigNumber {
+  // Calculate the factor for the percentage left after commission: (100 - commissionPercent)
+  const percentFactor = BigNumber.from(100).sub(commissionPercent);
+  // Calculate the original amount before commission was deducted
+  const originalAmount = delegatorReward.mul(100).div(percentFactor);
+  // Calculate the commission cut: commissionCut = originalAmount - finalAmount
+  const commissionCut = originalAmount.sub(delegatorReward);
+
+  return commissionCut;
+}
+
+// function that calculates the commission cut from the final reward
+export function calculateCommissionCutFromFinalReward(finalAmount: BigNumber, commissionPercent: BigNumber): BigNumber {
+  if (commissionPercent.isZero()) return BigNumber.from(0);
+  const commissionCut = finalAmount.mul(commissionPercent).div(100);
+  return commissionCut;
+}
+
+// return the amount after commission is applied
+export function applyCommissionToReward(amount: BigNumber, commission: BigNumber): BigNumber {
+  if (commission.isZero()) return amount;
+  const commissionCut = amount.mul(commission).div(100);
+  return amount.sub(commissionCut);
+}
+
 // function that returns whether a position is matured or not
 async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
   const currChainTs = await time.latest();
@@ -538,9 +567,10 @@ export async function calcExpectedPositionRewardForActivePosition(
   delegator: string
 ) {
   const position = await hydraDelegation.vestedDelegationPositions(validator, delegator);
-  const rawReward = await hydraDelegation.getRawDelegatorReward(validator, delegator);
+  const rawReward = await hydraDelegation.getRawReward(validator, delegator);
+  const reward = applyCommissionToReward(rawReward, position.commission);
 
-  return applyVestingAPR(position.base, position.vestBonus, position.rsiBonus, rawReward);
+  return applyVestingAPR(position.base, position.vestBonus, position.rsiBonus, reward);
 }
 
 export function calcLiquidTokensToDistributeOnVesting(durationWeeks: number, delegateAmount: BigNumber) {

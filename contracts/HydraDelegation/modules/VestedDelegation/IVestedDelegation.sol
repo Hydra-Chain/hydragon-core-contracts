@@ -29,14 +29,14 @@ interface IVestedDelegation is IDelegation {
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
      * @param balanceChangeIndex Whether to redelegate the claimed rewards
-     * @return Delegator's unclaimed rewards with staker (in HYDRA wei)
+     * @return reward Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function calculatePositionClaimableReward(
         address staker,
         address delegator,
         uint256 epochNumber,
         uint256 balanceChangeIndex
-    ) external view returns (uint256);
+    ) external view returns (uint256 reward);
 
     /**
      * @notice Calculates the delegators's total rewards distributed (pending and claimable).
@@ -133,6 +133,7 @@ interface IVestedDelegation is IDelegation {
 
     /**
      * @notice Claims reward for the vest manager (delegator) and distribute it to the desired address.
+     * Also commission is distributed to the validator.
      * @dev It can be called only by the vest manager
      * @param staker Validator to claim from
      * @param to Address to transfer the reward to

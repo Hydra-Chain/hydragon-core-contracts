@@ -1142,7 +1142,7 @@ async function swappedPositionFixtureFunction(this: Mocha.Context) {
 
   await commitEpoch(systemHydraChain, hydraStaking, [validator, newValidator], this.epochSize);
 
-  const rewardsBeforeSwap = await hydraDelegation.getRawDelegatorReward(validator.address, vestManager.address);
+  const rewardsBeforeSwap = await hydraDelegation.getRawReward(validator.address, vestManager.address);
 
   // swap
   await vestManager.connect(vestManagerOwner).swapVestedPositionStaker(validator.address, newValidator.address);

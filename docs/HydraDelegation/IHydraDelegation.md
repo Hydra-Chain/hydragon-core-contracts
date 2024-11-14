@@ -36,7 +36,7 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 ### calculatePositionClaimableReward
 
 ```solidity
-function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256)
+function calculatePositionClaimableReward(address staker, address delegator, uint256 epochNumber, uint256 balanceChangeIndex) external view returns (uint256 reward)
 ```
 
 Calculates position&#39;s claimable rewards
@@ -56,7 +56,7 @@ Calculates position&#39;s claimable rewards
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards with staker (in HYDRA wei) |
+| reward | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
 ### calculatePositionPenalty
 
@@ -139,13 +139,29 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
+### claimCommission
+
+```solidity
+function claimCommission(address to) external nonpayable
+```
+
+Claims commission for staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| to | address | Address to send the commission to |
+
 ### claimDelegatorReward
 
 ```solidity
 function claimDelegatorReward(address staker) external nonpayable
 ```
 
-Claims rewards for delegator for staker
+Claims rewards for delegator and commissions for staker
 
 
 
@@ -161,7 +177,7 @@ Claims rewards for delegator for staker
 function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external nonpayable
 ```
 
-Claims reward for the vest manager (delegator) and distribute it to the desired address.
+Claims reward for the vest manager (delegator) and distribute it to the desired address. Also commission is distributed to the validator.
 
 *It can be called only by the vest manager*
 
@@ -180,7 +196,7 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker and claims rewards.
+Delegates sent amount to staker, claims rewards and validator comission.
 
 
 
@@ -277,7 +293,7 @@ Gets the delegation pool params history for a staker and delegator.
 function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (with custom APR params)
 
 
 
@@ -318,13 +334,13 @@ Gets the RPS values for a staker in a given epoch range.
 |---|---|---|
 | _0 | RPS[] | undefined |
 
-### getRawDelegatorReward
+### getRawReward
 
 ```solidity
-function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
+function getRawReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
+Returns the raw reward before applying the commission and APR
 
 
 
@@ -332,14 +348,14 @@ Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | Address of validator |
-| delegator | address | Address of delegator |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
+| _0 | uint256 | Raw reward for the delegator before applying APR and commission |
 
 ### isActiveDelegatePosition
 
@@ -619,7 +635,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender and claims rewards.
+Undelegates amount from staker for sender, claims rewards and validator comission.
 
 
 
@@ -688,6 +704,42 @@ Calculates how much can be withdrawn for account at this time.
 
 
 ## Events
+
+### CommissionClaimed
+
+```solidity
+event CommissionClaimed(address indexed staker, address indexed to, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| to `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### CommissionDistributed
+
+```solidity
+event CommissionDistributed(address indexed staker, address indexed delegator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
 
 ### CommissionUpdated
 
@@ -890,21 +942,27 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
-### InvalidCommission
+### CommissionUpdateNotAvailable
 
 ```solidity
-error InvalidCommission(uint256 commission)
+error CommissionUpdateNotAvailable()
 ```
 
 
 
 
 
-#### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| commission | uint256 | undefined |
+### InvalidCommission
+
+```solidity
+error InvalidCommission()
+```
+
+
+
+
+
 
 ### InvalidMinDelegation
 
@@ -921,6 +979,17 @@ error InvalidMinDelegation()
 
 ```solidity
 error InvalidWaitPeriod()
+```
+
+
+
+
+
+
+### NoCommissionToClaim
+
+```solidity
+error NoCommissionToClaim()
 ```
 
 

@@ -114,7 +114,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
      * @param amount The amount to stake
      */
     function _stake(address account, uint256 amount) internal virtual {
-        if (_isBanIntiated(account)) revert Unauthorized("BAN_INITIATED");
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
 
         uint256 currentBalance = stakeOf(account);
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
@@ -135,7 +135,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
         address account,
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        if (_isBanIntiated(account)) revert Unauthorized("BAN_INITIATED");
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
 
         uint256 accountStake = stakeOf(account);
         if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
@@ -185,7 +185,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
      * @notice Check if the ban is initiated for the given account
      * @param account The address of the account
      */
-    function _isBanIntiated(address account) internal view returns (bool) {
+    function _isBanInitiated(address account) internal view returns (bool) {
         return hydraChainContract.banIsInitiated(account);
     }
 

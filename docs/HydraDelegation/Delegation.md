@@ -27,6 +27,23 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### MAX_COMMISSION
+
+```solidity
+function MAX_COMMISSION() external view returns (uint256)
+```
+
+A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MIN_DELEGATION_LIMIT
 
 ```solidity
@@ -104,13 +121,29 @@ Changes the withdrawal wait period.
 |---|---|---|
 | newWaitPeriod | uint256 | The new withdrawal wait period. MUST be longer than a single epoch (in some realistic worst-case scenario) in case somebody&#39;s stake needs to be penalized. |
 
+### claimCommission
+
+```solidity
+function claimCommission(address to) external nonpayable
+```
+
+Claims commission for staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| to | address | Address to send the commission to |
+
 ### claimDelegatorReward
 
 ```solidity
 function claimDelegatorReward(address staker) external nonpayable
 ```
 
-Claims rewards for delegator for staker
+Claims rewards for delegator and commissions for staker
 
 
 
@@ -120,13 +153,35 @@ Claims rewards for delegator for staker
 |---|---|---|
 | staker | address | Address of the validator |
 
+### commissionUpdateAvailableAt
+
+```solidity
+function commissionUpdateAvailableAt(address) external view returns (uint256)
+```
+
+Timestamp after which the commission can be updated
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### delegate
 
 ```solidity
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker and claims rewards.
+Delegates sent amount to staker, claims rewards and validator comission.
 
 
 
@@ -135,6 +190,28 @@ Delegates sent amount to staker and claims rewards.
 | Name | Type | Description |
 |---|---|---|
 | staker | address | Validator to delegate to |
+
+### delegationCommissionPerStaker
+
+```solidity
+function delegationCommissionPerStaker(address) external view returns (uint256)
+```
+
+The commission per staker in percentage
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### delegationOf
 
@@ -183,13 +260,35 @@ Keeps the delegation pools
 | virtualSupply | uint256 | undefined |
 | magnifiedRewardPerShare | uint256 | undefined |
 
+### distributedCommissions
+
+```solidity
+function distributedCommissions(address) external view returns (uint256)
+```
+
+The commission reward for the staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getDelegatorReward
 
 ```solidity
 function getDelegatorReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
+Gets delegator&#39;s unclaimed rewards (with custom APR params)
 
 
 
@@ -206,13 +305,13 @@ Gets delegator&#39;s unclaimed rewards (with custom APR params applied)
 |---|---|---|
 | _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
 
-### getRawDelegatorReward
+### getRawReward
 
 ```solidity
-function getRawDelegatorReward(address staker, address delegator) external view returns (uint256)
+function getRawReward(address staker, address delegator) external view returns (uint256)
 ```
 
-Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
+Returns the raw reward before applying the commission and APR
 
 
 
@@ -220,14 +319,14 @@ Gets delegator&#39;s unclaimed rewards (without custom APR params applied)
 
 | Name | Type | Description |
 |---|---|---|
-| staker | address | Address of validator |
-| delegator | address | Address of delegator |
+| staker | address | Address of the validator |
+| delegator | address | Address of the delegator |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | Delegator&#39;s unclaimed rewards per staker (in HYDRA wei) |
+| _0 | uint256 | Raw reward for the delegator before applying APR and commission |
 
 ### getRoleAdmin
 
@@ -460,6 +559,44 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 |---|---|---|
 | _0 | contract IRewardWallet | undefined |
 
+### setCommission
+
+```solidity
+function setCommission(uint256 newCommission) external nonpayable
+```
+
+Sets commission for staker.
+
+*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
+
+### stakerDelegationCommission
+
+```solidity
+function stakerDelegationCommission(address staker) external view returns (uint256)
+```
+
+Returns commission for staker.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | commission Commission for staker |
+
 ### supportsInterface
 
 ```solidity
@@ -543,7 +680,7 @@ function transferOwnership(address newOwner) external nonpayable
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender and claims rewards.
+Undelegates amount from staker for sender, claims rewards and validator comission.
 
 
 
@@ -612,6 +749,59 @@ Calculates how much can be withdrawn for account at this time.
 
 
 ## Events
+
+### CommissionClaimed
+
+```solidity
+event CommissionClaimed(address indexed staker, address indexed to, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| to `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### CommissionDistributed
+
+```solidity
+event CommissionDistributed(address indexed staker, address indexed delegator, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| delegator `indexed` | address | undefined |
+| amount  | uint256 | undefined |
+
+### CommissionUpdated
+
+```solidity
+event CommissionUpdated(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### Delegated
 
@@ -827,6 +1017,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 ## Errors
 
+### CommissionUpdateNotAvailable
+
+```solidity
+error CommissionUpdateNotAvailable()
+```
+
+
+
+
+
+
 ### DelegateRequirement
 
 ```solidity
@@ -844,6 +1045,17 @@ error DelegateRequirement(string src, string msg)
 | src | string | undefined |
 | msg | string | undefined |
 
+### InvalidCommission
+
+```solidity
+error InvalidCommission()
+```
+
+
+
+
+
+
 ### InvalidMinDelegation
 
 ```solidity
@@ -859,6 +1071,17 @@ error InvalidMinDelegation()
 
 ```solidity
 error InvalidWaitPeriod()
+```
+
+
+
+
+
+
+### NoCommissionToClaim
+
+```solidity
+error NoCommissionToClaim()
 ```
 
 
