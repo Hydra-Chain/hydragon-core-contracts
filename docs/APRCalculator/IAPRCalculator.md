@@ -328,6 +328,17 @@ event RSIBonusSet(uint256 rsiBonus)
 
 ## Errors
 
+### BaseAPRTooHigh
+
+```solidity
+error BaseAPRTooHigh()
+```
+
+
+
+
+
+
 ### GuardAlreadyDisabled
 
 ```solidity

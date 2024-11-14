@@ -15,6 +15,7 @@ export const DAY = 60 * 60 * 24;
 export const WEEK = DAY * 7;
 export const VESTING_DURATION_WEEKS = 10; // in weeks
 export const INITIAL_BASE_APR = ethers.BigNumber.from(500);
+export const MAX_BASE_APR = ethers.BigNumber.from(8000);
 export const INITIAL_DEFAULT_MACRO_FACTOR = ethers.BigNumber.from(7500);
 export const MIN_MACRO_FACTOR = ethers.BigNumber.from(1250);
 export const MAX_MACRO_FACTOR = ethers.BigNumber.from(17500);

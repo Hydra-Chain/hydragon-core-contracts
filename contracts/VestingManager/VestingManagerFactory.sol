@@ -43,7 +43,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
             abi.encodeWithSelector(VestingManager(address(0)).initialize.selector, msg.sender)
         );
 
-        _storeVestManagerData(address(manager), msg.sender);
+        _storeVestingManagerData(address(manager), msg.sender);
 
         emit NewVestingManager(msg.sender, address(manager));
     }
@@ -66,12 +66,12 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
 
     /**
      * @notice Stores the vesting manager data
-     * @param vestManager Address of the vesting manager
+     * @param vestingManager Address of the vesting manager
      * @param owner Address of the vest manager owner
      */
-    function _storeVestManagerData(address vestManager, address owner) private {
-        vestingManagerOwner[vestManager] = owner;
-        userVestingManagers[owner].push(vestManager);
+    function _storeVestingManagerData(address vestingManager, address owner) private {
+        vestingManagerOwner[vestingManager] = owner;
+        userVestingManagers[owner].push(vestingManager);
     }
 
     // slither-disable-next-line unused-state,naming-convention

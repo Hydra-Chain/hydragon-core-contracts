@@ -9,6 +9,7 @@ import {
   INITIAL_BASE_APR,
   INITIAL_DEFAULT_MACRO_FACTOR,
   INITIAL_PRICE,
+  MAX_BASE_APR,
   MAX_MACRO_FACTOR,
   MAX_RSI_BONUS,
   MIN_MACRO_FACTOR,
@@ -28,6 +29,7 @@ export function RunAPRCalculatorTests(): void {
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.base()).to.equal(0);
         expect(await aprCalculator.INITIAL_BASE_APR()).to.equal(INITIAL_BASE_APR);
+        expect(await aprCalculator.MAX_BASE_APR()).to.equal(MAX_BASE_APR);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
 
         // RSIndex
@@ -155,6 +157,15 @@ export function RunAPRCalculatorTests(): void {
 
         await expect(aprCalculator.setBase(1500)).to.be.revertedWith(
           ERRORS.accessControl(this.signers.accounts[0].address.toLocaleLowerCase(), managerRole)
+        );
+      });
+
+      it("should revert set base if too big", async function () {
+        const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+        await expect(aprCalculator.connect(this.signers.governance).setBase(8500)).to.be.revertedWithCustomError(
+          aprCalculator,
+          "BaseAPRTooHigh"
         );
       });
 

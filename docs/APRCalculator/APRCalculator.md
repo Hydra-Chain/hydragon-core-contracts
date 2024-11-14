@@ -95,6 +95,23 @@ function MANAGER_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
+### MAX_BASE_APR
+
+```solidity
+function MAX_BASE_APR() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### MAX_MACRO_FACTOR
 
 ```solidity
@@ -1059,6 +1076,17 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 
 ## Errors
+
+### BaseAPRTooHigh
+
+```solidity
+error BaseAPRTooHigh()
+```
+
+
+
+
+
 
 ### GuardAlreadyDisabled
 

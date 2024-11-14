@@ -7,6 +7,7 @@ import {IAPRCalculator} from "./IAPRCalculator.sol";
 
 contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     uint256 public constant INITIAL_BASE_APR = 500;
+    uint256 public constant MAX_BASE_APR = 8000;
 
     uint256 public base;
     uint256[52] public vestingBonus;
@@ -34,6 +35,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
      * @inheritdoc IAPRCalculator
      */
     function setBase(uint256 newBase) external onlyRole(MANAGER_ROLE) {
+        if (newBase > MAX_BASE_APR) revert BaseAPRTooHigh();
         base = newBase;
     }
 

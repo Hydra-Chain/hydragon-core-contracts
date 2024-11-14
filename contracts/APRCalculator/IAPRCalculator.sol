@@ -7,6 +7,7 @@ import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 
 interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     error InvalidRSI();
+    error BaseAPRTooHigh();
 
     /**
      * @notice Sets new base APR

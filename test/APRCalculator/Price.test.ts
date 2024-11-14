@@ -2,7 +2,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { ERRORS } from "../constants";
+import { ERRORS, INITIAL_PRICES_TO_REACH_BONUSES } from "../constants";
 import { getCurrentDay } from "../helper";
 
 export function RunPriceTests(): void {
@@ -13,6 +13,38 @@ export function RunPriceTests(): void {
       await expect(aprCalculator.connect(this.signers.system).updatePrice(111, 1))
         .to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name)
         .withArgs(ERRORS.unauthorized.priceOracleArg);
+    });
+
+    it("should revert if Price Oracle gives 0", async function () {
+      const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+      // Initialize APR Calculator and set governance as price oracle
+      await aprCalculator
+        .connect(this.signers.system)
+        .initialize(
+          this.signers.governance.address,
+          hydraChain.address,
+          this.signers.governance.address,
+          INITIAL_PRICES_TO_REACH_BONUSES
+        );
+
+      await expect(aprCalculator.connect(this.signers.governance).updatePrice(0, 1152)).to.be.reverted;
+    });
+
+    it("should revert if Price Oracle gives a day that already have a price", async function () {
+      const { aprCalculator, hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
+      // Initialize APR Calculator and set governance as price oracle
+      await aprCalculator
+        .connect(this.signers.system)
+        .initialize(
+          this.signers.governance.address,
+          hydraChain.address,
+          this.signers.governance.address,
+          INITIAL_PRICES_TO_REACH_BONUSES
+        );
+
+      await expect(aprCalculator.connect(this.signers.governance).updatePrice(4, 1)).to.not.be.reverted;
+      expect(await aprCalculator.pricePerDay(1)).to.not.equal(0);
+      await expect(aprCalculator.connect(this.signers.governance).updatePrice(4, 1)).to.be.reverted;
     });
 
     it("should update price correctly", async function () {
