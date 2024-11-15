@@ -21,13 +21,14 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
      * @inheritdoc IValidatorsData
      */
     function syncValidatorsData(ValidatorPower[] calldata validatorsPower) external onlySystemCall {
-        if (validatorsPower.length == 0) {
+        uint256 arrLength = validatorsPower.length;
+        if (arrLength == 0) {
             return;
         }
 
         uint256 totalNewPower = 0;
         uint256 totalOldPower = 0;
-        for (uint256 i = 0; i < validatorsPower.length; i++) {
+        for (uint256 i = 0; i < arrLength; i++) {
             totalNewPower += validatorsPower[i].votingPower;
             totalOldPower += validatorPower[validatorsPower[i].validator];
             validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
