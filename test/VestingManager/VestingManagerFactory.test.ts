@@ -16,11 +16,11 @@ export function RunVestManagerFactoryTests(): void {
       });
 
       it("should revert when initialized without system call", async function () {
-        const { vestingManagerFactory, hydraDelegation } = await loadFixture(
+        const { vestingManagerFactory, hydraDelegation, liquidToken } = await loadFixture(
           this.fixtures.presetHydraChainStateFixture
         );
 
-        await expect(vestingManagerFactory.initialize(hydraDelegation.address))
+        await expect(vestingManagerFactory.initialize(hydraDelegation.address, liquidToken.address))
           .to.be.revertedWithCustomError(vestingManagerFactory, ERRORS.unauthorized.name)
           .withArgs(ERRORS.unauthorized.systemCallArg);
       });
@@ -32,12 +32,12 @@ export function RunVestManagerFactoryTests(): void {
       });
 
       it("should revert on re-initialization attempt", async function () {
-        const { hydraDelegation, vestingManagerFactory } = await loadFixture(
+        const { hydraDelegation, vestingManagerFactory, liquidToken } = await loadFixture(
           this.fixtures.initializedHydraChainStateFixture
         );
 
         await expect(
-          vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address)
+          vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address, liquidToken.address)
         ).to.be.revertedWith(ERRORS.initialized);
       });
     });

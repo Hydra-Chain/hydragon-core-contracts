@@ -14,13 +14,15 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
 
     /// @notice The hydra delegation contract
     IHydraDelegation public immutable HYDRA_DELEGATION;
+    IERC20 public immutable LIQUIDITY_TOKEN;
 
     // _______________ Constructor _______________
 
-    constructor(address hydraDelegationAddr) {
+    constructor(address hydraDelegationAddr, address liquidityTokenAddr) {
         // Set the HydraDelegation contract as part of the code (because immutable) when implementation is deployed.
         // That way, we don't have to set it separately in every proxy we create later.
         HYDRA_DELEGATION = IHydraDelegation(hydraDelegationAddr);
+        LIQUIDITY_TOKEN = IERC20(liquidityTokenAddr);
         _disableInitializers();
     }
 
@@ -37,8 +39,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      */
     function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable onlyOwner {
         HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(staker, durationWeeks);
-        address liquidToken = HYDRA_DELEGATION.liquidToken();
-        _sendLiquidTokens(msg.sender, IERC20(liquidToken).balanceOf(address(this)));
+        _sendLiquidTokens(msg.sender, IERC20(LIQUIDITY_TOKEN).balanceOf(address(this)));
     }
 
     /**
@@ -59,9 +60,8 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
         bytes32 r,
         bytes32 s
     ) external payable onlyOwner {
-        address liquidToken = HYDRA_DELEGATION.liquidToken();
         uint256 owedLiquidTokens = HYDRA_DELEGATION.calculateOwedLiquidTokens(address(this), amount);
-        IERC20Permit(liquidToken).permit(msg.sender, address(this), owedLiquidTokens, deadline, v, r, s);
+        IERC20Permit(address(LIQUIDITY_TOKEN)).permit(msg.sender, address(this), owedLiquidTokens, deadline, v, r, s);
         _cutVestedPosition(staker, amount, owedLiquidTokens);
     }
 
@@ -111,8 +111,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      * @param amount staked amount
      */
     function _sendLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        address liquidToken = HYDRA_DELEGATION.liquidToken();
-        IERC20(liquidToken).safeTransfer(positionOwner, amount);
+        IERC20(LIQUIDITY_TOKEN).safeTransfer(positionOwner, amount);
     }
 
     /**
@@ -121,7 +120,9 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      * @param amount Amount to be unstaked
      */
     function _fulfillLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        address liquidToken = HYDRA_DELEGATION.liquidToken();
-        IERC20(liquidToken).safeTransferFrom(positionOwner, address(this), amount);
+        IERC20(LIQUIDITY_TOKEN).safeTransferFrom(positionOwner, address(this), amount);
     }
+
+    // slither-disable-next-line unused-state,naming-convention
+    uint256[50] private __gap;
 }

@@ -154,7 +154,7 @@ Gets user vesting managers.
 ### initialize
 
 ```solidity
-function initialize(address hydraDelegationAddr) external nonpayable
+function initialize(address hydraDelegationAddr, address liquidityTokenAddr) external nonpayable
 ```
 
 
@@ -166,6 +166,7 @@ function initialize(address hydraDelegationAddr) external nonpayable
 | Name | Type | Description |
 |---|---|---|
 | hydraDelegationAddr | address | undefined |
+| liquidityTokenAddr | address | undefined |
 
 ### isVestingManager
 

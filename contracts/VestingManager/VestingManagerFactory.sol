@@ -19,12 +19,12 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
 
     // _______________ Initializer _______________
 
-    function initialize(address hydraDelegationAddr) external initializer onlySystemCall {
-        _initialize(hydraDelegationAddr);
+    function initialize(address hydraDelegationAddr, address liquidityTokenAddr) external initializer onlySystemCall {
+        _initialize(hydraDelegationAddr, liquidityTokenAddr);
     }
 
-    function _initialize(address hydraDelegationAddr) internal onlyInitializing {
-        address implementation = address(new VestingManager(hydraDelegationAddr));
+    function _initialize(address hydraDelegationAddr, address liquidityTokenAddr) internal onlyInitializing {
+        address implementation = address(new VestingManager(hydraDelegationAddr, liquidityTokenAddr));
         beacon = new UpgradeableBeacon(implementation);
     }
 

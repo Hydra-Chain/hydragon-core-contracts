@@ -27,6 +27,23 @@ The hydra delegation contract
 |---|---|---|
 | _0 | contract IHydraDelegation | undefined |
 
+### LIQUIDITY_TOKEN
+
+```solidity
+function LIQUIDITY_TOKEN() external view returns (contract IERC20)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IERC20 | undefined |
+
 ### claimVestedPositionReward
 
 ```solidity
