@@ -46,9 +46,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
     // _______________ Modifiers _______________
 
     /**
-     * @notice Modifier that checks if the staker meets the current min-stake.
-     * @dev This state is determined by the minimum stake required. If the min stake is increased,
-     * The staker needs to meet the new min stake requirement so he can continue having new delegators or top up delegations.
+     * @notice Modifier that checks if the staker has stake.
      */
     modifier onlyActiveStaker(address staker) {
         if (stakeOf(staker) == 0) {
