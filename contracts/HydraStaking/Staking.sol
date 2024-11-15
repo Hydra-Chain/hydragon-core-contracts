@@ -51,7 +51,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
      * The staker needs to meet the new min stake requirement so he can continue having new delegators or top up delegations.
      */
     modifier onlyActiveStaker(address staker) {
-        if (stakeOf(staker) < minStake) {
+        if (stakeOf(staker) == 0) {
             revert Unauthorized("INACTIVE_STAKER");
         }
 

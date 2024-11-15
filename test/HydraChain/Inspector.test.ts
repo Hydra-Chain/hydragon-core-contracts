@@ -196,13 +196,14 @@ export function RunInspectorTests(): void {
       await systemHydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
 
       const staker = this.signers.accounts[9];
+      const stake = await hydraStaking.stakeOf(staker.address);
       const vestingData = await hydraStaking.vestedStakingPositions(staker.address);
       const nextTimestamp = vestingData.start.add(WEEK);
       await time.setNextBlockTimestamp(nextTimestamp);
 
       const validatorBanPenalty = await systemHydraChain.validatorPenalty();
       // hardcode the penalty percent by 1% a week (9 weeks should be left)
-      const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, this.minStake);
+      const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, stake);
       const stakedAmount = await hydraStaking.stakeOf(staker.address);
 
       // check the staking rewards before the ban

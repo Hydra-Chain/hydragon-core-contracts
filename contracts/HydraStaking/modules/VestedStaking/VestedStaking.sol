@@ -42,6 +42,9 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
         // Claim the rewards before opening a new position, to avoid locking them during vesting cycle
         if (unclaimedRewards(msg.sender) != 0) _claimStakingRewards(msg.sender);
 
+        // Clear the staking rewards history
+        delete stakingRewardsHistory[msg.sender];
+
         uint256 duration = durationWeeks * 1 weeks;
         vestedStakingPositions[msg.sender] = VestingPosition({
             duration: duration,
@@ -124,6 +127,19 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
     }
 
     // _______________ Internal functions _______________
+
+    /**
+     * @notice Unstakes the given amount for the given account
+     * @param account The account to unstake for
+     */
+    function _stake(address account, uint256 amount) internal virtual override {
+        VestingPosition memory position = vestedStakingPositions[account];
+        if (position.isActive() && position.start != block.timestamp) {
+            revert StakeRequirement({src: "stake", msg: "POSITION_ACTIVE"});
+        }
+
+        super._stake(account, amount);
+    }
 
     /**
      * @notice Unstakes the given amount for the given account

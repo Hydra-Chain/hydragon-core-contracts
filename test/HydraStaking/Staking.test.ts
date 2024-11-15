@@ -87,6 +87,14 @@ export function RunStakingTests(): void {
         .withArgs("stake", "STAKE_TOO_LOW");
     });
 
+    it("should revert if validator is in active position", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
+
+      await expect(hydraStaking.connect(this.signers.accounts[9]).stake({ value: this.minStake.div(2) }))
+        .to.be.revertedWithCustomError(hydraStaking, "StakeRequirement")
+        .withArgs("stake", "POSITION_ACTIVE");
+    });
+
     it("should be able to stake", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
       const validator = this.signers.validators[0];

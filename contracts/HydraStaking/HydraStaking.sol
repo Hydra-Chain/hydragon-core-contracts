@@ -129,7 +129,10 @@ contract HydraStaking is
     /**
      * @inheritdoc Staking
      */
-    function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
+    function _stake(
+        address account,
+        uint256 amount
+    ) internal override(Staking, LiquidStaking, StateSyncStaking, VestedStaking) {
         if (stakeOf(account) == 0) {
             hydraChainContract.activateValidator(account);
         }
@@ -285,7 +288,7 @@ contract HydraStaking is
         _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
         // Keep history record of the staker rewards to be used on maturing vesting reward claim
-        if (stakerShares > 0) {
+        if (stakerShares != 0) {
             _saveStakerRewardData(uptime.validator, epochId);
         }
 

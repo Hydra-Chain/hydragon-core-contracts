@@ -211,18 +211,6 @@ export interface Fixtures {
       rewardWallet: RewardWallet;
     }>;
   };
-  vestingRewardsFixture: {
-    (): Promise<{
-      stakerHydraStaking: HydraStaking;
-      systemHydraChain: HydraChain;
-      bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
-      liquidToken: LiquidityToken;
-      aprCalculator: APRCalculator;
-      rewardWallet: RewardWallet;
-    }>;
-  };
   withdrawableFixture: {
     (): Promise<{
       hydraChain: HydraChain;
