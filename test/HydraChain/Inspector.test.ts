@@ -471,6 +471,26 @@ export function RunInspectorTests(): void {
         .to.not.be.reverted;
     });
 
+    it("should not ban validator if he is already banned", async function () {
+      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      // commit a couple of epochs in order to have a timestamp
+      await commitEpochs(
+        systemHydraChain,
+        hydraStaking,
+        [this.signers.validators[0], this.signers.validators[1]],
+        5, // number of epochs to commit
+        this.epochSize
+      );
+
+      await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
+        .to.not.be.reverted;
+
+      await expect(
+        systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)
+      ).to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject");
+    });
+
     it("should set bansInitiate to 0 on ban", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.banInitiatedFixtureFunction);
 

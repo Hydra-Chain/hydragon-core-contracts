@@ -67,7 +67,7 @@ abstract contract InitializedContracts is Test {
         aprCalculator.initialize(governance, address(hydraChain), address(priceOracle), prices);
 
         // ⭐️ Initialize VestingManagerFactory
-        vestingManagerFactory.initialize(address(hydraDelegation));
+        vestingManagerFactory.initialize(address(hydraDelegation), address(liquidityToken));
 
         // ⭐️ Initialize PriceOracle
         priceOracle.initialize(address(hydraChain), address(aprCalculator));

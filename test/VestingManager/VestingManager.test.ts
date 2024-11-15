@@ -8,9 +8,12 @@ export function RunVestingManagerTests(): void {
   describe("", function () {
     describe("VestingManager initializations", function () {
       it("should validate values when VestingManager is cloned", async function () {
-        const { vestManager, hydraDelegation, vestManagerOwner } = await loadFixture(this.fixtures.vestManagerFixture);
+        const { vestManager, hydraDelegation, vestManagerOwner, liquidToken } = await loadFixture(
+          this.fixtures.vestManagerFixture
+        );
 
         expect(await vestManager.HYDRA_DELEGATION()).to.equal(hydraDelegation.address);
+        expect(await vestManager.LIQUIDITY_TOKEN()).to.equal(liquidToken.address);
         expect(await vestManager.owner()).to.equal(vestManagerOwner.address);
       });
 

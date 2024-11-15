@@ -2,6 +2,7 @@ import { ethers, network } from "hardhat";
 /* eslint-disable node/no-extraneous-import */
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
+import { BigNumber } from "ethers";
 
 import * as mcl from "../../ts/mcl";
 import { CHAIN_ID, DAY, DOMAIN, ERRORS, INITIAL_PRICE, MAX_ACTIVE_VALIDATORS } from "../constants";
@@ -55,6 +56,16 @@ export function RunPriceOracleTests(): void {
         priceOracle,
         "InvalidPrice"
       );
+    });
+
+    it("should revert vote with price bigger than max uint224", async function () {
+      const { priceOracle } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      const maxUint224 = BigNumber.from(2).pow(224).sub(1);
+
+      await expect(
+        priceOracle.connect(this.signers.validators[0]).vote(maxUint224.add(1))
+      ).to.be.revertedWithCustomError(priceOracle, "InvalidPrice");
     });
 
     it("should revert when not in voting time", async function () {

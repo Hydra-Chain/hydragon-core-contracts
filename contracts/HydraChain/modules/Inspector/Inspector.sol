@@ -128,6 +128,9 @@ abstract contract Inspector is IInspector, ValidatorManager {
      * @inheritdoc IInspector
      */
     function isSubjectToFinishBan(address account) public view returns (bool) {
+        if (validators[account].status == ValidatorStatus.Banned) {
+            return false;
+        }
         // check if the owner (governance) is calling
         if (msg.sender == owner()) {
             return true;
