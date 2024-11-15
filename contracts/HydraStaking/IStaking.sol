@@ -20,6 +20,7 @@ interface IStaking is IWithdrawal {
 
     /**
      * @notice Stakes sent amount.
+     * @dev If user has active vested position, it will revert.
      */
     function stake() external payable;
 

@@ -83,7 +83,7 @@ function stake() external payable
 
 Stakes sent amount.
 
-
+*If user has active vested position, it will revert.*
 
 
 ### stakeOf
