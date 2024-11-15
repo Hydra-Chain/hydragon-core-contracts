@@ -229,6 +229,13 @@ contract HydraStaking is
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
         if (_isOpeningPosition(position)) {
+            uint256 stake = stakeOf(staker);
+            if (stake != amount) {
+                stake -= amount;
+                _collectTokens(staker, stake);
+                amount += stake;
+            }
+
             uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[staker] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;
