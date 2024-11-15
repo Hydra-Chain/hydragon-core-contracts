@@ -134,7 +134,7 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
      */
     function _stake(address account, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[account];
-        if (position.isActive() && position.start != block.timestamp) {
+        if (position.isActive() && !_isOpeningPosition(position)) {
             revert StakeRequirement({src: "stake", msg: "POSITION_ACTIVE"});
         }
 
