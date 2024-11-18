@@ -219,8 +219,9 @@ export function RunSwapVestedPositionStakerTests(): void {
     const newValidator = this.signers.validators[1];
 
     // change commission to make sure it is not transferred
+    await hydraDelegation.connect(newValidator).setPendingCommission(50);
     time.increase(30 * DAY); // increase time to be able to change commission
-    await hydraDelegation.connect(newValidator).setCommission(50);
+    await hydraDelegation.connect(newValidator).applyPendingCommission();
 
     const vestingDuration = 2; // 2 weeks
     await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {

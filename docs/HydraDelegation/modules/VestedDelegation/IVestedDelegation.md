@@ -504,6 +504,22 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
+### setInitialCommission
+
+```solidity
+function setInitialCommission(uint256 initialCommission) external nonpayable
+```
+
+Sets initial commission for staker.
+
+*the staker needs to have 0 commission and have never used pending commission*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| initialCommission | uint256 | Initial commission (100 = 100%) |
+
 ### setPendingCommission
 
 ```solidity
@@ -512,7 +528,7 @@ function setPendingCommission(uint256 newCommission) external nonpayable
 
 Sets pending commission for staker.
 
-*The pending commission can be applied by after 30 days.The pending commission can be updated any time, but the 30 days period will be reset.*
+*The pending commission can be applied by after 30 days.The pending commission can be overridden any time, but the 30 days period will be reset.*
 
 #### Parameters
 
@@ -982,10 +998,17 @@ error CommissionUpdateNotAvailable()
 
 
 
+<<<<<<< HEAD
 ### FailedToBurnAmount
 
 ```solidity
 error FailedToBurnAmount()
+=======
+### InitialCommissionAlreadySet
+
+```solidity
+error InitialCommissionAlreadySet()
+>>>>>>> 20cf7b5 (finish pending commission)
 ```
 
 

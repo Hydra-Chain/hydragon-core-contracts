@@ -98,6 +98,16 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
+    function setInitialCommission(uint256 initialCommission) external {
+        if (commissionUpdateAvailableAt[msg.sender] != 0 || delegationCommissionPerStaker[msg.sender] != 0) {
+            revert InitialCommissionAlreadySet();
+        }
+        _setCommission(msg.sender, initialCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
     function claimCommission(address to) external {
         if (commissionRewardLocked[msg.sender]) revert CommissionRewardLocked();
         _claimCommission(msg.sender, to);
@@ -342,7 +352,6 @@ contract Delegation is
         if (pendingCommission == delegationCommissionPerStaker[staker]) revert AppliedCommissionIsTheSame();
 
         delegationCommissionPerStaker[staker] = pendingCommission;
-
         emit CommissionUpdated(staker, pendingCommission);
     }
 
@@ -367,7 +376,9 @@ contract Delegation is
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission();
+
         delegationCommissionPerStaker[staker] = newCommission;
+        emit CommissionUpdated(staker, newCommission);
     }
 
     /**
@@ -381,6 +392,7 @@ contract Delegation is
 
         distributedCommissions[staker] = 0;
         rewardWalletContract.distributeReward(to, commissionReward);
+
         emit CommissionClaimed(staker, to, commissionReward);
     }
 

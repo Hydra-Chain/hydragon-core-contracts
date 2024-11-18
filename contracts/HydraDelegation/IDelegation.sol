@@ -18,6 +18,7 @@ interface IDelegation is IWithdrawal {
     error InvalidMinDelegation();
     error CommissionRewardLocked();
     error AppliedCommissionIsTheSame();
+    error InitialCommissionAlreadySet();
     error CommissionUpdateNotAvailable();
 
     /**
@@ -30,7 +31,7 @@ interface IDelegation is IWithdrawal {
     /**
      * @notice Sets pending commission for staker.
      * @dev The pending commission can be applied by after 30 days.
-     * @dev The pending commission can be updated any time, but the 30 days period will be reset.
+     * @dev The pending commission can be overridden any time, but the 30 days period will be reset.
      * @param newCommission New commission (100 = 100%)
      */
     function setPendingCommission(uint256 newCommission) external;
@@ -40,6 +41,13 @@ interface IDelegation is IWithdrawal {
      * @dev Anyone can apply commission, but if the caller is not active validator, it will not have any effect.
      */
     function applyPendingCommission() external;
+
+    /**
+     * @notice Sets initial commission for staker.
+     * @param initialCommission Initial commission (100 = 100%)
+     * @dev the staker needs to have 0 commission and have never used pending commission
+     */
+    function setInitialCommission(uint256 initialCommission) external;
 
     /**
      * @notice Claims commission for staker
