@@ -60,6 +60,73 @@ export function RunVestedStakingTests(): void {
         expect(await hydraStaking.stakeOf(this.staker.address), "stake").to.be.equal(this.minStake);
       });
 
+      it("should add proper liquid tokens in user stake in same block/time", async function () {
+        const { hydraChain, hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+        await hydraChain.connect(this.signers.governance).addToWhitelist([this.staker.address]);
+        await registerValidator(hydraChain, this.staker);
+
+        // Disable automining
+        await hre.network.provider.send("evm_setAutomine", [false]);
+
+        const stakerHydraStaking = hydraStaking.connect(this.staker);
+        const tx1 = await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
+          value: this.minStake,
+        });
+        const tx2 = await stakerHydraStaking.stake({
+          value: this.minStake,
+        });
+        // Mine a block manually
+        await hre.network.provider.send("evm_mine");
+
+        const stake = await hydraStaking.stakeOf(this.staker.address);
+        const liquidTokens = await liquidToken.balanceOf(this.staker.address);
+
+        // calc liquid tokens for position
+        const expectedLiquidTokens = calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, stake);
+
+        expect(liquidTokens).to.be.equal(expectedLiquidTokens);
+        expect(stake).to.be.equal(this.minStake.mul(2));
+
+        // Re-enable automining (optional, for subsequent tests)
+        await hre.network.provider.send("evm_setAutomine", [true]);
+
+        // Verify both transactions were mined in the same block
+        const receipt1 = await hre.ethers.provider.getTransactionReceipt(tx1.hash);
+        const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
+        expect(receipt1.blockNumber).to.be.equal(receipt2.blockNumber);
+      });
+
+      it("should revert if user transfer his tokens and try to stake in the same block/time", async function () {
+        const { hydraChain, hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+        await hydraChain.connect(this.signers.governance).addToWhitelist([this.staker.address]);
+        await registerValidator(hydraChain, this.staker);
+
+        // Disable automining
+        await hre.network.provider.send("evm_setAutomine", [false]);
+
+        const stakerHydraStaking = hydraStaking.connect(this.staker);
+        const tx1 = await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
+          value: this.minStake,
+        });
+        const tx2 = await liquidToken.connect(this.staker).transfer(this.signers.delegator.address, 1);
+        await expect(
+          stakerHydraStaking.stake({
+            value: this.minStake,
+          })
+        ).to.be.revertedWith("ERC20: burn amount exceeds balance");
+
+        // Mine a block manually
+        await hre.network.provider.send("evm_mine");
+
+        // Re-enable automining (optional, for subsequent tests)
+        await hre.network.provider.send("evm_setAutomine", [true]);
+
+        // Verify all transactions were mined in the same block
+        const receipt1 = await hre.ethers.provider.getTransactionReceipt(tx1.hash);
+        const receipt2 = await hre.ethers.provider.getTransactionReceipt(tx2.hash);
+        expect(receipt1.blockNumber).to.be.equal(receipt2.blockNumber);
+      });
+
       it("should open vested position with the old stake base and adjust token balance", async function () {
         const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
