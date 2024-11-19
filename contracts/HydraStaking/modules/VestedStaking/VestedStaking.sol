@@ -37,8 +37,7 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
      * @inheritdoc IVestedStaking
      */
     function setPenaltyDecreasePerWeek(uint256 newRate) external onlyOwner {
-        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
-        penaltyDecreasePerWeek = newRate;
+        _setPenaltyDecreasePerWeek(newRate);
     }
 
     /**

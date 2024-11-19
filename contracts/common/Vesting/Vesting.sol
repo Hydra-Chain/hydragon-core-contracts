@@ -13,6 +13,7 @@ abstract contract Vesting is APRCalculatorConnector {
     using VestedPositionLib for VestingPosition;
 
     error FailedToBurnAmount();
+    error PenaltyRateOutOfRange();
 
     uint256 public constant DENOMINATOR = 10000;
     /**
@@ -41,6 +42,17 @@ abstract contract Vesting is APRCalculatorConnector {
     }
 
     // _______________ Internal functions _______________
+
+    /**
+     * @notice sets a new penalty rate
+     * @param newRate the new penalty rate
+     * @dev Only callable by the admin
+     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
+     */
+    function _setPenaltyDecreasePerWeek(uint256 newRate) internal {
+        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
+        penaltyDecreasePerWeek = newRate;
+    }
 
     /**
      * @notice Method used to burn funds

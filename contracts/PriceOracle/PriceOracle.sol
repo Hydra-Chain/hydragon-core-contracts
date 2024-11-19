@@ -20,7 +20,7 @@ contract PriceOracle is IPriceOracle, System, Initializable, HydraChainConnector
     mapping(uint256 => uint256) public pricePerDay;
     mapping(uint256 => List) public priceVotesForDay;
 
-    uint256 constant MAX_UINT224 = type(uint224).max;
+    uint256 public constant MAX_UINT224 = type(uint224).max;
     uint256 public constant VOTING_POWER_PERCENTAGE_NEEDED = 61;
     uint256 public constant DAILY_VOTING_START_TIME = 36 minutes;
     uint256 public constant DAILY_VOTING_END_TIME = DAILY_VOTING_START_TIME + 3 hours;

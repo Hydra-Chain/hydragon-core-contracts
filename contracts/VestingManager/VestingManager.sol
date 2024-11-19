@@ -39,7 +39,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      */
     function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable onlyOwner {
         HYDRA_DELEGATION.delegateWithVesting{value: msg.value}(staker, durationWeeks);
-        _sendLiquidTokens(msg.sender, IERC20(LIQUIDITY_TOKEN).balanceOf(address(this)));
+        _sendLiquidTokens(msg.sender, LIQUIDITY_TOKEN.balanceOf(address(this)));
     }
 
     /**
@@ -111,7 +111,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      * @param amount staked amount
      */
     function _sendLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        IERC20(LIQUIDITY_TOKEN).safeTransfer(positionOwner, amount);
+        LIQUIDITY_TOKEN.safeTransfer(positionOwner, amount);
     }
 
     /**
@@ -120,7 +120,7 @@ contract VestingManager is IVestingManager, Initializable, OwnableUpgradeable {
      * @param amount Amount to be unstaked
      */
     function _fulfillLiquidTokens(address positionOwner, uint256 amount) private onlyOwner {
-        IERC20(LIQUIDITY_TOKEN).safeTransferFrom(positionOwner, address(this), amount);
+        LIQUIDITY_TOKEN.safeTransferFrom(positionOwner, address(this), amount);
     }
 
     // slither-disable-next-line unused-state,naming-convention

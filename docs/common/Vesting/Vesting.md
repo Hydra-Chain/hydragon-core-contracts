@@ -113,4 +113,15 @@ error FailedToBurnAmount()
 
 
 
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
+```
+
+
+
+
+
+
 

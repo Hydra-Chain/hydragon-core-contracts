@@ -141,10 +141,19 @@ export function RunValidatorsDataTests(): void {
     const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
     const validatorsData = [{ validator: this.signers.validators[1].address, votingPower: 12 }];
-    await expect(hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData)).to.emit(
-      hydraChain,
-      "ValidatorsDataSynced"
-    );
+    const tx = await hydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
+
+    const receipt = await tx.wait();
+
+    // Find the specific ValidatorsDataSynced event
+    const event = receipt.events?.find((e) => e.event === "ValidatorsDataSynced");
+
+    // Check the event and its arguments
+    if (!event || !event.args) {
+      throw new Error("ValidatorsDataSynced event not found.");
+    }
+    expect(event.args[0][0].validator).to.be.equal(this.signers.validators[1].address);
+    expect(event.args[0][0].votingPower).to.be.equal(12);
   });
 
   it("should return if we pass empty validators data", async function () {

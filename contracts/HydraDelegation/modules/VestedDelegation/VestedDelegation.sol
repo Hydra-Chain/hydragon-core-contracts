@@ -73,8 +73,7 @@ abstract contract VestedDelegation is
      * @inheritdoc IVestedDelegation
      */
     function setPenaltyDecreasePerWeek(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
-        penaltyDecreasePerWeek = newRate;
+        _setPenaltyDecreasePerWeek(newRate);
     }
 
     /**
