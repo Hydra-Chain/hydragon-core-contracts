@@ -53,7 +53,8 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
-            commission: 0
+            commission: 0,
+            startBlock: block.number
         });
 
         _stake(msg.sender, msg.value);

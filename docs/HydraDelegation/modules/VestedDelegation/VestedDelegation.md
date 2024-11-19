@@ -1019,7 +1019,7 @@ Undelegates amount from staker for vesting position. Apply penalty in case vesti
 ### vestedDelegationPositions
 
 ```solidity
-function vestedDelegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus, uint256 commission)
+function vestedDelegationPositions(address, address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus, uint256 commission, uint256 startBlock)
 ```
 
 The vesting positions for every delegator
@@ -1044,6 +1044,7 @@ The vesting positions for every delegator
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
 | commission | uint256 | undefined |
+| startBlock | uint256 | undefined |
 
 ### vestingLiquidityDecreasePerWeek
 

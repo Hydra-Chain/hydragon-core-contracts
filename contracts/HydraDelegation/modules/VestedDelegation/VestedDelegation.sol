@@ -204,7 +204,8 @@ abstract contract VestedDelegation is
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
-            commission: delegationCommissionPerStaker[staker]
+            commission: delegationCommissionPerStaker[staker],
+            startBlock: block.number
         });
 
         _delegate(staker, msg.sender, msg.value);
@@ -244,7 +245,8 @@ abstract contract VestedDelegation is
             base: oldPosition.base,
             vestBonus: oldPosition.vestBonus,
             rsiBonus: oldPosition.rsiBonus,
-            commission: delegationCommissionPerStaker[newStaker]
+            commission: delegationCommissionPerStaker[newStaker],
+            startBlock: oldPosition.startBlock
         });
 
         // delegate (deposit & emit event & check isActiveValidator) the old amount to the new position

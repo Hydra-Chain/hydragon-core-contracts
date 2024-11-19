@@ -629,7 +629,7 @@ Unstakes amount for sender. Claims rewards beforehand.
 ### vestedStakingPositions
 
 ```solidity
-function vestedStakingPositions(address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus, uint256 commission)
+function vestedStakingPositions(address) external view returns (uint256 duration, uint256 start, uint256 end, uint256 base, uint256 vestBonus, uint256 rsiBonus, uint256 commission, uint256 startBlock)
 ```
 
 The stakers&#39; vesting positions
@@ -653,6 +653,7 @@ The stakers&#39; vesting positions
 | vestBonus | uint256 | undefined |
 | rsiBonus | uint256 | undefined |
 | commission | uint256 | undefined |
+| startBlock | uint256 | undefined |
 
 ### vestingLiquidityDecreasePerWeek
 
