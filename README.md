@@ -1,9 +1,9 @@
 # HydraGon Core Contracts
 
-[![Solidity CI](https://github.com/maticnetwork/v3-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/maticnetwork/v3-contracts/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/maticnetwork/v3-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/maticnetwork/v3-contracts?branch=main)
+[![Solidity CI](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Hydra-Chain/hydragon-core-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/Hydra-Chain/hydragon-core-contracts?branch=main)
 
-**_Note: This contracts are based on the Polygon's POS v3 blockchain._**
+**_Note: This repo is based on Polygon Edge core contracts._**
 
 ## Contents
 
@@ -24,7 +24,7 @@
 ## Known discrepancies
 
 - The epoch increases at the beginning of the last block of an epoch, which results in the following:
-  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (or validator status) at epoch X + 2, because actually he made the balance change in epoch x + 1
+  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (validator uptime if he is new staker) at epoch X + 2, because actually he made the balance change in epoch x + 1
 
 ## Repo Architecture
 
@@ -73,18 +73,20 @@ There are a number of different contracts with different roles in the suite, as 
 ```
 
 #### APRCalculator:
+
 Saving the values of the APR, bonuses and price of Hydra
 
 - Macro Factor: used to multiply the base APR and adjust the APR for positions depending on the price movement between 310 days and last 115 days
 - Price: updates the price for the contracts (update is possible only thru PriceOracle) and triggers update on bonuses depending on the price change, it also can guard bonuses by changing their values to default in critical situations
 - RSI - Updates the RSI bonus, depending on the average gain and loss for the last 14 days, the RSI bonus is used in vested positions
 
-
 #### BLS:
+
 Used for register validators, reduces the size of signature data to store on-chain
 Boneh–Lynn–Shacham (BLS) signature scheme on Barreto-Naehrig 254 bit curve (BN-254)
 
 #### HydraChain:
+
 Contract for committing epochs and keeping validators data, handling validators access
 
 - Access control: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone could register and set a node
@@ -94,6 +96,7 @@ Contract for committing epochs and keeping validators data, handling validators 
 - Validators Data: Keep a real-time data for validator voting power.
 
 #### HydraDelegation:
+
 Handles Delegation functions, for delegators and commissions for validators
 
 - Delegation: Keep the base delegate functionality
@@ -102,6 +105,7 @@ Handles Delegation functions, for delegators and commissions for validators
 - Vested Delegation - handling vested positions (thru Managers), swapping, delegating, cutting and more.
 
 #### HydraStaking:
+
 Contracts that keep validator’s stake and distribute rewards
 
 - Staking - handles the base stake functions
@@ -112,20 +116,25 @@ Contracts that keep validator’s stake and distribute rewards
 - Vested Staking - Handle vested staked positions
 
 #### HydraVault:
+
 A contract that is used for keeping Dao Incentive funds and distributes them to a contract
 
 #### LiquidityToken:
+
 An ERC20 that represent the staked/delegated Hydra, could be used for trading, while waiting for the potions to grow.
 
 #### PriceOracle:
+
 A oracle that validators vote from, agreeing on a specific price and updating it on the APR calculator.
 
 - SortedPriceList: Library for keeping a sorted list when validators vote, so we can easily calculate the average price later.
 
 #### RewardWallet:
+
 A contracts that distributes the rewards for stakers and delegators
 
 #### VestingManager:
+
 A manager that handles your vested positions (could have one manager per positions on validator) If you need to have 2 positions on the same validator that are not finished are claimed, you need 2 managers. One managers could handle many validator positions.
 
 - Vesting Manager Factory - a contract that creates vesting managers and keeps that for user vesting managers addresses.
@@ -154,7 +163,7 @@ The following is a brief overview of some of the files and directories in the pr
 │ foundry.toml - "Foundry configuration file"
 │ hardhat.config.ts - "Hardhat configuration file"
 │ slither.config.json - "settings for the Slither static analyzer"
-````
+```
 
 The `package-lock.json` is also provided to ensure the ability to install the same versions of the npm packages used in development and testing.
 
@@ -188,12 +197,12 @@ Note that this only works on Linux and Mac. For Windows, or if `foundryup` doesn
 
 ### Installation
 
-**You do not need to clone this repo in order to interact with the Polygon core contracts**
+**You do not need to clone this repo in order to interact with the HydraGon core contracts**
 
 If you would like to work with these contracts in a development environment, first clone the repo:
 
 ```bash
-git clone git@github.com:maticnetwork/v3-contracts.git
+git clone git@github.com:Hydra-Chain/hydragon-core-contracts.git
 ```
 
 If you have [nvm](https://github.com/nvm-sh/nvm) installed (recommended), you can run `nvm use #` to set your version of Node to the same as used in development and testing.
@@ -213,12 +222,6 @@ forge install
 ### Environment Setup
 
 There are a few things that should be done to set up the repo once you've cloned it and installed the dependencies and libraries. An important step for various parts of the repo to work properly is to set up a `.env` file. There is an `.example.env` file provided, copy it and rename the copy `.env`.
-
-The v3 contract set is meant to be deployed across two blockchains, which are called the root chain and child chain. In the case of Polygon POS v3 itself, Ethereum mainnet is the root chain, while Polygon POS v3 is the child chain. In order to give users the ability to work with these contracts on the chains of their choice, four networks are configured in Hardhat: `root`, `rootTest`, `child`, and `childTest`. To interact with whichever networks you would like to use as root and/or child, you will need to add a URL pointing to an RPC endpoint on the relevant chain in your `.env` file. This can be a RPC provider such as Ankr or Alchemy, in which case you would put the entire URL including the API key into the relevant line of the `.env`, or could be a local node, in which case you would put `https://localhost:<PORT_NUMBER>` (usually 8545).
-
-A field for a private key is also provided in the `.env`. You will need to input this if you are interacting with any public networks (for example, deploying the contracts to a testnet).
-
-Lastly, there are fields for an Etherscan and Polygonscan for verifying any deployed contracts on the Ethereum or Polygon mainnets or testnets. (Some additional configuration may be required, only Eth mainnet, Goerli, Polygon POS v1, and Mumbai are configured as of this writing.)
 
 ### Compiling Contracts
 
@@ -255,8 +258,6 @@ The Hardhat tests have gas reporting enabled by default, you can disable them fr
 ```bash
 forge test
 ```
-
-Simple gas profiling is included in Foundry tests by default. For a more complete gas profile using Foundry, see [their documentation](https://book.getfoundry.sh/forge/gas-reports).
 
 Simple gas profiling is included in Foundry tests by default. For a more complete gas profile using Foundry, see [their documentation](https://book.getfoundry.sh/forge/gas-reports).
 
