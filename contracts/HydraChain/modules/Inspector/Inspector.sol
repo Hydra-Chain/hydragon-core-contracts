@@ -131,6 +131,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         if (validators[account].status == ValidatorStatus.Banned) {
             return false;
         }
+
         // check if the owner (governance) is calling
         if (msg.sender == owner()) {
             return true;
