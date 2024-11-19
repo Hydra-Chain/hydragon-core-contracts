@@ -46,7 +46,7 @@ There are a number of different contracts with different roles in the suite, as 
 ├─ Vesting — "handles base vesting functions for vested positions"
 ├─ Withdrawal — "handles withdrawing hydra from contracts"
 │ GenesisProxy — "the genesis proxy contract"
-│ Faucet — "faucet for the test net"
+│ Faucet — "faucet for the test-net"
 │ HydraChain/ — "commit epochs, keeps validators data"
 ├─ AccessControl - "whitelisting users (could disable)"
 ├─ DaoIncentive - "distribute rewards for DAOs"
@@ -316,7 +316,7 @@ npm run slither
 There is a CI script for Github Actions in `.github/workflows/`. Currently it runs:
 
 - linters
-- both test suites (if 1 fail tests the job fails)
+- both test suites (if 1 test fail the job fails)
 - coverage report (HH & Foundry)
 - gas report
 - Slither
