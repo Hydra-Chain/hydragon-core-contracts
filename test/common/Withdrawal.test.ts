@@ -73,10 +73,11 @@ export function RunWithdrawalTests(): void {
 
     it("should fail to update withdraw time if not governance", async function () {
       const { hydraStaking } = await loadFixture(this.fixtures.withdrawableFixture);
+      const adminRole = await hydraStaking.DEFAULT_ADMIN_ROLE();
 
       await expect(
         hydraStaking.connect(this.signers.validators[0]).changeWithdrawalWaitPeriod(WEEK * 2)
-      ).to.be.revertedWith(ERRORS.ownable);
+      ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address, adminRole));
     });
 
     it("should fail update withdraw time if we pass 0", async function () {

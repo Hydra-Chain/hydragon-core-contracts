@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
+import {Governed} from "../Governed/Governed.sol";
 import {WithdrawalQueueLib, WithdrawalQueue} from "./WithdrawalQueueLib.sol";
 import {IWithdrawal} from "./IWithdrawal.sol";
 
-abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable2StepUpgradeable {
+abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Governed {
     using WithdrawalQueueLib for WithdrawalQueue;
 
     uint256 public withdrawWaitPeriod;
@@ -17,9 +17,8 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Withdrawal_init(address _governance) internal {
+    function __Withdrawal_init() internal {
         __ReentrancyGuard_init();
-        _transferOwnership(_governance);
         __Withdrawal_init_unchained();
     }
 
@@ -45,7 +44,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Ownable
     /**
      * @inheritdoc IWithdrawal
      */
-    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyOwner {
+    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
 

@@ -52,7 +52,7 @@ contract Delegation is
         uint256 _initialCommission
     ) internal onlyInitializing {
         __Governed_init(_governance);
-        __Withdrawal_init(_governance);
+        __Withdrawal_init();
         __RewardWalletConnector_init(_rewardWalletAddr);
         __Delegation_init_unchained(_initialStakers, _initialCommission);
     }

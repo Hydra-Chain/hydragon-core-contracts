@@ -1,21 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IVesting} from "../../../common/Vesting/IVesting.sol";
+
 struct StakingRewardsHistory {
     uint256 totalReward;
     uint256 epoch;
     uint256 timestamp;
 }
 
-interface IVestedStaking {
-    /**
-     * @dev Should be called by the Governance.
-     * @notice sets a new penalty rate
-     * @param newRate the new penalty rate
-     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
-     */
-    function setPenaltyDecreasePerWeek(uint256 newRate) external;
-
+interface IVestedStaking is IVesting {
     /**
      * @notice Stakes sent amount with vesting period.
      * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.

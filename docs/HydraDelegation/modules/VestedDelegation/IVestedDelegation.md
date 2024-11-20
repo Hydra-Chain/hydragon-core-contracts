@@ -911,6 +911,17 @@ error CommissionUpdateNotAvailable()
 
 
 
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
 ### InvalidCommission
 
 ```solidity
@@ -970,6 +981,17 @@ error NoWithdrawalAvailable()
 
 ```solidity
 error NotVestingManager()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
 ```
 
 

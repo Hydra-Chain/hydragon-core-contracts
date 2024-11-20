@@ -61,17 +61,6 @@ A constant for the minimum stake limit
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### acceptOwnership
-
-```solidity
-function acceptOwnership() external nonpayable
-```
-
-
-
-*The new owner accepts the ownership transfer.*
-
-
 ### aprCalculatorContract
 
 ```solidity
@@ -335,23 +324,6 @@ A state variable to keep the minimum amount of stake
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### owner
-
-```solidity
-function owner() external view returns (address)
-```
-
-
-
-*Returns the address of the current owner.*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### penaltyDecreasePerWeek
 
 ```solidity
@@ -368,23 +340,6 @@ The penalty decrease per week
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
-
-### pendingOwner
-
-```solidity
-function pendingOwner() external view returns (address)
-```
-
-
-
-*Returns the address of the pending owner.*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
 
 ### pendingWithdrawals
 
@@ -407,17 +362,6 @@ Calculates how much is yet to become withdrawable for account.
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
-
-### renounceOwnership
-
-```solidity
-function renounceOwnership() external nonpayable
-```
-
-
-
-*Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.*
-
 
 ### renounceRole
 
@@ -478,7 +422,7 @@ function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
 
 sets a new penalty rate
 
-*Should be called by the Governance.the rate should be between 10 and 150 (0.1% and 1.5%)*
+*Only callable by the adminthe rate should be between 10 and 150 (0.1% and 1.5%)*
 
 #### Parameters
 
@@ -644,22 +588,6 @@ function totalStake() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### transferOwnership
-
-```solidity
-function transferOwnership(address newOwner) external nonpayable
-```
-
-
-
-*Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one. Can only be called by the current owner.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newOwner | address | undefined |
-
 ### unclaimedRewards
 
 ```solidity
@@ -817,40 +745,6 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
-
-### OwnershipTransferStarted
-
-```solidity
-event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| previousOwner `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
-
-### OwnershipTransferred
-
-```solidity
-event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| previousOwner `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
 
 ### RoleAdminChanged
 

@@ -1710,7 +1710,7 @@ export function RunVestedDelegationTests(): void {
     });
 
     describe("penaltyDecreasePerWeek()", async function () {
-      it("should revert setting penalty decrease per week if not admin", async function () {
+      it("should revert setting penalty decrease per week if not governance", async function () {
         const { hydraDelegation, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
         const admin = await hydraDelegation.DEFAULT_ADMIN_ROLE();

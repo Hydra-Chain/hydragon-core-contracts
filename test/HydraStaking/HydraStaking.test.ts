@@ -18,13 +18,16 @@ export function RunHydraStakingTests(): void {
         const { hydraStaking } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(hydraStaking.deployTransaction.from).to.equal(this.signers.admin.address);
-        expect(await hydraStaking.owner()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.minStake()).to.equal(0);
         expect(await hydraStaking.totalStake()).to.equal(0);
         expect(await hydraStaking.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.delegationContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraStaking.lastDistribution()).to.be.equal(0);
+        expect(
+          await hydraStaking.hasRole(await hydraStaking.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          "hasRole"
+        ).to.be.false;
 
         expect(await hydraStaking.MIN_STAKE_LIMIT()).to.equal(this.minStake);
 
@@ -105,7 +108,6 @@ export function RunHydraStakingTests(): void {
         const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, rewardWallet } =
           await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        expect(await hydraStaking.owner(), "owner").to.equal(this.signers.governance.address);
         expect(await hydraStaking.minStake(), "minStake").to.equal(this.minStake);
         expect(await hydraStaking.totalStake(), "totalStake").to.equal(this.minStake.mul(2));
         expect(await hydraStaking.totalBalance(), "totalBalance").to.equal(this.minStake.mul(2));
@@ -115,7 +117,7 @@ export function RunHydraStakingTests(): void {
         expect(await hydraStaking.stakeOf(this.signers.admin.address), "stakeOf").to.equal(this.minStake.mul(2));
         expect(await hydraStaking.totalBalanceOf(this.signers.admin.address), "stakeOf").to.equal(this.minStake.mul(2));
         expect(
-          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          await hydraStaking.hasRole(await hydraStaking.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
           "hasRole"
         ).to.be.true;
         expect(await hydraStaking.lastDistribution()).to.not.equal(0);
@@ -234,7 +236,7 @@ export function RunHydraStakingTests(): void {
         const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
         await expect(hydraStaking.connect(this.signers.validators[0]).changeMinStake(this.minStake)).to.be.revertedWith(
-          ERRORS.ownable
+          ERRORS.accessControl(this.signers.validators[0].address, await hydraStaking.DEFAULT_ADMIN_ROLE())
         );
       });
 

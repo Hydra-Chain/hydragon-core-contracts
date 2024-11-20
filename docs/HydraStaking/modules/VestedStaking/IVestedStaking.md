@@ -125,7 +125,7 @@ function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
 
 sets a new penalty rate
 
-*Should be called by the Governance.the rate should be between 10 and 150 (0.1% and 1.5%)*
+*Only callable by the adminthe rate should be between 10 and 150 (0.1% and 1.5%)*
 
 #### Parameters
 
@@ -148,6 +148,31 @@ Stakes sent amount with vesting period.
 | Name | Type | Description |
 |---|---|---|
 | durationWeeks | uint256 | Duration of the vesting in weeks. Must be between 1 and 52. |
+
+
+
+
+## Errors
+
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
+```
+
+
+
 
 
 

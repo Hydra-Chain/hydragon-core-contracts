@@ -117,8 +117,7 @@ abstract contract ValidatorManager is
      * @inheritdoc IValidatorManager
      */
     function deactivateValidator(address account) external onlyHydraStaking {
-        if (validators[account].status != ValidatorStatus.Active) revert Unauthorized("MUST_BE_ACTIVE");
-
+        assert(validators[account].status == ValidatorStatus.Active);
         validators[account].status = ValidatorStatus.Registered;
         activeValidatorsCount--;
     }

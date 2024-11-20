@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Governed} from "../../common/Governed/Governed.sol";
 import {APRCalculatorConnector} from "../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./VestedPositionLib.sol";
-import {VestingPosition} from "./IVesting.sol";
+import {VestingPosition, IVesting} from "./IVesting.sol";
 
 /**
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-abstract contract Vesting is APRCalculatorConnector {
+abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
     using VestedPositionLib for VestingPosition;
-
-    error FailedToBurnAmount();
-    error PenaltyRateOutOfRange();
 
     uint256 public constant DENOMINATOR = 10000;
     /**
@@ -41,18 +39,17 @@ abstract contract Vesting is APRCalculatorConnector {
         penaltyDecreasePerWeek = 50; // 0.5%
     }
 
-    // _______________ Internal functions _______________
+    // _______________ External functions _______________
 
     /**
-     * @notice sets a new penalty rate
-     * @param newRate the new penalty rate
-     * @dev Only callable by the admin
-     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
+     * @inheritdoc IVesting
      */
-    function _setPenaltyDecreasePerWeek(uint256 newRate) internal {
+    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
         penaltyDecreasePerWeek = newRate;
     }
+
+    // _______________ Internal functions _______________
 
     /**
      * @notice Method used to burn funds

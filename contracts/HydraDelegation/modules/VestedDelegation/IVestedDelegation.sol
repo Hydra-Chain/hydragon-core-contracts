@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IVesting} from "../../../common/Vesting/IVesting.sol";
 import {IDelegation} from "../../IDelegation.sol";
 import {RPS, DelegationPoolDelegatorParams} from "../DelegationPoolLib/IDelegationPoolLib.sol";
 
-interface IVestedDelegation is IDelegation {
+interface IVestedDelegation is IVesting, IDelegation {
     event PositionOpened(
         address indexed manager,
         address indexed staker,
@@ -21,14 +22,6 @@ interface IVestedDelegation is IDelegation {
     event PositionRewardClaimed(address indexed manager, address indexed staker, uint256 amount);
 
     error NotVestingManager();
-
-    /**
-     * @notice sets a new penalty rate
-     * @param newRate the new penalty rate
-     * @dev Only callable by the admin
-     * @dev the rate should be between 10 and 150 (0.1% and 1.5%)
-     */
-    function setPenaltyDecreasePerWeek(uint256 newRate) external;
 
     /**
      * @notice Calculates position's claimable rewards
