@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "../../../common/Governed/Governed.sol";
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
-import {DelegateRequirement, PenaltyRateOutOfRange} from "../../../common/Errors.sol";
+import {DelegateRequirement} from "../../../common/Errors.sol";
 import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
 import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
