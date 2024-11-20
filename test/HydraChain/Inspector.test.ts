@@ -10,7 +10,7 @@ import { LiquidityToken__factory } from "../../typechain-types";
 
 export function RunInspectorTests(): void {
   describe("setValidatorPenalty", function () {
-    it("should revert not owner when try to set validator penalty", async function () {
+    it("should revert when not governance try to set validator penalty", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
       await expect(hydraChain.connect(this.signers.validators[0]).setValidatorPenalty(0)).to.be.revertedWith(
         ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
@@ -27,7 +27,7 @@ export function RunInspectorTests(): void {
   });
 
   describe("setReporterReward", function () {
-    it("should revert not owner when try to set reporter reward", async function () {
+    it("should revert when not governance try to set reporter reward", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setReporterReward(0)).to.be.revertedWith(
@@ -45,7 +45,7 @@ export function RunInspectorTests(): void {
   });
 
   describe("setInitiateBanThreshold", function () {
-    it("should revert not owner when try to set initiate ban threshold", async function () {
+    it("should revert when not governance try to set initiate ban threshold", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
@@ -63,7 +63,7 @@ export function RunInspectorTests(): void {
   });
 
   describe("setBanThreshold", function () {
-    it("should revert not owner when try to set ban finish threshold", async function () {
+    it("should revert when not governance try to set ban finish threshold", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
@@ -490,7 +490,7 @@ export function RunInspectorTests(): void {
       expect(await hydraStaking.pendingWithdrawals(await hydraChain.signer.getAddress())).to.eq(reporterReward);
     });
 
-    it("should ban the validator even if threshold is not met, if called from the contract owner (governance)", async function () {
+    it("should ban the validator even if threshold is not met, if called from the governance", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       // commit a couple of epochs in order to have a timestamp

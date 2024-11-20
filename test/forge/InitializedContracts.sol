@@ -227,7 +227,8 @@ contract TestInitlizedContracts is InitializedContracts {
     // HydraChain
 
     function test_getGovernanceFromHydraChain() public view {
-        assert(hydraChain.owner() == governance);
+        bytes32 role = hydraChain.DEFAULT_ADMIN_ROLE();
+        assert(hydraChain.hasRole(role, governance) == true);
     }
 
     function test_getStakingFromHydraChain() public view {
@@ -300,8 +301,8 @@ contract TestInitlizedContracts is InitializedContracts {
     // HydraDelegation
 
     function test_getGovernanceFromHydraDelegation() public view {
-        bytes32 role = hydraStaking.DEFAULT_ADMIN_ROLE();
-        assert(hydraStaking.hasRole(role, governance) == true);
+        bytes32 role = hydraDelegation.DEFAULT_ADMIN_ROLE();
+        assert(hydraDelegation.hasRole(role, governance) == true);
     }
 
     function test_getInitalCommissionFromHydraDelegation() public view {

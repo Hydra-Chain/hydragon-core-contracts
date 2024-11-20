@@ -7,7 +7,7 @@ import { CHAIN_ID, DOMAIN, ERRORS } from "../constants";
 
 export function RunWhitelistingTests(): void {
   describe("Whitelist", function () {
-    it("should be modified only by the owner", async function () {
+    it("should be modified only by the governance", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(
@@ -93,7 +93,7 @@ export function RunWhitelistingTests(): void {
     });
 
     describe("Enable and Disable Whitelisting", function () {
-      it("enable should be modified only by the owner", async function () {
+      it("enable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
@@ -104,7 +104,7 @@ export function RunWhitelistingTests(): void {
         );
       });
 
-      it("disable should be modified only by the owner", async function () {
+      it("disable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
