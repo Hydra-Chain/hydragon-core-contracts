@@ -1,4 +1,4 @@
-# IAccessControl
+# IWhitelisting
 
 
 
@@ -13,7 +13,7 @@
 ### addToWhitelist
 
 ```solidity
-function addToWhitelist(address[] whitelistAddreses) external nonpayable
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Adds addresses that are allowed to register as validators.
@@ -24,7 +24,7 @@ Adds addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to whitelist |
+| whitelistAddresses | address[] | Array of address to whitelist |
 
 ### disableWhitelisting
 
@@ -51,7 +51,7 @@ Enables the whitelisting feature.
 ### removeFromWhitelist
 
 ```solidity
-function removeFromWhitelist(address[] whitelistAddreses) external nonpayable
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Deletes addresses that are allowed to register as validators.
@@ -62,7 +62,7 @@ Deletes addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to remove from whitelist |
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
 
 
 

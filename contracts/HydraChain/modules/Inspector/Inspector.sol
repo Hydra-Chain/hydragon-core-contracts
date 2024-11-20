@@ -7,7 +7,7 @@ import {ValidatorManager, ValidatorStatus} from "../ValidatorManager/ValidatorMa
 import {IInspector} from "./IInspector.sol";
 
 abstract contract Inspector is IInspector, ValidatorManager {
-    /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
+    /// @notice The penalty that will be taken and burned from the bad validator's staked amount
     uint256 public validatorPenalty;
     /// @notice The reward for the person who reports a validator that have to be banned
     uint256 public reporterReward;
@@ -153,7 +153,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
     /**
      * @notice Returns if a ban process can be initiated for a given validator
-     * @dev funtion is overriden in the hydra chain contract
+     * @dev This function is overridden in the hydra chain contract
      * @param account The address of the validator
      * @return Returns true if the validator is subject to initiate ban
      */

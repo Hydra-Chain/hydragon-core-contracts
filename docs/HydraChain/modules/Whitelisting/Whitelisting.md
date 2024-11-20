@@ -1,4 +1,4 @@
-# AccessControl
+# Whitelisting
 
 
 
@@ -30,7 +30,7 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 ### addToWhitelist
 
 ```solidity
-function addToWhitelist(address[] whitelistAddreses) external nonpayable
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Adds addresses that are allowed to register as validators.
@@ -41,7 +41,7 @@ Adds addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to whitelist |
+| whitelistAddresses | address[] | Array of address to whitelist |
 
 ### disableWhitelisting
 
@@ -169,7 +169,7 @@ function isWhitelistingEnabled() external view returns (bool)
 ### removeFromWhitelist
 
 ```solidity
-function removeFromWhitelist(address[] whitelistAddreses) external nonpayable
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Deletes addresses that are allowed to register as validators.
@@ -180,7 +180,7 @@ Deletes addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to remove from whitelist |
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
 
 ### renounceRole
 

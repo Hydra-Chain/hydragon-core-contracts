@@ -68,7 +68,7 @@ export function RunPriceTests(): void {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(aprCalculator.connect(this.signers.system).guardBonuses()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.system.address, await aprCalculator.MANAGER_ROLE())
+        ERRORS.accessControl(this.signers.system.address, await aprCalculator.DEFAULT_ADMIN_ROLE())
       );
     });
 
@@ -95,7 +95,7 @@ export function RunPriceTests(): void {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(aprCalculator.connect(this.signers.accounts[4]).disableGuard()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.accounts[4].address, await aprCalculator.MANAGER_ROLE())
+        ERRORS.accessControl(this.signers.accounts[4].address, await aprCalculator.DEFAULT_ADMIN_ROLE())
       );
     });
 

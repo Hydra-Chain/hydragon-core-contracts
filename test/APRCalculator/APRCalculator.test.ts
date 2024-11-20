@@ -28,6 +28,8 @@ export function RunAPRCalculatorTests(): void {
         expect(aprCalculator.deployTransaction.from).to.equal(this.signers.admin.address);
         expect(await aprCalculator.DENOMINATOR()).to.be.equal(DENOMINATOR);
         expect(await aprCalculator.BASE_APR()).to.equal(BASE_APR);
+        expect(await aprCalculator.hasRole(await aprCalculator.DEFAULT_ADMIN_ROLE(), this.signers.governance.address))
+          .to.be.false;
 
         // RSIndex
         expect(await aprCalculator.MAX_RSI_BONUS()).to.be.equal(MAX_RSI_BONUS);
@@ -71,11 +73,10 @@ export function RunAPRCalculatorTests(): void {
         const { aprCalculator, hydraChain, priceOracle } = await loadFixture(
           this.fixtures.initializedHydraChainStateFixture
         );
-        const managerRole = await aprCalculator.MANAGER_ROLE();
-        const adminRole = await aprCalculator.DEFAULT_ADMIN_ROLE();
 
-        expect(await aprCalculator.hasRole(managerRole, this.signers.governance.address)).to.be.true;
-        expect(await aprCalculator.hasRole(adminRole, this.signers.governance.address)).to.be.true;
+        expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
+        expect(await aprCalculator.hasRole(await aprCalculator.DEFAULT_ADMIN_ROLE(), this.signers.governance.address))
+          .to.be.true;
 
         // Macro Factor
         expect(await aprCalculator.defaultMacroFactor()).to.equal(INITIAL_DEFAULT_MACRO_FACTOR);

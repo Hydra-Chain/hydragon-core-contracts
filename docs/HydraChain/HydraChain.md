@@ -199,7 +199,7 @@ function activeValidatorsCount() external view returns (uint256)
 ### addToWhitelist
 
 ```solidity
-function addToWhitelist(address[] whitelistAddreses) external nonpayable
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Adds addresses that are allowed to register as validators.
@@ -210,7 +210,7 @@ Adds addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to whitelist |
+| whitelistAddresses | address[] | Array of address to whitelist |
 
 ### aprCalculatorContract
 
@@ -805,7 +805,7 @@ function isSubjectToInitiateBan(address validator) external view returns (bool)
 
 Returns if a ban process can be initiated for a given validator
 
-*funtion is overriden in the hydra chain contract*
+*This function is overridden in the hydra chain contract*
 
 #### Parameters
 
@@ -978,7 +978,7 @@ Validates BLS signature with the provided pubkey and registers validators into t
 ### removeFromWhitelist
 
 ```solidity
-function removeFromWhitelist(address[] whitelistAddreses) external nonpayable
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
 Deletes addresses that are allowed to register as validators.
@@ -989,7 +989,7 @@ Deletes addresses that are allowed to register as validators.
 
 | Name | Type | Description |
 |---|---|---|
-| whitelistAddreses | address[] | Array of address to remove from whitelist |
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
 
 ### renounceRole
 
@@ -1233,7 +1233,7 @@ Sets new Voting Power Exponent Numerator.
 function validatorPenalty() external view returns (uint256)
 ```
 
-The penalty that will be taken and burned from the bad valiator&#39;s staked amount
+The penalty that will be taken and burned from the bad validator&#39;s staked amount
 
 
 

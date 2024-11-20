@@ -13,7 +13,7 @@ export function RunInspectorTests(): void {
     it("should revert not owner when try to set validator penalty", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
       await expect(hydraChain.connect(this.signers.validators[0]).setValidatorPenalty(0)).to.be.revertedWith(
-        ERRORS.ownable
+        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
       );
     });
 
@@ -31,7 +31,7 @@ export function RunInspectorTests(): void {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setReporterReward(0)).to.be.revertedWith(
-        ERRORS.ownable
+        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
       );
     });
 
@@ -49,7 +49,7 @@ export function RunInspectorTests(): void {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
-        ERRORS.ownable
+        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
       );
     });
 
@@ -67,7 +67,7 @@ export function RunInspectorTests(): void {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
       await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
-        ERRORS.ownable
+        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
       );
     });
 

@@ -279,7 +279,9 @@ export function RunValidatorManagerTests(): void {
     it("should revert trying to update the Exponent if we are no-govern address", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(hydraChain.updateExponent(6000)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(hydraChain.updateExponent(6000)).to.be.revertedWith(
+        ERRORS.accessControl(this.signers.accounts[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
+      );
     });
 
     it("should revert trying to update the Exponent invalid small value", async function () {

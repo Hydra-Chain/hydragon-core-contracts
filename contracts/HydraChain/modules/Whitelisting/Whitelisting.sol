@@ -2,22 +2,22 @@
 pragma solidity 0.8.17;
 
 import {Governed} from "../../../common/Governed/Governed.sol";
-import {IAccessControl} from "./IAccessControl.sol";
+import {IWhitelisting} from "./IWhitelisting.sol";
 
-abstract contract AccessControl is IAccessControl, Governed {
+abstract contract Whitelisting is IWhitelisting, Governed {
     mapping(address => bool) public isWhitelisted;
     bool public isWhitelistingEnabled;
 
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AccessControl_init(address _governance) internal onlyInitializing {
+    function __Whitelisting_init(address _governance) internal onlyInitializing {
         __Governed_init(_governance);
-        __AccessControl_init_unchained();
+        __Whitelisting_init_unchained();
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AccessControl_init_unchained() internal override onlyInitializing {
+    function __Whitelisting_init_unchained() internal onlyInitializing {
         isWhitelistingEnabled = true;
     }
 
@@ -34,7 +34,7 @@ abstract contract AccessControl is IAccessControl, Governed {
     // _______________ External functions _______________
 
     /**
-     * @inheritdoc IAccessControl
+     * @inheritdoc IWhitelisting
      */
     function enableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (isWhitelistingEnabled) revert WhitelistingAlreadyEnabled();
@@ -42,7 +42,7 @@ abstract contract AccessControl is IAccessControl, Governed {
     }
 
     /**
-     * @inheritdoc IAccessControl
+     * @inheritdoc IWhitelisting
      */
     function disableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (!isWhitelistingEnabled) revert WhitelistingAlreadyDisabled();
@@ -50,20 +50,20 @@ abstract contract AccessControl is IAccessControl, Governed {
     }
 
     /**
-     * @inheritdoc IAccessControl
+     * @inheritdoc IWhitelisting
      */
-    function addToWhitelist(address[] calldata whitelistAddreses) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        for (uint256 i = 0; i < whitelistAddreses.length; i++) {
-            _addToWhitelist(whitelistAddreses[i]);
+    function addToWhitelist(address[] calldata whitelistAddresses) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        for (uint256 i = 0; i < whitelistAddresses.length; i++) {
+            _addToWhitelist(whitelistAddresses[i]);
         }
     }
 
     /**
-     * @inheritdoc IAccessControl
+     * @inheritdoc IWhitelisting
      */
-    function removeFromWhitelist(address[] calldata whitelistAddreses) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        for (uint256 i = 0; i < whitelistAddreses.length; i++) {
-            _removeFromWhitelist(whitelistAddreses[i]);
+    function removeFromWhitelist(address[] calldata whitelistAddresses) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        for (uint256 i = 0; i < whitelistAddresses.length; i++) {
+            _removeFromWhitelist(whitelistAddresses[i]);
         }
     }
 
