@@ -71,6 +71,14 @@ contract HydraStaking is
     /**
      * @inheritdoc IHydraStaking
      */
+    function stake() public payable override(IHydraStaking, Staking, VestedStaking) {
+        VestedStaking.stake();
+        Staking.stake();
+    }
+
+    /**
+     * @inheritdoc IHydraStaking
+     */
     function distributeRewardsFor(uint256 epochId, Uptime[] calldata uptime) external onlySystemCall {
         if (distributedRewardPerEpoch[epochId] != 0) {
             revert DistributeRewardFailed("REWARD_ALREADY_DISTRIBUTED");
@@ -129,10 +137,7 @@ contract HydraStaking is
     /**
      * @inheritdoc Staking
      */
-    function _stake(
-        address account,
-        uint256 amount
-    ) internal override(Staking, LiquidStaking, StateSyncStaking, VestedStaking) {
+    function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
         if (stakeOf(account) == 0) {
             hydraChainContract.activateValidator(account);
         }
@@ -229,11 +234,11 @@ contract HydraStaking is
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
         if (_isOpeningPosition(position)) {
-            uint256 stake = stakeOf(staker);
-            if (stake != amount) {
-                stake -= amount;
-                _collectTokens(staker, stake);
-                amount += stake;
+            uint256 currentStake = stakeOf(staker);
+            if (currentStake != amount) {
+                currentStake -= amount;
+                _collectTokens(staker, currentStake);
+                amount += currentStake;
             }
 
             uint256 debt = _calculatePositionDebt(amount, position.duration);
@@ -280,13 +285,13 @@ contract HydraStaking is
             revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
         }
 
-        uint256 stake = stakeOf(uptime.validator);
+        uint256 currentStake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
         // slither-disable-next-line divide-before-multiply
-        uint256 stakerRewardIndex = (fullRewardIndex * (stake + delegation) * uptime.signedBlocks) /
+        uint256 stakerRewardIndex = (fullRewardIndex * (currentStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
-            stake,
+            currentStake,
             delegation,
             stakerRewardIndex
         );

@@ -53,11 +53,19 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
             base: aprCalculatorContract.getBaseAPR(),
             vestBonus: aprCalculatorContract.getVestingBonus(durationWeeks),
             rsiBonus: uint248(aprCalculatorContract.getRSIBonus()),
-            commission: 0,
-            startBlock: block.number
+            commission: 0
         });
 
         _stake(msg.sender, msg.value);
+    }
+
+    /**
+     * @inheritdoc Staking
+     */
+    function stake() public payable virtual override {
+        if (vestedStakingPositions[msg.sender].isActive()) {
+            revert StakeRequirement({src: "stake", msg: "IN_ACTIVE_POSITION"});
+        }
     }
 
     /**
@@ -128,19 +136,6 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
     }
 
     // _______________ Internal functions _______________
-
-    /**
-     * @notice Unstakes the given amount for the given account
-     * @param account The account to unstake for
-     */
-    function _stake(address account, uint256 amount) internal virtual override {
-        VestingPosition memory position = vestedStakingPositions[account];
-        if (position.isActive() && !_isOpeningPosition(position)) {
-            revert StakeRequirement({src: "stake", msg: "POSITION_ACTIVE"});
-        }
-
-        super._stake(account, amount);
-    }
 
     /**
      * @notice Unstakes the given amount for the given account

@@ -9,7 +9,6 @@ struct VestingPosition {
     uint256 vestBonus;
     uint256 rsiBonus;
     uint256 commission;
-    uint256 startBlock;
 }
 
 interface IVesting {

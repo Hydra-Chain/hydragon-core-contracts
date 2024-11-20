@@ -111,7 +111,7 @@ abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
      * @param position The vesting position of the account
      */
     function _isOpeningPosition(VestingPosition memory position) internal view returns (bool) {
-        return position.start == block.timestamp && position.startBlock == block.number;
+        return position.start == block.timestamp;
     }
 
     // slither-disable-next-line unused-state,naming-convention
