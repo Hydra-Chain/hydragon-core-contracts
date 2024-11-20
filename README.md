@@ -24,13 +24,13 @@
 ## Known discrepancies
 
 - The epoch increases at the beginning of the last block of an epoch, which results in the following:
-  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (validator uptime if he is new staker) at epoch X + 2, because actually he made the balance change in epoch x + 1
+  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (or validator status) at epoch X + 2, because actually he made the balance change in epoch x + 1
 
 ## Repo Architecture
 
 ### Contracts
 
-There are a number of different contracts with different roles in the suite, as such an architecture diagram of the contents of `contracts/` should be useful in understanding where to find what you're looking for:
+There are a several different contracts with different roles in the suite, as such an architecture diagram of the contents of `contracts/` should be useful in understanding where to find what you're looking for:
 
 ```ml
 │ APRCalculator/ - "APR reward, bonuses and price"
@@ -57,7 +57,7 @@ There are a number of different contracts with different roles in the suite, as 
 ├─ DelegationPoolLib - "lib for the pool of the staker to delegators"
 ├─ LiquidDelegation - "handles giving liquidity tokens on delegate"
 ├─ VestedDelegation - "delegating with vested position"
-│ HydraStaking/ — "handles staking and distribute rewards"
+│ HydraStaking/ — "handles staking and distributes rewards"
 ├─ DelegatedStaking - "trigger updates on delegation"
 ├─ LiquidStaking - "handles giving liquidity tokens on staking"
 ├─ PenalizeableStaking - "penalize staker on ban"
@@ -76,8 +76,8 @@ There are a number of different contracts with different roles in the suite, as 
 
 Saving the values of the APR, bonuses and price of Hydra
 
-- Macro Factor: used to multiply the base APR and adjust the APR for positions depending on the price movement between 310 days and last 115 days
-- Price: updates the price for the contracts (update is possible only thru PriceOracle) and triggers update on bonuses depending on the price change, it also can guard bonuses by changing their values to default in critical situations
+- Macro Factor: used to multiply the base APR and adjust the APR for positions depending on the price movement between 310 days and the last 115 days
+- Price: updates the price for the contracts (update is possible only through PriceOracle) and triggers an update on bonuses depending on the price change, it also can guard bonuses by changing their values to default in critical situations
 - RSI - Updates the RSI bonus, depending on the average gain and loss for the last 14 days, the RSI bonus is used in vested positions
 
 #### BLS:
@@ -87,13 +87,24 @@ Boneh–Lynn–Shacham (BLS) signature scheme on Barreto-Naehrig 254 bit curve (
 
 #### HydraChain:
 
-Contract for committing epochs and keeping validators data, handling validators access
+Contract for committing epochs and keeping validators' data, handling validators' access
 
-- Access control: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone could register and set a node
-- Dao Incentive: Distributes rewards that are kept for DAOs in the network, later that rewards are sent to the vault and could be send to specific contract if the governance agrees that is it helping the network!
-- Inspector: Handles validator bans, initiating a ban after certain inactivity of blocks and permanent ban applying penally and giving reward (if non-governance wallet) ban the user!
+- Access control: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone can register and set a node
+- Dao Incentive: Distributes rewards that are kept for DAOs in the network, later those rewards are sent to the vault and could be sent to a specific contract if the governance agrees that is it helping the network!
+- Inspector: Handles validator bans, initiating a ban after certain inactivity of blocks and permanent ban applying penalty and giving reward (if non-governance wallet) ban the user!
 - Validator Manager: Handles validator information like status, keeping registered information and more.
-- Validators Data: Keep a real-time data for validator voting power.
+- Validators Data: Keep real-time data for validator voting power.
+
+#### HydraStaking:
+
+Contracts that keep the validator’s stake and distribute rewards
+
+- Staking - handles the base stake functions
+- Delegated Staking - synch information on delegate from Hydra Delegation contract
+- Liquid Staking - handles actions within the Lydra token, including minting, burning, calculating liquidity Debts and more.
+- Penalizeable Staking - handle penalizing validators on a ban, and withdrawing banned funds
+- StateSyncStaking - This contract is used to emit a specific event when staked balance changes
+- Vested Staking - Handle vested staked positions
 
 #### HydraDelegation:
 
@@ -102,40 +113,29 @@ Handles Delegation functions, for delegators and commissions for validators
 - Delegation: Keep the base delegate functionality
 - Delegation Pool Lib: This library is used for managing delegators and their rewards within a staking pool.
 - Liquid Delegation - handles actions within the Lydra token, including minting, burning, calculating liquidity Debts and more.
-- Vested Delegation - handling vested positions (thru Managers), swapping, delegating, cutting and more.
-
-#### HydraStaking:
-
-Contracts that keep validator’s stake and distribute rewards
-
-- Staking - handles the base stake functions
-- Delegated Staking - synch information on delegate from Hydra Delegation contract
-- Liquid Staking - handles actions within the Lydra token, including minting, burning, calculating liquidity Debts and more.
-- Penalizeable Staking - handle penalizing validators on ban, and withdrawing banned funds
-- StateSyncStaking - This contract is used to emit a specific event when staked balance changes
-- Vested Staking - Handle vested staked positions
+- Vested Delegation - handling vested positions (through Managers), swapping, delegating, cutting and more.
 
 #### HydraVault:
 
-A contract that is used for keeping Dao Incentive funds and distributes them to a contract
+A contract that is used for keeping DAO Incentive funds and distributes them to a contract
 
 #### LiquidityToken:
 
-An ERC20 that represent the staked/delegated Hydra, could be used for trading, while waiting for the potions to grow.
+An ERC20 that represents the staked/delegated Hydra, could be used for trading while waiting for the position to grow.
 
 #### PriceOracle:
 
-A oracle that validators vote from, agreeing on a specific price and updating it on the APR calculator.
+An oracle that validators vote from, agreeing on a specific price and updating it on the APR calculator.
 
 - SortedPriceList: Library for keeping a sorted list when validators vote, so we can easily calculate the average price later.
 
 #### RewardWallet:
 
-A contracts that distributes the rewards for stakers and delegators
+A contract that distributes the rewards for stakers and delegators
 
 #### VestingManager:
 
-A manager that handles your vested positions (could have one manager per positions on validator) If you need to have 2 positions on the same validator that are not finished are claimed, you need 2 managers. One managers could handle many validator positions.
+A manager that handles your vested positions (could have one manager per positions on a validator) If you need to have 2 positions on the same validator that are not finished are claimed, you need 2 managers. One manager could handle many validator positions.
 
 - Vesting Manager Factory - a contract that creates vesting managers and keeps that for user vesting managers addresses.
 
@@ -243,7 +243,7 @@ forge build
 
 ### Running tests
 
-As mentioned previously, there are two separate test suites, one in Hardhat/Typescript, and the other in Foundry/Solidity. The HH tests are structured more as scenario tests, generally running through an entire interaction or process, while the Foundry tests are structured more as unit tests. This is coincidental, and is not a set rule.
+As mentioned previously, there are two separate test suites, one in Hardhat/Typescript, and the other in Foundry/Solidity. The HH tests are structured more as scenario tests, generally running through an entire interaction or process, while the Foundry tests are structured more as unit tests. This is coincidental and is not a set rule.
 
 **Hardhat:**
 
@@ -323,4 +323,4 @@ There is a CI script for Github Actions in `.github/workflows/`. Currently it ru
 
 ### Documentation
 
-This repo makes use of [Dodoc](https://github.com/primitivefinance/primitive-dodoc), a Hardhat plugin from Primitive Finance which generates Markdown docs on contracts from their natspec. The docs are generated on every compile, and can be found in the `docs/` directory.
+This repo makes use of [Dodoc](https://github.com/primitivefinance/primitive-dodoc), a Hardhat plugin from Primitive Finance which generates Markdown docs on contracts from their natspec. The docs are generated on every compile and can be found in the `docs/` directory.
