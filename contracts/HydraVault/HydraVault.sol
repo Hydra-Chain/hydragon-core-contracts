@@ -2,18 +2,18 @@
 pragma solidity 0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import {System} from "../common/System/System.sol";
+import {Governed} from "../common/Governed/Governed.sol";
 
-contract HydraVault is Initializable, System, OwnableUpgradeable {
+contract HydraVault is Initializable, System, Governed {
     event FeeReceived(address indexed from, uint256 amount);
     event FeesRelocated(bool success, bytes data);
 
     // _______________ Initializer _______________
 
     function initialize(address governance) public initializer onlySystemCall {
-        _transferOwnership(governance);
+        __Governed_init(governance);
     }
 
     // _______________ External functions _______________
@@ -23,7 +23,7 @@ contract HydraVault is Initializable, System, OwnableUpgradeable {
      * @param contractAddress The address of the contract that will be called
      * @param callData The encoded function with its signature and parameters, if any
      */
-    function relocateFees(address contractAddress, bytes memory callData) external onlyOwner {
+    function relocateFees(address contractAddress, bytes memory callData) external onlyRole(DEFAULT_ADMIN_ROLE) {
         (bool success, bytes memory data) = contractAddress.call{value: address(this).balance}(callData);
 
         emit FeesRelocated(success, data);

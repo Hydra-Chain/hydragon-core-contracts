@@ -11,7 +11,6 @@ import {IPrice} from "./IPrice.sol";
 
 abstract contract Price is IPrice, Initializable, System, Governed, HydraChainConnector, PriceOracleConnector {
     uint256 public constant DENOMINATOR = 10000;
-    bytes32 public constant MANAGER_ROLE = keccak256("manager_role");
 
     bool public disabledBonusesUpdates;
     uint256 public latestDailyPrice;
@@ -31,8 +30,6 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
         __HydraChainConnector_init(_hydraChainAddr);
         __PriceOracleConnector_init(_priceOracleAddr);
         __Price_init_unchained(_prices);
-
-        _grantRole(MANAGER_ROLE, _governance);
     }
 
     // solhint-disable-next-line func-name-mixedcase
@@ -63,7 +60,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @inheritdoc IPrice
      */
-    function guardBonuses() external onlyRole(MANAGER_ROLE) {
+    function guardBonuses() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (disabledBonusesUpdates) {
             revert GuardAlreadyEnabled();
         }
@@ -75,7 +72,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @inheritdoc IPrice
      */
-    function disableGuard() external onlyRole(MANAGER_ROLE) {
+    function disableGuard() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (!disabledBonusesUpdates) {
             revert GuardAlreadyDisabled();
         }

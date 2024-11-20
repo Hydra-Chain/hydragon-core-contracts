@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-
+import {Governed} from "../../../common/Governed/Governed.sol";
 import {IAccessControl} from "./IAccessControl.sol";
 
-abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
+abstract contract AccessControl is IAccessControl, Governed {
     mapping(address => bool) public isWhitelisted;
     bool public isWhitelistingEnabled;
 
@@ -13,12 +12,12 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
 
     // solhint-disable-next-line func-name-mixedcase
     function __AccessControl_init(address _governance) internal onlyInitializing {
-        __AccessControl_init_unchained(_governance);
+        __Governed_init(_governance);
+        __AccessControl_init_unchained();
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AccessControl_init_unchained(address _governance) internal onlyInitializing {
-        _transferOwnership(_governance);
+    function __AccessControl_init_unchained() internal override onlyInitializing {
         isWhitelistingEnabled = true;
     }
 
@@ -37,7 +36,7 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     /**
      * @inheritdoc IAccessControl
      */
-    function enableWhitelisting() external onlyOwner {
+    function enableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (isWhitelistingEnabled) revert WhitelistingAlreadyEnabled();
         isWhitelistingEnabled = true;
     }
@@ -45,7 +44,7 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     /**
      * @inheritdoc IAccessControl
      */
-    function disableWhitelisting() external onlyOwner {
+    function disableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (!isWhitelistingEnabled) revert WhitelistingAlreadyDisabled();
         isWhitelistingEnabled = false;
     }
@@ -53,7 +52,7 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     /**
      * @inheritdoc IAccessControl
      */
-    function addToWhitelist(address[] calldata whitelistAddreses) external onlyOwner {
+    function addToWhitelist(address[] calldata whitelistAddreses) external onlyRole(DEFAULT_ADMIN_ROLE) {
         for (uint256 i = 0; i < whitelistAddreses.length; i++) {
             _addToWhitelist(whitelistAddreses[i]);
         }
@@ -62,7 +61,7 @@ abstract contract AccessControl is IAccessControl, Ownable2StepUpgradeable {
     /**
      * @inheritdoc IAccessControl
      */
-    function removeFromWhitelist(address[] calldata whitelistAddreses) external onlyOwner {
+    function removeFromWhitelist(address[] calldata whitelistAddreses) external onlyRole(DEFAULT_ADMIN_ROLE) {
         for (uint256 i = 0; i < whitelistAddreses.length; i++) {
             _removeFromWhitelist(whitelistAddreses[i]);
         }
