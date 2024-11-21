@@ -511,6 +511,10 @@ export function RunInspectorTests(): void {
 
       await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
         .to.not.be.reverted;
+
+      await expect(
+        systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)
+      ).to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject");
     });
 
     it("should lock commission if validator is banned by the governance", async function () {
@@ -526,9 +530,7 @@ export function RunInspectorTests(): void {
         5, // number of epochs to commit
         this.epochSize
       );
-      await expect(
-        systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)
-      ).to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject");
+
       expect(await hydraDelegation.commissionRewardLocked(this.signers.validators[0].address)).to.be.equal(false);
       await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
         .to.not.be.reverted;
