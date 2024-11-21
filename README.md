@@ -48,11 +48,11 @@ There are a several different contracts with different roles in the suite, as su
 │ GenesisProxy — "the genesis proxy contract"
 │ Faucet — "faucet for the test-net"
 │ HydraChain/ — "commit epochs, keeps validators data"
-├─ AccessControl - "whitelisting users (could disable)"
 ├─ DaoIncentive - "distribute rewards for DAOs"
 ├─ Inspector - "handles validator bans"
 ├─ ValidatorManager - "keeps validator information"
 ├─ ValidatorsData - "real-time data for validators voting power"
+├─ Whitelisting - "whitelisting users (could disable)"
 │ HydraDelegation/ - "handle delegations and commissions"
 ├─ DelegationPoolLib - "lib for the pool of the staker to delegators"
 ├─ LiquidDelegation - "handles giving liquidity tokens on delegate"
@@ -89,11 +89,11 @@ Boneh–Lynn–Shacham (BLS) signature scheme on Barreto-Naehrig 254 bit curve (
 
 Contract for committing epochs and keeping validators' data, handling validators' access
 
-- Access control: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone can register and set a node
 - Dao Incentive: Distributes rewards that are kept for DAOs in the network, later those rewards are sent to the vault and could be sent to a specific contract if the governance agrees that is it helping the network!
 - Inspector: Handles validator bans, initiating a ban after certain inactivity of blocks and permanent ban applying penalty and giving reward (if non-governance wallet) ban the user!
 - Validator Manager: Handles validator information like status, keeping registered information and more.
 - Validators Data: Keep real-time data for validator voting power.
+- Whitelisting: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone can register and set a node
 
 #### HydraStaking:
 
