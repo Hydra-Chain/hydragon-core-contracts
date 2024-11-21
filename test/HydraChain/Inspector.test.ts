@@ -205,7 +205,7 @@ export function RunInspectorTests(): void {
 
       await expect(
         hydraDelegation.connect(validatorToBan).claimCommission(validatorToBan.address)
-      ).to.be.revertedWithCustomError(hydraDelegation, "commissionRewardLocked");
+      ).to.be.revertedWithCustomError(hydraDelegation, "CommissionRewardLocked");
     });
 
     it("should ban a validator that has a vested staking position", async function () {
