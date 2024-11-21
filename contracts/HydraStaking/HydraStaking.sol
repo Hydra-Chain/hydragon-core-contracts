@@ -72,8 +72,8 @@ contract HydraStaking is
      * @notice Stakes the sent amount.
      * @dev Reverts if we have an active position for the staker.
      */
-    function stake() public payable override(IStaking ,Staking, VestedStaking) {
-        super.stake();  
+    function stake() public payable override(IStaking, Staking, VestedStaking) {
+        super.stake();
     }
 
     /**
