@@ -13,14 +13,7 @@ import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
-contract HydraChain is
-    IHydraChain,
-    HydraStakingConnector,
-    ValidatorManager,
-    Inspector,
-    DaoIncentive,
-    ValidatorsData
-{
+contract HydraChain is IHydraChain, HydraStakingConnector, ValidatorManager, Inspector, DaoIncentive, ValidatorsData {
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
