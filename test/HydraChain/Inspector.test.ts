@@ -191,18 +191,36 @@ export function RunInspectorTests(): void {
       expect((await hydraChain.getValidator(validatorToBan.address)).isBanInitiated).to.be.equal(true);
     });
 
+    it("should lock commission for staker on initiate ban", async function () {
+      const { hydraChain, validatorToBan, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.validatorToBanFixture
+      );
+
+      await expect(hydraChain.initiateBan(validatorToBan.address))
+        .to.emit(hydraStaking, "BalanceChanged")
+        .withArgs(validatorToBan.address, 0);
+
+      expect((await hydraChain.getValidator(validatorToBan.address)).isBanInitiated).to.be.equal(true);
+      expect(await hydraDelegation.commissionRewardLocked(validatorToBan.address)).to.be.equal(true);
+
+      await expect(
+        hydraDelegation.connect(validatorToBan).claimCommission(validatorToBan.address)
+      ).to.be.revertedWithCustomError(hydraDelegation, "CommissionRewardLocked");
+    });
+
     it("should ban a validator that has a vested staking position", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
       await systemHydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
 
       const staker = this.signers.accounts[9];
+      const stake = await hydraStaking.stakeOf(staker.address);
       const vestingData = await hydraStaking.vestedStakingPositions(staker.address);
       const nextTimestamp = vestingData.start.add(WEEK);
       await time.setNextBlockTimestamp(nextTimestamp);
 
       const validatorBanPenalty = await systemHydraChain.validatorPenalty();
       // hardcode the penalty percent by 1% a week (9 weeks should be left)
-      const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, this.minStake);
+      const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, stake);
       const stakedAmount = await hydraStaking.stakeOf(staker.address);
 
       // check the staking rewards before the ban
@@ -275,6 +293,23 @@ export function RunInspectorTests(): void {
 
       const validatorParticipationAfter = await hydraChain.validatorsParticipation(inBanProcessValidator.address);
       expect(validatorParticipationAfter).to.not.be.equal(validatorParticipationBefore);
+    });
+
+    it("should unlock commission for staker on terminate ban", async function () {
+      const { hydraChain, inBanProcessValidator, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.banInitiatedFixtureFunction
+      );
+
+      await expect(hydraChain.connect(inBanProcessValidator).terminateBanProcedure(), "emit BalanceChanged")
+        .to.emit(hydraStaking, "BalanceChanged")
+        .withArgs(inBanProcessValidator.address, this.minStake.mul(2));
+
+      expect(
+        (await hydraChain.getValidator(inBanProcessValidator.address)).isBanInitiated,
+        "isBanInitiated"
+      ).to.be.equal(false);
+
+      expect(await hydraDelegation.commissionRewardLocked(inBanProcessValidator.address)).to.be.equal(false);
     });
 
     it("should finish ban and penalize the validator", async function () {
@@ -472,7 +507,20 @@ export function RunInspectorTests(): void {
     });
 
     it("should not ban validator if he is already banned", async function () {
-      const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      const { systemHydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+      await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
+        .to.not.be.reverted;
+
+      await expect(
+        systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)
+      ).to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject");
+    });
+
+    it("should lock commission if validator is banned by the governance", async function () {
+      const { systemHydraChain, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.stakedValidatorsStateFixture
+      );
 
       // commit a couple of epochs in order to have a timestamp
       await commitEpochs(
@@ -483,12 +531,10 @@ export function RunInspectorTests(): void {
         this.epochSize
       );
 
+      expect(await hydraDelegation.commissionRewardLocked(this.signers.validators[0].address)).to.be.equal(false);
       await expect(systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address))
         .to.not.be.reverted;
-
-      await expect(
-        systemHydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address)
-      ).to.be.revertedWithCustomError(systemHydraChain, "NoBanSubject");
+      expect(await hydraDelegation.commissionRewardLocked(this.signers.validators[0].address)).to.be.equal(true);
     });
 
     it("should set bansInitiate to 0 on ban", async function () {

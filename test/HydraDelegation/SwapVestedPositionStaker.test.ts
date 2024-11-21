@@ -244,6 +244,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     expect(oldPosition.rsiBonus, "oldPosition.rsiBonus").to.be.eq(newPosition.rsiBonus);
     expect(oldPosition.commission, "oldPosition.commission").to.not.be.eq(newPosition.commission);
     expect(newPosition.commission, "newPosition.commission").to.be.eq(50);
+    expect(oldPosition.startBlock, "newPosition.startBlock").to.be.eq(newPosition.startBlock);
   });
 
   it("should start earning rewards on new position after swap", async function () {

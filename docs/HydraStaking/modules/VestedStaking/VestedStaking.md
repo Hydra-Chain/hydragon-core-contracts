@@ -436,9 +436,9 @@ sets a new penalty rate
 function stake() external payable
 ```
 
-Stakes sent amount.
+Stake the amount given by the sender
 
-
+*Overrides the stake function in Staking contractIf the staker has an active position, the stake will be rejected*
 
 
 ### stakeOf
@@ -471,7 +471,7 @@ function stakeWithVesting(uint256 durationWeeks) external payable
 
 Stakes sent amount with vesting period.
 
-
+*The staker also claims any rewards before opening a new position, to avoid locking them during vesting cycleIf staker has stake already, the whole stake will be in the position*
 
 #### Parameters
 

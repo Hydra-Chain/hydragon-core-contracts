@@ -361,7 +361,7 @@ function stakeWithVesting(uint256 durationWeeks) external payable
 
 Stakes sent amount with vesting period.
 
-
+*The staker also claims any rewards before opening a new position, to avoid locking them during vesting cycleIf staker has stake already, the whole stake will be in the position*
 
 #### Parameters
 

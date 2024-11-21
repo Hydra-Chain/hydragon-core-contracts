@@ -14,6 +14,8 @@ interface IVestedStaking is IVesting, IStaking {
     /**
      * @notice Stakes sent amount with vesting period.
      * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.
+     * @dev The staker also claims any rewards before opening a new position, to avoid locking them during vesting cycle
+     * @dev If staker has stake already, the whole stake will be in the position
      */
     function stakeWithVesting(uint256 durationWeeks) external payable;
 

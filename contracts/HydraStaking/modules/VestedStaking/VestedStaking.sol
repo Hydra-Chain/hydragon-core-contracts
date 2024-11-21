@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
-import {Staking} from "../../Staking.sol";
+import {Staking, IStaking} from "../../Staking.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 
 /**
@@ -42,6 +42,9 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
         // Claim the rewards before opening a new position, to avoid locking them during vesting cycle
         if (unclaimedRewards(msg.sender) != 0) _claimStakingRewards(msg.sender);
 
+        // Clear the staking rewards history
+        delete stakingRewardsHistory[msg.sender];
+
         uint256 duration = durationWeeks * 1 weeks;
         vestedStakingPositions[msg.sender] = VestingPosition({
             duration: duration,
@@ -54,6 +57,19 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
         });
 
         _stake(msg.sender, msg.value);
+    }
+
+    /**
+     * @notice Stake the amount given by the sender
+     * @dev Overrides the stake function in Staking contract
+     * @dev If the staker has an active position, the stake will be rejected
+     */
+    function stake() public payable virtual override(Staking, IStaking) {
+        if (vestedStakingPositions[msg.sender].isActive()) {
+            revert StakeRequirement({src: "stake", msg: "IN_ACTIVE_POSITION"});
+        }
+
+        super.stake();
     }
 
     /**

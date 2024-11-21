@@ -60,6 +60,94 @@ export function RunVestedStakingTests(): void {
         expect(await hydraStaking.stakeOf(this.staker.address), "stake").to.be.equal(this.minStake);
       });
 
+      it("should open vested position with the old stake base and adjust token balance", async function () {
+        const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const validator = this.signers.validators[0];
+
+        await hydraStaking.connect(validator).stake({ value: this.minStake.mul(20) });
+
+        const tokenBalance = await liquidToken.balanceOf(validator.address);
+
+        await hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake });
+
+        const currentStake = await hydraStaking.stakeOf(validator.address);
+        const expectedLiquidTokens = calcLiquidTokensToDistributeOnVesting(52, currentStake);
+        const currentTokenBalance = await liquidToken.balanceOf(validator.address);
+        expect(currentTokenBalance).to.be.equal(expectedLiquidTokens);
+        expect(tokenBalance).to.be.above(currentTokenBalance);
+      });
+
+      it("should open vested position with the old vested matured position and adjust token balance", async function () {
+        const { hydraStaking, liquidToken, systemHydraChain } = await loadFixture(
+          this.fixtures.stakedValidatorsStateFixture
+        );
+
+        const validator = this.signers.validators[0];
+
+        await hydraStaking.connect(validator).stakeWithVesting(1, { value: this.minStake.mul(20) });
+
+        // commit epochs to mature the position
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize,
+          WEEK * 3
+        );
+
+        const tokenBalance = await liquidToken.balanceOf(validator.address);
+        expect(tokenBalance, "oldTokenBalance").to.be.lt(this.minStake.mul(22));
+        expect(await hydraStaking.stakeOf(validator.address), "stake").to.be.eq(this.minStake.mul(22));
+
+        await hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake });
+
+        const currentStake = await hydraStaking.stakeOf(validator.address);
+        const expectedLiquidTokens = calcLiquidTokensToDistributeOnVesting(52, currentStake);
+        const currentTokenBalance = await liquidToken.balanceOf(validator.address);
+        expect(currentTokenBalance, "newTokenBalance").to.be.equal(expectedLiquidTokens);
+        expect(tokenBalance, "old vs new balance").to.be.above(currentTokenBalance);
+      });
+
+      it("should revert open vested position with the old stake base if staker send his token balance to anyone", async function () {
+        const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const validator = this.signers.validators[0];
+
+        await hydraStaking.connect(validator).stake({ value: this.minStake.mul(20) });
+        await liquidToken.connect(validator).transfer(this.signers.delegator.address, 1);
+
+        await expect(hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake })).to.be.revertedWith(
+          "ERC20: burn amount exceeds balance"
+        );
+      });
+
+      it("should revert open vested position with the old vested position if staker send his token balance to anyone", async function () {
+        const { hydraStaking, liquidToken, systemHydraChain } = await loadFixture(
+          this.fixtures.stakedValidatorsStateFixture
+        );
+
+        const validator = this.signers.validators[0];
+
+        await hydraStaking.connect(validator).stakeWithVesting(1, { value: this.minStake });
+        await liquidToken.connect(validator).transfer(this.signers.delegator.address, 1);
+
+        // commit epochs to mature the position
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          1, // number of epochs to commit
+          this.epochSize,
+          WEEK * 3
+        );
+
+        await expect(hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake })).to.be.revertedWith(
+          "ERC20: burn amount exceeds balance"
+        );
+      });
+
       it("should not be in vesting cycle", async function () {
         const { stakerHydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
@@ -71,12 +159,11 @@ export function RunVestedStakingTests(): void {
       it("should add debt to staker when opening a vested position", async function () {
         const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
-        const liquidTokens = calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, this.minStake);
+        const amount = await hydraStaking.stakeOf(this.staker.address);
+        const liquidTokens = calcLiquidTokensToDistributeOnVesting(VESTING_DURATION_WEEKS, amount);
 
         expect(await liquidToken.balanceOf(this.staker.address)).to.be.equal(liquidTokens);
-        expect(await hydraStaking.liquidityDebts(this.staker.address)).to.be.equal(
-          this.minStake.sub(liquidTokens).mul(-1)
-        );
+        expect(await hydraStaking.liquidityDebts(this.staker.address)).to.be.equal(amount.sub(liquidTokens).mul(-1));
       });
     });
 
@@ -159,8 +246,6 @@ export function RunVestedStakingTests(): void {
           this.fixtures.newVestingValidatorFixture
         );
 
-        await stakerHydraStaking.stake({ value: this.minStake });
-
         await commitEpochs(
           systemHydraChain,
           hydraStaking,
@@ -242,26 +327,12 @@ export function RunVestedStakingTests(): void {
 
     describe("Claim position reward", function () {
       it("should not be able to claim when active", async function () {
-        const { stakerHydraStaking, systemHydraChain, hydraStaking } = await loadFixture(
-          this.fixtures.newVestingValidatorFixture
-        );
+        const { stakerHydraStaking, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
-        );
-
-        await stakerHydraStaking.stake({ value: this.minStake });
-
-        await commitEpochs(
-          systemHydraChain,
-          hydraStaking,
-          [this.signers.validators[0], this.signers.validators[1], this.staker],
-          1, // number of epochs to commit
-          this.epochSize
+        //  we already take the reward when opening the position
+        await expect(stakerHydraStaking["claimStakingRewards()"]()).to.be.revertedWithCustomError(
+          stakerHydraStaking,
+          "NoRewards"
         );
 
         const reward = await getValidatorReward(hydraStaking, this.staker.address);
@@ -269,7 +340,7 @@ export function RunVestedStakingTests(): void {
       });
 
       it("should revert claimValidatorReward(epoch) when giving wrong index", async function () {
-        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
@@ -300,7 +371,7 @@ export function RunVestedStakingTests(): void {
       });
 
       it("should be able to claim with claimValidatorReward(epoch) when maturing", async function () {
-        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
@@ -333,7 +404,7 @@ export function RunVestedStakingTests(): void {
 
       it("should be able to claim whole reward when not in position", async function () {
         const { stakerHydraStaking, systemHydraChain, hydraStaking } = await loadFixture(
-          this.fixtures.vestingRewardsFixture
+          this.fixtures.newVestingValidatorFixture
         );
 
         // add reward exactly before maturing (second to the last block)
@@ -367,7 +438,7 @@ export function RunVestedStakingTests(): void {
 
     describe("calculatePositionTotalReward()", async function () {
       it("should be bigger than claimable when maturing", async function () {
-        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
@@ -410,7 +481,7 @@ export function RunVestedStakingTests(): void {
       });
 
       it("should return all rewards in case matured", async function () {
-        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.vestingRewardsFixture);
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
 
         // add reward exactly before maturing (second to the last block)
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);

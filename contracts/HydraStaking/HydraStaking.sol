@@ -12,7 +12,7 @@ import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol"
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
-import {Staking} from "./Staking.sol";
+import {Staking, IStaking} from "./Staking.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -67,6 +67,14 @@ contract HydraStaking is
     }
 
     // _______________ External functions _______________
+
+    /**
+     * @notice Stakes the sent amount.
+     * @dev Reverts if we have an active position for the staker.
+     */
+    function stake() public payable override(IStaking, Staking, VestedStaking) {
+        super.stake();
+    }
 
     /**
      * @inheritdoc IHydraStaking
@@ -226,6 +234,13 @@ contract HydraStaking is
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
         if (_isOpeningPosition(position)) {
+            uint256 currentStake = stakeOf(staker);
+            if (currentStake != amount) {
+                currentStake -= amount;
+                _collectTokens(staker, currentStake);
+                amount += currentStake;
+            }
+
             uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[staker] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;
@@ -270,13 +285,13 @@ contract HydraStaking is
             revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
         }
 
-        uint256 stake = stakeOf(uptime.validator);
+        uint256 currentStake = stakeOf(uptime.validator);
         uint256 delegation = _getStakerDelegatedBalance(uptime.validator);
         // slither-disable-next-line divide-before-multiply
-        uint256 stakerRewardIndex = (fullRewardIndex * (stake + delegation) * uptime.signedBlocks) /
+        uint256 stakerRewardIndex = (fullRewardIndex * (currentStake + delegation) * uptime.signedBlocks) /
             (totalSupply * totalBlocks);
         (uint256 stakerShares, uint256 delegatorShares) = _calculateStakerAndDelegatorShares(
-            stake,
+            currentStake,
             delegation,
             stakerRewardIndex
         );
@@ -285,7 +300,7 @@ contract HydraStaking is
         _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
         // Keep history record of the staker rewards to be used on maturing vesting reward claim
-        if (stakerShares > 0) {
+        if (stakerShares != 0) {
             _saveStakerRewardData(uptime.validator, epochId);
         }
 

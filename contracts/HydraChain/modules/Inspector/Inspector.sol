@@ -57,6 +57,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
         bansInitiated[validator] = block.timestamp;
         hydraStakingContract.temporaryEjectValidator(validator);
+        hydraDelegationContract.lockCommissionReward(validator);
     }
 
     /**
@@ -70,6 +71,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         bansInitiated[msg.sender] = 0;
         _updateParticipation(msg.sender);
         hydraStakingContract.recoverEjectedValidator(msg.sender);
+        hydraDelegationContract.unlockCommissionReward(msg.sender);
     }
 
     /**
@@ -82,6 +84,10 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
         if (bansInitiated[validator] != 0) {
             bansInitiated[validator] = 0;
+        }
+
+        if (owner() == msg.sender) {
+            hydraDelegationContract.lockCommissionReward(validator);
         }
 
         _ban(validator);

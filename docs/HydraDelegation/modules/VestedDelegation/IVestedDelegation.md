@@ -455,6 +455,22 @@ Check if the a position that the user wants to swap to is available
 |---|---|---|
 | _0 | bool | undefined |
 
+### lockCommissionReward
+
+```solidity
+function lockCommissionReward(address staker) external nonpayable
+```
+
+Locks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -620,6 +636,22 @@ Undelegates amount from staker for vesting position. Apply penalty in case vesti
 |---|---|---|
 | staker | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
+
+### unlockCommissionReward
+
+```solidity
+function unlockCommissionReward(address staker) external nonpayable
+```
+
+Unlocks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
 
 ### withdraw
 
@@ -899,6 +931,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 ## Errors
+
+### CommissionRewardLocked
+
+```solidity
+error CommissionRewardLocked()
+```
+
+
+
+
+
 
 ### CommissionUpdateNotAvailable
 

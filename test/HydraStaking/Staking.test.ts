@@ -3,7 +3,7 @@ import * as hre from "hardhat";
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
-import { ERRORS, WEEK } from "../constants";
+import { ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
 
 export function RunStakingTests(): void {
   describe("Total Stake", function () {
@@ -111,6 +111,29 @@ export function RunStakingTests(): void {
       expect(await hydraStaking.stakeOf(validator.address)).to.equal(0);
 
       await expect(validatorHydraStaking.stake({ value: this.minStake })).to.not.be.reverted;
+    });
+
+    it("should revert stake if validator is in active position", async function () {
+      const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
+      const validator = this.signers.validators[0];
+
+      // Disable automining
+      await hre.network.provider.send("evm_setAutomine", [false]);
+
+      const stakerHydraStaking = hydraStaking.connect(validator);
+      await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
+        value: this.minStake,
+      });
+      await expect(
+        stakerHydraStaking.stake({
+          value: this.minStake,
+        })
+      )
+        .to.be.revertedWithCustomError(stakerHydraStaking, "StakeRequirement")
+        .withArgs("stake", "IN_ACTIVE_POSITION");
+
+      // Re-enable automining (optional, for subsequent tests)
+      await hre.network.provider.send("evm_setAutomine", [true]);
     });
   });
 

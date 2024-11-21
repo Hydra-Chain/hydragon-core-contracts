@@ -159,6 +159,22 @@ Returns the raw reward before applying the commission and APR
 |---|---|---|
 | _0 | uint256 | Raw reward for the delegator before applying APR and commission |
 
+### lockCommissionReward
+
+```solidity
+function lockCommissionReward(address staker) external nonpayable
+```
+
+Locks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -274,6 +290,22 @@ Undelegates amount from staker for sender, claims rewards and validator comissio
 |---|---|---|
 | staker | address | Validator to undelegate from |
 | amount | uint256 | The amount to undelegate |
+
+### unlockCommissionReward
+
+```solidity
+function unlockCommissionReward(address staker) external nonpayable
+```
+
+Unlocks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
 
 ### withdraw
 
@@ -479,6 +511,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 ## Errors
+
+### CommissionRewardLocked
+
+```solidity
+error CommissionRewardLocked()
+```
+
+
+
+
+
 
 ### CommissionUpdateNotAvailable
 

@@ -842,7 +842,7 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
 
   const stakerHydraStaking = hydraStaking.connect(staker);
   await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
-    value: this.minStake,
+    value: this.minStake.mul(2),
   });
 
   // commit epoch so the balance is increased
@@ -862,52 +862,6 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
     hydraDelegation,
     liquidToken,
     aprCalculator,
-    vestingManagerFactory,
-    rewardWallet,
-  };
-}
-
-async function vestingRewardsFixtureFunction(this: Mocha.Context) {
-  const {
-    stakerHydraStaking,
-    systemHydraChain,
-    bls,
-    hydraStaking,
-    hydraDelegation,
-    aprCalculator,
-    liquidToken,
-    vestingManagerFactory,
-    rewardWallet,
-  } = await loadFixture(this.fixtures.newVestingValidatorFixture);
-
-  const staker = this.signers.accounts[9];
-
-  await commitEpochs(
-    systemHydraChain,
-    hydraStaking,
-    [this.signers.validators[0], this.signers.validators[1], staker],
-    1, // number of epochs to commit
-    this.epochSize
-  );
-
-  await stakerHydraStaking.stake({ value: this.minStake });
-
-  await commitEpochs(
-    systemHydraChain,
-    hydraStaking,
-    [this.signers.validators[0], this.signers.validators[1], staker],
-    1, // number of epochs to commit
-    this.epochSize
-  );
-
-  return {
-    stakerHydraStaking,
-    systemHydraChain,
-    bls,
-    hydraStaking,
-    hydraDelegation,
-    aprCalculator,
-    liquidToken,
     vestingManagerFactory,
     rewardWallet,
   };
@@ -1177,7 +1131,6 @@ export async function generateFixtures(context: Mocha.Context) {
   context.fixtures.votedValidatorsStateFixture = votedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.stakedValidatorsStateFixture = stakedValidatorsStateFixtureFunction.bind(context);
   context.fixtures.newVestingValidatorFixture = newVestingValidatorFixtureFunction.bind(context);
-  context.fixtures.vestingRewardsFixture = vestingRewardsFixtureFunction.bind(context);
   context.fixtures.withdrawableFixture = withdrawableFixtureFunction.bind(context);
   context.fixtures.delegatedFixture = delegatedFixtureFunction.bind(context);
   context.fixtures.vestManagerFixture = vestManagerFixtureFunction.bind(context);
