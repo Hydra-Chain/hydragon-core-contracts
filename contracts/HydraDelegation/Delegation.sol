@@ -35,6 +35,8 @@ contract Delegation is
     mapping(address => uint256) public commissionUpdateAvailableAt;
     /// @notice The commission reward for the staker
     mapping(address => uint256) public distributedCommissions;
+    /// @notice If the commission is locked for the staker
+    mapping(address => bool) public commissionRewardLocked;
     /// @notice Keeps the delegation pools
     mapping(address => DelegationPool) public delegationPools;
     /// @notice The minimum delegation amount to be delegated
@@ -88,6 +90,7 @@ contract Delegation is
      * @inheritdoc IDelegation
      */
     function claimCommission(address to) external {
+        if (commissionRewardLocked[msg.sender]) revert CommissionRewardLocked();
         _claimCommission(msg.sender, to);
     }
 
@@ -105,6 +108,20 @@ contract Delegation is
         _claimDelegatorReward(staker, msg.sender);
         _undelegate(staker, msg.sender, amount);
         _registerWithdrawal(msg.sender, amount);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function lockCommissionReward(address staker) external onlyHydraChain {
+        commissionRewardLocked[staker] = true;
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function unlockCommissionReward(address staker) external onlyHydraChain {
+        commissionRewardLocked[staker] = false;
     }
 
     /**

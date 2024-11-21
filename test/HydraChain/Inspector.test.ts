@@ -191,6 +191,23 @@ export function RunInspectorTests(): void {
       expect((await hydraChain.getValidator(validatorToBan.address)).isBanInitiated).to.be.equal(true);
     });
 
+    it("should lock commission for staker on initiate ban", async function () {
+      const { hydraChain, validatorToBan, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.validatorToBanFixture
+      );
+
+      await expect(hydraChain.initiateBan(validatorToBan.address))
+        .to.emit(hydraStaking, "BalanceChanged")
+        .withArgs(validatorToBan.address, 0);
+
+      expect((await hydraChain.getValidator(validatorToBan.address)).isBanInitiated).to.be.equal(true);
+      expect(await hydraDelegation.commissionRewardLocked(validatorToBan.address)).to.be.equal(true);
+
+      await expect(
+        hydraDelegation.connect(validatorToBan).claimCommission(validatorToBan.address)
+      ).to.be.revertedWithCustomError(hydraDelegation, "commissionRewardLocked");
+    });
+
     it("should ban a validator that has a vested staking position", async function () {
       const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.newVestingValidatorFixture);
       await systemHydraChain.connect(this.signers.governance).setValidatorPenalty(this.minStake.div(10));
@@ -276,6 +293,23 @@ export function RunInspectorTests(): void {
 
       const validatorParticipationAfter = await hydraChain.validatorsParticipation(inBanProcessValidator.address);
       expect(validatorParticipationAfter).to.not.be.equal(validatorParticipationBefore);
+    });
+
+    it("should unlock commission for staker on terminate ban", async function () {
+      const { hydraChain, inBanProcessValidator, hydraStaking, hydraDelegation } = await loadFixture(
+        this.fixtures.banInitiatedFixtureFunction
+      );
+
+      await expect(hydraChain.connect(inBanProcessValidator).terminateBanProcedure(), "emit BalanceChanged")
+        .to.emit(hydraStaking, "BalanceChanged")
+        .withArgs(inBanProcessValidator.address, this.minStake.mul(2));
+
+      expect(
+        (await hydraChain.getValidator(inBanProcessValidator.address)).isBanInitiated,
+        "isBanInitiated"
+      ).to.be.equal(false);
+
+      expect(await hydraDelegation.commissionRewardLocked(inBanProcessValidator.address)).to.be.equal(false);
     });
 
     it("should finish ban and penalize the validator", async function () {

@@ -394,6 +394,28 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
 | balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
 
+### commissionRewardLocked
+
+```solidity
+function commissionRewardLocked(address) external view returns (bool)
+```
+
+If the commission is locked for the staker
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### commissionUpdateAvailableAt
 
 ```solidity
@@ -949,6 +971,22 @@ function liquidityDebts(address) external view returns (int256)
 |---|---|---|
 | _0 | int256 | undefined |
 
+### lockCommissionReward
+
+```solidity
+function lockCommissionReward(address staker) external nonpayable
+```
+
+Locks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+
 ### minDelegation
 
 ```solidity
@@ -1221,6 +1259,22 @@ Undelegates amount from staker for vesting position. Apply penalty in case vesti
 |---|---|---|
 | staker | address | Validator to undelegate from |
 | amount | uint256 | Amount to be undelegated |
+
+### unlockCommissionReward
+
+```solidity
+function unlockCommissionReward(address staker) external nonpayable
+```
+
+Unlocks the commission for the staker
+
+*Only callable by HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
 
 ### vestedDelegationPositions
 
@@ -1650,6 +1704,17 @@ event WithdrawalRegistered(address indexed account, uint256 amount)
 
 
 ## Errors
+
+### CommissionRewardLocked
+
+```solidity
+error CommissionRewardLocked()
+```
+
+
+
+
+
 
 ### CommissionUpdateNotAvailable
 

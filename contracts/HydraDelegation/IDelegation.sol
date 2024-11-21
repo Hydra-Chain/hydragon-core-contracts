@@ -15,6 +15,7 @@ interface IDelegation is IWithdrawal {
     error InvalidCommission();
     error NoCommissionToClaim();
     error InvalidMinDelegation();
+    error CommissionRewardLocked();
     error CommissionUpdateNotAvailable();
 
     /**
@@ -49,6 +50,20 @@ interface IDelegation is IWithdrawal {
      * @param amount The amount to undelegate
      */
     function undelegate(address staker, uint256 amount) external;
+
+    /**
+     * @notice Locks the commission for the staker
+     * @param staker Address of the validator
+     * @dev Only callable by HydraChain
+     */
+    function lockCommissionReward(address staker) external;
+
+    /**
+     * @notice Unlocks the commission for the staker
+     * @param staker Address of the validator
+     * @dev Only callable by HydraChain
+     */
+    function unlockCommissionReward(address staker) external;
 
     /**
      * @notice Returns the total delegation amount
