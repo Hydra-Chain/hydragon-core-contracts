@@ -363,7 +363,7 @@ contract Delegation is
     function _setPendingCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission();
 
-        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
+        commissionUpdateAvailableAt[staker] = block.timestamp + 15 days;
         pendingCommissionPerStaker[staker] = newCommission;
 
         emit PendingCommissionAdded(staker, newCommission);
