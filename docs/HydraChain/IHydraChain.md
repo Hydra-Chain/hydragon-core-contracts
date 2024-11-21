@@ -787,6 +787,17 @@ error MaxValidatorsReached()
 
 
 
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
 ### NoBanInitiated
 
 ```solidity
