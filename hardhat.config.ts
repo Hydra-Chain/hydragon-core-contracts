@@ -28,20 +28,12 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    root: {
-      url: process.env.ROOT_RPC || "",
+    hydraChain: {
+      url: process.env.HYDRA_CHAIN_RPC || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    rootTest: {
-      url: process.env.ROOT_TEST_RPC || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    child: {
-      url: process.env.CHILD_RPC || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    childTest: {
-      url: process.env.CHILD_TEST_RPC || "",
+    hydraTest: {
+      url: process.env.HYDRA_TESTNET_RPC || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     hardhat: {
@@ -59,8 +51,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY !== undefined ? process.env.ETHERSCAN_API_KEY : "",
       goerli: process.env.ETHERSCAN_API_KEY !== undefined ? process.env.ETHERSCAN_API_KEY : "",
-      polygon: process.env.POLYGONSCAN_API_KEY !== undefined ? process.env.POLYGONSCAN_API_KEY : "",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY !== undefined ? process.env.POLYGONSCAN_API_KEY : "",
+      sepolia: process.env.ETHERSCAN_API_KEY !== undefined ? process.env.ETHERSCAN_API_KEY : "",
     },
   },
   mocha: {

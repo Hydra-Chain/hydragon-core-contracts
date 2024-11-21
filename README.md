@@ -1,11 +1,9 @@
-# V3 Contracts
+# HydraGon Core Contracts
 
-[![Solidity CI](https://github.com/maticnetwork/v3-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/maticnetwork/v3-contracts/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/maticnetwork/v3-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/maticnetwork/v3-contracts?branch=main)
+[![Solidity CI](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Hydra-Chain/hydragon-core-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/Hydra-Chain/hydragon-core-contracts?branch=main)
 
-This repository contains the smart contract suite used in Polygon's POS v3 blockchain.
-
-**_Note: You do not need to clone this repo in order to interact with Polygon POS v3._**
+**_Note: This repo is based on Polygon Edge core contracts._**
 
 ## Contents
 
@@ -25,36 +23,121 @@ This repository contains the smart contract suite used in Polygon's POS v3 block
 
 ## Known discrepancies
 
-- The epoch increases at the begining of the last block of an epoch, which results in the following:
-  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (or valdiator status) at epoch X + 2, because actually he made the balance change in epoch x + 1
+- The epoch increases at the beginning of the last block of an epoch, which results in the following:
+  - If a user changes its stake (or delegation) in the last block of an epoch X, the change will be applied on its voting power (or validator status) at epoch X + 2, because actually he made the balance change in epoch x + 1
 
 ## Repo Architecture
 
 ### Contracts
 
-There are a number of different contracts with different roles in the suite, as such an architecture diagram of the contents of `contracts/` should be useful in understanding where to find what you're looking for:
+There are a several different contracts with different roles in the suite, as such an architecture diagram of the contents of `contracts/` should be useful in understanding where to find what you're looking for:
 
 ```ml
-│ child/ "contracts that live on the child chain (POS v3)"
-├─ ChildValidatorSet - "staking, delegating, committing epochs, reward distribution"
-├─ StateReceiver — "child chain component of a message bridge"
-├─ System - "various infra/precompile addresses on the child chain"
-│ common/ "libraries used on both the child and root chains"
-├─ BLS - "BLS signature operations"
-├─ BN256G2 - "elliptic curve operations on G2 for BN256 (used for BLS)"
-├─ Merkle - "checks membership of a hash in a merkle tree"
-│ interfaces/ "interfaces for all contracts"
-│ libs/ "libraries used for specific applications"
-├─ ModExp — "modular exponentiation (from Hubble Project, for BLS)"
-├─ ValidatorQueue - "lib of operations for the validator queue"
-├─ ValidatorStorage — "statistical red-black tree lib for ordering validators"
-├─ WithdrawalQueue — "lib of operations for the rewards withdrawal queue"
-│ mocks/ "mocks of various contracts for testing"
-│ root/ "contracts that live on the root chain (Ethereum mainnet)"
-├─ CheckpointManager - "receives and executes messages from child"
-├─ RootValidatorSet - "*LIKELY TO CHANGE* stores data from child about validators and epochs"
-├─ StateSender - "sends messages to child"
+│ APRCalculator/ - "APR reward, bonuses and price"
+├─ MacroFactor - "updates Macro Factor based on price"
+├─ Price - "updates prices from price Oracle"
+├─ RSI - "update RSI based on price"
+│ BLS - "BLS signature operations"
+│ common/ "commonly used contracts/libraries"
+├─ Governed - "handles governance logic"
+├─ libs/ "libraries used for specific applications"
+├─ Liquid — "handles liquidity tokens minting/burning and debts"
+├─ System - "various infra/precompile addresses on the chain"
+├─ Vesting — "handles base vesting functions for vested positions"
+├─ Withdrawal — "handles withdrawing hydra from contracts"
+│ GenesisProxy — "the genesis proxy contract"
+│ Faucet — "faucet for the test-net"
+│ HydraChain/ — "commit epochs, keeps validators data"
+├─ AccessControl - "whitelisting users (could disable)"
+├─ DaoIncentive - "distribute rewards for DAOs"
+├─ Inspector - "handles validator bans"
+├─ ValidatorManager - "keeps validator information"
+├─ ValidatorsData - "real-time data for validators voting power"
+│ HydraDelegation/ - "handle delegations and commissions"
+├─ DelegationPoolLib - "lib for the pool of the staker to delegators"
+├─ LiquidDelegation - "handles giving liquidity tokens on delegate"
+├─ VestedDelegation - "delegating with vested position"
+│ HydraStaking/ — "handles staking and distributes rewards"
+├─ DelegatedStaking - "trigger updates on delegation"
+├─ LiquidStaking - "handles giving liquidity tokens on staking"
+├─ PenalizeableStaking - "penalize staker on ban"
+├─ StateSynchStaking - "synch the state on change"
+├─ VestedStaking - "staking with vested positions"
+│ HydraVault/ — "vault to keep funds"
+│ LiquidityToken/ — "liquid token ERC20, representing the staked/delegated Hydra"
+│ PriceOracle/ — "oracle which validators vote for a price"
+├─ SortedPriceList - "list for validators to vote easily on price"
+│ RewardWallet/ — "wallet that distributes the rewards"
+│ VestingManager/ — "vesting manager that is needed for vested delegation"
+├─ VestingManagerFactory - "factory creating a vesting manager easily"
 ```
+
+#### APRCalculator:
+
+Saving the values of the APR, bonuses and price of Hydra
+
+- Macro Factor: used to multiply the base APR and adjust the APR for positions depending on the price movement between 310 days and the last 115 days
+- Price: updates the price for the contracts (update is possible only through PriceOracle) and triggers an update on bonuses depending on the price change, it also can guard bonuses by changing their values to default in critical situations
+- RSI - Updates the RSI bonus, depending on the average gain and loss for the last 14 days, the RSI bonus is used in vested positions
+
+#### BLS:
+
+Used for register validators, reduces the size of signature data to store on-chain
+Boneh–Lynn–Shacham (BLS) signature scheme on Barreto-Naehrig 254 bit curve (BN-254)
+
+#### HydraChain:
+
+Contract for committing epochs and keeping validators' data, handling validators' access
+
+- Access control: Used for whitelisting addresses (whitelisted addresses can register) this feature can also be disabled so anyone can register and set a node
+- Dao Incentive: Distributes rewards that are kept for DAOs in the network, later those rewards are sent to the vault and could be sent to a specific contract if the governance agrees that is it helping the network!
+- Inspector: Handles validator bans, initiating a ban after certain inactivity of blocks and permanent ban applying penalty and giving reward (if non-governance wallet) ban the user!
+- Validator Manager: Handles validator information like status, keeping registered information and more.
+- Validators Data: Keep real-time data for validator voting power.
+
+#### HydraStaking:
+
+Contracts that keep the validator’s stake and distribute rewards
+
+- Staking - handles the base stake functions
+- Delegated Staking - synch information on delegate from Hydra Delegation contract
+- Liquid Staking - handles actions within the Lydra token, including minting, burning, calculating liquidity Debts and more.
+- Penalizeable Staking - handle penalizing validators on a ban, and withdrawing banned funds
+- StateSyncStaking - This contract is used to emit a specific event when staked balance changes
+- Vested Staking - Handle vested staked positions
+
+#### HydraDelegation:
+
+Handles Delegation functions, for delegators and commissions for validators
+
+- Delegation: Keep the base delegate functionality
+- Delegation Pool Lib: This library is used for managing delegators and their rewards within a staking pool.
+- Liquid Delegation - handles actions within the Lydra token, including minting, burning, calculating liquidity Debts and more.
+- Vested Delegation - handling vested positions (through Managers), swapping, delegating, cutting and more.
+
+#### HydraVault:
+
+A contract that is used for keeping DAO Incentive funds and distributes them to a contract
+
+#### LiquidityToken:
+
+An ERC20 that represents the staked/delegated Hydra, could be used for trading while waiting for the position to grow.
+
+#### PriceOracle:
+
+An oracle that validators vote from, agreeing on a specific price and updating it on the APR calculator.
+
+- SortedPriceList: Library for keeping a sorted list when validators vote, so we can easily calculate the average price later.
+
+#### RewardWallet:
+
+A contract that distributes the rewards for stakers and delegators
+
+#### VestingManager:
+
+A manager that handles your vested positions (could have one manager per positions on a validator) If you need to have 2 positions on the same validator that are not finished are claimed, you need 2 managers. One manager could handle many validator positions.
+
+- Vesting Manager Factory - a contract that creates vesting managers and keeps that for user vesting managers addresses.
 
 ### General Repo Layout
 
@@ -114,12 +197,12 @@ Note that this only works on Linux and Mac. For Windows, or if `foundryup` doesn
 
 ### Installation
 
-**You do not need to clone this repo in order to interact with the Polygon core contracts**
+**You do not need to clone this repo in order to interact with the HydraGon core contracts**
 
 If you would like to work with these contracts in a development environment, first clone the repo:
 
 ```bash
-git clone git@github.com:maticnetwork/v3-contracts.git
+git clone git@github.com:Hydra-Chain/hydragon-core-contracts.git
 ```
 
 If you have [nvm](https://github.com/nvm-sh/nvm) installed (recommended), you can run `nvm use #` to set your version of Node to the same as used in development and testing.
@@ -139,12 +222,6 @@ forge install
 ### Environment Setup
 
 There are a few things that should be done to set up the repo once you've cloned it and installed the dependencies and libraries. An important step for various parts of the repo to work properly is to set up a `.env` file. There is an `.example.env` file provided, copy it and rename the copy `.env`.
-
-The v3 contract set is meant to be deployed across two blockchains, which are called the root chain and child chain. In the case of Polygon POS v3 itself, Ethereum mainnet is the root chain, while Polygon POS v3 is the child chain. In order to give users the ability to work with these contracts on the chains of their choice, four networks are configured in Hardhat: `root`, `rootTest`, `child`, and `childTest`. To interact with whichever networks you would like to use as root and/or child, you will need to add a URL pointing to an RPC endpoint on the relevant chain in your `.env` file. This can be a RPC provider such as Ankr or Alchemy, in which case you would put the entire URL including the API key into the relevant line of the `.env`, or could be a local node, in which case you would put `https://localhost:<PORT_NUMBER>` (usually 8545).
-
-A field for a private key is also provided in the `.env`. You will need to input this if you are interacting with any public networks (for example, deploying the contracts to a testnet).
-
-Lastly, there are fields for an Etherscan and Polygonscan for verifying any deployed contracts on the Ethereum or Polygon mainnets or testnets. (Some additional configuration may be required, only Eth mainnet, Goerli, Polygon POS v1, and Mumbai are configured as of this writing.)
 
 ### Compiling Contracts
 
@@ -166,7 +243,7 @@ forge build
 
 ### Running tests
 
-As mentioned previously, there are two separate test suites, one in Hardhat/Typescript, and the other in Foundry/Solidity. The HH tests are structured more as scenario tests, generally running through an entire interaction or process, while the Foundry tests are structured more as unit tests. This is coincidental, and is not a set rule.
+As mentioned previously, there are two separate test suites, one in Hardhat/Typescript, and the other in Foundry/Solidity. The HH tests are structured more as scenario tests, generally running through an entire interaction or process, while the Foundry tests are structured more as unit tests. This is coincidental and is not a set rule.
 
 **Hardhat:**
 
@@ -184,7 +261,11 @@ forge test
 
 Simple gas profiling is included in Foundry tests by default. For a more complete gas profile using Foundry, see [their documentation](https://book.getfoundry.sh/forge/gas-reports).
 
-Simple gas profiling is included in Foundry tests by default. For a more complete gas profile using Foundry, see [their documentation](https://book.getfoundry.sh/forge/gas-reports).
+**Hardhat & Foundry**
+
+```bash
+npm run test
+```
 
 ### Linting
 
@@ -235,10 +316,11 @@ npm run slither
 There is a CI script for Github Actions in `.github/workflows/`. Currently it runs:
 
 - linters
-- both test suites (fails if any tests fail)
-- coverage report (currently only HH)
+- both test suites (if 1 test fail the job fails)
+- coverage report (HH & Foundry)
+- gas report
 - Slither
 
 ### Documentation
 
-This repo makes use of [Dodoc](https://github.com/primitivefinance/primitive-dodoc), a Hardhat plugin from Primitive Finance which generates Markdown docs on contracts from their natspec. The docs are generated on every compile, and can be found in the `docs/` directory.
+This repo makes use of [Dodoc](https://github.com/primitivefinance/primitive-dodoc), a Hardhat plugin from Primitive Finance which generates Markdown docs on contracts from their natspec. The docs are generated on every compile and can be found in the `docs/` directory.
