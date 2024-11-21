@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "../../../common/Governed/Governed.sol";
-import {Withdrawal} from "../../../common/Withdrawal/Withdrawal.sol";
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
@@ -17,13 +15,11 @@ import {IVestedDelegation, RPS, DelegationPoolDelegatorParams} from "./IVestedDe
 
 abstract contract VestedDelegation is
     IVestedDelegation,
-    Governed,
-    Withdrawal,
+    Vesting,
     HydraChainConnector,
     RewardWalletConnector,
     Delegation,
-    VestingManagerFactoryConnector,
-    Vesting
+    VestingManagerFactoryConnector
 {
     using DelegationPoolLib for DelegationPool;
     using VestedPositionLib for VestingPosition;

@@ -6,9 +6,8 @@ import {RSIndex} from "./modules/RSI/RSIndex.sol";
 import {IAPRCalculator} from "./IAPRCalculator.sol";
 
 contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
-    uint256 public constant INITIAL_BASE_APR = 500;
+    uint256 public constant BASE_APR = 500;
 
-    uint256 public base;
     uint256[52] public vestingBonus;
 
     // _______________ Initializer _______________
@@ -23,18 +22,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
         __MacroFactor_init();
         __RSIndex_init();
 
-        base = INITIAL_BASE_APR;
-
         initializeVestingBonus();
-    }
-
-    // _______________ External functions _______________
-
-    /**
-     * @inheritdoc IAPRCalculator
-     */
-    function setBase(uint256 newBase) external onlyRole(MANAGER_ROLE) {
-        base = newBase;
     }
 
     // _______________ Public functions _______________
@@ -42,8 +30,8 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     /**
      * @inheritdoc IAPRCalculator
      */
-    function getBaseAPR() public view returns (uint256) {
-        return base;
+    function getBaseAPR() public pure returns (uint256) {
+        return BASE_APR;
     }
 
     /**
@@ -66,7 +54,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     function getMaxAPR() public view returns (uint256 nominator, uint256 denominator) {
         uint256 vestBonus = getVestingBonus(52);
 
-        nominator = (base + vestBonus) * MAX_MACRO_FACTOR * MAX_RSI_BONUS;
+        nominator = (BASE_APR + vestBonus) * MAX_MACRO_FACTOR * MAX_RSI_BONUS;
         denominator = 10000 ** 3;
     }
 
@@ -89,8 +77,8 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     /**
      * @inheritdoc IAPRCalculator
      */
-    function applyBaseAPR(uint256 amount) public view returns (uint256) {
-        return (amount * base) / DENOMINATOR;
+    function applyBaseAPR(uint256 amount) public pure returns (uint256) {
+        return (amount * BASE_APR) / DENOMINATOR;
     }
 
     // _______________ Internal functions _______________

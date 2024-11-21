@@ -1708,5 +1708,36 @@ export function RunVestedDelegationTests(): void {
         expect(rewardAfterCommission).to.be.equal(rewardAfterCommitEpoch);
       });
     });
+
+    describe("penaltyDecreasePerWeek()", async function () {
+      it("should revert setting penalty decrease per week if not governance", async function () {
+        const { hydraDelegation, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        const admin = await hydraDelegation.DEFAULT_ADMIN_ROLE();
+
+        await expect(hydraDelegation.connect(delegatedValidator).setPenaltyDecreasePerWeek(100)).to.be.revertedWith(
+          ERRORS.accessControl(delegatedValidator.address.toLocaleLowerCase(), admin)
+        );
+      });
+
+      it("should revert setting penalty decrease per week if amount of of range", async function () {
+        const { hydraDelegation } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        await expect(
+          hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(9)
+        ).to.be.revertedWithCustomError(hydraDelegation, "PenaltyRateOutOfRange");
+
+        await expect(
+          hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(151)
+        ).to.be.revertedWithCustomError(hydraDelegation, "PenaltyRateOutOfRange");
+      });
+
+      it("should set penalty decrease per week", async function () {
+        const { hydraDelegation } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        await hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(100);
+        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.be.eq(100);
+      });
+    });
   });
 }

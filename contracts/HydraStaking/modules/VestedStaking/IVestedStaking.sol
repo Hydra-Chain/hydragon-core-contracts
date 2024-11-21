@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IVesting} from "../../../common/Vesting/IVesting.sol";
+import {IStaking} from "../../Staking.sol";
+
 struct StakingRewardsHistory {
     uint256 totalReward;
     uint256 epoch;
     uint256 timestamp;
 }
 
-interface IVestedStaking {
+interface IVestedStaking is IVesting, IStaking {
     /**
      * @notice Stakes sent amount with vesting period.
      * @param durationWeeks Duration of the vesting in weeks. Must be between 1 and 52.

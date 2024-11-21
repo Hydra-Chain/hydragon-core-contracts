@@ -551,6 +551,22 @@ Sets commission for staker.
 |---|---|---|
 | newCommission | uint256 | New commission (100 = 100%) |
 
+### setPenaltyDecreasePerWeek
+
+```solidity
+function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
+```
+
+sets a new penalty rate
+
+*Only callable by the adminthe rate should be between 10 and 150 (0.1% and 1.5%)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRate | uint256 | the new penalty rate |
+
 ### stakerDelegationCommission
 
 ```solidity
@@ -953,6 +969,17 @@ error CommissionUpdateNotAvailable()
 
 
 
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
 ### InvalidCommission
 
 ```solidity
@@ -1012,6 +1039,17 @@ error NoWithdrawalAvailable()
 
 ```solidity
 error NotVestingManager()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
 ```
 
 

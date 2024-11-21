@@ -91,7 +91,7 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(initializeFixture);
 
         await expect(token.mint(accounts[4].address, 100)).to.be.revertedWith(
-          "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + supplyControllerRole
+          ERRORS.accessControl(accounts[0].address.toLowerCase(), supplyControllerRole)
         );
       });
     });
@@ -101,7 +101,7 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(initializeFixture);
 
         await expect(token.burn(accounts[4].address, 100)).to.be.revertedWith(
-          "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + supplyControllerRole
+          ERRORS.accessControl(accounts[0].address.toLowerCase(), supplyControllerRole)
         );
       });
     });
@@ -126,11 +126,11 @@ export function RunLiquidityTokenTests(): void {
         const { token } = await loadFixture(initializeFixture);
 
         await expect(token.revokeRole(supplyControllerRole, supplyController.address)).to.be.revertedWith(
-          "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governorRole
+          ERRORS.accessControl(accounts[0].address.toLowerCase(), governorRole)
         );
 
         await expect(token.grantRole(supplyControllerRole, accounts[5].address)).to.be.revertedWith(
-          "AccessControl: account " + accounts[0].address.toLowerCase() + " is missing role " + governorRole
+          ERRORS.accessControl(accounts[0].address.toLowerCase(), governorRole)
         );
       });
 

@@ -67,4 +67,23 @@ function syncValidatorsData(ValidatorPower[] validatorsPower) external nonpayabl
 
 
 
+## Events
+
+### ValidatorsDataSynced
+
+```solidity
+event ValidatorsDataSynced(ValidatorPower[] validatorsPower)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validatorsPower  | ValidatorPower[] | undefined |
+
+
 

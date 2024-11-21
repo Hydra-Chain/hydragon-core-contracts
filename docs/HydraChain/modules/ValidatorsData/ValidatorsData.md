@@ -226,6 +226,22 @@ event Initialized(uint8 version)
 |---|---|---|
 | version  | uint8 | undefined |
 
+### ValidatorsDataSynced
+
+```solidity
+event ValidatorsDataSynced(ValidatorPower[] validatorsPower)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validatorsPower  | ValidatorPower[] | undefined |
+
 
 
 ## Errors

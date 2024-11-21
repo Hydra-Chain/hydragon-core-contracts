@@ -22,6 +22,10 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
      */
     function syncValidatorsData(ValidatorPower[] calldata validatorsPower) external onlySystemCall {
         uint256 arrLength = validatorsPower.length;
+        if (arrLength == 0) {
+            return;
+        }
+
         uint256 totalNewPower = 0;
         uint256 totalOldPower = 0;
         for (uint256 i = 0; i < arrLength; i++) {
@@ -35,6 +39,8 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
         } else {
             totalVotingPower -= totalOldPower - totalNewPower;
         }
+
+        emit ValidatorsDataSynced(validatorsPower);
     }
 
     /**

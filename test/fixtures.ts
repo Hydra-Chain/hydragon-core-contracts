@@ -244,7 +244,7 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
       rewardWallet.address
     );
 
-  await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
+  await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address, liquidToken.address);
 
   await priceOracle.connect(this.signers.system).initialize(hydraChain.address, aprCalculator.address);
 
@@ -353,7 +353,7 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
       rewardWallet.address
     );
 
-  await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address);
+  await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address, liquidToken.address);
 
   await priceOracle.connect(this.signers.system).initialize(hydraChain.address, aprCalculator.address);
 

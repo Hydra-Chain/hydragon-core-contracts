@@ -11,7 +11,7 @@ import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
+abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
     using VestedPositionLib for VestingPosition;
 
     /**

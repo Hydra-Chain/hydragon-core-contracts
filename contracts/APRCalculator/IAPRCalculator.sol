@@ -8,13 +8,6 @@ import {IMacroFactor} from "./modules/MacroFactor/IMacroFactor.sol";
 interface IAPRCalculator is IMacroFactor, IRSIndex, IPrice {
     error InvalidRSI();
 
-    /**
-     * @notice Sets new base APR
-     * @dev only owner can call this function
-     * @param newBase new base APR
-     */
-    function setBase(uint256 newBase) external;
-
     // _______________ Public functions _______________
 
     /**

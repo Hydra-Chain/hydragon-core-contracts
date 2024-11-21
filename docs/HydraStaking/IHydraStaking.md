@@ -10,6 +10,30 @@
 
 ## Methods
 
+### calcVestedStakingPositionPenalty
+
+```solidity
+function calcVestedStakingPositionPenalty(address staker, uint256 amount) external view returns (uint256 penalty, uint256 reward)
+```
+
+Returns the penalty and reward that will be burned, if vested stake position is active
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+| amount | uint256 | The amount that is going to be unstaked |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| penalty | uint256 | for the staker |
+| reward | uint256 | of the staker |
+
 ### calculateOwedLiquidTokens
 
 ```solidity
@@ -32,6 +56,51 @@ Returns the amount of liquid tokens the user owes to the protocol based on the g
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | The amount of liquid tokens the user owes to the protocol |
+
+### calculatePositionClaimableReward
+
+```solidity
+function calculatePositionClaimableReward(address staker, uint256 rewardHistoryIndex) external view returns (uint256)
+```
+
+Calculates the staker&#39;s vested position claimable (already matured) rewards.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+| rewardHistoryIndex | uint256 | The index of the reward history at time that is already matured |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | claimable reward of the staker* |
+
+### calculatePositionTotalReward
+
+```solidity
+function calculatePositionTotalReward(address staker) external view returns (uint256)
+```
+
+Calculates the staker&#39;s total (pending + claimable) rewards. Pending - such that are not matured so not claimable yet. Claimable - such that are matured and claimable.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | Pending rewards expected by the vested staker&#39;s position (in HYDRA wei) |
 
 ### changeMinStake
 
@@ -76,6 +145,22 @@ Claims staking rewards for the sender.
 
 
 
+### claimStakingRewards
+
+```solidity
+function claimStakingRewards(uint256 rewardHistoryIndex) external nonpayable
+```
+
+Claims staking rewards for the sender.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| rewardHistoryIndex | uint256 | The index of the reward history to claim rewards from |
+
 ### distributeRewardsFor
 
 ```solidity
@@ -92,6 +177,28 @@ function distributeRewardsFor(uint256 epochId, Uptime[] uptime) external nonpaya
 |---|---|---|
 | epochId | uint256 | undefined |
 | uptime | Uptime[] | undefined |
+
+### getStakingRewardsHistoryValues
+
+```solidity
+function getStakingRewardsHistoryValues(address staker) external view returns (struct StakingRewardsHistory[])
+```
+
+Returns historical records of the staking rewards of the user
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | The address of the staker |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | StakingRewardsHistory[] | stakingRewardsHistory array with the historical records of the staking rewards of the user |
 
 ### liquidToken
 
@@ -197,6 +304,22 @@ Return back a validator after temporary removal from the validator set by emitin
 |---|---|---|
 | account | address | address of the validator to be returned |
 
+### setPenaltyDecreasePerWeek
+
+```solidity
+function setPenaltyDecreasePerWeek(uint256 newRate) external nonpayable
+```
+
+sets a new penalty rate
+
+*Only callable by the adminthe rate should be between 10 and 150 (0.1% and 1.5%)*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newRate | uint256 | the new penalty rate |
+
 ### stake
 
 ```solidity
@@ -229,6 +352,22 @@ Returns staked amount for the given account.
 | Name | Type | Description |
 |---|---|---|
 | _0 | uint256 | undefined |
+
+### stakeWithVesting
+
+```solidity
+function stakeWithVesting(uint256 durationWeeks) external payable
+```
+
+Stakes sent amount with vesting period.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| durationWeeks | uint256 | Duration of the vesting in weeks. Must be between 1 and 52. |
 
 ### temporaryEjectValidator
 
@@ -499,6 +638,17 @@ error DistributeRewardFailed(string message)
 |---|---|---|
 | message | string | undefined |
 
+### FailedToBurnAmount
+
+```solidity
+error FailedToBurnAmount()
+```
+
+
+
+
+
+
 ### InvalidMinStake
 
 ```solidity
@@ -547,6 +697,17 @@ error NoRewards()
 
 ```solidity
 error NoWithdrawalAvailable()
+```
+
+
+
+
+
+
+### PenaltyRateOutOfRange
+
+```solidity
+error PenaltyRateOutOfRange()
 ```
 
 

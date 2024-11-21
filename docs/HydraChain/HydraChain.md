@@ -1441,6 +1441,22 @@ event ValidatorBanned(address indexed validator)
 |---|---|---|
 | validator `indexed` | address | undefined |
 
+### ValidatorsDataSynced
+
+```solidity
+event ValidatorsDataSynced(ValidatorPower[] validatorsPower)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validatorsPower  | ValidatorPower[] | undefined |
+
 ### VaultFunded
 
 ```solidity

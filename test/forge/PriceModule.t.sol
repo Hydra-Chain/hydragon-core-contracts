@@ -52,7 +52,7 @@ contract TestUpdatePrice is InitlizeAPR {
 
     function test_updateBonusesWithPricesGoingUp() public {
         vm.startPrank(governance);
-        for (uint256 i = 0; i < 115; i++) {
+        for (uint256 i = 1; i < 116; i++) {
             aprCalculator.updatePrice(600 * i, i);
             assertEq(aprCalculator.latestDailyPrice(), 600 * i);
             assertEq(aprCalculator.pricePerDay(i), 600 * i);
@@ -76,6 +76,9 @@ contract TestUpdatePrice is InitlizeAPR {
         vm.startPrank(governance);
         for (uint256 i = 0; i < 500; i++) {
             uint256 price = generateRandomAmount(i);
+            if (price == 0) {
+                price = 1;
+            }
             aprCalculator.updatePrice(price, i);
             assertEq(aprCalculator.latestDailyPrice(), price);
             assertEq(aprCalculator.pricePerDay(i), price);

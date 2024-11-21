@@ -7,6 +7,8 @@ struct ValidatorPower {
 }
 
 interface IValidatorsData {
+    event ValidatorsDataSynced(ValidatorPower[] validatorsPower);
+
     /**
      * @notice Syncs the validators voting power with the provided data
      * @param validatorsPower Array of ValidatorPower struct

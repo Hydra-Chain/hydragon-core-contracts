@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Governed} from "../../common/Governed/Governed.sol";
 import {APRCalculatorConnector} from "../../APRCalculator/APRCalculatorConnector.sol";
 import {VestedPositionLib} from "./VestedPositionLib.sol";
-import {VestingPosition} from "./IVesting.sol";
+import {VestingPosition, IVesting} from "./IVesting.sol";
 
 /**
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-abstract contract Vesting is APRCalculatorConnector {
+abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
     using VestedPositionLib for VestingPosition;
-
-    error FailedToBurnAmount();
 
     uint256 public constant DENOMINATOR = 10000;
     /**
@@ -24,6 +23,8 @@ abstract contract Vesting is APRCalculatorConnector {
     /// A fraction's numerator representing the rate
     /// at which the liquidity tokens' distribution is decreased on a weekly basis
     uint256 public vestingLiquidityDecreasePerWeek;
+    /// The penalty decrease per week
+    uint256 public penaltyDecreasePerWeek;
 
     // _______________ Initializer _______________
 
@@ -35,6 +36,17 @@ abstract contract Vesting is APRCalculatorConnector {
     // solhint-disable-next-line func-name-mixedcase
     function __Vesting_init_unchainded() internal onlyInitializing {
         vestingLiquidityDecreasePerWeek = 133; // 0.0133
+        penaltyDecreasePerWeek = 50; // 0.5%
+    }
+
+    // _______________ External functions _______________
+
+    /**
+     * @inheritdoc IVesting
+     */
+    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
+        penaltyDecreasePerWeek = newRate;
     }
 
     // _______________ Internal functions _______________
@@ -60,7 +72,7 @@ abstract contract Vesting is APRCalculatorConnector {
     function _calcPenalty(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
         uint256 leftPeriod = position.end - block.timestamp;
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = 100 * leftWeeks; // 1% * left weeks
+        uint256 bps = penaltyDecreasePerWeek * leftWeeks; // 0.5% per week after initilization
 
         return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }

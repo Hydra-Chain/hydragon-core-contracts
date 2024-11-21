@@ -67,7 +67,7 @@ abstract contract InitializedContracts is Test {
         aprCalculator.initialize(governance, address(hydraChain), address(priceOracle), prices);
 
         // ⭐️ Initialize VestingManagerFactory
-        vestingManagerFactory.initialize(address(hydraDelegation));
+        vestingManagerFactory.initialize(address(hydraDelegation), address(liquidityToken));
 
         // ⭐️ Initialize PriceOracle
         priceOracle.initialize(address(hydraChain), address(aprCalculator));
@@ -261,7 +261,8 @@ contract TestInitlizedContracts is InitializedContracts {
     // HydraStaking
 
     function test_getGovernanceFromHydraStaking() public view {
-        assert(hydraStaking.owner() == governance);
+        bytes32 role = hydraStaking.DEFAULT_ADMIN_ROLE();
+        assert(hydraStaking.hasRole(role, governance) == true);
     }
 
     function test_getMinStakeFromHydraStaking() public view {
@@ -299,7 +300,8 @@ contract TestInitlizedContracts is InitializedContracts {
     // HydraDelegation
 
     function test_getGovernanceFromHydraDelegation() public view {
-        assert(hydraDelegation.owner() == governance);
+        bytes32 role = hydraStaking.DEFAULT_ADMIN_ROLE();
+        assert(hydraStaking.hasRole(role, governance) == true);
     }
 
     function test_getInitalCommissionFromHydraDelegation() public view {

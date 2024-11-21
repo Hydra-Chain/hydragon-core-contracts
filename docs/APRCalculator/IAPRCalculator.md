@@ -222,22 +222,6 @@ Protects RSI bonus and Macro factor updates and set them to default values
 *only governance can call this function*
 
 
-### setBase
-
-```solidity
-function setBase(uint256 newBase) external nonpayable
-```
-
-Sets new base APR
-
-*only owner can call this function*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newBase | uint256 | new base APR |
-
 ### updatePrice
 
 ```solidity

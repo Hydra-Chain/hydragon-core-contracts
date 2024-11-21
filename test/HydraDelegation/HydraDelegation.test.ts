@@ -41,17 +41,21 @@ export function RunHydraDelegationTests(): void {
         const { hydraDelegation } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(hydraDelegation.deployTransaction.from).to.equal(this.signers.admin.address);
-        expect(await hydraDelegation.owner()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.minDelegation()).to.equal(0);
         expect(await hydraDelegation.totalDelegation()).to.equal(0);
         expect(await hydraDelegation.hydraChainContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraDelegation.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
+        expect(
+          await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          "hasRole"
+        ).to.be.false;
 
         expect(await hydraDelegation.MAX_COMMISSION()).to.equal(MAX_COMMISSION);
         expect(await hydraDelegation.MIN_DELEGATION_LIMIT()).to.equal(this.minDelegation);
 
         // Vested Delegation
+        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.equal(0);
         expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(0);
         expect(await hydraDelegation.vestingManagerFactoryContract()).to.equal(hre.ethers.constants.AddressZero);
 
@@ -137,7 +141,6 @@ export function RunHydraDelegationTests(): void {
           "delegationCommissionPerStaker"
         ).to.equal(INITIAL_COMMISSION);
 
-        expect(await hydraDelegation.owner(), "owner").to.equal(this.signers.governance.address);
         expect(await hydraDelegation.minDelegation(), "minDelegation").to.equal(this.minDelegation);
         expect(await hydraDelegation.hydraChainContract(), "hydraChainContract").to.equal(hydraChain.address);
         expect(await hydraDelegation.hydraStakingContract(), "hydraStakingContract").to.equal(hydraStaking.address);
@@ -148,6 +151,7 @@ export function RunHydraDelegationTests(): void {
         ).to.be.true;
 
         // Vested Delegation
+        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.equal(50);
         expect(await hydraDelegation.vestingLiquidityDecreasePerWeek()).to.equal(133);
         expect(await hydraDelegation.vestingManagerFactoryContract(), "vestingManagerFactoryContract").to.equal(
           vestingManagerFactory.address
@@ -561,7 +565,7 @@ export function RunHydraDelegationTests(): void {
         );
         const baseReward = await hydraDelegation.getRawReward(delegatedValidator.address, vestManager.address);
         const baseRewardAfterCommission = applyCommissionToReward(baseReward, positionData.commission);
-        const base = await aprCalculator.base();
+        const base = await aprCalculator.BASE_APR();
 
         // calculate position rewards
         const expectedReward = await calcExpectedPositionRewardForActivePosition(

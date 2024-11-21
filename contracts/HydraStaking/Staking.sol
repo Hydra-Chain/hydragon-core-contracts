@@ -31,7 +31,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
         address _governance
     ) internal onlyInitializing {
         __Governed_init(_governance);
-        __Withdrawal_init(_governance);
+        __Withdrawal_init();
         __HydraChainConnector_init(_hydraChainAddr);
         __APRCalculatorConnector_init(_aprCalculatorAddr);
         __RewardWalletConnector_init(_rewardWalletAddr);
@@ -78,7 +78,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
     /**
      * @inheritdoc IStaking
      */
-    function changeMinStake(uint256 newMinStake) external onlyOwner {
+    function changeMinStake(uint256 newMinStake) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _changeMinStake(newMinStake);
     }
 

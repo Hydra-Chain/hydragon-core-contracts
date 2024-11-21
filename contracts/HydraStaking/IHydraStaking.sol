@@ -5,6 +5,7 @@ import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.s
 import {ILiquidStaking} from "./modules/LiquidStaking/ILiquidStaking.sol";
 import {IDelegatedStaking} from "./modules/DelegatedStaking/IDelegatedStaking.sol";
 import {IPenalizeableStaking} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
+import {IVestedStaking} from "./modules/VestedStaking/IVestedStaking.sol";
 import {IStaking} from "./IStaking.sol";
 
 struct StakerInit {
@@ -12,7 +13,7 @@ struct StakerInit {
     uint256 stake;
 }
 
-interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking {
+interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking, IVestedStaking {
     error DistributeRewardFailed(string message);
 
     /**
