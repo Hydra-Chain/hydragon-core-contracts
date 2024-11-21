@@ -297,7 +297,7 @@ export function RunHydraDelegationTests(): void {
         );
       });
 
-      it("should revert applying pending commission earlier than 30 days", async function () {
+      it("should revert applying pending commission earlier than 15 days", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
         const newCommission = MAX_COMMISSION.div(2);
@@ -315,7 +315,7 @@ export function RunHydraDelegationTests(): void {
         await hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(newCommission);
         await hydraDelegation.connect(this.signers.validators[3]).setPendingCommission(newCommission);
 
-        await time.increase(DAY * 31);
+        await time.increase(DAY * 16);
 
         await expect(
           hydraDelegation.connect(this.signers.validators[3]).applyPendingCommission()
@@ -329,7 +329,7 @@ export function RunHydraDelegationTests(): void {
         await hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(newCommission);
         await hydraDelegation.connect(this.signers.validators[3]).setPendingCommission(newCommission.div(2));
 
-        await time.increase(DAY * 31);
+        await time.increase(DAY * 16);
 
         await expect(hydraDelegation.connect(this.signers.validators[3]).applyPendingCommission()).to.be.not.reverted;
 

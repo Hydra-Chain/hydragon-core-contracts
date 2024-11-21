@@ -30,8 +30,8 @@ interface IDelegation is IWithdrawal {
 
     /**
      * @notice Sets pending commission for staker.
-     * @dev The pending commission can be applied by after 30 days.
-     * @dev The pending commission can be overridden any time, but the 30 days period will be reset.
+     * @dev The pending commission can be applied by after 15 days.
+     * @dev The pending commission can be overridden any time, but the 15 days period will be reset.
      * @param newCommission New commission (100 = 100%)
      */
     function setPendingCommission(uint256 newCommission) external;

@@ -912,7 +912,7 @@ function setPendingCommission(uint256 newCommission) external nonpayable
 
 Sets pending commission for staker.
 
-*The pending commission can be applied by after 30 days.The pending commission can be overridden any time, but the 30 days period will be reset.*
+*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
 
 #### Parameters
 
