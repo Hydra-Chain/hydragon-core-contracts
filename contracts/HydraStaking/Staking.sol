@@ -59,7 +59,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
     // _______________ External functions _______________
 
     /**
-     * @notice Stakes sent amount.
+     * @inheritdoc IStaking
      */
     function stake() public payable virtual {
         _stake(msg.sender, msg.value);

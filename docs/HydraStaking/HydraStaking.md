@@ -783,9 +783,9 @@ sets a new penalty rate
 function stake() external payable
 ```
 
-Stakes sent amount.
+Stakes the sent amount.
 
-*If user has active vested position, it will revert.*
+*Reverts if we have an active position for the staker.*
 
 
 ### stakeOf

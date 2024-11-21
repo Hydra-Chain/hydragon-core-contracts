@@ -17,12 +17,6 @@ interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenaliz
     error DistributeRewardFailed(string message);
 
     /**
-     * @notice Stakes sent amount.
-     * @dev If user has active vested position, it will revert.
-     */
-    function stake() external payable;
-
-    /**
      * @notice Distributes rewards for the given epoch
      * @dev The function updates the rewards in the Staking and Delegation contracts' state
      * @param epochId The epoch number

@@ -436,9 +436,9 @@ sets a new penalty rate
 function stake() external payable
 ```
 
-Stakes sent amount.
+Stake the amount given by the sender
 
-
+*Overrides the stake function in Staking contractIf the staker has an active position, the stake will be rejected*
 
 
 ### stakeOf

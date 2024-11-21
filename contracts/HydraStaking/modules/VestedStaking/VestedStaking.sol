@@ -60,12 +60,16 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
     }
 
     /**
-     * @inheritdoc Staking
+     * @notice Stake the amount given by the sender
+     * @dev Overrides the stake function in Staking contract
+     * @dev If the staker has an active position, the stake will be rejected
      */
     function stake() public payable virtual override {
         if (vestedStakingPositions[msg.sender].isActive()) {
             revert StakeRequirement({src: "stake", msg: "IN_ACTIVE_POSITION"});
         }
+
+        super.stake();
     }
 
     /**

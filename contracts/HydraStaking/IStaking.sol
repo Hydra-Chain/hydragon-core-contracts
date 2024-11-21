@@ -19,6 +19,11 @@ interface IStaking is IWithdrawal {
     error StakeRequirement(string src, string msg);
 
     /**
+     * @notice Stakes sent amount.
+     */
+    function stake() external payable;
+
+    /**
      * @notice Unstakes amount for sender. Claims rewards beforehand.
      * @param amount Amount to unstake
      */

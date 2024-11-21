@@ -12,7 +12,7 @@ import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol"
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
-import {Staking} from "./Staking.sol";
+import {Staking, IStaking} from "./Staking.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
@@ -69,11 +69,11 @@ contract HydraStaking is
     // _______________ External functions _______________
 
     /**
-     * @inheritdoc IHydraStaking
+     * @notice Stakes the sent amount.
+     * @dev Reverts if we have an active position for the staker.
      */
-    function stake() public payable override(IHydraStaking, Staking, VestedStaking) {
-        VestedStaking.stake();
-        Staking.stake();
+    function stake() public payable override(IStaking ,Staking, VestedStaking) {
+        super.stake();  
     }
 
     /**

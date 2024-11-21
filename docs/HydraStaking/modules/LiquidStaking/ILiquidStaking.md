@@ -115,6 +115,17 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
+### stake
+
+```solidity
+function stake() external payable
+```
+
+Stakes sent amount.
+
+
+
+
 ### stakeOf
 
 ```solidity
