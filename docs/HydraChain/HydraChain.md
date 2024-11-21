@@ -1553,10 +1553,10 @@ error MustBeWhitelisted()
 
 
 
-### NoBanInititated
+### NoBanInitiated
 
 ```solidity
-error NoBanInititated()
+error NoBanInitiated()
 ```
 
 

@@ -189,6 +189,8 @@ contract HydraStaking is
         // but only the leftForStaker will be automatically requested,
         // so we have to set the unstake amount - leftForStaker as liquidity debt that must be paid as well
         liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
+        // the generated rewards for the staker must be taken (if is active position, rewards will be already taken)
+        stakingRewards[staker].taken = stakingRewards[staker].total;
     }
 
     /**

@@ -205,12 +205,20 @@ export function RunInspectorTests(): void {
       const unstakePenalty = await calculatePenaltyByWeeks(VESTING_DURATION_WEEKS - 1, this.minStake);
       const stakedAmount = await hydraStaking.stakeOf(staker.address);
 
+      // check the staking rewards before the ban
+      const rewardsBefore = await hydraStaking.stakingRewards(staker.address);
+      expect(rewardsBefore.total).to.be.not.equal(rewardsBefore.taken);
+
       const stakedAmountAfterPenalty = stakedAmount.sub(unstakePenalty).sub(validatorBanPenalty);
       const banTx = await systemHydraChain.connect(this.signers.governance).banValidator(staker.address);
       const withdrawableAmount = await hydraStaking.leftToWithdrawPerStaker(staker.address);
 
       await expect(banTx, "ValidatorBanned").to.emit(systemHydraChain, "ValidatorBanned").withArgs(staker.address);
       expect(withdrawableAmount, "withdrawable").to.be.equal(stakedAmountAfterPenalty);
+
+      // the staker should not have claimable rewards after the ban
+      const rewards = await hydraStaking.stakingRewards(staker.address);
+      expect(rewards.total).to.be.equal(rewards.taken);
 
       const liquidTokensThatMustBeCollected = (await hydraStaking.liquidityDebts(staker.address)).add(
         withdrawableAmount
@@ -245,7 +253,7 @@ export function RunInspectorTests(): void {
 
       await expect(hydraChain.connect(validatorToBan).terminateBanProcedure()).to.be.revertedWithCustomError(
         hydraChain,
-        "NoBanInititated"
+        "NoBanInitiated"
       );
     });
 
@@ -276,11 +284,19 @@ export function RunInspectorTests(): void {
 
       await time.increase(BAN_THRESHOLD);
 
+      // check the staking rewards before the ban
+      const rewardsBefore = await hydraStaking.stakingRewards(inBanProcessValidator.address);
+      expect(rewardsBefore.total).to.be.not.equal(rewardsBefore.taken);
+
       const stakedAmount = await hydraStaking.stakeOf(inBanProcessValidator.address);
       const banTx = await hydraChain.banValidator(inBanProcessValidator.address);
       const reporterReward = await hydraChain.reporterReward();
       const validatorBanPenalty = await hydraChain.validatorPenalty();
       const withdrawableAmount = await hydraStaking.leftToWithdrawPerStaker(inBanProcessValidator.address);
+
+      // the staker should not have claimable rewards after the ban
+      const rewards = await hydraStaking.stakingRewards(inBanProcessValidator.address);
+      expect(rewards.total).to.be.equal(rewards.taken);
 
       expect(await hydraStaking.stakeOf(inBanProcessValidator.address), "stakedOf").to.be.eq(0);
       expect(withdrawableAmount, "withdrawableAmount").to.be.equal(

@@ -64,7 +64,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
      */
     function terminateBanProcedure() external {
         if (bansInitiated[msg.sender] == 0) {
-            revert NoBanInititated();
+            revert NoBanInitiated();
         }
 
         bansInitiated[msg.sender] = 0;

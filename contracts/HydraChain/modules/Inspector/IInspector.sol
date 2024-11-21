@@ -7,7 +7,7 @@ interface IInspector {
     error NoBanSubject();
     error NoInitiateBanSubject();
     error BanAlreadyInitiated();
-    error NoBanInititated();
+    error NoBanInitiated();
 
     /**
      * @notice Set the penalty amount for the banned validators

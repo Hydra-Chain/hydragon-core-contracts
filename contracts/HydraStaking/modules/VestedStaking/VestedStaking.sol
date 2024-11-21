@@ -143,7 +143,6 @@ abstract contract VestedStaking is IVestedStaking, Staking, Vesting {
 
             if (stakeLeft == 0) {
                 // if position is closed when active, we delete all the vesting data
-                // that way allowing the user to open new position for the same staker with the same vesting manager
                 delete vestedStakingPositions[account];
             }
 

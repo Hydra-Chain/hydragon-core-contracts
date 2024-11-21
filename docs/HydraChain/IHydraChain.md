@@ -685,10 +685,10 @@ error MaxValidatorsReached()
 
 
 
-### NoBanInititated
+### NoBanInitiated
 
 ```solidity
-error NoBanInititated()
+error NoBanInitiated()
 ```
 
 
