@@ -26,7 +26,7 @@ contract Delegation is
 
     /// @notice A constant for the minimum delegation limit
     uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
-    /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
+    /// @notice A constant for the maximum commission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
 
     /// @notice The commission per staker in percentage
@@ -272,12 +272,12 @@ contract Delegation is
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (amount > delegatedAmount) revert DelegateRequirement({src: "undelegate", msg: "INSUFFICIENT_BALANCE"});
 
-        uint256 amounAfterUndelegate;
+        uint256 amountAfterUndelegate;
         unchecked {
-            amounAfterUndelegate = delegatedAmount - amount;
+            amountAfterUndelegate = delegatedAmount - amount;
         }
 
-        if (amounAfterUndelegate < minDelegation && amounAfterUndelegate != 0)
+        if (amountAfterUndelegate < minDelegation && amountAfterUndelegate != 0)
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
         _withdrawDelegation(staker, delegation, delegator, amount);

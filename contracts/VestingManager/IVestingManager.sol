@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 interface IVestingManager {
     /**
-     * @notice Opens a new vested delegate position & recive the liquid tokens
+     * @notice Opens a new vested delegate position & receive the liquid tokens
      * @dev The owner of the contract is the only one who can call this function
      * @param staker validator address
      * @param durationWeeks number of weeks for the vesting period

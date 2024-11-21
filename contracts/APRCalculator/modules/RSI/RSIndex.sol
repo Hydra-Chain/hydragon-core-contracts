@@ -57,9 +57,9 @@ abstract contract RSIndex is IRSIndex, Price {
      * @notice Calculate the average gain and loss based on the updated prices
      */
     function _triggerRSIUpdate() private {
-        uint256 arrLenght = updatedPrices.length;
-        uint256 lastPrice = updatedPrices[arrLenght - 1];
-        uint256 secondLastPrice = updatedPrices[arrLenght - 2];
+        uint256 arrLength = updatedPrices.length;
+        uint256 lastPrice = updatedPrices[arrLength - 1];
+        uint256 secondLastPrice = updatedPrices[arrLength - 2];
         if (lastPrice > secondLastPrice) {
             averageGain = ((averageGain * 13) + ((lastPrice - secondLastPrice) * DENOMINATOR)) / 14;
             averageLoss = (averageLoss * 13) / 14;
@@ -86,7 +86,7 @@ abstract contract RSIndex is IRSIndex, Price {
         if (avrGain != 0 && avrLoss != 0) {
             uint256 rs = (avrGain * DENOMINATOR) / avrLoss;
             // index = 100 - (100 / (1 + RS))
-            // we change 100 with 10000 (DENOMINATOR) to avoid floating point + mutiply values * DENOMINATOR after the subtraction, because RS is already multiplied by DENOMINATOR
+            // we change 100 with 10000 (DENOMINATOR) to avoid floating point + multiply values * DENOMINATOR after the subtraction, because RS is already multiplied by DENOMINATOR
             rsindex = DENOMINATOR - (DENOMINATOR * DENOMINATOR) / (DENOMINATOR + rs);
         } else if (avrLoss != 0) {
             // If the average gain is 0 but average loss is not, the RS index is = 0 and we apply max bonus
@@ -122,13 +122,13 @@ abstract contract RSIndex is IRSIndex, Price {
      * @notice Initialize the RSI based on the last 15 days of historical prices.
      */
     function _initializeRSI() private {
-        uint256 arrLenght = updatedPrices.length;
-        assert(arrLenght > 14);
+        uint256 arrLength = updatedPrices.length;
+        assert(arrLength > 14);
         uint256 gain;
         uint256 loss;
         uint256 currentPrice;
         uint256 previousPrice;
-        for (uint256 i = arrLenght - 14; i < arrLenght; i++) {
+        for (uint256 i = arrLength - 14; i < arrLength; i++) {
             currentPrice = updatedPrices[i];
             previousPrice = updatedPrices[i - 1];
             if (currentPrice > previousPrice) {

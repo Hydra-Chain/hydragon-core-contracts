@@ -14,7 +14,7 @@ struct WithdrawalData {
 /**
  * @notice Data type for managing the withdrawal queue
  * @param head earliest unprocessed index
- * (which is also the most recently filled witrhdrawal)
+ * (which is also the most recently filled withdrawal)
  * @param tail index of most recent withdrawal
  * (which is also the total number of submitted withdrawals)
  * @param withdrawals Withdrawal structs by index

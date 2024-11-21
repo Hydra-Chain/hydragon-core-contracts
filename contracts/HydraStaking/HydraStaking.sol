@@ -329,7 +329,7 @@ contract HydraStaking is
     /**
      * Calculates the epoch reward index.
      * We call it index because it is not the actual reward
-     * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are aplied here.
+     * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are applied here.
      * we need to apply the ration because all APR params are yearly
      * but we distribute rewards only for the time that has passed from last distribution.
      * The participation factor is applied later in the distribution process.

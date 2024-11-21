@@ -62,7 +62,7 @@ interface IDelegation is IWithdrawal {
     function claimDelegatorReward(address staker) external;
 
     /**
-     * @notice Undelegates amount from staker for sender, claims rewards and validator comission.
+     * @notice Undelegates amount from staker for sender, claims rewards and validator commission.
      * @param staker Validator to undelegate from
      * @param amount The amount to undelegate
      */
@@ -105,7 +105,7 @@ interface IDelegation is IWithdrawal {
     // _______________ Public functions _______________
 
     /**
-     * @notice Delegates sent amount to staker, claims rewards and validator comission.
+     * @notice Delegates sent amount to staker, claims rewards and validator commission.
      * @param staker Validator to delegate to
      */
     function delegate(address staker) external payable;

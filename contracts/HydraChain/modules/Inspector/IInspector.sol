@@ -46,7 +46,7 @@ interface IInspector {
 
     /**
      * @notice Method used to ban a validator, if the ban threshold is reached
-     * @dev This function will validate the threshold only if the executor is not the governance, otherwise will forcely ban the validator
+     * @dev This function will validate the threshold only if the executor is not the governance, otherwise will forcedly ban the validator
      * @param validator Address of the validator
      */
     function banValidator(address validator) external;

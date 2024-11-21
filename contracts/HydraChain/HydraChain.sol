@@ -82,7 +82,7 @@ contract HydraChain is IHydraChain, HydraStakingConnector, ValidatorManager, Ins
         epochEndBlocks.push(epoch.endBlock);
         _commitBlockNumbers[newEpochId] = block.number;
 
-        // Update participations
+        // Update participation
         uint256 uptimesCount = uptime.length;
         for (uint256 i = 0; i < uptimesCount; i++) {
             _updateParticipation(uptime[i].validator);

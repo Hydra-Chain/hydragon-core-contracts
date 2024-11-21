@@ -62,25 +62,25 @@ interface IValidatorManager {
     function updateExponent(uint256 newValue) external;
 
     /**
-     * @notice Gets all validators. Returns already unactive validators as well.
+     * @notice Gets all validators. Returns already not-active validators as well.
      * @return Returns array of addresses
      */
     function getValidators() external view returns (address[] memory);
 
     /**
-     * @notice Retruns bool indicating if validator is Active.
+     * @notice Returns bool indicating if validator is Active.
      * @param validator Address of the validator
      */
     function isValidatorActive(address validator) external view returns (bool);
 
     /**
-     * @notice Retruns bool indicating if validator status is Registered.
+     * @notice Returns bool indicating if validator status is Registered.
      * @param validator Address of the validator
      */
     function isValidatorRegistered(address validator) external view returns (bool);
 
     /**
-     * @notice Retruns bool indicating if validator Banned.
+     * @notice Returns bool indicating if validator Banned.
      * @param validator Address of the validator
      */
     function isValidatorBanned(address validator) external view returns (bool);

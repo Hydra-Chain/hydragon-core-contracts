@@ -29,7 +29,7 @@ interface IVestedDelegation is IVesting, IDelegation {
      * @param delegator Address of delegator
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @param balanceChangeIndex Whether to re-delegate the claimed rewards
      * @return reward Delegator's unclaimed rewards per staker (in HYDRA wei)
      */
     function calculatePositionClaimableReward(
@@ -46,7 +46,7 @@ interface IVestedDelegation is IVesting, IDelegation {
      * @param staker Address of validator
      * @param delegator Address of delegator
      * @param epochNumber Epoch where the last reward for the vesting period is distributed
-     * @param balanceChangeIndex Whether to redelegate the claimed rewards for the full position period
+     * @param balanceChangeIndex Whether to re-delegate the claimed rewards for the full position period
      * @return reward Pending rewards expected by the delegator from a staker (in HYDRA wei)
      */
     function calculatePositionTotalReward(
@@ -140,7 +140,7 @@ interface IVestedDelegation is IVesting, IDelegation {
      * @param to Address to transfer the reward to
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @param balanceChangeIndex Whether to re-delegate the claimed rewards
      */
     function claimPositionReward(address staker, address to, uint256 epochNumber, uint256 balanceChangeIndex) external;
 

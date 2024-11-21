@@ -30,11 +30,11 @@ abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
 
     // solhint-disable-next-line func-name-mixedcase
     function __Vesting_init() internal onlyInitializing {
-        __Vesting_init_unchainded();
+        __Vesting_init_unchained();
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Vesting_init_unchainded() internal onlyInitializing {
+    function __Vesting_init_unchained() internal onlyInitializing {
         vestingLiquidityDecreasePerWeek = 133; // 0.0133
         penaltyDecreasePerWeek = 50; // 0.5%
     }

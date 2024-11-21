@@ -82,10 +82,10 @@ abstract contract MacroFactor is IMacroFactor, Price {
         smaFastSum += _price;
         smaSlowSum += _price;
 
-        uint256 arrLenght = updatedPrices.length;
+        uint256 arrLength = updatedPrices.length;
 
-        smaFastSum -= updatedPrices[arrLenght - FAST_SMA];
-        smaSlowSum -= updatedPrices[arrLenght - SLOW_SMA];
+        smaFastSum -= updatedPrices[arrLength - FAST_SMA];
+        smaSlowSum -= updatedPrices[arrLength - SLOW_SMA];
 
         uint256 smaRatio = _calcSMA();
         _setMacroFactor(smaRatio);
@@ -130,10 +130,10 @@ abstract contract MacroFactor is IMacroFactor, Price {
      * @notice Initialize the macro factor based on the historical prices.
      */
     function _initializeMacroFactor() private {
-        uint256 arrLenght = updatedPrices.length;
-        assert(arrLenght == SLOW_SMA);
+        uint256 arrLength = updatedPrices.length;
+        assert(arrLength == SLOW_SMA);
         uint256 smaThreshold = SLOW_SMA - FAST_SMA;
-        for (uint256 i = 0; i < arrLenght; i++) {
+        for (uint256 i = 0; i < arrLength; i++) {
             smaSlowSum += updatedPrices[i];
 
             if (i >= smaThreshold) {
