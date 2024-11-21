@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
-import {Staking} from "../../Staking.sol";
+import {Staking, IStaking} from "../../Staking.sol";
 import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
 
 /**
@@ -64,7 +64,7 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
      * @dev Overrides the stake function in Staking contract
      * @dev If the staker has an active position, the stake will be rejected
      */
-    function stake() public payable virtual override {
+    function stake() public payable virtual override(Staking, IStaking) {
         if (vestedStakingPositions[msg.sender].isActive()) {
             revert StakeRequirement({src: "stake", msg: "IN_ACTIVE_POSITION"});
         }

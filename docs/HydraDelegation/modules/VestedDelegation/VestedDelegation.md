@@ -1626,6 +1626,22 @@ error PenaltyRateOutOfRange()
 
 
 
+### Unauthorized
+
+```solidity
+error Unauthorized(string only)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| only | string | undefined |
+
 ### WithdrawalFailed
 
 ```solidity
