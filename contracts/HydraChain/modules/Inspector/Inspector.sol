@@ -86,7 +86,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
             bansInitiated[validator] = 0;
         }
 
-        if (owner() == msg.sender) {
+        if (_isGovernance(msg.sender)) {
             hydraDelegationContract.lockCommissionReward(validator);
         }
 

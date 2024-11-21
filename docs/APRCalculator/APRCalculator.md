@@ -78,23 +78,6 @@ function FAST_SMA() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### MANAGER_ROLE
-
-```solidity
-function MANAGER_ROLE() external view returns (bytes32)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bytes32 | undefined |
-
 ### MAX_MACRO_FACTOR
 
 ```solidity

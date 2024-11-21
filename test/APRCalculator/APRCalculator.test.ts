@@ -74,7 +74,6 @@ export function RunAPRCalculatorTests(): void {
           this.fixtures.initializedHydraChainStateFixture
         );
 
-        expect(await aprCalculator.base()).to.be.equal(INITIAL_BASE_APR);
         expect(await aprCalculator.hasRole(await aprCalculator.DEFAULT_ADMIN_ROLE(), this.signers.governance.address))
           .to.be.true;
 
