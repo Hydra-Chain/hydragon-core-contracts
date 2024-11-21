@@ -76,7 +76,7 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
     /**
      * @inheritdoc IStaking
      */
-    function changeMinStake(uint256 newMinStake) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeMinStake(uint256 newMinStake) external onlyGovernance {
         _changeMinStake(newMinStake);
     }
 

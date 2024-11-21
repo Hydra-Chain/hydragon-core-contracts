@@ -33,7 +33,7 @@ abstract contract MacroFactor is IMacroFactor, Price {
     /**
      * @inheritdoc IMacroFactor
      */
-    function changeDefaultMacroFactor(uint256 _macroFactor) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeDefaultMacroFactor(uint256 _macroFactor) external onlyGovernance {
         if (_macroFactor < MIN_MACRO_FACTOR || _macroFactor > MAX_MACRO_FACTOR) {
             revert InvalidMacroFactor();
         }

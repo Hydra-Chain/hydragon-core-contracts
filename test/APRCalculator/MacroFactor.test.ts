@@ -129,9 +129,9 @@ export function RunMacroFactorTests(): void {
     it("should revert if not called by governance", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(aprCalculator.changeDefaultMacroFactor(10)).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.accounts[0].address, await aprCalculator.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(aprCalculator.changeDefaultMacroFactor(10))
+        .to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should revert if new default macro factor is not between min and max macro factor", async function () {

@@ -23,7 +23,7 @@ contract HydraVault is Initializable, System, Governed {
      * @param contractAddress The address of the contract that will be called
      * @param callData The encoded function with its signature and parameters, if any
      */
-    function relocateFees(address contractAddress, bytes memory callData) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function relocateFees(address contractAddress, bytes memory callData) external onlyGovernance {
         (bool success, bytes memory data) = contractAddress.call{value: address(this).balance}(callData);
 
         emit FeesRelocated(success, data);

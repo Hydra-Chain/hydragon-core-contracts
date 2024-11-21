@@ -13,16 +13,16 @@ export function RunWhitelistingTests(): void {
       await expect(
         hydraChain.connect(this.signers.validators[0]).addToWhitelist([this.signers.validators[0].address]),
         "addToWhitelist"
-      ).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      )
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
 
       await expect(
         hydraChain.connect(this.signers.validators[0]).removeFromWhitelist([this.signers.validators[0].address]),
         "removeFromWhitelist"
-      ).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      )
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should be able to add to whitelist", async function () {
@@ -96,23 +96,17 @@ export function RunWhitelistingTests(): void {
       it("enable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        await expect(
-          hydraChain.connect(this.signers.validators[0]).enableWhitelisting(),
-          "enableWhitelisting"
-        ).to.be.revertedWith(
-          ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-        );
+        await expect(hydraChain.connect(this.signers.validators[0]).enableWhitelisting(), "enableWhitelisting")
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("disable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        await expect(
-          hydraChain.connect(this.signers.validators[0]).disableWhitelisting(),
-          "disableWhitelisting"
-        ).to.be.revertedWith(
-          ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-        );
+        await expect(hydraChain.connect(this.signers.validators[0]).disableWhitelisting(), "disableWhitelisting")
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should not be able to enable whitelisting if it is already enabled", async function () {

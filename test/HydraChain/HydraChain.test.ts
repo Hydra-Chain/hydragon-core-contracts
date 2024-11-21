@@ -289,7 +289,7 @@ export function RunHydraChainTests(): void {
     describe("Dao Incentive", function () {
       RunDaoIncentiveTests();
     });
-    describe.only("Inspector", function () {
+    describe("Inspector", function () {
       RunInspectorTests();
     });
     describe("Validator Manager", function () {

@@ -36,7 +36,7 @@ abstract contract Whitelisting is IWhitelisting, Governed {
     /**
      * @inheritdoc IWhitelisting
      */
-    function enableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function enableWhitelisting() external onlyGovernance {
         if (isWhitelistingEnabled) revert WhitelistingAlreadyEnabled();
         isWhitelistingEnabled = true;
     }
@@ -44,7 +44,7 @@ abstract contract Whitelisting is IWhitelisting, Governed {
     /**
      * @inheritdoc IWhitelisting
      */
-    function disableWhitelisting() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function disableWhitelisting() external onlyGovernance {
         if (!isWhitelistingEnabled) revert WhitelistingAlreadyDisabled();
         isWhitelistingEnabled = false;
     }
@@ -52,7 +52,7 @@ abstract contract Whitelisting is IWhitelisting, Governed {
     /**
      * @inheritdoc IWhitelisting
      */
-    function addToWhitelist(address[] calldata whitelistAddresses) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addToWhitelist(address[] calldata whitelistAddresses) external onlyGovernance {
         for (uint256 i = 0; i < whitelistAddresses.length; i++) {
             _addToWhitelist(whitelistAddresses[i]);
         }
@@ -61,7 +61,7 @@ abstract contract Whitelisting is IWhitelisting, Governed {
     /**
      * @inheritdoc IWhitelisting
      */
-    function removeFromWhitelist(address[] calldata whitelistAddresses) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeFromWhitelist(address[] calldata whitelistAddresses) external onlyGovernance {
         for (uint256 i = 0; i < whitelistAddresses.length; i++) {
             _removeFromWhitelist(whitelistAddresses[i]);
         }

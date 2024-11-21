@@ -67,9 +67,9 @@ export function RunPriceTests(): void {
     it("should revert guardBonuses if not called by governance", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(aprCalculator.connect(this.signers.system).guardBonuses()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.system.address, await aprCalculator.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(aprCalculator.connect(this.signers.system).guardBonuses())
+        .to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should revert guardBonuses if already guarded", async function () {
@@ -94,9 +94,9 @@ export function RunPriceTests(): void {
     it("should revert guard disable if not called by governance", async function () {
       const { aprCalculator } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-      await expect(aprCalculator.connect(this.signers.accounts[4]).disableGuard()).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.accounts[4].address, await aprCalculator.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(aprCalculator.connect(this.signers.accounts[4]).disableGuard())
+        .to.be.revertedWithCustomError(aprCalculator, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should revert guard disable if not guarded", async function () {

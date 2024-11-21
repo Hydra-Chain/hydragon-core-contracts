@@ -125,7 +125,7 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function updateExponent(uint256 newValue) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateExponent(uint256 newValue) external onlyGovernance {
         if (newValue < 5000 || newValue > 10000) {
             revert InvalidPowerExponent(); // must be 0.5 <= Exponent <= 1
         }

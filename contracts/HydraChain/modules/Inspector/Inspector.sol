@@ -96,28 +96,28 @@ abstract contract Inspector is IInspector, ValidatorManager {
     /**
      * @inheritdoc IInspector
      */
-    function setValidatorPenalty(uint256 newPenalty) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setValidatorPenalty(uint256 newPenalty) external onlyGovernance {
         validatorPenalty = newPenalty;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setReporterReward(uint256 newReward) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setReporterReward(uint256 newReward) external onlyGovernance {
         reporterReward = newReward;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setInitiateBanThreshold(uint256 newThreshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setInitiateBanThreshold(uint256 newThreshold) external onlyGovernance {
         initiateBanThreshold = newThreshold;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setBanThreshold(uint256 newThreshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setBanThreshold(uint256 newThreshold) external onlyGovernance {
         banThreshold = newThreshold;
     }
 
@@ -139,7 +139,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         }
 
         // check if the owner (governance) is calling
-        if (hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+        if (_isGovernance(msg.sender)) {
             return true;
         }
 
@@ -168,13 +168,13 @@ abstract contract Inspector is IInspector, ValidatorManager {
     function _ban(address validator) private {
         if (validators[validator].status == ValidatorStatus.Active) {
             PenalizedStakeDistribution[] memory rewards;
-            if (hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            if (_isGovernance(msg.sender)) {
+                rewards = new PenalizedStakeDistribution[](1);
+                rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
+            } else {
                 rewards = new PenalizedStakeDistribution[](2);
                 rewards[0] = PenalizedStakeDistribution({account: msg.sender, amount: reporterReward});
                 rewards[1] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
-            } else {
-                rewards = new PenalizedStakeDistribution[](1);
-                rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             }
 
             hydraStakingContract.penalizeStaker(validator, rewards);

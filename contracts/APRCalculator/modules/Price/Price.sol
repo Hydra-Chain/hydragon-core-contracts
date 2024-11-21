@@ -60,7 +60,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @inheritdoc IPrice
      */
-    function guardBonuses() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function guardBonuses() external onlyGovernance {
         if (disabledBonusesUpdates) {
             revert GuardAlreadyEnabled();
         }
@@ -72,7 +72,7 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
     /**
      * @inheritdoc IPrice
      */
-    function disableGuard() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function disableGuard() external onlyGovernance {
         if (!disabledBonusesUpdates) {
             revert GuardAlreadyDisabled();
         }

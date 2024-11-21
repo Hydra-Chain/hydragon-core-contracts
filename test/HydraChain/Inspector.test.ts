@@ -12,9 +12,9 @@ export function RunInspectorTests(): void {
   describe("setValidatorPenalty", function () {
     it("should revert when not governance try to set validator penalty", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
-      await expect(hydraChain.connect(this.signers.validators[0]).setValidatorPenalty(0)).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(hydraChain.connect(this.signers.validators[0]).setValidatorPenalty(0))
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should set new validator penalty", async function () {
@@ -30,9 +30,9 @@ export function RunInspectorTests(): void {
     it("should revert when not governance try to set reporter reward", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      await expect(hydraChain.connect(this.signers.validators[0]).setReporterReward(0)).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(hydraChain.connect(this.signers.validators[0]).setReporterReward(0))
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should set new reporter reward", async function () {
@@ -48,9 +48,9 @@ export function RunInspectorTests(): void {
     it("should revert when not governance try to set initiate ban threshold", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0))
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should set new initiate ban threshold", async function () {
@@ -66,9 +66,9 @@ export function RunInspectorTests(): void {
     it("should revert when not governance try to set ban finish threshold", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
 
-      await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0)).to.be.revertedWith(
-        ERRORS.accessControl(this.signers.validators[0].address, await hydraChain.DEFAULT_ADMIN_ROLE())
-      );
+      await expect(hydraChain.connect(this.signers.validators[0]).setBanThreshold(0))
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should set new ban finish threshold", async function () {
