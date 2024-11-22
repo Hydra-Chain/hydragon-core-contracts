@@ -18,9 +18,7 @@ import {
   VestingManagerFactory__factory,
 } from "../typechain-types";
 import {
-  CHAIN_ID,
   DAY,
-  DOMAIN,
   INITIAL_COMMISSION,
   INITIAL_PRICE,
   INITIAL_PRICES_TO_REACH_BONUSES,
@@ -391,37 +389,9 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
   await hydraStaking.connect(this.signers.system).distributeRewardsFor(epochId, uptime);
 
   // register validators
-  const keyPair = mcl.newKeyPair();
-  const validator1signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[0].address,
-    keyPair.secret
-  ).signature;
-
-  const validator2signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[1].address,
-    keyPair.secret
-  ).signature;
-
-  const validator3signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[2].address,
-    keyPair.secret
-  ).signature;
-
-  await hydraChain
-    .connect(this.signers.validators[0])
-    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey), 10);
-  await hydraChain
-    .connect(this.signers.validators[1])
-    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey), 10);
-  await hydraChain
-    .connect(this.signers.validators[2])
-    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey), 10);
+  await registerValidator(hydraChain, this.signers.validators[0], 10);
+  await registerValidator(hydraChain, this.signers.validators[1], 10);
+  await registerValidator(hydraChain, this.signers.validators[2], 10);
 
   return {
     hydraChain,
@@ -601,47 +571,10 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
     rewardWallet,
   } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
-  const keyPair = mcl.newKeyPair();
-  const validator1signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[0].address,
-    keyPair.secret
-  ).signature;
-
-  const validator2signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[1].address,
-    keyPair.secret
-  ).signature;
-
-  const validator3signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[2].address,
-    keyPair.secret
-  ).signature;
-
-  const validator4signature = mcl.signValidatorMessage(
-    DOMAIN,
-    CHAIN_ID,
-    this.signers.validators[3].address,
-    keyPair.secret
-  ).signature;
-
-  await hydraChain
-    .connect(this.signers.validators[0])
-    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey), 0);
-  await hydraChain
-    .connect(this.signers.validators[1])
-    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey), 0);
-  await hydraChain
-    .connect(this.signers.validators[2])
-    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey), 0);
-  await hydraChain
-    .connect(this.signers.validators[3])
-    .register(mcl.g1ToHex(validator4signature), mcl.g2ToHex(keyPair.pubkey), 0);
+  await registerValidator(hydraChain, this.signers.validators[0], 0);
+  await registerValidator(hydraChain, this.signers.validators[1], 0);
+  await registerValidator(hydraChain, this.signers.validators[2], 0);
+  await registerValidator(hydraChain, this.signers.validators[3], 0);
 
   return {
     hydraChain,
