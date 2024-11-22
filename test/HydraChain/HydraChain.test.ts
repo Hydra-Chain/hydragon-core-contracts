@@ -28,7 +28,6 @@ export function RunHydraChainTests(): void {
 
         // DaoIncentive
         expect(await hydraChain.hydraStakingContract()).to.equal(hre.ethers.constants.AddressZero);
-        expect(await hydraChain.aprCalculatorContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.rewardWalletContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.daoIncentiveVaultContract()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.vaultDistribution()).to.equal(0);
@@ -56,8 +55,9 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert when initialized without system call", async function () {
-        const { hydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, DAOIncentiveVault } =
-          await loadFixture(this.fixtures.presetHydraChainStateFixture);
+        const { hydraChain, bls, hydraStaking, hydraDelegation, rewardWallet, DAOIncentiveVault } = await loadFixture(
+          this.fixtures.presetHydraChainStateFixture
+        );
 
         await expect(
           hydraChain.initialize(
@@ -66,7 +66,6 @@ export function RunHydraChainTests(): void {
             this.signers.governance.address,
             hydraStaking.address,
             hydraDelegation.address,
-            aprCalculator.address,
             rewardWallet.address,
             DAOIncentiveVault.address,
             bls.address
@@ -77,7 +76,7 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert with invalid signature when initializing", async function () {
-        const { systemHydraChain, bls, hydraStaking, hydraDelegation, aprCalculator, rewardWallet, DAOIncentiveVault } =
+        const { systemHydraChain, bls, hydraStaking, hydraDelegation, rewardWallet, DAOIncentiveVault } =
           await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         this.validatorSetSize = Math.floor(Math.random() * (5 - 1) + 5); // Randomly pick 5-9
@@ -90,7 +89,6 @@ export function RunHydraChainTests(): void {
             this.signers.governance.address,
             hydraStaking.address,
             hydraDelegation.address,
-            aprCalculator.address,
             rewardWallet.address,
             DAOIncentiveVault.address,
             bls.address
@@ -101,16 +99,8 @@ export function RunHydraChainTests(): void {
       });
 
       it("should initialize successfully", async function () {
-        const {
-          hydraChain,
-          bls,
-          hydraStaking,
-          hydraDelegation,
-          validatorInit,
-          aprCalculator,
-          rewardWallet,
-          DAOIncentiveVault,
-        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { hydraChain, bls, hydraStaking, hydraDelegation, validatorInit, rewardWallet, DAOIncentiveVault } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
         const adminAddress = this.signers.admin.address;
         const validator = await hydraChain.getValidator(adminAddress);
 
@@ -123,8 +113,6 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.isWhitelistingEnabled()).to.be.true;
 
         // DaoIncentive
-        expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);
-        expect(await hydraChain.aprCalculatorContract()).to.equal(aprCalculator.address);
         expect(await hydraChain.rewardWalletContract()).to.equal(rewardWallet.address);
         expect(await hydraChain.daoIncentiveVaultContract()).to.equal(DAOIncentiveVault.address);
         expect(await hydraChain.lastDistribution()).to.not.equal(0);
@@ -154,16 +142,8 @@ export function RunHydraChainTests(): void {
       });
 
       it("should revert on re-initialization attempt", async function () {
-        const {
-          systemHydraChain,
-          bls,
-          hydraStaking,
-          validatorInit,
-          hydraDelegation,
-          aprCalculator,
-          rewardWallet,
-          DAOIncentiveVault,
-        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { systemHydraChain, bls, hydraStaking, validatorInit, hydraDelegation, rewardWallet, DAOIncentiveVault } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
           systemHydraChain.initialize(
@@ -171,7 +151,6 @@ export function RunHydraChainTests(): void {
             this.signers.governance.address,
             hydraStaking.address,
             hydraDelegation.address,
-            aprCalculator.address,
             rewardWallet.address,
             DAOIncentiveVault.address,
             bls.address

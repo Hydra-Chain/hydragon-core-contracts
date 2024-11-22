@@ -24,10 +24,10 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
     // solhint-disable-next-line func-name-mixedcase
     function __Staking_init(
         uint256 newMinStake,
+        address governance,
         address aprCalculatorAddr,
-        address rewardWalletAddr,
         address hydraChainAddr,
-        address governance
+        address rewardWalletAddr
     ) internal onlyInitializing {
         __Withdrawal_init(governance);
         __HydraChainConnector_init(hydraChainAddr);

@@ -18,20 +18,20 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
 
     function initialize(
         StakerInit[] calldata initialStakers,
-        address governance,
         uint256 initialCommission,
-        address liquidToken,
+        address governance,
         address aprCalculatorAddr,
-        address hydraStakingAddr,
         address hydraChainAddr,
+        address hydraStakingAddr,
         address vestingManagerFactoryAddr,
-        address rewardWalletAddr
+        address rewardWalletAddr,
+        address liquidToken
     ) external initializer onlySystemCall {
         __Delegation_init(
-            aprCalculatorAddr,
             initialStakers,
             initialCommission,
             governance,
+            aprCalculatorAddr,
             hydraChainAddr,
             hydraStakingAddr,
             rewardWalletAddr

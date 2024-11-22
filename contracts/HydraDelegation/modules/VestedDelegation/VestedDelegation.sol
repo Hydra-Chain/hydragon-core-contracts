@@ -42,10 +42,10 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         uint256 initialCommission
     ) internal onlyInitializing {
         __Delegation_init(
-            aprCalculatorAddr,
             initialStakers,
             initialCommission,
             governance,
+            aprCalculatorAddr,
             hydraChainAddr,
             hydraStakingAddr,
             rewardWalletAddr

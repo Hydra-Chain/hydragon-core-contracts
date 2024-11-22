@@ -13,7 +13,7 @@ import {DelegationPool, RPS, DelegationPoolDelegatorParams} from "./IDelegationP
  * Delegation Pool that tracks delegators' shares of the staker's rewards.
  * This version supports reward claims based on previous balance states, thanks to the historical
  * `delegatorsParamsHistory` tracking.
- * Rewards do not autocompound. If a staker has a stake of 10 and earns 1 reward, their stake remains 10,
+ * Rewards do not auto-compound. If a staker has a stake of 10 and earns 1 reward, their stake remains 10,
  * with the rewards tracked separately.
  */
 library DelegationPoolLib {

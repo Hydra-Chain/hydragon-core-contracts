@@ -34,12 +34,10 @@ contract HydraChain is IHydraChain, Inspector, DaoIncentive, ValidatorsData {
         address governance,
         address hydraStakingAddr,
         address hydraDelegationAddr,
-        address aprCalculatorAddr,
         address rewardWalletAddr,
         address daoIncentiveVaultAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
-        __APRCalculatorConnector_init(aprCalculatorAddr);
         __RewardWalletConnector_init(rewardWalletAddr);
         __DaoIncentive_init_unchained(daoIncentiveVaultAddr);
         __Inspector_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);

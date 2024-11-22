@@ -9,14 +9,7 @@ import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector
 import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
 import {IDaoIncentive} from "./IDaoIncentive.sol";
 
-abstract contract DaoIncentive is
-    IDaoIncentive,
-    System,
-    Initializable,
-    APRCalculatorConnector,
-    RewardWalletConnector,
-    HydraStakingConnector
-{
+abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWalletConnector, HydraStakingConnector {
     /// @notice last rewards distribution timestamp
     uint256 public lastDistribution;
     uint256 public vaultDistribution;
@@ -26,12 +19,10 @@ abstract contract DaoIncentive is
 
     // solhint-disable-next-line func-name-mixedcase
     function __DaoIncentive_init(
-        address aprCalculatorAddr,
         address rewardWalletAddr,
         address hydraStakingAddr,
         address daoIncentiveVaultAddr
     ) internal onlyInitializing {
-        __APRCalculatorConnector_init(aprCalculatorAddr);
         __RewardWalletConnector_init(rewardWalletAddr);
         __HydraStakingConnector_init(hydraStakingAddr);
         __DaoIncentive_init_unchained(daoIncentiveVaultAddr);

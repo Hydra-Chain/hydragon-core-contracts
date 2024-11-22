@@ -48,10 +48,10 @@ contract Delegation is
 
     // solhint-disable-next-line func-name-mixedcase
     function __Delegation_init(
-        address aprCalculatorAddr,
         StakerInit[] calldata initialStakers,
         uint256 initialCommission,
         address governance,
+        address aprCalculatorAddr,
         address hydraChainAddr,
         address hydraStakingAddr,
         address rewardWalletAddr

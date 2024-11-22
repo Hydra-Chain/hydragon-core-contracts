@@ -27,11 +27,11 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
 
     // solhint-disable-next-line func-name-mixedcase
     function __VestedStaking_init(
+        uint256 newMinStake,
         address governance,
         address aprCalculatorAddr,
         address hydraChainAddr,
-        address rewardWalletAddr,
-        uint256 newMinStake
+        address rewardWalletAddr
     ) internal onlyInitializing {
         __Vesting_init(governance, aprCalculatorAddr);
         __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);

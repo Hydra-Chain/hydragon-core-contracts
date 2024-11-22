@@ -10,21 +10,21 @@ abstract contract LiquidDelegation is Delegation, Liquid {
 
     // solhint-disable-next-line func-name-mixedcase
     function __LiquidDelegation_init(
+        StakerInit[] calldata initialStakers,
+        uint256 initialCommission,
         address governance,
         address aprCalculatorAddr,
         address hydraChainAddr,
         address hydraStakingAddr,
         address rewardWalletAddr,
-        address liquidToken,
-        StakerInit[] calldata initialStakers,
-        uint256 initialCommission
+        address liquidToken
     ) internal onlyInitializing {
         __Liquid_init(liquidToken);
         __Delegation_init(
-            aprCalculatorAddr,
             initialStakers,
             initialCommission,
             governance,
+            aprCalculatorAddr,
             hydraChainAddr,
             hydraStakingAddr,
             rewardWalletAddr

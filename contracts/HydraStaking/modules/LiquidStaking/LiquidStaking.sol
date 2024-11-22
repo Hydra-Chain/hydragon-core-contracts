@@ -13,12 +13,12 @@ abstract contract LiquidStaking is Staking, Liquid {
 
     // solhint-disable-next-line func-name-mixedcase
     function __LiquidStaking_init(
-        address liquidToken,
+        uint256 newMinStake,
         address governance,
         address aprCalculatorAddr,
         address hydraChainAddr,
         address rewardWalletAddr,
-        uint256 newMinStake
+        address liquidToken
     ) internal onlyInitializing {
         __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
         __Liquid_init(liquidToken);

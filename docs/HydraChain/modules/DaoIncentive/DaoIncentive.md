@@ -112,23 +112,6 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### aprCalculatorContract
-
-```solidity
-function aprCalculatorContract() external view returns (contract IAPRCalculator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IAPRCalculator | undefined |
-
 ### claimVaultFunds
 
 ```solidity

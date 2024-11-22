@@ -13,12 +13,12 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
 
     // solhint-disable-next-line func-name-mixedcase
     function __DelegatedStaking_init(
+        uint256 newMinStake,
         address governance,
         address aprCalculatorAddr,
         address hydraChainAddr,
         address hydraDelegationAddr,
-        address rewardWalletAddr,
-        uint256 newMinStake
+        address rewardWalletAddr
     ) internal onlyInitializing {
         __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
         __DelegatedStaking_init_unchained(hydraDelegationAddr);
