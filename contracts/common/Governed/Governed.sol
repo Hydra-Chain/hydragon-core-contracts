@@ -23,6 +23,7 @@ abstract contract Governed is AccessControlUpgradeable {
         if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
             revert Unauthorized("GOVERNANCE_ONLY");
         }
+
         _;
     }
 
