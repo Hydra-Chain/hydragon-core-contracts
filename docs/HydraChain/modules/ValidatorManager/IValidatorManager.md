@@ -65,7 +65,7 @@ Gets the number of current validators
 function getValidators() external view returns (address[])
 ```
 
-Gets all validators. Returns already unactive validators as well.
+Gets all validators. Returns already not-active validators as well.
 
 
 
@@ -82,7 +82,7 @@ Gets all validators. Returns already unactive validators as well.
 function isValidatorActive(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator is Active.
+Returns bool indicating if validator is Active.
 
 
 
@@ -104,7 +104,7 @@ Retruns bool indicating if validator is Active.
 function isValidatorBanned(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator Banned.
+Returns bool indicating if validator Banned.
 
 
 
@@ -126,7 +126,7 @@ Retruns bool indicating if validator Banned.
 function isValidatorRegistered(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator status is Registered.
+Returns bool indicating if validator status is Registered.
 
 
 

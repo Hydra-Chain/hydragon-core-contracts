@@ -33,7 +33,7 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 function MAX_COMMISSION() external view returns (uint256)
 ```
 
-A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
+A constant for the maximum commission a validator can receive from the delegator&#39;s rewards
 
 
 
@@ -215,7 +215,7 @@ Timestamp after which the commission can be updated
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker, claims rewards and validator comission.
+Delegates sent amount to staker, claims rewards and validator commission.
 
 
 
@@ -724,7 +724,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender, claims rewards and validator comission.
+Undelegates amount from staker for sender, claims rewards and validator commission.
 
 
 

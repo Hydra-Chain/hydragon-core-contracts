@@ -122,7 +122,7 @@ function initialize(address owner) external nonpayable
 function openVestedDelegatePosition(address staker, uint256 durationWeeks) external payable
 ```
 
-Opens a new vested delegate position &amp; recive the liquid tokens
+Opens a new vested delegate position &amp; receive the liquid tokens
 
 *The owner of the contract is the only one who can call this function*
 

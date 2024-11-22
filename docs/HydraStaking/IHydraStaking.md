@@ -294,7 +294,7 @@ Calculates how much is yet to become withdrawable for account.
 function recoverEjectedValidator(address account) external nonpayable
 ```
 
-Return back a validator after temporary removal from the validator set by emiting a balance changed event
+Return back a validator after temporary removal from the validator set by emitting a balance changed event
 
 *related to the temporaryEjectValidator function*
 
@@ -375,7 +375,7 @@ Stakes sent amount with vesting period.
 function temporaryEjectValidator(address account) external nonpayable
 ```
 
-Allows temporary removal of a validator from the validator set by emiting a balance changed event
+Allows temporary removal of a validator from the validator set by emitting a balance changed event
 
 *It breaks the normal flow of the system contracts but is the fastest way to achieve two-step ban functionality*
 

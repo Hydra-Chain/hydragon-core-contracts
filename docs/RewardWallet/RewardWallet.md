@@ -6,7 +6,7 @@
 
 
 
-*This contract will be responsible for the rewards that will be distributed to stakers. It will be fulfilled with enough funds in order to be able to always have enough liqudity.*
+*This contract will be responsible for the rewards that will be distributed to stakers. It will be fulfilled with enough funds in order to be able to always have enough liquidity.*
 
 ## Methods
 

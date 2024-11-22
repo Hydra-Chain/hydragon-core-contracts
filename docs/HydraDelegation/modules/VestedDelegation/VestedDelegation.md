@@ -50,7 +50,7 @@ function DENOMINATOR() external view returns (uint256)
 function MAX_COMMISSION() external view returns (uint256)
 ```
 
-A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
+A constant for the maximum commission a validator can receive from the delegator&#39;s rewards
 
 
 
@@ -129,7 +129,7 @@ Calculates position&#39;s claimable rewards
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards |
 
 #### Returns
 
@@ -178,7 +178,7 @@ Calculates the delegators&#39;s total rewards distributed (pending and claimable
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last reward for the vesting period is distributed |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards for the full position period |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards for the full position period |
 
 #### Returns
 
@@ -267,7 +267,7 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 | staker | address | Validator to claim from |
 | to | address | Address to transfer the reward to |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards |
 
 ### commissionRewardLocked
 
@@ -319,7 +319,7 @@ Timestamp after which the commission can be updated
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker, claims rewards and validator comission.
+Delegates sent amount to staker, claims rewards and validator commission.
 
 
 
@@ -1042,7 +1042,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender, claims rewards and validator comission.
+Undelegates amount from staker for sender, claims rewards and validator commission.
 
 
 

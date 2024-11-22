@@ -91,7 +91,7 @@ Claims rewards for delegator and commissions for staker
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker, claims rewards and validator comission.
+Delegates sent amount to staker, claims rewards and validator commission.
 
 
 
@@ -307,7 +307,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender, claims rewards and validator comission.
+Undelegates amount from staker for sender, claims rewards and validator commission.
 
 
 
