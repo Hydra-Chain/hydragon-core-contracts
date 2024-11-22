@@ -22,12 +22,12 @@ abstract contract Liquid is ILiquid, Initializable {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __LiquidStaking_init(address newLiquidToken) internal onlyInitializing {
-        __LiquidStaking_init_unchained(newLiquidToken);
+    function __Liquid_init(address newLiquidToken) internal onlyInitializing {
+        __Liquid_init_unchained(newLiquidToken);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __LiquidStaking_init_unchained(address newLiquidToken) internal onlyInitializing {
+    function __Liquid_init_unchained(address newLiquidToken) internal onlyInitializing {
         _liquidToken = newLiquidToken;
     }
 

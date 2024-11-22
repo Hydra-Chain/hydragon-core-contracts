@@ -72,7 +72,7 @@ abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
     function _calcPenalty(VestingPosition memory position, uint256 amount) internal view returns (uint256) {
         uint256 leftPeriod = position.end - block.timestamp;
         uint256 leftWeeks = (leftPeriod + WEEK_MINUS_SECOND) / 1 weeks;
-        uint256 bps = penaltyDecreasePerWeek * leftWeeks; // 0.5% per week after initilization
+        uint256 bps = penaltyDecreasePerWeek * leftWeeks; // 0.5% per week after initialization
 
         return (amount * bps) / aprCalculatorContract.getDENOMINATOR();
     }

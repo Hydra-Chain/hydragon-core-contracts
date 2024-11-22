@@ -9,7 +9,7 @@ abstract contract LiquidDelegation is Delegation, Liquid {
 
     // solhint-disable-next-line func-name-mixedcase
     function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
-        __LiquidStaking_init(_liquidToken);
+        __Liquid_init(_liquidToken);
     }
 
     // _______________ Internal functions _______________
