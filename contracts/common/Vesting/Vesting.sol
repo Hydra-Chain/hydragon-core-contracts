@@ -29,7 +29,9 @@ abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Vesting_init() internal onlyInitializing {
+    function __Vesting_init(address governance, address aprCalculatorAddr) internal onlyInitializing {
+        __Governed_init(governance);
+        __APRCalculatorConnector_init(aprCalculatorAddr);
         __Vesting_init_unchained();
     }
 

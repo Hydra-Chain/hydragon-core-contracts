@@ -12,8 +12,16 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __DelegatedStaking_init(address _hydraDelegationAddr) internal onlyInitializing {
-        __DelegatedStaking_init_unchained(_hydraDelegationAddr);
+    function __DelegatedStaking_init(
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address hydraDelegationAddr,
+        address rewardWalletAddr,
+        uint256 newMinStake
+    ) internal onlyInitializing {
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
+        __DelegatedStaking_init_unchained(hydraDelegationAddr);
     }
 
     // solhint-disable-next-line func-name-mixedcase

@@ -370,10 +370,10 @@ function currentEpochId() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### daoIncentiveVaultAddr
+### daoIncentiveVaultContract
 
 ```solidity
-function daoIncentiveVaultAddr() external view returns (address)
+function daoIncentiveVaultContract() external view returns (address)
 ```
 
 

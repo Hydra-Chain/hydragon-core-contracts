@@ -46,14 +46,16 @@ abstract contract ValidatorManager is
 
     // solhint-disable-next-line func-name-mixedcase
     function __ValidatorManager_init(
-        ValidatorInit[] calldata _newValidators,
-        IBLS _newBls,
-        address _hydraDelegationAddr,
-        address _governance
+        ValidatorInit[] calldata newValidators,
+        IBLS newBls,
+        address hydraStakingAddr,
+        address hydraDelegationAddr,
+        address governance
     ) internal onlyInitializing {
-        __Whitelisting_init(_governance);
-        __HydraDelegationConnector_init(_hydraDelegationAddr);
-        __ValidatorManager_init_unchained(_newValidators, _newBls);
+        __Whitelisting_init(governance);
+        __HydraStakingConnector_init(hydraStakingAddr);
+        __HydraDelegationConnector_init(hydraDelegationAddr);
+        __ValidatorManager_init_unchained(newValidators, newBls);
     }
 
     // solhint-disable-next-line func-name-mixedcase

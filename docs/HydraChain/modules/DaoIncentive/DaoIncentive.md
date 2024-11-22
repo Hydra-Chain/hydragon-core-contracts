@@ -140,10 +140,10 @@ Claim distributed vault funds
 
 
 
-### daoIncentiveVaultAddr
+### daoIncentiveVaultContract
 
 ```solidity
-function daoIncentiveVaultAddr() external view returns (address)
+function daoIncentiveVaultContract() external view returns (address)
 ```
 
 

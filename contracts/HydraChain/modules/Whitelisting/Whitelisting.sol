@@ -11,8 +11,8 @@ abstract contract Whitelisting is IWhitelisting, Governed {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Whitelisting_init(address _governance) internal onlyInitializing {
-        __Governed_init(_governance);
+    function __Whitelisting_init(address governance) internal onlyInitializing {
+        __Governed_init(governance);
         __Whitelisting_init_unchained();
     }
 

@@ -20,24 +20,26 @@ abstract contract DaoIncentive is
     /// @notice last rewards distribution timestamp
     uint256 public lastDistribution;
     uint256 public vaultDistribution;
-    address public daoIncentiveVaultAddr;
+    address public daoIncentiveVaultContract;
 
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
     function __DaoIncentive_init(
-        address _aprCalculatorAddr,
-        address _rewardWalletAddr,
-        address _daoIncentiveVaultAddr
+        address aprCalculatorAddr,
+        address rewardWalletAddr,
+        address hydraStakingAddr,
+        address daoIncentiveVaultAddr
     ) internal onlyInitializing {
-        __APRCalculatorConnector_init(_aprCalculatorAddr);
-        __RewardWalletConnector_init(_rewardWalletAddr);
-        __DaoIncentive_init_unchained(_daoIncentiveVaultAddr);
+        __APRCalculatorConnector_init(aprCalculatorAddr);
+        __RewardWalletConnector_init(rewardWalletAddr);
+        __HydraStakingConnector_init(hydraStakingAddr);
+        __DaoIncentive_init_unchained(daoIncentiveVaultAddr);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __DaoIncentive_init_unchained(address _daoIncentiveVaultAddr) internal {
-        daoIncentiveVaultAddr = _daoIncentiveVaultAddr;
+    function __DaoIncentive_init_unchained(address daoIncentiveVaultAddr) internal {
+        daoIncentiveVaultContract = daoIncentiveVaultAddr;
         lastDistribution = block.timestamp;
     }
 
@@ -65,7 +67,7 @@ abstract contract DaoIncentive is
         }
 
         vaultDistribution = 0;
-        rewardWalletContract.distributeReward(daoIncentiveVaultAddr, reward);
+        rewardWalletContract.distributeReward(daoIncentiveVaultContract, reward);
 
         emit VaultFunded(reward);
     }

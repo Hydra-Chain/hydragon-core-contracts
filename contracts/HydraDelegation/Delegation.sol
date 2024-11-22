@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Governed} from "../common/Governed/Governed.sol";
 import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
 import {DelegateRequirement} from "../common/Errors.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
@@ -15,7 +14,6 @@ import {IDelegation} from "./IDelegation.sol";
 
 contract Delegation is
     IDelegation,
-    Governed,
     Withdrawal,
     APRCalculatorConnector,
     HydraStakingConnector,
@@ -50,25 +48,30 @@ contract Delegation is
 
     // solhint-disable-next-line func-name-mixedcase
     function __Delegation_init(
-        address _governance,
-        address _rewardWalletAddr,
-        StakerInit[] calldata _initialStakers,
-        uint256 _initialCommission
+        address aprCalculatorAddr,
+        StakerInit[] calldata initialStakers,
+        uint256 initialCommission,
+        address governance,
+        address hydraChainAddr,
+        address hydraStakingAddr,
+        address rewardWalletAddr
     ) internal onlyInitializing {
-        __Governed_init(_governance);
-        __Withdrawal_init();
-        __RewardWalletConnector_init(_rewardWalletAddr);
-        __Delegation_init_unchained(_initialStakers, _initialCommission);
+        __Withdrawal_init(governance);
+        __APRCalculatorConnector_init(aprCalculatorAddr);
+        __HydraStakingConnector_init(hydraStakingAddr);
+        __HydraChainConnector_init(hydraChainAddr);
+        __RewardWalletConnector_init(rewardWalletAddr);
+        __Delegation_init_unchained(initialStakers, initialCommission);
     }
 
     // solhint-disable-next-line func-name-mixedcase
     function __Delegation_init_unchained(
-        StakerInit[] calldata _initialStakers,
-        uint256 _initialCommission
+        StakerInit[] calldata initialStakers,
+        uint256 initialCommission
     ) internal onlyInitializing {
         _changeMinDelegation(MIN_DELEGATION_LIMIT);
-        for (uint256 i = 0; i < _initialStakers.length; i++) {
-            _setCommission(_initialStakers[i].addr, _initialCommission);
+        for (uint256 i = 0; i < initialStakers.length; i++) {
+            _setCommission(initialStakers[i].addr, initialCommission);
         }
     }
 

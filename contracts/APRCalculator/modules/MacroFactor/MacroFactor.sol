@@ -18,7 +18,13 @@ abstract contract MacroFactor is IMacroFactor, Price {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MacroFactor_init() internal onlyInitializing {
+    function __MacroFactor_init(
+        address hydraChainAddr,
+        address priceOracleAddr,
+        address governance,
+        uint256[310] memory prices
+    ) internal onlyInitializing {
+        __Price_init(hydraChainAddr, priceOracleAddr, governance, prices);
         __MacroFactor_init_unchained();
     }
 

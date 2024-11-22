@@ -13,6 +13,20 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      */
     mapping(address => uint256) public leftToWithdrawPerStaker;
 
+    // _______________ Initializer _______________
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __PenalizeableStaking_init(
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address rewardWalletAddr,
+        uint256 newMinStake
+    ) internal onlyInitializing {
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
+        __HydraChainConnector_init(hydraChainAddr);
+    }
+
     // _______________ External functions _______________
 
     /**
