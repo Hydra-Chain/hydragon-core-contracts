@@ -26,11 +26,13 @@ contract Delegation is
 
     /// @notice A constant for the minimum delegation limit
     uint256 public constant MIN_DELEGATION_LIMIT = 1 ether;
-    /// @notice A constant for the maximum comission a validator can receive from the delegator's rewards
+    /// @notice A constant for the maximum commission a validator can receive from the delegator's rewards
     uint256 public constant MAX_COMMISSION = 100;
 
     /// @notice The commission per staker in percentage
     mapping(address => uint256) public delegationCommissionPerStaker;
+    /// @notice The pending commission per staker in percentage
+    mapping(address => uint256) public pendingCommissionPerStaker;
     /// @notice Timestamp after which the commission can be updated
     mapping(address => uint256) public commissionUpdateAvailableAt;
     /// @notice The commission reward for the staker
@@ -82,8 +84,22 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function setCommission(uint256 newCommission) external {
-        _setCommission(msg.sender, newCommission);
+    function setInitialCommission(address staker, uint256 initialCommission) external onlyHydraChain {
+        _setCommission(staker, initialCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function setPendingCommission(uint256 newCommission) external {
+        _setPendingCommission(msg.sender, newCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
+    function applyPendingCommission() external {
+        _applyPendingCommission(msg.sender);
     }
 
     /**
@@ -253,12 +269,12 @@ contract Delegation is
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (amount > delegatedAmount) revert DelegateRequirement({src: "undelegate", msg: "INSUFFICIENT_BALANCE"});
 
-        uint256 amounAfterUndelegate;
+        uint256 amountAfterUndelegate;
         unchecked {
-            amounAfterUndelegate = delegatedAmount - amount;
+            amountAfterUndelegate = delegatedAmount - amount;
         }
 
-        if (amounAfterUndelegate < minDelegation && amounAfterUndelegate != 0)
+        if (amountAfterUndelegate < minDelegation && amountAfterUndelegate != 0)
             revert DelegateRequirement({src: "undelegate", msg: "DELEGATION_TOO_LOW"});
 
         _withdrawDelegation(staker, delegation, delegator, amount);
@@ -323,15 +339,40 @@ contract Delegation is
     }
 
     /**
+     * @notice Set commission for staker from pending commission
+     * @param staker Address of the validator
+     */
+    function _applyPendingCommission(address staker) private {
+        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
+
+        uint256 pendingCommission = pendingCommissionPerStaker[staker];
+        delegationCommissionPerStaker[staker] = pendingCommission;
+
+        emit CommissionUpdated(staker, pendingCommission);
+    }
+
+    /**
+     * @notice Set pending commission for staker (to be applied later)
+     * @param staker Address of the validator
+     * @param newCommission New commission (100 = 100%)
+     */
+    function _setPendingCommission(address staker, uint256 newCommission) private {
+        if (newCommission > MAX_COMMISSION) revert InvalidCommission();
+
+        commissionUpdateAvailableAt[staker] = block.timestamp + 15 days;
+        pendingCommissionPerStaker[staker] = newCommission;
+
+        emit PendingCommissionAdded(staker, newCommission);
+    }
+
+    /**
      * @notice Set commission for staker
      * @param staker Address of the validator
      * @param newCommission New commission (100 = 100%)
      */
     function _setCommission(address staker, uint256 newCommission) private {
         if (newCommission > MAX_COMMISSION) revert InvalidCommission();
-        if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
 
-        commissionUpdateAvailableAt[staker] = block.timestamp + 30 days;
         delegationCommissionPerStaker[staker] = newCommission;
 
         emit CommissionUpdated(staker, newCommission);
@@ -348,6 +389,7 @@ contract Delegation is
 
         distributedCommissions[staker] = 0;
         rewardWalletContract.distributeReward(to, commissionReward);
+
         emit CommissionClaimed(staker, to, commissionReward);
     }
 

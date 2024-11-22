@@ -167,7 +167,7 @@ library DelegationPoolLib {
      * @param account the address for which query the amount of claimable rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @param balanceChangeIndex Whether to re-delegate the claimed rewards
      * @return uint256 the amount of claimable rewards for the address
      */
     function claimableRewards(
@@ -197,7 +197,7 @@ library DelegationPoolLib {
      * @param account the address for which to claim the rewards
      * @param epochNumber Epoch where the last claimable reward is distributed
      * We need it because not all rewards are matured at the moment of claiming
-     * @param balanceChangeIndex Whether to redelegate the claimed rewards
+     * @param balanceChangeIndex Whether to re-delegate the claimed rewards
      * @return reward the amount of rewards claimed
      */
     function claimRewards(

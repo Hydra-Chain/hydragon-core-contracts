@@ -1309,8 +1309,10 @@ export function RunVestedDelegationTests(): void {
           const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } =
             await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
+          await hydraDelegation.connect(delegatedValidator).setPendingCommission(90);
+
           // commit epochs to distribute rewards
-          await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 3);
+          await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 5);
 
           // prepare params for call
           const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
@@ -1329,7 +1331,7 @@ export function RunVestedDelegationTests(): void {
           expect(reward).to.be.gt(0);
 
           // set new commission for the additional rewards
-          await hydraDelegation.connect(delegatedValidator).setCommission(90);
+          await hydraDelegation.connect(delegatedValidator).applyPendingCommission();
 
           const rewardAfterCommission = await hydraDelegation.calculatePositionClaimableReward(
             delegatedValidator.address,
@@ -1345,6 +1347,8 @@ export function RunVestedDelegationTests(): void {
           const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } =
             await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
 
+          await hydraDelegation.connect(delegatedValidator).setPendingCommission(100);
+
           // commit epochs to distribute rewards
           await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 3);
 
@@ -1368,7 +1372,7 @@ export function RunVestedDelegationTests(): void {
           await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 3);
 
           // set new commission for the additional rewards
-          await hydraDelegation.connect(delegatedValidator).setCommission(100);
+          await hydraDelegation.connect(delegatedValidator).applyPendingCommission();
 
           const rewardAfterCommission = await hydraDelegation.calculatePositionClaimableReward(
             delegatedValidator.address,
@@ -1624,9 +1628,10 @@ export function RunVestedDelegationTests(): void {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
           this.fixtures.weeklyVestedDelegationFixture
         );
+        await hydraDelegation.connect(delegatedValidator).setPendingCommission(90);
 
         // commit epochs to distribute rewards
-        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK);
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 5);
 
         // prepare params for call
         const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
@@ -1645,7 +1650,7 @@ export function RunVestedDelegationTests(): void {
         expect(reward).to.be.gt(0);
 
         // set new commission for the additional rewards
-        await hydraDelegation.connect(delegatedValidator).setCommission(90);
+        await hydraDelegation.connect(delegatedValidator).applyPendingCommission();
 
         const rewardAfterCommission = await hydraDelegation.calculatePositionTotalReward(
           delegatedValidator.address,
@@ -1661,6 +1666,7 @@ export function RunVestedDelegationTests(): void {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator } = await loadFixture(
           this.fixtures.weeklyVestedDelegationFixture
         );
+        await hydraDelegation.connect(delegatedValidator).setPendingCommission(100);
 
         // commit epochs to distribute rewards
         await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 3);
@@ -1685,7 +1691,7 @@ export function RunVestedDelegationTests(): void {
         await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 3);
 
         // set new commission for the additional rewards
-        await hydraDelegation.connect(delegatedValidator).setCommission(100);
+        await hydraDelegation.connect(delegatedValidator).applyPendingCommission();
 
         const rewardAfterCommission = await hydraDelegation.calculatePositionTotalReward(
           delegatedValidator.address,

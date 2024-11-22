@@ -4,7 +4,8 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 // eslint-disable-next-line camelcase
-import { ERRORS, WEEK } from "../constants";
+import { DAY, ERRORS, WEEK } from "../constants";
+import { setAndApplyCommission } from "../helper";
 
 export function RunDelegationTests(): void {
   describe("Total Delegation", function () {
@@ -270,7 +271,7 @@ export function RunDelegationTests(): void {
 
       expect(delegatorReward).to.gt(0);
       expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.validators[0].address)).to.eq(0);
-      await hydraDelegation.connect(this.signers.validators[0]).setCommission(10);
+      await setAndApplyCommission(hydraDelegation, this.signers.validators[0], 10);
 
       const delegatorRewardAfter10Cut = await hydraDelegation.getDelegatorReward(
         this.signers.validators[0].address,
@@ -279,8 +280,7 @@ export function RunDelegationTests(): void {
 
       expect(delegatorRewardAfter10Cut).to.eq(delegatorReward.sub(delegatorReward.div(10)));
 
-      time.increase(WEEK * 5); // Increase time allow commission to change
-      await hydraDelegation.connect(this.signers.validators[0]).setCommission(100);
+      await setAndApplyCommission(hydraDelegation, this.signers.validators[0], 100);
       const delegatorRewardAfterFullCut = await hydraDelegation.getDelegatorReward(
         this.signers.validators[0].address,
         this.signers.delegator.address
@@ -291,6 +291,9 @@ export function RunDelegationTests(): void {
     it("should not change effect getRawReward on commission change", async function () {
       const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
+      await hydraDelegation.connect(this.signers.validators[0]).setPendingCommission(100);
+      time.increase(DAY * 15);
+
       const delegatorReward = await hydraDelegation.getRawReward(
         this.signers.validators[0].address,
         this.signers.delegator.address
@@ -298,8 +301,7 @@ export function RunDelegationTests(): void {
 
       expect(delegatorReward).to.gt(0);
       expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.validators[0].address)).to.eq(0);
-      await hydraDelegation.connect(this.signers.validators[0]).setCommission(100);
-
+      await hydraDelegation.connect(this.signers.validators[0]).applyPendingCommission();
       const delegatorRewardAfterCommissionUpdate = await hydraDelegation.getRawReward(
         this.signers.validators[0].address,
         this.signers.delegator.address

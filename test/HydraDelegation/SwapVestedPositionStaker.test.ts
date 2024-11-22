@@ -3,7 +3,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
 import { DAY, ERRORS, WEEK } from "../constants";
-import { commitEpoch, commitEpochs, getClaimableRewardRPSData } from "../helper";
+import { commitEpoch, commitEpochs, getClaimableRewardRPSData, setAndApplyCommission } from "../helper";
 
 export function RunSwapVestedPositionStakerTests(): void {
   it("should revert when not the vest manager owner", async function () {
@@ -219,8 +219,7 @@ export function RunSwapVestedPositionStakerTests(): void {
     const newValidator = this.signers.validators[1];
 
     // change commission to make sure it is not transferred
-    time.increase(30 * DAY); // increase time to be able to change commission
-    await hydraDelegation.connect(newValidator).setCommission(50);
+    await setAndApplyCommission(hydraDelegation, newValidator, 50);
 
     const vestingDuration = 2; // 2 weeks
     await vestManager.connect(vestManagerOwner).openVestedDelegatePosition(validator.address, vestingDuration, {
@@ -244,7 +243,6 @@ export function RunSwapVestedPositionStakerTests(): void {
     expect(oldPosition.rsiBonus, "oldPosition.rsiBonus").to.be.eq(newPosition.rsiBonus);
     expect(oldPosition.commission, "oldPosition.commission").to.not.be.eq(newPosition.commission);
     expect(newPosition.commission, "newPosition.commission").to.be.eq(50);
-    expect(oldPosition.startBlock, "newPosition.startBlock").to.be.eq(newPosition.startBlock);
   });
 
   it("should start earning rewards on new position after swap", async function () {

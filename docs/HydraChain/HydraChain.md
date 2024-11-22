@@ -276,7 +276,7 @@ function banValidator(address validator) external nonpayable
 
 Method used to ban a validator, if the ban threshold is reached
 
-*This function will validate the threshold only if the executor is not the governance, otherwise will forcely ban the validator*
+*This function will validate the threshold only if the executor is not the governance, otherwise will forcedly ban the validator*
 
 #### Parameters
 
@@ -634,7 +634,7 @@ Returns the voting power of the validator
 function getValidators() external view returns (address[])
 ```
 
-Gets all validators. Returns already unactive validators as well.
+Gets all validators. Returns already not-active validators as well.
 
 
 
@@ -825,7 +825,7 @@ Returns if a ban process can be initiated for a given validator
 function isValidatorActive(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator is Active.
+Returns bool indicating if validator is Active.
 
 
 
@@ -847,7 +847,7 @@ Retruns bool indicating if validator is Active.
 function isValidatorBanned(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator Banned.
+Returns bool indicating if validator Banned.
 
 
 
@@ -869,7 +869,7 @@ Retruns bool indicating if validator Banned.
 function isValidatorRegistered(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator status is Registered.
+Returns bool indicating if validator status is Registered.
 
 
 
@@ -961,7 +961,7 @@ function powerExponent() external view returns (uint256)
 ### register
 
 ```solidity
-function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
+function register(uint256[2] signature, uint256[4] pubkey, uint256 initialCommission) external nonpayable
 ```
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
@@ -974,6 +974,7 @@ Validates BLS signature with the provided pubkey and registers validators into t
 |---|---|---|
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
+| initialCommission | uint256 | Initial commission (100 = 100%) |
 
 ### removeFromWhitelist
 

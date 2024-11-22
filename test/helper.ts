@@ -134,15 +134,28 @@ export function initValidators(accounts: SignerWithAddress[], from: number = 0, 
   return validators;
 }
 
-export async function registerValidator(hydraChain: HydraChain, account: any) {
+export async function registerValidator(hydraChain: HydraChain, account: any, commission: number) {
   const keyPair = mcl.newKeyPair();
   const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, account.address, keyPair.secret).signature;
 
-  const tx = await hydraChain.connect(account).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+  const tx = await hydraChain
+    .connect(account)
+    .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), commission);
   const txReceipt = await tx.wait();
 
   if (txReceipt.status !== 1) {
     throw new Error("Cannot register address");
+  }
+}
+
+export async function setAndApplyCommission(hydraDelegation: HydraDelegation, account: any, commission: number) {
+  await hydraDelegation.connect(account).setPendingCommission(commission);
+  time.increase(15 * DAY);
+  const tx = await hydraDelegation.connect(account).applyPendingCommission();
+  const txReceipt = await tx.wait();
+
+  if (txReceipt.status !== 1) {
+    throw new Error("Cannot apply commission");
   }
 }
 

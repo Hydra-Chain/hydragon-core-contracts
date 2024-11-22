@@ -65,7 +65,7 @@ Gets the number of current validators
 function getValidators() external view returns (address[])
 ```
 
-Gets all validators. Returns already unactive validators as well.
+Gets all validators. Returns already not-active validators as well.
 
 
 
@@ -82,7 +82,7 @@ Gets all validators. Returns already unactive validators as well.
 function isValidatorActive(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator is Active.
+Returns bool indicating if validator is Active.
 
 
 
@@ -104,7 +104,7 @@ Retruns bool indicating if validator is Active.
 function isValidatorBanned(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator Banned.
+Returns bool indicating if validator Banned.
 
 
 
@@ -126,7 +126,7 @@ Retruns bool indicating if validator Banned.
 function isValidatorRegistered(address validator) external view returns (bool)
 ```
 
-Retruns bool indicating if validator status is Registered.
+Returns bool indicating if validator status is Registered.
 
 
 
@@ -145,7 +145,7 @@ Retruns bool indicating if validator status is Registered.
 ### register
 
 ```solidity
-function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
+function register(uint256[2] signature, uint256[4] pubkey, uint256 initialCommission) external nonpayable
 ```
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
@@ -158,6 +158,7 @@ Validates BLS signature with the provided pubkey and registers validators into t
 |---|---|---|
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
+| initialCommission | uint256 | Initial commission (100 = 100%) |
 
 ### updateExponent
 

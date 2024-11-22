@@ -12,7 +12,7 @@ import {WithdrawalQueue, WithdrawalData} from "./IWithdrawalQueueLib.sol";
 library WithdrawalQueueLib {
     /**
      * @notice Update queue with new withdrawal data
-     * @dev every time a new struct will be sumbited for withdrawal in the queue
+     * @dev every time a new struct will be submitted for withdrawal in the queue
      * @param self the WithdrawalQueue struct
      * @param amount the amount to withdraw
      * @param withdrawableTime the time at which the withdrawal can be processed
@@ -30,9 +30,9 @@ library WithdrawalQueueLib {
             return;
         }
 
-        uint256 lastestTime = self.withdrawals[tail - 1].time;
-        assert(withdrawableTime >= lastestTime);
-        if (lastestTime == withdrawableTime) {
+        uint256 latestTime = self.withdrawals[tail - 1].time;
+        assert(withdrawableTime >= latestTime);
+        if (latestTime == withdrawableTime) {
             self.withdrawals[tail - 1].amount += amount;
         } else {
             self.withdrawals[tail] = WithdrawalData(amount, withdrawableTime);
@@ -44,7 +44,7 @@ library WithdrawalQueueLib {
      * @notice Returns the length between the head and tail of the queue
      * (which is the amount of unprocessed withdrawals)
      * @param self the WithdrawalQueue struct
-     * @return uint256 the length between head and tail (unproceesed withdrawals)
+     * @return uint256 the length between head and tail (unprocessed withdrawals)
      */
     // slither-disable-next-line dead-code
     function length(WithdrawalQueue storage self) internal view returns (uint256) {

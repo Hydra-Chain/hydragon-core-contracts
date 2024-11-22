@@ -52,7 +52,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
     // _______________ Internal functions _______________
 
     /**
-     * @notice Distributes penelized stake to the stakers
+     * @notice Distributes penalized stake to the stakers
      * @param availableToWithdraw The amount that is available to withdraw
      * @param stakeDistributions The distribution of the penalty
      */
@@ -76,7 +76,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
 
     /**
      * @notice Handles the unstake operation on penalize.
-     * @dev You can override the behaviour in children modules
+     * @dev You can override the behavior in children modules
      * @param staker The account to unstake from
      * @param unstakeAmount The amount to unstake
      */

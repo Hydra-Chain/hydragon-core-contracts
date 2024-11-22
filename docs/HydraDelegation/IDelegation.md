@@ -10,6 +10,17 @@
 
 ## Methods
 
+### applyPendingCommission
+
+```solidity
+function applyPendingCommission() external nonpayable
+```
+
+Applies pending commission for staker.
+
+*Anyone can apply commission, but if the caller is not active validator, it will not have any effect.*
+
+
 ### changeMinDelegation
 
 ```solidity
@@ -80,7 +91,7 @@ Claims rewards for delegator and commissions for staker
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker, claims rewards and validator comission.
+Delegates sent amount to staker, claims rewards and validator commission.
 
 
 
@@ -197,15 +208,32 @@ Calculates how much is yet to become withdrawable for account.
 |---|---|---|
 | _0 | uint256 | Amount not yet withdrawable (in wei) |
 
-### setCommission
+### setInitialCommission
 
 ```solidity
-function setCommission(uint256 newCommission) external nonpayable
+function setInitialCommission(address staker, uint256 initialCommission) external nonpayable
 ```
 
-Sets commission for staker.
+Sets initial commission for staker.
 
-*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+*This function can be called only when registering a new validatorThs function is callable only by the HydraChain*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker | address | Address of the validator |
+| initialCommission | uint256 | Initial commission (100 = 100%) |
+
+### setPendingCommission
+
+```solidity
+function setPendingCommission(uint256 newCommission) external nonpayable
+```
+
+Sets pending commission for staker.
+
+*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
 
 #### Parameters
 
@@ -280,7 +308,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender, claims rewards and validator comission.
+Undelegates amount from staker for sender, claims rewards and validator commission.
 
 
 
@@ -454,6 +482,23 @@ event DelegatorRewardsClaimed(address indexed staker, address indexed delegator,
 | staker `indexed` | address | undefined |
 | delegator `indexed` | address | undefined |
 | amount  | uint256 | undefined |
+
+### PendingCommissionAdded
+
+```solidity
+event PendingCommissionAdded(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### Undelegated
 

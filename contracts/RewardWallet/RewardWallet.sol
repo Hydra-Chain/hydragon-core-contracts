@@ -10,7 +10,7 @@ import {IRewardWallet} from "./IRewardWallet.sol";
 /**
  * @title RewardWallet
  * @dev This contract will be responsible for the rewards that will be distributed to stakers.
- * It will be fulfilled with enough funds in order to be able to always have enough liqudity.
+ * It will be fulfilled with enough funds in order to be able to always have enough liquidity.
  */
 contract RewardWallet is IRewardWallet, System, Initializable {
     /// @notice The mapping of the managers

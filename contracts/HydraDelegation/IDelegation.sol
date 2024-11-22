@@ -11,6 +11,7 @@ interface IDelegation is IWithdrawal {
     event DelegatorRewardsClaimed(address indexed staker, address indexed delegator, uint256 amount);
     event DelegatorRewardDistributed(address indexed staker, uint256 amount);
     event CommissionUpdated(address indexed staker, uint256 newCommission);
+    event PendingCommissionAdded(address indexed staker, uint256 newCommission);
 
     error InvalidCommission();
     error NoCommissionToClaim();
@@ -26,11 +27,27 @@ interface IDelegation is IWithdrawal {
     function changeMinDelegation(uint256 newMinDelegation) external;
 
     /**
-     * @notice Sets commission for staker.
-     * @dev Anyone can set commission, but if the caller is not active validator, it will not have any effect.
+     * @notice Sets initial commission for staker.
+     * @param staker Address of the validator
+     * @param initialCommission Initial commission (100 = 100%)
+     * @dev This function can be called only when registering a new validator
+     * @dev Ths function is callable only by the HydraChain
+     */
+    function setInitialCommission(address staker, uint256 initialCommission) external;
+
+    /**
+     * @notice Sets pending commission for staker.
+     * @dev The pending commission can be applied by after 15 days.
+     * @dev The pending commission can be overridden any time, but the 15 days period will be reset.
      * @param newCommission New commission (100 = 100%)
      */
-    function setCommission(uint256 newCommission) external;
+    function setPendingCommission(uint256 newCommission) external;
+
+    /**
+     * @notice Applies pending commission for staker.
+     * @dev Anyone can apply commission, but if the caller is not active validator, it will not have any effect.
+     */
+    function applyPendingCommission() external;
 
     /**
      * @notice Claims commission for staker
@@ -45,7 +62,7 @@ interface IDelegation is IWithdrawal {
     function claimDelegatorReward(address staker) external;
 
     /**
-     * @notice Undelegates amount from staker for sender, claims rewards and validator comission.
+     * @notice Undelegates amount from staker for sender, claims rewards and validator commission.
      * @param staker Validator to undelegate from
      * @param amount The amount to undelegate
      */
@@ -88,7 +105,7 @@ interface IDelegation is IWithdrawal {
     // _______________ Public functions _______________
 
     /**
-     * @notice Delegates sent amount to staker, claims rewards and validator comission.
+     * @notice Delegates sent amount to staker, claims rewards and validator commission.
      * @param staker Validator to delegate to
      */
     function delegate(address staker) external payable;

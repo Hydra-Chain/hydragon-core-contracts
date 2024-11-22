@@ -50,7 +50,7 @@ function DENOMINATOR() external view returns (uint256)
 function MAX_COMMISSION() external view returns (uint256)
 ```
 
-A constant for the maximum comission a validator can receive from the delegator&#39;s rewards
+A constant for the maximum commission a validator can receive from the delegator&#39;s rewards
 
 
 
@@ -180,6 +180,17 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### applyPendingCommission
+
+```solidity
+function applyPendingCommission() external nonpayable
+```
+
+Applies pending commission for staker.
+
+*Anyone can apply commission, but if the caller is not active validator, it will not have any effect.*
+
+
 ### aprCalculatorContract
 
 ```solidity
@@ -254,7 +265,7 @@ Calculates position&#39;s claimable rewards
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards |
 
 #### Returns
 
@@ -303,7 +314,7 @@ Calculates the delegators&#39;s total rewards distributed (pending and claimable
 | staker | address | Address of validator |
 | delegator | address | Address of delegator |
 | epochNumber | uint256 | Epoch where the last reward for the vesting period is distributed |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards for the full position period |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards for the full position period |
 
 #### Returns
 
@@ -392,7 +403,7 @@ Claims reward for the vest manager (delegator) and distribute it to the desired 
 | staker | address | Validator to claim from |
 | to | address | Address to transfer the reward to |
 | epochNumber | uint256 | Epoch where the last claimable reward is distributed We need it because not all rewards are matured at the moment of claiming |
-| balanceChangeIndex | uint256 | Whether to redelegate the claimed rewards |
+| balanceChangeIndex | uint256 | Whether to re-delegate the claimed rewards |
 
 ### commissionRewardLocked
 
@@ -444,7 +455,7 @@ Timestamp after which the commission can be updated
 function delegate(address staker) external payable
 ```
 
-Delegates sent amount to staker, claims rewards and validator comission.
+Delegates sent amount to staker, claims rewards and validator commission.
 
 
 
@@ -1021,6 +1032,28 @@ The penalty decrease per week
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### pendingCommissionPerStaker
+
+```solidity
+function pendingCommissionPerStaker(address) external view returns (uint256)
+```
+
+The pending commission per staker in percentage
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -1094,21 +1127,22 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 |---|---|---|
 | _0 | contract IRewardWallet | undefined |
 
-### setCommission
+### setInitialCommission
 
 ```solidity
-function setCommission(uint256 newCommission) external nonpayable
+function setInitialCommission(address staker, uint256 initialCommission) external nonpayable
 ```
 
-Sets commission for staker.
+Sets initial commission for staker.
 
-*Anyone can set commission, but if the caller is not active validator, it will not have any effect.*
+*This function can be called only when registering a new validatorThs function is callable only by the HydraChain*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newCommission | uint256 | New commission (100 = 100%) |
+| staker | address | Address of the validator |
+| initialCommission | uint256 | Initial commission (100 = 100%) |
 
 ### setPenaltyDecreasePerWeek
 
@@ -1125,6 +1159,22 @@ sets a new penalty rate
 | Name | Type | Description |
 |---|---|---|
 | newRate | uint256 | the new penalty rate |
+
+### setPendingCommission
+
+```solidity
+function setPendingCommission(uint256 newCommission) external nonpayable
+```
+
+Sets pending commission for staker.
+
+*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
 
 ### stakerDelegationCommission
 
@@ -1232,7 +1282,7 @@ Returns the total amount of delegation for a staker
 function undelegate(address staker, uint256 amount) external nonpayable
 ```
 
-Undelegates amount from staker for sender, claims rewards and validator comission.
+Undelegates amount from staker for sender, claims rewards and validator commission.
 
 
 
@@ -1519,6 +1569,23 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### PendingCommissionAdded
+
+```solidity
+event PendingCommissionAdded(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
 
 ### PositionCut
 
