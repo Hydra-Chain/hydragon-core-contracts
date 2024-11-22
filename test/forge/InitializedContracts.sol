@@ -248,7 +248,7 @@ contract TestInitlizedContracts is InitializedContracts {
     }
 
     function test_getHydraVaultFromHydraChain() public view {
-        assert(hydraChain.daoIncentiveVaultAddr() == address(hydraVault));
+        assert(hydraChain.daoIncentiveVaultContract() == address(hydraVault));
     }
 
     function test_getBLSFromHydraChain() public view {
