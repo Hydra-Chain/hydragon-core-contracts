@@ -5,7 +5,7 @@ import * as hre from "hardhat";
 
 import { ERRORS, INITIAL_COMMISSION, MAX_ACTIVE_VALIDATORS } from "../constants";
 import { RunInspectorTests } from "./Inspector.test";
-import { RunAccessControlTests } from "./AccessControl.test";
+import { RunWhitelistingTests } from "./Whitelisting.test";
 import { RunValidatorManagerTests } from "./ValidatorManager.test";
 import { RunDaoIncentiveTests } from "./DaoIncentive.test";
 import { RunValidatorsDataTests } from "./ValidatrosData.test";
@@ -17,10 +17,13 @@ export function RunHydraChainTests(): void {
         const { hydraChain } = await loadFixture(this.fixtures.presetHydraChainStateFixture);
 
         expect(hydraChain.deployTransaction.from).to.equal(this.signers.admin.address);
-        expect(await hydraChain.owner()).to.equal(hre.ethers.constants.AddressZero);
         expect(await hydraChain.currentEpochId()).to.equal(0);
+        expect(
+          await hydraChain.hasRole(await hydraChain.DEFAULT_ADMIN_ROLE(), this.signers.governance.address),
+          "hasRole"
+        ).to.be.false;
 
-        // AccessControl
+        // Whitelisting
         expect(await hydraChain.isWhitelistingEnabled()).to.be.false;
 
         // DaoIncentive
@@ -112,12 +115,11 @@ export function RunHydraChainTests(): void {
         const validator = await hydraChain.getValidator(adminAddress);
 
         expect(await hydraChain.currentEpochId(), "currentEpochId").to.equal(1);
-        expect(await hydraChain.owner(), "owner").to.equal(this.signers.governance.address);
         expect(
           await hydraDelegation.hasRole(await hydraDelegation.DEFAULT_ADMIN_ROLE(), this.signers.governance.address)
         ).to.be.true;
 
-        // AccessControl
+        // Whitelisting
         expect(await hydraChain.isWhitelistingEnabled()).to.be.true;
 
         // DaoIncentive
@@ -281,8 +283,8 @@ export function RunHydraChainTests(): void {
       });
     });
 
-    describe("Access Control", function () {
-      RunAccessControlTests();
+    describe("Whitelisting", function () {
+      RunWhitelistingTests();
     });
     describe("Dao Incentive", function () {
       RunDaoIncentiveTests();

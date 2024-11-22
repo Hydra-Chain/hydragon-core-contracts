@@ -235,9 +235,9 @@ export function RunHydraStakingTests(): void {
       it("should revert if non-Govern address try to change min stake", async function () {
         const { hydraStaking } = await loadFixture(this.fixtures.registeredValidatorsStateFixture);
 
-        await expect(hydraStaking.connect(this.signers.validators[0]).changeMinStake(this.minStake)).to.be.revertedWith(
-          ERRORS.accessControl(this.signers.validators[0].address, await hydraStaking.DEFAULT_ADMIN_ROLE())
-        );
+        await expect(hydraStaking.connect(this.signers.validators[0]).changeMinStake(this.minStake))
+          .to.be.revertedWithCustomError(hydraStaking, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should revert if minStake is too low", async function () {

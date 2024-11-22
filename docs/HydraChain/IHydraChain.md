@@ -26,6 +26,22 @@ Activates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
+### addToWhitelist
+
+```solidity
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
+```
+
+Adds addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddresses | address[] | Array of address to whitelist |
+
 ### banIsInitiated
 
 ```solidity
@@ -110,6 +126,17 @@ Deactivates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
+### disableWhitelisting
+
+```solidity
+function disableWhitelisting() external nonpayable
+```
+
+Disables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
 ### distributeDAOIncentive
 
 ```solidity
@@ -119,6 +146,17 @@ function distributeDAOIncentive() external nonpayable
 Distribute vault funds
 
 *Only callable by the system*
+
+
+### enableWhitelisting
+
+```solidity
+function enableWhitelisting() external nonpayable
+```
+
+Enables the whitelisting feature.
+
+*Only callable by the contract owner.*
 
 
 ### getActiveValidatorsCount
@@ -383,6 +421,22 @@ Validates BLS signature with the provided pubkey and registers validators into t
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
 
+### removeFromWhitelist
+
+```solidity
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
+```
+
+Deletes addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
+
 ### setBanThreshold
 
 ```solidity
@@ -516,6 +570,22 @@ Sets new Voting Power Exponent Numerator.
 
 ## Events
 
+### AddedToWhitelist
+
+```solidity
+event AddedToWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
+
 ### NewEpoch
 
 ```solidity
@@ -567,6 +637,22 @@ event PowerExponentUpdated(uint256 newPowerExponent)
 | Name | Type | Description |
 |---|---|---|
 | newPowerExponent  | uint256 | undefined |
+
+### RemovedFromWhitelist
+
+```solidity
+event RemovedFromWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
 
 ### ValidatorBanned
 
@@ -701,6 +787,17 @@ error MaxValidatorsReached()
 
 
 
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
 ### NoBanInitiated
 
 ```solidity
@@ -738,6 +835,39 @@ error NoInitiateBanSubject()
 
 ```solidity
 error NoVaultFundsToClaim()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyDisabled
+
+```solidity
+error WhitelistingAlreadyDisabled()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyEnabled
+
+```solidity
+error WhitelistingAlreadyEnabled()
 ```
 
 

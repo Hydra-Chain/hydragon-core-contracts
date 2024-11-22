@@ -1,4 +1,4 @@
-# HydraVault
+# Whitelisting
 
 
 
@@ -27,107 +27,43 @@ function DEFAULT_ADMIN_ROLE() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### NATIVE_TOKEN_CONTRACT
+### addToWhitelist
 
 ```solidity
-function NATIVE_TOKEN_CONTRACT() external view returns (address)
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
 ```
 
+Adds addresses that are allowed to register as validators.
 
 
 
-
-
-#### Returns
+#### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| whitelistAddresses | address[] | Array of address to whitelist |
 
-### NATIVE_TRANSFER_PRECOMPILE
-
-```solidity
-function NATIVE_TRANSFER_PRECOMPILE() external view returns (address)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### NATIVE_TRANSFER_PRECOMPILE_GAS
+### disableWhitelisting
 
 ```solidity
-function NATIVE_TRANSFER_PRECOMPILE_GAS() external view returns (uint256)
+function disableWhitelisting() external nonpayable
 ```
 
+Disables the whitelisting feature.
+
+*Only callable by the contract owner.*
 
 
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
-### SYSTEM
+### enableWhitelisting
 
 ```solidity
-function SYSTEM() external view returns (address)
+function enableWhitelisting() external nonpayable
 ```
 
+Enables the whitelisting feature.
 
+*Only callable by the contract owner.*
 
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### VALIDATOR_PKCHECK_PRECOMPILE
-
-```solidity
-function VALIDATOR_PKCHECK_PRECOMPILE() external view returns (address)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### VALIDATOR_PKCHECK_PRECOMPILE_GAS
-
-```solidity
-function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
 
 ### getRoleAdmin
 
@@ -191,10 +127,10 @@ function hasRole(bytes32 role, address account) external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
-### initialize
+### isWhitelisted
 
 ```solidity
-function initialize(address governance) external nonpayable
+function isWhitelisted(address) external view returns (bool)
 ```
 
 
@@ -205,15 +141,38 @@ function initialize(address governance) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
-| governance | address | undefined |
+| _0 | address | undefined |
 
-### relocateFees
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### isWhitelistingEnabled
 
 ```solidity
-function relocateFees(address contractAddress, bytes callData) external nonpayable
+function isWhitelistingEnabled() external view returns (bool)
 ```
 
-Generic method that will be used to transfer the generated fees to another contract
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
+### removeFromWhitelist
+
+```solidity
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
+```
+
+Deletes addresses that are allowed to register as validators.
 
 
 
@@ -221,8 +180,7 @@ Generic method that will be used to transfer the generated fees to another contr
 
 | Name | Type | Description |
 |---|---|---|
-| contractAddress | address | The address of the contract that will be called |
-| callData | bytes | The encoded function with its signature and parameters, if any |
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
 
 ### renounceRole
 
@@ -284,10 +242,10 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 
 ## Events
 
-### FeeReceived
+### AddedToWhitelist
 
 ```solidity
-event FeeReceived(address indexed from, uint256 amount)
+event AddedToWhitelist(address indexed validator)
 ```
 
 
@@ -298,25 +256,7 @@ event FeeReceived(address indexed from, uint256 amount)
 
 | Name | Type | Description |
 |---|---|---|
-| from `indexed` | address | undefined |
-| amount  | uint256 | undefined |
-
-### FeesRelocated
-
-```solidity
-event FeesRelocated(bool success, bytes data)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| success  | bool | undefined |
-| data  | bytes | undefined |
+| validator `indexed` | address | undefined |
 
 ### Initialized
 
@@ -333,6 +273,22 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### RemovedFromWhitelist
+
+```solidity
+event RemovedFromWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
 
 ### RoleAdminChanged
 
@@ -392,6 +348,28 @@ event RoleRevoked(bytes32 indexed role, address indexed account, address indexed
 
 ## Errors
 
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
 ### Unauthorized
 
 ```solidity
@@ -407,5 +385,27 @@ error Unauthorized(string only)
 | Name | Type | Description |
 |---|---|---|
 | only | string | undefined |
+
+### WhitelistingAlreadyDisabled
+
+```solidity
+error WhitelistingAlreadyDisabled()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyEnabled
+
+```solidity
+error WhitelistingAlreadyEnabled()
+```
+
+
+
+
+
 
 

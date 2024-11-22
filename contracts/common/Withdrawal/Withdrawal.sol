@@ -44,7 +44,7 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Governe
     /**
      * @inheritdoc IWithdrawal
      */
-    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeWithdrawalWaitPeriod(uint256 newWaitPeriod) external onlyGovernance {
         _changeWithdrawalWaitPeriod(newWaitPeriod);
     }
 

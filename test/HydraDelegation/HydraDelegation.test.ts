@@ -254,15 +254,12 @@ export function RunHydraDelegationTests(): void {
     });
 
     describe("Change minDelegate", function () {
-      it("should revert if non-default_admin_role address try to change MinDelegation", async function () {
+      it("should revert if non-governance address try to change MinDelegation", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
-        // eslint-disable-next-line no-unused-vars
-        const adminRole = await hydraDelegation.DEFAULT_ADMIN_ROLE();
-
-        await expect(
-          hydraDelegation.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2))
-        ).to.be.revertedWith(ERRORS.accessControl(this.signers.validators[0].address.toLocaleLowerCase(), adminRole));
+        await expect(hydraDelegation.connect(this.signers.validators[0]).changeMinDelegation(this.minDelegation.mul(2)))
+          .to.be.revertedWithCustomError(hydraDelegation, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
 
         expect(await hydraDelegation.minDelegation()).to.be.equal(this.minDelegation);
       });

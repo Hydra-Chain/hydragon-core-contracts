@@ -5,20 +5,24 @@ import { expect } from "chai";
 import * as mcl from "../../ts/mcl";
 import { CHAIN_ID, DOMAIN, ERRORS } from "../constants";
 
-export function RunAccessControlTests(): void {
+export function RunWhitelistingTests(): void {
   describe("Whitelist", function () {
-    it("should be modified only by the owner", async function () {
+    it("should be modified only by the governance", async function () {
       const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
       await expect(
         hydraChain.connect(this.signers.validators[0]).addToWhitelist([this.signers.validators[0].address]),
         "addToWhitelist"
-      ).to.be.revertedWith(ERRORS.ownable);
+      )
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
 
       await expect(
         hydraChain.connect(this.signers.validators[0]).removeFromWhitelist([this.signers.validators[0].address]),
         "removeFromWhitelist"
-      ).to.be.revertedWith(ERRORS.ownable);
+      )
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
     });
 
     it("should be able to add to whitelist", async function () {
@@ -89,22 +93,20 @@ export function RunAccessControlTests(): void {
     });
 
     describe("Enable and Disable Whitelisting", function () {
-      it("enable should be modified only by the owner", async function () {
+      it("enable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        await expect(
-          hydraChain.connect(this.signers.validators[0]).enableWhitelisting(),
-          "enableWhitelisting"
-        ).to.be.revertedWith(ERRORS.ownable);
+        await expect(hydraChain.connect(this.signers.validators[0]).enableWhitelisting(), "enableWhitelisting")
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
-      it("disable should be modified only by the owner", async function () {
+      it("disable should be modified only by the governance", async function () {
         const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
-        await expect(
-          hydraChain.connect(this.signers.validators[0]).disableWhitelisting(),
-          "disableWhitelisting"
-        ).to.be.revertedWith(ERRORS.ownable);
+        await expect(hydraChain.connect(this.signers.validators[0]).disableWhitelisting(), "disableWhitelisting")
+          .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should not be able to enable whitelisting if it is already enabled", async function () {

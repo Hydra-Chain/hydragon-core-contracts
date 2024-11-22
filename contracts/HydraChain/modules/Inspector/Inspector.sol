@@ -7,7 +7,7 @@ import {ValidatorManager, ValidatorStatus} from "../ValidatorManager/ValidatorMa
 import {IInspector} from "./IInspector.sol";
 
 abstract contract Inspector is IInspector, ValidatorManager {
-    /// @notice The penalty that will be taken and burned from the bad valiator's staked amount
+    /// @notice The penalty that will be taken and burned from the bad validator's staked amount
     uint256 public validatorPenalty;
     /// @notice The reward for the person who reports a validator that have to be banned
     uint256 public reporterReward;
@@ -86,7 +86,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
             bansInitiated[validator] = 0;
         }
 
-        if (owner() == msg.sender) {
+        if (_isGovernance(msg.sender)) {
             hydraDelegationContract.lockCommissionReward(validator);
         }
 
@@ -96,28 +96,28 @@ abstract contract Inspector is IInspector, ValidatorManager {
     /**
      * @inheritdoc IInspector
      */
-    function setValidatorPenalty(uint256 newPenalty) external onlyOwner {
+    function setValidatorPenalty(uint256 newPenalty) external onlyGovernance {
         validatorPenalty = newPenalty;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setReporterReward(uint256 newReward) external onlyOwner {
+    function setReporterReward(uint256 newReward) external onlyGovernance {
         reporterReward = newReward;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setInitiateBanThreshold(uint256 newThreshold) external onlyOwner {
+    function setInitiateBanThreshold(uint256 newThreshold) external onlyGovernance {
         initiateBanThreshold = newThreshold;
     }
 
     /**
      * @inheritdoc IInspector
      */
-    function setBanThreshold(uint256 newThreshold) external onlyOwner {
+    function setBanThreshold(uint256 newThreshold) external onlyGovernance {
         banThreshold = newThreshold;
     }
 
@@ -139,7 +139,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
         }
 
         // check if the owner (governance) is calling
-        if (msg.sender == owner()) {
+        if (_isGovernance(msg.sender)) {
             return true;
         }
 
@@ -153,7 +153,7 @@ abstract contract Inspector is IInspector, ValidatorManager {
 
     /**
      * @notice Returns if a ban process can be initiated for a given validator
-     * @dev funtion is overriden in the hydra chain contract
+     * @dev This function is overridden in the hydra chain contract
      * @param account The address of the validator
      * @return Returns true if the validator is subject to initiate ban
      */
@@ -168,13 +168,13 @@ abstract contract Inspector is IInspector, ValidatorManager {
     function _ban(address validator) private {
         if (validators[validator].status == ValidatorStatus.Active) {
             PenalizedStakeDistribution[] memory rewards;
-            if (msg.sender != owner()) {
+            if (_isGovernance(msg.sender)) {
+                rewards = new PenalizedStakeDistribution[](1);
+                rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
+            } else {
                 rewards = new PenalizedStakeDistribution[](2);
                 rewards[0] = PenalizedStakeDistribution({account: msg.sender, amount: reporterReward});
                 rewards[1] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
-            } else {
-                rewards = new PenalizedStakeDistribution[](1);
-                rewards[0] = PenalizedStakeDistribution({account: address(0), amount: validatorPenalty});
             }
 
             hydraStakingContract.penalizeStaker(validator, rewards);

@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import {ArraysUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ArraysUpgradeable.sol";
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import {IBLS} from "../BLS/IBLS.sol";
 import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
@@ -14,15 +13,7 @@ import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
-contract HydraChain is
-    IHydraChain,
-    Ownable2StepUpgradeable,
-    HydraStakingConnector,
-    ValidatorManager,
-    Inspector,
-    DaoIncentive,
-    ValidatorsData
-{
+contract HydraChain is IHydraChain, HydraStakingConnector, ValidatorManager, Inspector, DaoIncentive, ValidatorsData {
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
@@ -49,7 +40,6 @@ contract HydraChain is
         address daoIncentiveVaultAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
-        __Ownable2Step_init();
         __HydraStakingConnector_init(hydraStakingAddr);
         __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, daoIncentiveVaultAddr);
         __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);

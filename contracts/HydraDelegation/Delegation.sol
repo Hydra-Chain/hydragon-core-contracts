@@ -75,7 +75,7 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
-    function changeMinDelegation(uint256 newMinDelegation) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeMinDelegation(uint256 newMinDelegation) external onlyGovernance {
         _changeMinDelegation(newMinDelegation);
     }
 

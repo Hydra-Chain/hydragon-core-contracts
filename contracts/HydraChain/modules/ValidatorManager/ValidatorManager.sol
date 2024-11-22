@@ -8,14 +8,14 @@ import {Unauthorized} from "../../../common/Errors.sol";
 import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
 import {HydraDelegationConnector} from "../../../HydraDelegation/HydraDelegationConnector.sol";
 import {IBLS} from "../../../BLS/IBLS.sol";
-import {AccessControl} from "../AccessControl/AccessControl.sol";
+import {Whitelisting} from "../Whitelisting/Whitelisting.sol";
 import {IValidatorManager, Validator, ValidatorInit, ValidatorStatus} from "./IValidatorManager.sol";
 
 abstract contract ValidatorManager is
     IValidatorManager,
     System,
     Initializable,
-    AccessControl,
+    Whitelisting,
     HydraStakingConnector,
     HydraDelegationConnector
 {
@@ -51,7 +51,7 @@ abstract contract ValidatorManager is
         address _hydraDelegationAddr,
         address _governance
     ) internal onlyInitializing {
-        __AccessControl_init(_governance);
+        __Whitelisting_init(_governance);
         __HydraDelegationConnector_init(_hydraDelegationAddr);
         __ValidatorManager_init_unchained(_newValidators, _newBls);
     }
@@ -125,7 +125,7 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function updateExponent(uint256 newValue) external onlyOwner {
+    function updateExponent(uint256 newValue) external onlyGovernance {
         if (newValue < 5000 || newValue > 10000) {
             revert InvalidPowerExponent(); // must be 0.5 <= Exponent <= 1
         }
