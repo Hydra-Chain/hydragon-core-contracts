@@ -415,13 +415,13 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
 
   await hydraChain
     .connect(this.signers.validators[0])
-    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey), 10);
   await hydraChain
     .connect(this.signers.validators[1])
-    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey), 10);
   await hydraChain
     .connect(this.signers.validators[2])
-    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey), 10);
 
   return {
     hydraChain,
@@ -632,16 +632,16 @@ async function registeredValidatorsStateFixtureFunction(this: Mocha.Context) {
 
   await hydraChain
     .connect(this.signers.validators[0])
-    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator1signature), mcl.g2ToHex(keyPair.pubkey), 0);
   await hydraChain
     .connect(this.signers.validators[1])
-    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator2signature), mcl.g2ToHex(keyPair.pubkey), 0);
   await hydraChain
     .connect(this.signers.validators[2])
-    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator3signature), mcl.g2ToHex(keyPair.pubkey), 0);
   await hydraChain
     .connect(this.signers.validators[3])
-    .register(mcl.g1ToHex(validator4signature), mcl.g2ToHex(keyPair.pubkey));
+    .register(mcl.g1ToHex(validator4signature), mcl.g2ToHex(keyPair.pubkey), 0);
 
   return {
     hydraChain,
@@ -838,7 +838,7 @@ async function newVestingValidatorFixtureFunction(this: Mocha.Context) {
 
   const staker = this.signers.accounts[9];
   await hydraChain.connect(this.signers.governance).addToWhitelist([staker.address]);
-  await registerValidator(hydraChain, staker);
+  await registerValidator(hydraChain, staker, 0);
 
   const stakerHydraStaking = hydraStaking.connect(staker);
   await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {

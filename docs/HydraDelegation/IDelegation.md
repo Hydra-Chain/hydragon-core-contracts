@@ -211,17 +211,18 @@ Calculates how much is yet to become withdrawable for account.
 ### setInitialCommission
 
 ```solidity
-function setInitialCommission(uint256 initialCommission) external nonpayable
+function setInitialCommission(address staker, uint256 initialCommission) external nonpayable
 ```
 
 Sets initial commission for staker.
 
-*the staker needs to have 0 commission and have never used pending commission*
+*This function can be called only when registering a new validatorThs function is callable only by the HydraChain*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
+| staker | address | Address of the validator |
 | initialCommission | uint256 | Initial commission (100 = 100%) |
 
 ### setPendingCommission
@@ -571,17 +572,6 @@ error CommissionRewardLocked()
 
 ```solidity
 error CommissionUpdateNotAvailable()
-```
-
-
-
-
-
-
-### InitialCommissionAlreadySet
-
-```solidity
-error InitialCommissionAlreadySet()
 ```
 
 

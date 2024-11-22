@@ -153,7 +153,7 @@ export function RunWhitelistingTests(): void {
         expect(await hydraChain.isWhitelistingEnabled()).to.be.equal(true);
 
         await expect(
-          hydraChain.connect(this.signers.delegator).register([0, 0], [0, 0, 0, 0])
+          hydraChain.connect(this.signers.delegator).register([0, 0], [0, 0, 0, 0], 0)
         ).to.be.revertedWithCustomError(hydraChain, "MustBeWhitelisted");
       });
 
@@ -173,7 +173,7 @@ export function RunWhitelistingTests(): void {
         ).signature;
 
         await expect(
-          hydraChain.connect(this.signers.delegator).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+          hydraChain.connect(this.signers.delegator).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0),
           "register"
         ).to.not.be.reverted;
       });

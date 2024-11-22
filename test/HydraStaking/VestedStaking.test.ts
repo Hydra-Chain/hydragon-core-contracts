@@ -29,7 +29,7 @@ export function RunVestedStakingTests(): void {
         );
 
         await hydraChain.connect(this.signers.governance).addToWhitelist([this.staker.address]);
-        await registerValidator(hydraChain, this.staker);
+        await registerValidator(hydraChain, this.staker, 0);
         const stakerHydraStaking = hydraStaking.connect(this.staker);
         const tx = await stakerHydraStaking.stakeWithVesting(VESTING_DURATION_WEEKS, {
           value: this.minStake,

@@ -27,6 +27,7 @@ import {
   calculateCommissionCutFromDelegatorReward,
   applyCommissionToReward,
   calcExpectedPositionRewardForActivePosition,
+  registerValidator,
 } from "../helper";
 import { RunSwapVestedPositionStakerTests } from "./SwapVestedPositionStaker.test";
 import { RunDelegationTests } from "./Delegation.test";
@@ -201,41 +202,23 @@ export function RunHydraDelegationTests(): void {
     });
 
     describe("Set Commission", function () {
-      it("should revert setting initial commission if validator commission is not 0", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        await hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(10);
-
-        await expect(
-          hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(10)
-        ).to.be.revertedWithCustomError(hydraDelegation, "InitialCommissionAlreadySet");
-      });
-
-      it("should revert setting initial commission if validator has set pending commission", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        await hydraDelegation.connect(this.signers.validators[0]).setPendingCommission(10);
-
-        await expect(
-          hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(10)
-        ).to.be.revertedWithCustomError(hydraDelegation, "InitialCommissionAlreadySet");
-      });
-
-      it("should revert setting initial commission if we pass 0", async function () {
+      it("should revert setting initial commission if not called by HydraChain", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
         await expect(
-          hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(MAX_COMMISSION.add(1))
-        ).to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission");
+          hydraDelegation
+            .connect(this.signers.validators[3])
+            .setInitialCommission(this.signers.validators[3].address, 10)
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, ERRORS.unauthorized.name)
+          .withArgs(ERRORS.unauthorized.onlyHydraChainArg);
       });
 
-      it("should set initial commission", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
+      it("should set initial commission on register", async function () {
+        const { hydraDelegation, hydraChain } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
         // set commission and verify event
-        await expect(hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(10))
-          .to.emit(hydraDelegation, "CommissionUpdated")
-          .withArgs(this.signers.validators[0].address, 10);
+        await registerValidator(hydraChain, this.signers.validators[0], 10);
 
         // get the update validator and ensure that the new commission is set
         expect(await hydraDelegation.delegationCommissionPerStaker(this.signers.validators[0].address)).to.equal(10);
@@ -308,28 +291,13 @@ export function RunHydraDelegationTests(): void {
         ).to.be.revertedWithCustomError(hydraDelegation, "CommissionUpdateNotAvailable");
       });
 
-      it("should revert if pending and current commission is the same", async function () {
+      it("should apply pending commission", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
 
         const newCommission = MAX_COMMISSION.div(2);
-        await hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(newCommission);
-        await hydraDelegation.connect(this.signers.validators[3]).setPendingCommission(newCommission);
-
-        await time.increase(DAY * 16);
-
-        await expect(
-          hydraDelegation.connect(this.signers.validators[3]).applyPendingCommission()
-        ).to.be.revertedWithCustomError(hydraDelegation, "AppliedCommissionIsTheSame");
-      });
-
-      it("should set pending commission", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.withdrawableFixture);
-
-        const newCommission = MAX_COMMISSION.div(2);
-        await hydraDelegation.connect(this.signers.validators[3]).setInitialCommission(newCommission);
         await hydraDelegation.connect(this.signers.validators[3]).setPendingCommission(newCommission.div(2));
 
-        await time.increase(DAY * 16);
+        await time.increase(DAY * 15);
 
         await expect(hydraDelegation.connect(this.signers.validators[3]).applyPendingCommission()).to.be.not.reverted;
 
@@ -440,7 +408,9 @@ export function RunHydraDelegationTests(): void {
       it("should claim delegator reward and distribute commission when on base delegation", async function () {
         const { systemHydraChain, hydraStaking, hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
-        await hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(10);
+        await hydraDelegation.connect(this.signers.validators[0]).setPendingCommission(10);
+        time.increase(DAY * 15);
+        await hydraDelegation.connect(this.signers.validators[0]).applyPendingCommission();
 
         await commitEpochs(
           systemHydraChain,
@@ -733,10 +703,12 @@ export function RunHydraDelegationTests(): void {
         );
         const validator = this.signers.validators[2];
         const oldCommission = 10;
-        await hydraDelegation.connect(validator).setInitialCommission(oldCommission);
+        await hydraDelegation.connect(validator).setPendingCommission(oldCommission);
+        time.increase(DAY * 15);
+        await hydraDelegation.connect(validator).applyPendingCommission();
         const newCommission = oldCommission * 3;
         await hydraDelegation.connect(validator).setPendingCommission(newCommission);
-        time.increase(DAY * 30);
+        time.increase(DAY * 15);
 
         await vestManager.openVestedDelegatePosition(validator.address, 1, {
           value: this.minDelegation.mul(2),
@@ -807,7 +779,9 @@ export function RunHydraDelegationTests(): void {
         const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
         // set commission
-        await hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(10);
+        await hydraDelegation.connect(this.signers.validators[0]).setPendingCommission(10);
+        time.increase(DAY * 15);
+        await hydraDelegation.connect(this.signers.validators[0]).applyPendingCommission();
 
         // claim & check balance
         await expect(
@@ -827,7 +801,9 @@ export function RunHydraDelegationTests(): void {
         const { hydraDelegation } = await loadFixture(this.fixtures.delegatedFixture);
 
         // set commission
-        await hydraDelegation.connect(this.signers.validators[0]).setInitialCommission(10);
+        await hydraDelegation.connect(this.signers.validators[0]).setPendingCommission(10);
+        time.increase(DAY * 15);
+        await hydraDelegation.connect(this.signers.validators[0]).applyPendingCommission();
 
         // claim & check balance
         await expect(
@@ -1050,9 +1026,8 @@ export function RunHydraDelegationTests(): void {
         const { systemHydraChain, hydraStaking, hydraDelegation, vestingManagerFactory, validator1 } =
           await loadFixture(this.fixtures.initializedWithSpecificBonusesStateFixture);
 
-        // Stake & Set commission & Delegate
+        // Stake & Delegate
         await hydraStaking.connect(validator1).stake({ value: hre.ethers.utils.parseEther("150") });
-        await hydraDelegation.connect(validator1).setInitialCommission(10);
 
         await hydraDelegation
           .connect(this.signers.delegator)

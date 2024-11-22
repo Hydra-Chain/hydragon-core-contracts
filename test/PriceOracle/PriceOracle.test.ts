@@ -295,7 +295,9 @@ export function RunPriceOracleTests(): void {
 
         // whitelist, register & stake
         await systemHydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
-        await systemHydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+        await systemHydraChain
+          .connect(connectedWallet)
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0);
         await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
         await systemHydraChain.connect(this.signers.system).syncValidatorsData(validatorsData);
 

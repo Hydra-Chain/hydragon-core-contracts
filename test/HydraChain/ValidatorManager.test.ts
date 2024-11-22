@@ -58,7 +58,7 @@ export function RunValidatorManagerTests(): void {
         // whitelist, register & stake
         await hydraChain.connect(this.signers.governance).addToWhitelist([wallet.address]);
         const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, wallet.address, keyPair.secret).signature;
-        await hydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+        await hydraChain.connect(connectedWallet).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0);
 
         await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
       }
@@ -81,7 +81,7 @@ export function RunValidatorManagerTests(): void {
       await expect(
         hydraChain
           .connect(validator151)
-          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), { gasLimit: 1000000 })
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0, { gasLimit: 1000000 })
       ).to.be.not.be.reverted;
       await expect(
         hydraStaking.connect(validator151).stake({ value: this.minStake, gasLimit: 1000000 })
@@ -150,7 +150,7 @@ export function RunValidatorManagerTests(): void {
       const { hydraChain } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
 
       await expect(
-        hydraChain.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0])
+        hydraChain.connect(this.signers.accounts[10]).register([0, 0], [0, 0, 0, 0], 0)
       ).to.be.revertedWithCustomError(hydraChain, "MustBeWhitelisted");
     });
 
@@ -166,10 +166,28 @@ export function RunValidatorManagerTests(): void {
       ).signature;
 
       await expect(
-        hydraChain.connect(this.signers.validators[1]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey))
+        hydraChain.connect(this.signers.validators[1]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0)
       )
         .to.be.revertedWithCustomError(hydraChain, "InvalidSignature")
         .withArgs(this.signers.validators[1].address);
+    });
+
+    it("should not be able to register with invalid commission", async function () {
+      const { hydraChain, hydraDelegation } = await loadFixture(this.fixtures.whitelistedValidatorsStateFixture);
+
+      const keyPair = mcl.newKeyPair();
+      const signature = mcl.signValidatorMessage(
+        DOMAIN,
+        CHAIN_ID,
+        this.signers.validators[1].address,
+        keyPair.secret
+      ).signature;
+
+      await expect(
+        hydraChain
+          .connect(this.signers.validators[1])
+          .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 10001)
+      ).to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission");
     });
 
     it("should register", async function () {
@@ -187,7 +205,7 @@ export function RunValidatorManagerTests(): void {
 
       const tx = await hydraChain
         .connect(this.signers.validators[0])
-        .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey));
+        .register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0);
 
       await expect(tx, "emit NewValidator")
         .to.emit(hydraChain, "NewValidator")
@@ -230,7 +248,7 @@ export function RunValidatorManagerTests(): void {
       ).signature;
 
       await expect(
-        hydraChain.connect(this.signers.validators[0]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+        hydraChain.connect(this.signers.validators[0]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0),
         "register"
       )
         .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
@@ -251,7 +269,7 @@ export function RunValidatorManagerTests(): void {
       ).signature;
 
       await expect(
-        hydraChain.connect(this.signers.validators[0]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+        hydraChain.connect(this.signers.validators[0]).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0),
         "register"
       )
         .to.be.revertedWithCustomError(hydraChain, "Unauthorized")
@@ -267,7 +285,7 @@ export function RunValidatorManagerTests(): void {
       const signature = mcl.signValidatorMessage(DOMAIN, CHAIN_ID, bannedValidator.address, keyPair.secret).signature;
 
       await expect(
-        hydraChain.connect(bannedValidator).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey)),
+        hydraChain.connect(bannedValidator).register(mcl.g1ToHex(signature), mcl.g2ToHex(keyPair.pubkey), 0),
         "register"
       )
         .to.be.revertedWithCustomError(hydraChain, "Unauthorized")

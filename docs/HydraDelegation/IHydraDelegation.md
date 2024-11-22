@@ -565,34 +565,19 @@ Calculates how much is yet to become withdrawable for account.
 ### setInitialCommission
 
 ```solidity
-function setInitialCommission(uint256 initialCommission) external nonpayable
+function setInitialCommission(address staker, uint256 initialCommission) external nonpayable
 ```
 
 Sets initial commission for staker.
 
-*the staker needs to have 0 commission and have never used pending commission*
+*This function can be called only when registering a new validatorThs function is callable only by the HydraChain*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
+| staker | address | Address of the validator |
 | initialCommission | uint256 | Initial commission (100 = 100%) |
-
-### setPendingCommission
-
-```solidity
-function setPendingCommission(uint256 newCommission) external nonpayable
-```
-
-Sets pending commission for staker.
-
-*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newCommission | uint256 | New commission (100 = 100%) |
 
 ### setPenaltyDecreasePerWeek
 
@@ -609,6 +594,22 @@ sets a new penalty rate
 | Name | Type | Description |
 |---|---|---|
 | newRate | uint256 | the new penalty rate |
+
+### setPendingCommission
+
+```solidity
+function setPendingCommission(uint256 newCommission) external nonpayable
+```
+
+Sets pending commission for staker.
+
+*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
 
 ### stakerDelegationCommission
 

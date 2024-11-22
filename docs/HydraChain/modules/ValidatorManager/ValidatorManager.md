@@ -522,7 +522,7 @@ function powerExponent() external view returns (uint256)
 ### register
 
 ```solidity
-function register(uint256[2] signature, uint256[4] pubkey) external nonpayable
+function register(uint256[2] signature, uint256[4] pubkey, uint256 initialCommission) external nonpayable
 ```
 
 Validates BLS signature with the provided pubkey and registers validators into the set.
@@ -535,6 +535,7 @@ Validates BLS signature with the provided pubkey and registers validators into t
 |---|---|---|
 | signature | uint256[2] | Signature to validate message against |
 | pubkey | uint256[4] | BLS public key of validator |
+| initialCommission | uint256 | Initial commission (100 = 100%) |
 
 ### removeFromWhitelist
 

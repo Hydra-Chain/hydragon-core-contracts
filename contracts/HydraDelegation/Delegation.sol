@@ -84,6 +84,13 @@ contract Delegation is
     /**
      * @inheritdoc IDelegation
      */
+    function setInitialCommission(address staker, uint256 initialCommission) external onlyHydraChain {
+        _setCommission(staker, initialCommission);
+    }
+
+    /**
+     * @inheritdoc IDelegation
+     */
     function setPendingCommission(uint256 newCommission) external {
         _setPendingCommission(msg.sender, newCommission);
     }
@@ -93,16 +100,6 @@ contract Delegation is
      */
     function applyPendingCommission() external {
         _applyPendingCommission(msg.sender);
-    }
-
-    /**
-     * @inheritdoc IDelegation
-     */
-    function setInitialCommission(uint256 initialCommission) external {
-        if (commissionUpdateAvailableAt[msg.sender] != 0 || delegationCommissionPerStaker[msg.sender] != 0) {
-            revert InitialCommissionAlreadySet();
-        }
-        _setCommission(msg.sender, initialCommission);
     }
 
     /**
@@ -349,9 +346,8 @@ contract Delegation is
         if (commissionUpdateAvailableAt[staker] > block.timestamp) revert CommissionUpdateNotAvailable();
 
         uint256 pendingCommission = pendingCommissionPerStaker[staker];
-        if (pendingCommission == delegationCommissionPerStaker[staker]) revert AppliedCommissionIsTheSame();
-
         delegationCommissionPerStaker[staker] = pendingCommission;
+
         emit CommissionUpdated(staker, pendingCommission);
     }
 
@@ -378,6 +374,7 @@ contract Delegation is
         if (newCommission > MAX_COMMISSION) revert InvalidCommission();
 
         delegationCommissionPerStaker[staker] = newCommission;
+
         emit CommissionUpdated(staker, newCommission);
     }
 

@@ -38,8 +38,9 @@ interface IValidatorManager {
      * @dev Validator must be whitelisted.
      * @param signature Signature to validate message against
      * @param pubkey BLS public key of validator
+     * @param initialCommission Initial commission (100 = 100%)
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external;
+    function register(uint256[2] calldata signature, uint256[4] calldata pubkey, uint256 initialCommission) external;
 
     /**
      * @notice Activates validator.

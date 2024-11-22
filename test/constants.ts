@@ -49,6 +49,7 @@ export const ERRORS = {
   unauthorized: {
     name: "Unauthorized",
     systemCallArg: "SYSTEMCALL",
+    onlyHydraChainArg: "ONLY_HYDRA_CHAIN",
     onlyHydraStakingArg: "ONLY_HYDRA_STAKING",
     onlyHydraDelegationArg: "ONLY_HYDRA_DELEGATION",
     inactiveStakerArg: "INACTIVE_STAKER",

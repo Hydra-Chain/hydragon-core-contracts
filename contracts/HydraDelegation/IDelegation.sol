@@ -17,8 +17,6 @@ interface IDelegation is IWithdrawal {
     error NoCommissionToClaim();
     error InvalidMinDelegation();
     error CommissionRewardLocked();
-    error AppliedCommissionIsTheSame();
-    error InitialCommissionAlreadySet();
     error CommissionUpdateNotAvailable();
 
     /**
@@ -27,6 +25,15 @@ interface IDelegation is IWithdrawal {
      * @param newMinDelegation New minimum delegation amount
      */
     function changeMinDelegation(uint256 newMinDelegation) external;
+
+    /**
+     * @notice Sets initial commission for staker.
+     * @param staker Address of the validator
+     * @param initialCommission Initial commission (100 = 100%)
+     * @dev This function can be called only when registering a new validator
+     * @dev Ths function is callable only by the HydraChain
+     */
+    function setInitialCommission(address staker, uint256 initialCommission) external;
 
     /**
      * @notice Sets pending commission for staker.
@@ -41,13 +48,6 @@ interface IDelegation is IWithdrawal {
      * @dev Anyone can apply commission, but if the caller is not active validator, it will not have any effect.
      */
     function applyPendingCommission() external;
-
-    /**
-     * @notice Sets initial commission for staker.
-     * @param initialCommission Initial commission (100 = 100%)
-     * @dev the staker needs to have 0 commission and have never used pending commission
-     */
-    function setInitialCommission(uint256 initialCommission) external;
 
     /**
      * @notice Claims commission for staker

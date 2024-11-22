@@ -78,6 +78,17 @@ A constant for the minimum delegation limit
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### applyPendingCommission
+
+```solidity
+function applyPendingCommission() external nonpayable
+```
+
+Applies pending commission for staker.
+
+*Anyone can apply commission, but if the caller is not active validator, it will not have any effect.*
+
+
 ### aprCalculatorContract
 
 ```solidity
@@ -815,6 +826,28 @@ The penalty decrease per week
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### pendingCommissionPerStaker
+
+```solidity
+function pendingCommissionPerStaker(address) external view returns (uint256)
+```
+
+The pending commission per staker in percentage
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### pendingWithdrawals
 
 ```solidity
@@ -891,34 +924,19 @@ function rewardWalletContract() external view returns (contract IRewardWallet)
 ### setInitialCommission
 
 ```solidity
-function setInitialCommission(uint256 initialCommission) external nonpayable
+function setInitialCommission(address staker, uint256 initialCommission) external nonpayable
 ```
 
 Sets initial commission for staker.
 
-*the staker needs to have 0 commission and have never used pending commission*
+*This function can be called only when registering a new validatorThs function is callable only by the HydraChain*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
+| staker | address | Address of the validator |
 | initialCommission | uint256 | Initial commission (100 = 100%) |
-
-### setPendingCommission
-
-```solidity
-function setPendingCommission(uint256 newCommission) external nonpayable
-```
-
-Sets pending commission for staker.
-
-*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| newCommission | uint256 | New commission (100 = 100%) |
 
 ### setPenaltyDecreasePerWeek
 
@@ -935,6 +953,22 @@ sets a new penalty rate
 | Name | Type | Description |
 |---|---|---|
 | newRate | uint256 | the new penalty rate |
+
+### setPendingCommission
+
+```solidity
+function setPendingCommission(uint256 newCommission) external nonpayable
+```
+
+Sets pending commission for staker.
+
+*The pending commission can be applied by after 15 days.The pending commission can be overridden any time, but the 15 days period will be reset.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newCommission | uint256 | New commission (100 = 100%) |
 
 ### stakerDelegationCommission
 
@@ -1330,6 +1364,23 @@ event Initialized(uint8 version)
 |---|---|---|
 | version  | uint8 | undefined |
 
+### PendingCommissionAdded
+
+```solidity
+event PendingCommissionAdded(address indexed staker, uint256 newCommission)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| staker `indexed` | address | undefined |
+| newCommission  | uint256 | undefined |
+
 ### PositionCut
 
 ```solidity
@@ -1558,17 +1609,6 @@ error DelegateRequirement(string src, string msg)
 
 ```solidity
 error FailedToBurnAmount()
-```
-
-
-
-
-
-
-### InitialCommissionAlreadySet
-
-```solidity
-error InitialCommissionAlreadySet()
 ```
 
 

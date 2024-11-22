@@ -90,10 +90,17 @@ abstract contract ValidatorManager is
     /**
      * @inheritdoc IValidatorManager
      */
-    function register(uint256[2] calldata signature, uint256[4] calldata pubkey) external onlyWhitelisted {
+    function register(
+        uint256[2] calldata signature,
+        uint256[4] calldata pubkey,
+        uint256 initialCommission
+    ) external onlyWhitelisted {
         if (validators[msg.sender].status != ValidatorStatus.None) revert Unauthorized("ALREADY_REGISTERED");
 
         _register(msg.sender, signature, pubkey);
+        if (initialCommission != 0) {
+            hydraDelegationContract.setInitialCommission(msg.sender, initialCommission);
+        }
 
         emit NewValidator(msg.sender, pubkey);
     }
