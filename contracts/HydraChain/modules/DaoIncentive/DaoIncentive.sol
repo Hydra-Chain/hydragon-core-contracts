@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "../../../common/System/System.sol";
-import {APRCalculatorConnector} from "../../../APRCalculator/APRCalculatorConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
 import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
 import {IDaoIncentive} from "./IDaoIncentive.sol";
