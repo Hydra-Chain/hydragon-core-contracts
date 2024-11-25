@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface IRSIndex {
+import {IPrice} from "../Price/IPrice.sol";
+
+interface IRSIndex is IPrice {
     event RSIBonusSet(uint256 rsiBonus);
 
     // _______________ Public functions _______________

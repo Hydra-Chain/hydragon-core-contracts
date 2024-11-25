@@ -22,7 +22,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
         __MacroFactor_init_unchained();
         __RSIndex_init_unchained();
 
-        initializeVestingBonus();
+        _initializeVestingBonus();
     }
 
     // _______________ Public functions _______________
@@ -98,7 +98,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
     /**
      * @notice Initializes vesting bonus for each week.
      */
-    function initializeVestingBonus() private {
+    function _initializeVestingBonus() private {
         vestingBonus[0] = 6;
         vestingBonus[1] = 16;
         vestingBonus[2] = 30;
