@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IBLS} from "../../../BLS/IBLS.sol";
 import {Unauthorized} from "../../../common/Errors.sol";
 import {PenalizedStakeDistribution} from "../../../HydraStaking/modules/PenalizeableStaking/IPenalizeableStaking.sol";
-import {ValidatorManager, ValidatorStatus} from "../ValidatorManager/ValidatorManager.sol";
+import {ValidatorManager, ValidatorStatus, ValidatorInit} from "../ValidatorManager/ValidatorManager.sol";
 import {IInspector} from "./IInspector.sol";
 
 abstract contract Inspector is IInspector, ValidatorManager {
@@ -21,7 +22,14 @@ abstract contract Inspector is IInspector, ValidatorManager {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Inspector_init() internal onlyInitializing {
+    function __Inspector_init(
+        ValidatorInit[] calldata newValidators,
+        IBLS newBls,
+        address hydraStakingAddr,
+        address hydraDelegationAddr,
+        address governance
+    ) internal onlyInitializing {
+        __ValidatorManager_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);
         __Inspector_init_unchained();
     }
 

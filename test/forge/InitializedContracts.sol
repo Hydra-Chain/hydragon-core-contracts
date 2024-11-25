@@ -112,7 +112,6 @@ abstract contract InitializedContracts is Test {
             governance,
             address(hydraStaking),
             address(hydraDelegation),
-            address(aprCalculator),
             address(rewardWallet),
             address(hydraVault),
             IBLS(address(bls))
@@ -121,26 +120,26 @@ abstract contract InitializedContracts is Test {
         // ⭐️ Initialize HydraStaking
         hydraStaking.initialize(
             stakerInit,
-            governance,
             1 ether,
-            address(liquidityToken),
-            address(hydraChain),
+            governance,
             address(aprCalculator),
+            address(hydraChain),
             address(hydraDelegation),
-            address(rewardWallet)
+            address(rewardWallet),
+            address(liquidityToken)
         );
 
         // ⭐️ Initialize HydraDelegation
         hydraDelegation.initialize(
             stakerInit,
-            governance,
             1,
-            address(liquidityToken),
+            governance,
             address(aprCalculator),
-            address(hydraStaking),
             address(hydraChain),
+            address(hydraStaking),
             address(vestingManagerFactory),
-            address(rewardWallet)
+            address(rewardWallet),
+            address(liquidityToken)
         );
     }
 }
@@ -239,16 +238,12 @@ contract TestInitlizedContracts is InitializedContracts {
         assert(hydraChain.hydraDelegationContract() == IHydraDelegation(address(hydraDelegation)));
     }
 
-    function test_getAPRCalculatorFromHydraChain() public view {
-        assert(hydraChain.aprCalculatorContract() == IAPRCalculator(address(aprCalculator)));
-    }
-
     function test_getRewardWalletFromHydraChain() public view {
         assert(hydraChain.rewardWalletContract() == IRewardWallet(address(rewardWallet)));
     }
 
     function test_getHydraVaultFromHydraChain() public view {
-        assert(hydraChain.daoIncentiveVaultAddr() == address(hydraVault));
+        assert(hydraChain.daoIncentiveVaultContract() == address(hydraVault));
     }
 
     function test_getBLSFromHydraChain() public view {
@@ -305,7 +300,7 @@ contract TestInitlizedContracts is InitializedContracts {
         assert(hydraDelegation.hasRole(role, governance) == true);
     }
 
-    function test_getInitalCommissionFromHydraDelegation() public view {
+    function test_getInitialCommissionFromHydraDelegation() public view {
         assert(hydraDelegation.delegationCommissionPerStaker(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) == 1);
     }
 

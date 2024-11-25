@@ -3,9 +3,8 @@ pragma solidity 0.8.17;
 
 import {ILiquid} from "../common/Liquid/ILiquid.sol";
 import {IVestedDelegation} from "./modules/VestedDelegation/IVestedDelegation.sol";
-import {IDelegation} from "./IDelegation.sol";
 
-interface IHydraDelegation is IDelegation, IVestedDelegation, ILiquid {
+interface IHydraDelegation is IVestedDelegation, ILiquid {
     /**
      * @notice Distributes rewards to delegators.
      * @param staker Address of the validator

@@ -11,6 +11,19 @@ import {Staking} from "../../Staking.sol";
 abstract contract StateSyncStaking is Staking {
     event BalanceChanged(address indexed account, uint256 newBalance);
 
+    // _______________ Initializer _______________
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __StateSyncStaking_init(
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address rewardWalletAddr,
+        uint256 newMinStake
+    ) internal onlyInitializing {
+        __Staking_init(newMinStake, aprCalculatorAddr, rewardWalletAddr, hydraChainAddr, governance);
+    }
+
     // _______________ Internal functions _______________
 
     /**

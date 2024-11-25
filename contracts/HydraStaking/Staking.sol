@@ -2,14 +2,13 @@
 pragma solidity 0.8.17;
 
 import {Unauthorized} from "../common/Errors.sol";
-import {Governed} from "../common/Governed/Governed.sol";
 import {Withdrawal} from "../common/Withdrawal/Withdrawal.sol";
 import {HydraChainConnector} from "../HydraChain/HydraChainConnector.sol";
 import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {IStaking, StakingReward} from "./IStaking.sol";
 
-contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalculatorConnector, RewardWalletConnector {
+contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConnector, RewardWalletConnector {
     /// @notice A constant for the minimum stake limit
     uint256 public constant MIN_STAKE_LIMIT = 1 ether;
 
@@ -24,18 +23,17 @@ contract Staking is IStaking, Governed, Withdrawal, HydraChainConnector, APRCalc
 
     // solhint-disable-next-line func-name-mixedcase
     function __Staking_init(
-        uint256 _newMinStake,
-        address _aprCalculatorAddr,
-        address _rewardWalletAddr,
-        address _hydraChainAddr,
-        address _governance
+        uint256 newMinStake,
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address rewardWalletAddr
     ) internal onlyInitializing {
-        __Governed_init(_governance);
-        __Withdrawal_init();
-        __HydraChainConnector_init(_hydraChainAddr);
-        __APRCalculatorConnector_init(_aprCalculatorAddr);
-        __RewardWalletConnector_init(_rewardWalletAddr);
-        __Staking_init_unchained(_newMinStake);
+        __Withdrawal_init(governance);
+        __HydraChainConnector_init(hydraChainAddr);
+        __APRCalculatorConnector_init(aprCalculatorAddr);
+        __RewardWalletConnector_init(rewardWalletAddr);
+        __Staking_init_unchained(newMinStake);
     }
 
     // solhint-disable-next-line func-name-mixedcase

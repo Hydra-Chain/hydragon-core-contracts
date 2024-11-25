@@ -5,45 +5,41 @@ import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "../common/libs/SafeMathUint.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
-import {APRCalculatorConnector} from "../APRCalculator/APRCalculatorConnector.sol";
-import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
-import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
 import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
 import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {Delegation} from "./Delegation.sol";
 import {DelegationPool} from "./modules/DelegationPoolLib/DelegationPoolLib.sol";
 
-contract HydraDelegation is
-    IHydraDelegation,
-    System,
-    APRCalculatorConnector,
-    HydraStakingConnector,
-    RewardWalletConnector,
-    Delegation,
-    LiquidDelegation,
-    VestedDelegation
-{
+contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegation, VestedDelegation {
     using SafeMathUint for uint256;
 
     // _______________ Initializer _______________
 
     function initialize(
         StakerInit[] calldata initialStakers,
-        address governance,
         uint256 initialCommission,
-        address liquidToken,
+        address governance,
         address aprCalculatorAddr,
-        address hydraStakingAddr,
         address hydraChainAddr,
+        address hydraStakingAddr,
         address vestingManagerFactoryAddr,
-        address rewardWalletAddr
+        address rewardWalletAddr,
+        address liquidToken
     ) external initializer onlySystemCall {
-        __APRCalculatorConnector_init(aprCalculatorAddr);
-        __HydraStakingConnector_init(hydraStakingAddr);
-        __Delegation_init(governance, rewardWalletAddr, initialStakers, initialCommission);
-        __LiquidDelegation_init(liquidToken);
-        __VestedDelegation_init(vestingManagerFactoryAddr, hydraChainAddr);
+        __Delegation_init(
+            initialStakers,
+            initialCommission,
+            governance,
+            aprCalculatorAddr,
+            hydraChainAddr,
+            hydraStakingAddr,
+            rewardWalletAddr
+        );
+        __Liquid_init(liquidToken);
+        __Vesting_init_unchained();
+        __VestingManagerFactoryConnector_init(vestingManagerFactoryAddr);
+        __VestedDelegation_init_unchained();
     }
 
     // _______________ External functions _______________

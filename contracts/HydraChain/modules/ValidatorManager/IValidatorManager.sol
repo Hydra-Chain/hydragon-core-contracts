@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IWhitelisting} from "../Whitelisting/IWhitelisting.sol";
+
 struct ValidatorInit {
     address addr;
     uint256[4] pubkey;
@@ -25,7 +27,7 @@ struct Uptime {
     uint256 signedBlocks;
 }
 
-interface IValidatorManager {
+interface IValidatorManager is IWhitelisting {
     event NewValidator(address indexed validator, uint256[4] blsKey);
     event PowerExponentUpdated(uint256 newPowerExponent);
 

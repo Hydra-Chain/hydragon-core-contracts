@@ -14,7 +14,13 @@ abstract contract RSIndex is IRSIndex, Price {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __RSIndex_init() internal onlyInitializing {
+    function __RSIndex_init(
+        address hydraChainAddr,
+        address priceOracleAddr,
+        address governance,
+        uint256[310] memory prices
+    ) internal onlyInitializing {
+        __Price_init(hydraChainAddr, priceOracleAddr, governance, prices);
         __RSIndex_init_unchained();
     }
 

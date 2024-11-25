@@ -212,23 +212,6 @@ Adds addresses that are allowed to register as validators.
 |---|---|---|
 | whitelistAddresses | address[] | Array of address to whitelist |
 
-### aprCalculatorContract
-
-```solidity
-function aprCalculatorContract() external view returns (contract IAPRCalculator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IAPRCalculator | undefined |
-
 ### banIsInitiated
 
 ```solidity
@@ -370,10 +353,10 @@ function currentEpochId() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### daoIncentiveVaultAddr
+### daoIncentiveVaultContract
 
 ```solidity
-function daoIncentiveVaultAddr() external view returns (address)
+function daoIncentiveVaultContract() external view returns (address)
 ```
 
 
@@ -722,7 +705,7 @@ function hydraStakingContract() external view returns (contract IHydraStaking)
 ### initialize
 
 ```solidity
-function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address aprCalculatorAddr, address rewardWalletAddr, address daoIncentiveVaultAddr, contract IBLS newBls) external nonpayable
+function initialize(ValidatorInit[] newValidators, address governance, address hydraStakingAddr, address hydraDelegationAddr, address rewardWalletAddr, address daoIncentiveVaultAddr, contract IBLS newBls) external nonpayable
 ```
 
 
@@ -737,7 +720,6 @@ function initialize(ValidatorInit[] newValidators, address governance, address h
 | governance | address | undefined |
 | hydraStakingAddr | address | undefined |
 | hydraDelegationAddr | address | undefined |
-| aprCalculatorAddr | address | undefined |
 | rewardWalletAddr | address | undefined |
 | daoIncentiveVaultAddr | address | undefined |
 | newBls | contract IBLS | undefined |

@@ -209,7 +209,6 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     this.signers.governance.address,
     hydraStaking.address,
     hydraDelegation.address,
-    aprCalculator.address,
     rewardWallet.address,
     DAOIncentiveVault.address,
     bls.address
@@ -219,27 +218,27 @@ async function initializedHydraChainStateFixtureFunction(this: Mocha.Context) {
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
-      this.signers.governance.address,
       this.minStake,
-      liquidToken.address,
-      hydraChain.address,
+      this.signers.governance.address,
       aprCalculator.address,
+      hydraChain.address,
       hydraDelegation.address,
-      rewardWallet.address
+      rewardWallet.address,
+      liquidToken.address
     );
 
   await hydraDelegation
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
-      this.signers.governance.address,
       INITIAL_COMMISSION,
-      liquidToken.address,
+      this.signers.governance.address,
       aprCalculator.address,
-      hydraStaking.address,
       hydraChain.address,
+      hydraStaking.address,
       vestingManagerFactory.address,
-      rewardWallet.address
+      rewardWallet.address,
+      liquidToken.address
     );
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address, liquidToken.address);
@@ -318,7 +317,6 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
     this.signers.governance.address,
     hydraStaking.address,
     hydraDelegation.address,
-    aprCalculator.address,
     rewardWallet.address,
     DAOIncentiveVault.address,
     bls.address
@@ -328,27 +326,27 @@ async function initializedWithSpecificBonusesStateFixtureFunction(this: Mocha.Co
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
-      this.signers.governance.address,
       this.minStake,
-      liquidToken.address,
-      hydraChain.address,
+      this.signers.governance.address,
       aprCalculator.address,
+      hydraChain.address,
       hydraDelegation.address,
-      rewardWallet.address
+      rewardWallet.address,
+      liquidToken.address
     );
 
   await hydraDelegation
     .connect(this.signers.system)
     .initialize(
       [validatorInit],
-      this.signers.governance.address,
       INITIAL_COMMISSION,
-      liquidToken.address,
+      this.signers.governance.address,
       aprCalculator.address,
-      hydraStaking.address,
       hydraChain.address,
+      hydraStaking.address,
       vestingManagerFactory.address,
-      rewardWallet.address
+      rewardWallet.address,
+      liquidToken.address
     );
 
   await vestingManagerFactory.connect(this.signers.system).initialize(hydraDelegation.address, liquidToken.address);

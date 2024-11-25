@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface IInspector {
+import {IValidatorManager} from "../ValidatorManager/IValidatorManager.sol";
+
+interface IInspector is IValidatorManager {
     event ValidatorBanned(address indexed validator);
 
     error NoBanSubject();

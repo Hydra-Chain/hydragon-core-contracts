@@ -4,40 +4,32 @@ pragma solidity 0.8.17;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {System} from "../../../common/System/System.sol";
-import {APRCalculatorConnector} from "../../../APRCalculator/APRCalculatorConnector.sol";
 import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
 import {HydraStakingConnector} from "../../../HydraStaking/HydraStakingConnector.sol";
 import {IDaoIncentive} from "./IDaoIncentive.sol";
 
-abstract contract DaoIncentive is
-    IDaoIncentive,
-    System,
-    Initializable,
-    APRCalculatorConnector,
-    RewardWalletConnector,
-    HydraStakingConnector
-{
+abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWalletConnector, HydraStakingConnector {
     /// @notice last rewards distribution timestamp
     uint256 public lastDistribution;
     uint256 public vaultDistribution;
-    address public daoIncentiveVaultAddr;
+    address public daoIncentiveVaultContract;
 
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
     function __DaoIncentive_init(
-        address _aprCalculatorAddr,
-        address _rewardWalletAddr,
-        address _daoIncentiveVaultAddr
+        address rewardWalletAddr,
+        address hydraStakingAddr,
+        address daoIncentiveVaultAddr
     ) internal onlyInitializing {
-        __APRCalculatorConnector_init(_aprCalculatorAddr);
-        __RewardWalletConnector_init(_rewardWalletAddr);
-        __DaoIncentive_init_unchained(_daoIncentiveVaultAddr);
+        __RewardWalletConnector_init(rewardWalletAddr);
+        __HydraStakingConnector_init(hydraStakingAddr);
+        __DaoIncentive_init_unchained(daoIncentiveVaultAddr);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __DaoIncentive_init_unchained(address _daoIncentiveVaultAddr) internal {
-        daoIncentiveVaultAddr = _daoIncentiveVaultAddr;
+    function __DaoIncentive_init_unchained(address daoIncentiveVaultAddr) internal {
+        daoIncentiveVaultContract = daoIncentiveVaultAddr;
         lastDistribution = block.timestamp;
     }
 
@@ -65,7 +57,7 @@ abstract contract DaoIncentive is
         }
 
         vaultDistribution = 0;
-        rewardWalletContract.distributeReward(daoIncentiveVaultAddr, reward);
+        rewardWalletContract.distributeReward(daoIncentiveVaultContract, reward);
 
         emit VaultFunded(reward);
     }

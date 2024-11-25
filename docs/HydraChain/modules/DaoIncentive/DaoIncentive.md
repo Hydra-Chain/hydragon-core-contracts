@@ -112,23 +112,6 @@ function VALIDATOR_PKCHECK_PRECOMPILE_GAS() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### aprCalculatorContract
-
-```solidity
-function aprCalculatorContract() external view returns (contract IAPRCalculator)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IAPRCalculator | undefined |
-
 ### claimVaultFunds
 
 ```solidity
@@ -140,10 +123,10 @@ Claim distributed vault funds
 
 
 
-### daoIncentiveVaultAddr
+### daoIncentiveVaultContract
 
 ```solidity
-function daoIncentiveVaultAddr() external view returns (address)
+function daoIncentiveVaultContract() external view returns (address)
 ```
 
 

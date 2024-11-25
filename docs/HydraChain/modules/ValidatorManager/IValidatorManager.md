@@ -26,6 +26,22 @@ Activates validator.
 |---|---|---|
 | account | address | Address of the validator |
 
+### addToWhitelist
+
+```solidity
+function addToWhitelist(address[] whitelistAddresses) external nonpayable
+```
+
+Adds addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddresses | address[] | Array of address to whitelist |
+
 ### deactivateValidator
 
 ```solidity
@@ -41,6 +57,28 @@ Deactivates validator.
 | Name | Type | Description |
 |---|---|---|
 | account | address | Address of the validator |
+
+### disableWhitelisting
+
+```solidity
+function disableWhitelisting() external nonpayable
+```
+
+Disables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
+
+### enableWhitelisting
+
+```solidity
+function enableWhitelisting() external nonpayable
+```
+
+Enables the whitelisting feature.
+
+*Only callable by the contract owner.*
+
 
 ### getActiveValidatorsCount
 
@@ -160,6 +198,22 @@ Validates BLS signature with the provided pubkey and registers validators into t
 | pubkey | uint256[4] | BLS public key of validator |
 | initialCommission | uint256 | Initial commission (100 = 100%) |
 
+### removeFromWhitelist
+
+```solidity
+function removeFromWhitelist(address[] whitelistAddresses) external nonpayable
+```
+
+Deletes addresses that are allowed to register as validators.
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| whitelistAddresses | address[] | Array of address to remove from whitelist |
+
 ### updateExponent
 
 ```solidity
@@ -179,6 +233,22 @@ Sets new Voting Power Exponent Numerator.
 
 
 ## Events
+
+### AddedToWhitelist
+
+```solidity
+event AddedToWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
 
 ### NewValidator
 
@@ -212,6 +282,22 @@ event PowerExponentUpdated(uint256 newPowerExponent)
 | Name | Type | Description |
 |---|---|---|
 | newPowerExponent  | uint256 | undefined |
+
+### RemovedFromWhitelist
+
+```solidity
+event RemovedFromWhitelist(address indexed validator)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| validator `indexed` | address | undefined |
 
 
 
@@ -248,6 +334,50 @@ error InvalidSignature(address signer)
 
 ```solidity
 error MaxValidatorsReached()
+```
+
+
+
+
+
+
+### MustBeWhitelisted
+
+```solidity
+error MustBeWhitelisted()
+```
+
+
+
+
+
+
+### PreviouslyWhitelisted
+
+```solidity
+error PreviouslyWhitelisted()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyDisabled
+
+```solidity
+error WhitelistingAlreadyDisabled()
+```
+
+
+
+
+
+
+### WhitelistingAlreadyEnabled
+
+```solidity
+error WhitelistingAlreadyEnabled()
 ```
 
 

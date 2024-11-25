@@ -52,13 +52,13 @@ export function RunHydraStakingTests(): void {
           .connect(this.signers.system)
           .initialize(
             [],
-            this.signers.governance.address,
             this.minStake,
-            liquidToken.address,
-            hydraChain.address,
+            this.signers.governance.address,
             aprCalculator.address,
+            hydraChain.address,
             hydraDelegation.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           );
 
         expect(await hydraStaking.totalBalance(), "totalSupply").to.equal(0);
@@ -72,13 +72,13 @@ export function RunHydraStakingTests(): void {
           hydraStaking.initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
-            this.signers.governance.address,
             this.minStake,
-            liquidToken.address,
-            hydraChain.address,
+            this.signers.governance.address,
             aprCalculator.address,
+            hydraChain.address,
             hydraDelegation.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           )
         )
           .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
@@ -93,13 +93,13 @@ export function RunHydraStakingTests(): void {
           hydraStaking.connect(this.signers.system).initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
-            this.signers.governance.address,
             0,
-            liquidToken.address,
-            hydraChain.address,
+            this.signers.governance.address,
             aprCalculator.address,
+            hydraChain.address,
             hydraDelegation.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           )
         ).to.be.revertedWithCustomError(hydraStaking, "InvalidMinStake");
       });
@@ -142,28 +142,20 @@ export function RunHydraStakingTests(): void {
       });
 
       it("should revert on re-initialization attempt", async function () {
-        const {
-          hydraChain,
-          hydraDelegation,
-          liquidToken,
-          hydraStaking,
-          aprCalculator,
-          vestingManagerFactory,
-          rewardWallet,
-        } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+        const { hydraChain, hydraDelegation, liquidToken, hydraStaking, aprCalculator, rewardWallet } =
+          await loadFixture(this.fixtures.initializedHydraChainStateFixture);
 
         await expect(
-          hydraDelegation.connect(this.signers.system).initialize(
+          hydraStaking.connect(this.signers.system).initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
+            this.minStake,
             this.signers.governance.address,
-            0,
-            liquidToken.address,
             aprCalculator.address,
-            hydraStaking.address,
             hydraChain.address,
-            vestingManagerFactory.address,
-            rewardWallet.address
+            hydraDelegation.address,
+            rewardWallet.address,
+            liquidToken.address
           )
         ).to.be.revertedWith(ERRORS.initialized);
       });

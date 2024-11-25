@@ -85,14 +85,14 @@ export function RunHydraDelegationTests(): void {
           hydraDelegation.initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
-            this.signers.governance.address,
             INITIAL_COMMISSION,
-            liquidToken.address,
+            this.signers.governance.address,
             aprCalculator.address,
-            hydraStaking.address,
             hydraChain.address,
+            hydraStaking.address,
             vestingManagerFactory.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           )
         )
           .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
@@ -115,14 +115,14 @@ export function RunHydraDelegationTests(): void {
           hydraDelegation.connect(this.signers.system).initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
-            this.signers.governance.address,
             exceededCommission,
-            liquidToken.address,
+            this.signers.governance.address,
             aprCalculator.address,
-            hydraStaking.address,
             hydraChain.address,
+            hydraStaking.address,
             vestingManagerFactory.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           )
         ).to.be.revertedWithCustomError(hydraDelegation, "InvalidCommission");
       });
@@ -189,14 +189,14 @@ export function RunHydraDelegationTests(): void {
           hydraDelegation.connect(this.signers.system).initialize(
             // eslint-disable-next-line node/no-unsupported-features/es-syntax
             [{ ...this.validatorInit, addr: this.signers.accounts[1].address }],
-            this.signers.governance.address,
             0,
-            liquidToken.address,
+            this.signers.governance.address,
             aprCalculator.address,
-            hydraStaking.address,
             hydraChain.address,
+            hydraStaking.address,
             vestingManagerFactory.address,
-            rewardWallet.address
+            rewardWallet.address,
+            liquidToken.address
           )
         ).to.be.revertedWith(ERRORS.initialized);
       });

@@ -17,8 +17,9 @@ abstract contract Withdrawal is IWithdrawal, ReentrancyGuardUpgradeable, Governe
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Withdrawal_init() internal {
+    function __Withdrawal_init(address governance) internal {
         __ReentrancyGuard_init();
+        __Governed_init(governance);
         __Withdrawal_init_unchained();
     }
 

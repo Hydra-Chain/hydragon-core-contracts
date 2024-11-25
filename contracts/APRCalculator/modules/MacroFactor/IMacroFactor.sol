@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface IMacroFactor {
+import {IPrice} from "../Price/IPrice.sol";
+
+interface IMacroFactor is IPrice {
     event MacroFactorSet(uint256 macroFactor);
     event DefaultMacroFactorChanged(uint256 macroFactor);
 

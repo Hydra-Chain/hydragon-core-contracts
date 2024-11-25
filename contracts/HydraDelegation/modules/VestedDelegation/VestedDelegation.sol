@@ -5,22 +5,14 @@ import {VestedPositionLib} from "../../../common/Vesting/VestedPositionLib.sol";
 import {VestingPosition} from "../../../common/Vesting/IVesting.sol";
 import {Vesting} from "../../../common/Vesting/Vesting.sol";
 import {DelegateRequirement} from "../../../common/Errors.sol";
-import {HydraChainConnector} from "../../../HydraChain/HydraChainConnector.sol";
+import {StakerInit} from "../../../HydraStaking/IHydraStaking.sol";
 import {VestingManagerFactoryConnector} from "../../../VestingManager/VestingManagerFactoryConnector.sol";
-import {RewardWalletConnector} from "../../../RewardWallet/RewardWalletConnector.sol";
 import {Delegation} from "../../Delegation.sol";
 import {DelegationPool} from "../../modules/DelegationPoolLib/DelegationPoolLib.sol";
 import {DelegationPoolLib} from "../../modules/DelegationPoolLib/DelegationPoolLib.sol";
 import {IVestedDelegation, RPS, DelegationPoolDelegatorParams} from "./IVestedDelegation.sol";
 
-abstract contract VestedDelegation is
-    IVestedDelegation,
-    Vesting,
-    HydraChainConnector,
-    RewardWalletConnector,
-    Delegation,
-    VestingManagerFactoryConnector
-{
+abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, VestingManagerFactoryConnector {
     using DelegationPoolLib for DelegationPool;
     using VestedPositionLib for VestingPosition;
 
@@ -40,12 +32,26 @@ abstract contract VestedDelegation is
 
     // solhint-disable-next-line func-name-mixedcase
     function __VestedDelegation_init(
-        address _vestingManagerFactoryAddr,
-        address _hydraChainAddr
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address hydraStakingAddr,
+        address rewardWalletAddr,
+        address vestingManagerFactoryAddr,
+        StakerInit[] calldata initialStakers,
+        uint256 initialCommission
     ) internal onlyInitializing {
-        __VestingManagerFactoryConnector_init(_vestingManagerFactoryAddr);
-        __HydraChainConnector_init(_hydraChainAddr);
-        __Vesting_init();
+        __Delegation_init(
+            initialStakers,
+            initialCommission,
+            governance,
+            aprCalculatorAddr,
+            hydraChainAddr,
+            hydraStakingAddr,
+            rewardWalletAddr
+        );
+        __Vesting_init(governance, aprCalculatorAddr);
+        __VestingManagerFactoryConnector_init(vestingManagerFactoryAddr);
         __VestedDelegation_init_unchained();
     }
 

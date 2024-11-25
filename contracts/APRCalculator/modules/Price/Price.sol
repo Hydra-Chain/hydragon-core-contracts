@@ -21,21 +21,21 @@ abstract contract Price is IPrice, Initializable, System, Governed, HydraChainCo
 
     // solhint-disable-next-line func-name-mixedcase
     function __Price_init(
-        address _hydraChainAddr,
-        address _priceOracleAddr,
-        address _governance,
-        uint256[310] memory _prices
+        address hydraChainAddr,
+        address priceOracleAddr,
+        address governance,
+        uint256[310] memory prices
     ) internal onlyInitializing {
-        __Governed_init(_governance);
-        __HydraChainConnector_init(_hydraChainAddr);
-        __PriceOracleConnector_init(_priceOracleAddr);
-        __Price_init_unchained(_prices);
+        __Governed_init(governance);
+        __HydraChainConnector_init(hydraChainAddr);
+        __PriceOracleConnector_init(priceOracleAddr);
+        __Price_init_unchained(prices);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __Price_init_unchained(uint256[310] memory _prices) internal onlyInitializing {
-        updatedPrices = _prices;
-        latestDailyPrice = _prices[309];
+    function __Price_init_unchained(uint256[310] memory prices) internal onlyInitializing {
+        updatedPrices = prices;
+        latestDailyPrice = prices[309];
     }
 
     // _______________ External functions _______________

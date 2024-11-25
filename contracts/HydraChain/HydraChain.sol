@@ -4,16 +4,15 @@ pragma solidity 0.8.17;
 import {ArraysUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ArraysUpgradeable.sol";
 
 import {IBLS} from "../BLS/IBLS.sol";
-import {HydraStakingConnector} from "../HydraStaking/HydraStakingConnector.sol";
 import {Inspector} from "./modules/Inspector/Inspector.sol";
 import {ValidatorsData} from "./modules/ValidatorsData/ValidatorsData.sol";
-import {ValidatorManager, ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
+import {ValidatorInit, ValidatorStatus} from "./modules/ValidatorManager/ValidatorManager.sol";
 import {DaoIncentive} from "./modules/DaoIncentive/DaoIncentive.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
-contract HydraChain is IHydraChain, HydraStakingConnector, ValidatorManager, Inspector, DaoIncentive, ValidatorsData {
+contract HydraChain is IHydraChain, Inspector, DaoIncentive, ValidatorsData {
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
@@ -35,15 +34,13 @@ contract HydraChain is IHydraChain, HydraStakingConnector, ValidatorManager, Ins
         address governance,
         address hydraStakingAddr,
         address hydraDelegationAddr,
-        address aprCalculatorAddr,
         address rewardWalletAddr,
         address daoIncentiveVaultAddr,
         IBLS newBls
     ) external initializer onlySystemCall {
-        __HydraStakingConnector_init(hydraStakingAddr);
-        __DaoIncentive_init(aprCalculatorAddr, rewardWalletAddr, daoIncentiveVaultAddr);
-        __ValidatorManager_init(newValidators, newBls, hydraDelegationAddr, governance);
-        __Inspector_init();
+        __RewardWalletConnector_init(rewardWalletAddr);
+        __DaoIncentive_init_unchained(daoIncentiveVaultAddr);
+        __Inspector_init(newValidators, newBls, hydraStakingAddr, hydraDelegationAddr, governance);
 
         _initialize();
     }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {StakerInit} from "../../../HydraStaking/IHydraStaking.sol";
 import {Delegation} from "../../Delegation.sol";
 import {Liquid} from "../../../common/Liquid/Liquid.sol";
 
@@ -8,8 +9,26 @@ abstract contract LiquidDelegation is Delegation, Liquid {
     // _______________ Initializer _______________
 
     // solhint-disable-next-line func-name-mixedcase
-    function __LiquidDelegation_init(address _liquidToken) internal onlyInitializing {
-        __LiquidStaking_init(_liquidToken);
+    function __LiquidDelegation_init(
+        StakerInit[] calldata initialStakers,
+        uint256 initialCommission,
+        address governance,
+        address aprCalculatorAddr,
+        address hydraChainAddr,
+        address hydraStakingAddr,
+        address rewardWalletAddr,
+        address liquidToken
+    ) internal onlyInitializing {
+        __Liquid_init(liquidToken);
+        __Delegation_init(
+            initialStakers,
+            initialCommission,
+            governance,
+            aprCalculatorAddr,
+            hydraChainAddr,
+            hydraStakingAddr,
+            rewardWalletAddr
+        );
     }
 
     // _______________ Internal functions _______________
