@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface IDelegatedStaking {
+import {IStaking} from "../../IStaking.sol";
+
+interface IDelegatedStaking is IStaking {
     /**
      * @notice Called by the delegation contract when a user delegates to a staker
      * @dev This function should be called by the delegation contract

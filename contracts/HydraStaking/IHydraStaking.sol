@@ -13,7 +13,7 @@ struct StakerInit {
     uint256 stake;
 }
 
-interface IHydraStaking is IDelegatedStaking, IStaking, ILiquidStaking, IPenalizeableStaking, IVestedStaking {
+interface IHydraStaking is IDelegatedStaking, ILiquidStaking, IPenalizeableStaking, IVestedStaking {
     error DistributeRewardFailed(string message);
 
     /**

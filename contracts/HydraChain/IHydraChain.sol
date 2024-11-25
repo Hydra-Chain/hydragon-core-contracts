@@ -14,7 +14,7 @@ struct Epoch {
     bytes32 epochRoot;
 }
 
-interface IHydraChain is IInspector, IValidatorManager, IDaoIncentive, IValidatorsData, IWhitelisting {
+interface IHydraChain is IInspector, IDaoIncentive, IValidatorsData {
     event NewEpoch(uint256 indexed id, uint256 indexed startBlock, uint256 indexed endBlock, bytes32 epochRoot);
 
     error CommitEpochFailed(string reason);
