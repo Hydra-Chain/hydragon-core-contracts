@@ -4,8 +4,7 @@ pragma solidity 0.8.17;
 import {IInspector} from "./modules/Inspector/IInspector.sol";
 import {IDaoIncentive} from "./modules/DaoIncentive/IDaoIncentive.sol";
 import {IValidatorsData} from "./modules/ValidatorsData/IValidatorsData.sol";
-import {IWhitelisting} from "./modules/Whitelisting/IWhitelisting.sol";
-import {IValidatorManager, ValidatorStatus} from "./modules/ValidatorManager/IValidatorManager.sol";
+import {ValidatorStatus} from "./modules/ValidatorManager/IValidatorManager.sol";
 import {Uptime} from "./modules/ValidatorManager/IValidatorManager.sol";
 
 struct Epoch {

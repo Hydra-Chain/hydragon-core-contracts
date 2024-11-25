@@ -6,7 +6,6 @@ import {ILiquidStaking} from "./modules/LiquidStaking/ILiquidStaking.sol";
 import {IDelegatedStaking} from "./modules/DelegatedStaking/IDelegatedStaking.sol";
 import {IPenalizeableStaking} from "./modules/PenalizeableStaking/IPenalizeableStaking.sol";
 import {IVestedStaking} from "./modules/VestedStaking/IVestedStaking.sol";
-import {IStaking} from "./IStaking.sol";
 
 struct StakerInit {
     address addr;
