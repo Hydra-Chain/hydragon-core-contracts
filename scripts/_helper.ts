@@ -28,11 +28,32 @@ export async function decodeTransaction(
     console.log("Transaction not found.");
     return;
   }
+
+  // console.log("=== tx receipt: ", await transaction.wait());
+  const receipt = await transaction.wait();
+  if (!receipt) {
+    console.log("Transaction receipt not found.");
+    return;
+  }
+
   // Step 2: Decode the input data using the contract's details
   const Contract = await ethers.getContractFactory(_contractName);
   const contractInstance = Contract.attach(_contractAddress);
   const decodedData = contractInstance.interface.decodeFunctionData(_functionName, transaction.data);
-  return decodedData;
+
+  // Step 3: Decode the logs
+  const decodedEvents = receipt.logs
+    .map((log) => {
+      try {
+        return contractInstance.interface.parseLog(log);
+      } catch (error) {
+        // If the log is not from this contract, it will throw an error
+        return null;
+      }
+    })
+    .filter((event) => event !== null);
+
+  return { decodedData, decodedEvents };
 }
 
 // ------------------------- Get events with filters -------------------------
