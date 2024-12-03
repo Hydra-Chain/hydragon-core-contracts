@@ -222,13 +222,29 @@ function updateExponent(uint256 newValue) external nonpayable
 
 Sets new Voting Power Exponent Numerator.
 
-
+*Can be called only by the governance.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | newValue | uint256 | New Voting Power Exponent Numerator |
+
+### updateMaxValidators
+
+```solidity
+function updateMaxValidators(uint256 newValue) external nonpayable
+```
+
+Sets new max allowed validators count.
+
+*Can be called only by the governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValue | uint256 | New max validators count |
 
 
 
@@ -249,6 +265,22 @@ event AddedToWhitelist(address indexed validator)
 | Name | Type | Description |
 |---|---|---|
 | validator `indexed` | address | undefined |
+
+### MaxValidatorsUpdated
+
+```solidity
+event MaxValidatorsUpdated(uint256 newMaxValidators)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMaxValidators  | uint256 | undefined |
 
 ### NewValidator
 
@@ -302,6 +334,17 @@ event RemovedFromWhitelist(address indexed validator)
 
 
 ## Errors
+
+### InvalidMaxValidatorCount
+
+```solidity
+error InvalidMaxValidatorCount()
+```
+
+
+
+
+
 
 ### InvalidPowerExponent
 

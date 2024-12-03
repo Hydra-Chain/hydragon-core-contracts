@@ -20,12 +20,12 @@ abstract contract ValidatorManager is
     HydraDelegationConnector
 {
     bytes32 public constant DOMAIN = keccak256("DOMAIN_HYDRA_CHAIN");
-    /// @notice A constant for the maximum amount of validators
-    uint256 public constant MAX_VALIDATORS = 150;
 
     IBLS public bls;
     address[] public validatorsAddresses;
     uint256 public activeValidatorsCount;
+    /// @notice The maximum amount of validators allowed
+    uint256 public maxAllowedValidators;
     /**
      * @notice `powerExponent` represents the numerator of the Voting Power Exponent, where the denominator is 10,000.
      * The Voting Power Exponent is a fractional value between 0.5 and 1, used to exponentially decrease
@@ -65,6 +65,7 @@ abstract contract ValidatorManager is
     ) internal onlyInitializing {
         bls = newBls;
         powerExponent = 5000;
+        maxAllowedValidators = 50;
         // set initial validators
         for (uint256 i = 0; i < newValidators.length; i++) {
             _register(newValidators[i].addr, newValidators[i].signature, newValidators[i].pubkey);
@@ -111,7 +112,7 @@ abstract contract ValidatorManager is
      * @inheritdoc IValidatorManager
      */
     function activateValidator(address account) external onlyHydraStaking {
-        if (getActiveValidatorsCount() == MAX_VALIDATORS) revert MaxValidatorsReached();
+        if (getActiveValidatorsCount() >= maxAllowedValidators) revert MaxValidatorsReached();
         if (validators[account].status != ValidatorStatus.Registered) revert Unauthorized("MUST_BE_REGISTERED");
         unchecked {
             activeValidatorsCount++;
@@ -135,13 +136,22 @@ abstract contract ValidatorManager is
      * @inheritdoc IValidatorManager
      */
     function updateExponent(uint256 newValue) external onlyGovernance {
-        if (newValue < 5000 || newValue > 10000) {
-            revert InvalidPowerExponent(); // must be 0.5 <= Exponent <= 1
-        }
+        if (newValue < 5000 || newValue > 10000) revert InvalidPowerExponent(); // must be 0.5 <= Exponent <= 1
 
         powerExponent = newValue;
 
         emit PowerExponentUpdated(newValue);
+    }
+
+    /**
+     * @inheritdoc IValidatorManager
+     */
+    function updateMaxValidators(uint256 newValue) external onlyGovernance {
+        if (newValue < 20 || newValue > 150) revert InvalidMaxValidatorCount();
+
+        maxAllowedValidators = newValue;
+
+        emit MaxValidatorsUpdated(newValue);
     }
 
     /**

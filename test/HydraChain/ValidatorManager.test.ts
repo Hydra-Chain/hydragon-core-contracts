@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DOMAIN, ERRORS, VALIDATOR_STATUS, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { CHAIN_ID, DOMAIN, ERRORS, VALIDATOR_STATUS, INITIAL_MAX_ACTIVE_VALIDATORS } from "../constants";
 
 export function RunValidatorManagerTests(): void {
   describe("Validator counters", function () {
@@ -44,9 +44,10 @@ export function RunValidatorManagerTests(): void {
       const keyPair = mcl.newKeyPair();
       const provider = hre.ethers.provider;
       const initialBalance = hre.ethers.utils.parseEther("100000");
+      const maxActiveValidators = await hydraChain.maxAllowedValidators();
 
       // * Whitelist & Register total max active validators validators
-      for (let i = 4; i < MAX_ACTIVE_VALIDATORS; i++) {
+      for (let i = 4; i < maxActiveValidators.toNumber(); i++) {
         // create a new wallet
         const wallet = hre.ethers.Wallet.createRandom();
         const connectedWallet = wallet.connect(provider);
@@ -62,7 +63,7 @@ export function RunValidatorManagerTests(): void {
 
         await hydraStaking.connect(connectedWallet).stake({ value: this.minStake });
       }
-      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(MAX_ACTIVE_VALIDATORS);
+      expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(maxActiveValidators);
 
       // * Try to stake with more than max active validators
       const validator151Wallet = hre.ethers.Wallet.createRandom();
@@ -142,6 +143,41 @@ export function RunValidatorManagerTests(): void {
       await hydraChain.connect(this.signers.governance).banValidator(this.signers.validators[0].address);
 
       expect(await hydraChain.getActiveValidatorsCount()).to.be.equal(2);
+    });
+  });
+
+  describe("Set Max Validators", function () {
+    it("should revert when setting max validators from non-govern address", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(hydraChain.updateMaxValidators(30))
+        .to.be.revertedWithCustomError(hydraChain, ERRORS.unauthorized.name)
+        .withArgs(ERRORS.unauthorized.governanceArg);
+    });
+
+    it("should revert when setting max validators if we try to set less than 20 or more than 150", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      await expect(hydraChain.connect(this.signers.governance).updateMaxValidators(19)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidMaxValidatorCount"
+      );
+      await expect(hydraChain.connect(this.signers.governance).updateMaxValidators(151)).to.be.revertedWithCustomError(
+        hydraChain,
+        "InvalidMaxValidatorCount"
+      );
+    });
+
+    it("should update the max validators", async function () {
+      const { hydraChain } = await loadFixture(this.fixtures.initializedHydraChainStateFixture);
+
+      expect(await hydraChain.maxAllowedValidators(), "maxValidators before update").to.equal(
+        INITIAL_MAX_ACTIVE_VALIDATORS
+      );
+
+      await hydraChain.connect(this.signers.governance).updateMaxValidators(30);
+
+      expect(await hydraChain.maxAllowedValidators(), "maxValidators after update").to.equal(30);
     });
   });
 
