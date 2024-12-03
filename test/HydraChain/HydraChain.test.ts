@@ -3,7 +3,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import * as hre from "hardhat";
 
-import { ERRORS, INITIAL_COMMISSION, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { ERRORS, INITIAL_COMMISSION, INITIAL_MAX_ACTIVE_VALIDATORS } from "../constants";
 import { RunInspectorTests } from "./Inspector.test";
 import { RunWhitelistingTests } from "./Whitelisting.test";
 import { RunValidatorManagerTests } from "./ValidatorManager.test";
@@ -39,7 +39,7 @@ export function RunHydraChainTests(): void {
         expect(await hydraChain.activeValidatorsCount()).to.equal(0);
         expect(await hydraChain.getValidators()).to.deep.equal([]);
 
-        expect(await hydraChain.MAX_VALIDATORS()).to.equal(MAX_ACTIVE_VALIDATORS);
+        expect(await hydraChain.maxAllowedValidators()).to.equal(0);
         expect(await hydraChain.DOMAIN()).to.equal(
           hre.ethers.utils.solidityKeccak256(["string"], ["DOMAIN_HYDRA_CHAIN"])
         );
@@ -119,6 +119,7 @@ export function RunHydraChainTests(): void {
 
         // Validator Manager
         expect(await hydraChain.bls()).to.equal(bls.address);
+        expect(await hydraChain.maxAllowedValidators()).to.equal(INITIAL_MAX_ACTIVE_VALIDATORS);
         expect(await hydraChain.hydraStakingContract()).to.equal(hydraStaking.address);
         expect(await hydraChain.hydraDelegationContract()).to.equal(hydraDelegation.address);
         expect(await hydraChain.activeValidatorsCount()).to.equal(1);

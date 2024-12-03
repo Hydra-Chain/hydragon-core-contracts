@@ -23,6 +23,7 @@ export const MAX_RSI_BONUS = ethers.BigNumber.from(17000);
 export const DENOMINATOR = ethers.BigNumber.from(10000);
 export const DEADLINE = ethers.constants.MaxUint256.toString();
 export const MAX_ACTIVE_VALIDATORS = 150;
+export const INITIAL_MAX_ACTIVE_VALIDATORS = 50;
 export const INITIAL_PRICE = 500;
 export const FAST_SMA = 115;
 export const SLOW_SMA = 310;

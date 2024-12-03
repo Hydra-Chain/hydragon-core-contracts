@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { BigNumber } from "ethers";
 
 import * as mcl from "../../ts/mcl";
-import { CHAIN_ID, DAY, DOMAIN, ERRORS, INITIAL_PRICE, MAX_ACTIVE_VALIDATORS } from "../constants";
+import { CHAIN_ID, DAY, DOMAIN, ERRORS, INITIAL_PRICE } from "../constants";
 import { commitEpoch, getCorrectVotingTimestamp, getCurrentDay } from "../helper";
 
 export function RunPriceOracleTests(): void {
@@ -278,9 +278,10 @@ export function RunPriceOracleTests(): void {
       const provider = ethers.provider;
       const initialBalance = ethers.utils.parseEther("100000");
       const newValidatorAddresses = [];
+      const maxValidators = await systemHydraChain.maxAllowedValidators();
 
       // * Whitelist & Register & Stake & Update Power
-      for (let i = 5; i < MAX_ACTIVE_VALIDATORS; i++) {
+      for (let i = 5; i < maxValidators.toNumber(); i++) {
         // create a new wallet and signature
         const wallet = ethers.Wallet.createRandom();
         const connectedWallet = wallet.connect(provider);
@@ -303,12 +304,14 @@ export function RunPriceOracleTests(): void {
 
         newValidatorAddresses.push(connectedWallet);
       }
-      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(MAX_ACTIVE_VALIDATORS);
+      expect(await systemHydraChain.getActiveValidatorsCount()).to.be.equal(maxValidators);
       await commitEpoch(systemHydraChain, hydraStaking, [this.signers.validators[0]], this.epochSize);
       const correctVotingTime = getCorrectVotingTimestamp();
       await time.setNextBlockTimestamp(correctVotingTime + 10 * DAY);
 
-      for (let i = 1; i < 92; i++) {
+      const neededValidators = Math.ceil((maxValidators.toNumber() * 61) / 100);
+      console.log("Needed validators: ", neededValidators);
+      for (let i = 1; i < neededValidators; i++) {
         let valueToVote;
         if (i % 2 === 0) {
           valueToVote = INITIAL_PRICE + INITIAL_PRICE * (i / 100000);
@@ -318,7 +321,7 @@ export function RunPriceOracleTests(): void {
         console.log("Vote", i + " : ", valueToVote);
         await priceOracle.connect(newValidatorAddresses[i]).vote(valueToVote * 1000);
       }
-      await expect(priceOracle.connect(newValidatorAddresses[100]).vote(INITIAL_PRICE * 1000)).to.emit(
+      await expect(priceOracle.connect(newValidatorAddresses[35]).vote(INITIAL_PRICE * 1000)).to.emit(
         priceOracle,
         "PriceUpdated"
       );

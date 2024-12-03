@@ -44,23 +44,6 @@ function DOMAIN() external view returns (bytes32)
 |---|---|---|
 | _0 | bytes32 | undefined |
 
-### MAX_VALIDATORS
-
-```solidity
-function MAX_VALIDATORS() external view returns (uint256)
-```
-
-A constant for the maximum amount of validators
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### NATIVE_TOKEN_CONTRACT
 
 ```solidity
@@ -656,6 +639,23 @@ function isWhitelistingEnabled() external view returns (bool)
 |---|---|---|
 | _0 | bool | undefined |
 
+### maxAllowedValidators
+
+```solidity
+function maxAllowedValidators() external view returns (uint256)
+```
+
+The maximum amount of validators allowed
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### powerExponent
 
 ```solidity
@@ -863,13 +863,29 @@ function updateExponent(uint256 newValue) external nonpayable
 
 Sets new Voting Power Exponent Numerator.
 
-
+*Can be called only by the governance.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | newValue | uint256 | New Voting Power Exponent Numerator |
+
+### updateMaxValidators
+
+```solidity
+function updateMaxValidators(uint256 newValue) external nonpayable
+```
+
+Sets new max allowed validators count.
+
+*Can be called only by the governance.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newValue | uint256 | New max validators count |
 
 ### validatorPenalty
 
@@ -990,6 +1006,22 @@ event Initialized(uint8 version)
 | Name | Type | Description |
 |---|---|---|
 | version  | uint8 | undefined |
+
+### MaxValidatorsUpdated
+
+```solidity
+event MaxValidatorsUpdated(uint256 newMaxValidators)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newMaxValidators  | uint256 | undefined |
 
 ### NewValidator
 
@@ -1118,6 +1150,17 @@ event ValidatorBanned(address indexed validator)
 
 ```solidity
 error BanAlreadyInitiated()
+```
+
+
+
+
+
+
+### InvalidMaxValidatorCount
+
+```solidity
+error InvalidMaxValidatorCount()
 ```
 
 

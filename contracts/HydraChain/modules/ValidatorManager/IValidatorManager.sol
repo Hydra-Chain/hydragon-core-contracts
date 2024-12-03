@@ -30,9 +30,11 @@ struct Uptime {
 interface IValidatorManager is IWhitelisting {
     event NewValidator(address indexed validator, uint256[4] blsKey);
     event PowerExponentUpdated(uint256 newPowerExponent);
+    event MaxValidatorsUpdated(uint256 newMaxValidators);
 
     error MaxValidatorsReached();
     error InvalidPowerExponent();
+    error InvalidMaxValidatorCount();
     error InvalidSignature(address signer);
 
     /**
@@ -60,9 +62,17 @@ interface IValidatorManager is IWhitelisting {
 
     /**
      * @notice Sets new Voting Power Exponent Numerator.
+     * @dev Can be called only by the governance.
      * @param newValue New Voting Power Exponent Numerator
      */
     function updateExponent(uint256 newValue) external;
+
+    /**
+     * @notice Sets new max allowed validators count.
+     * @dev Can be called only by the governance.
+     * @param newValue New max validators count
+     */
+    function updateMaxValidators(uint256 newValue) external;
 
     /**
      * @notice Gets all validators. Returns already not-active validators as well.
