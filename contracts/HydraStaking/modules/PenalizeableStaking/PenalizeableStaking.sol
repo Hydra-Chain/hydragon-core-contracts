@@ -51,7 +51,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
     /**
      * @inheritdoc IPenalizeableStaking
      */
-    function withdrawBannedFunds() external {
+    function initiatePenalizedFundsWithdrawal() external {
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         if (leftToWithdraw == 0) {
             revert NoFundsToWithdraw();
@@ -59,8 +59,8 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
 
         delete leftToWithdrawPerStaker[msg.sender];
 
-        _withdraw(msg.sender, leftToWithdraw);
-        _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
+        _registerWithdrawal(msg.sender, leftToWithdraw);
+        _afterInitiatePenalizedFundsWithdrawal(msg.sender, leftToWithdraw);
     }
 
     // _______________ Internal functions _______________
@@ -118,7 +118,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
      * @param withdrawnAmount The amount to withdraw
      */
     // solhint-disable-next-line no-empty-blocks
-    function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual {}
+    function _afterInitiatePenalizedFundsWithdrawal(address staker, uint256 withdrawnAmount) internal virtual {}
 
     /**
      * @notice Handles the withdrawal of the given amount for the given account

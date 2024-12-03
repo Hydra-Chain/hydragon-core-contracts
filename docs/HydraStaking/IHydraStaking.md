@@ -200,6 +200,17 @@ Returns historical records of the staking rewards of the user
 |---|---|---|
 | _0 | StakingRewardsHistory[] | stakingRewardsHistory array with the historical records of the staking rewards of the user |
 
+### initiatePenalizedFundsWithdrawal
+
+```solidity
+function initiatePenalizedFundsWithdrawal() external nonpayable
+```
+
+Register withdrawal of the penalized funds
+
+*The funds will be available for withdrawal after the withdrawal waiting period*
+
+
 ### liquidToken
 
 ```solidity
@@ -477,17 +488,6 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
-
-### withdrawBannedFunds
-
-```solidity
-function withdrawBannedFunds() external nonpayable
-```
-
-Withdraws the funds of a banned validator
-
-
-
 
 ### withdrawable
 

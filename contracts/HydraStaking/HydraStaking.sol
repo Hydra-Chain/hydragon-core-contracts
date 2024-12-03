@@ -204,7 +204,7 @@ contract HydraStaking is
     /**
      * @inheritdoc PenalizeableStaking
      */
-    function _afterWithdrawBannedFundsHook(address staker, uint256 withdrawnAmount) internal virtual override {
+    function _afterInitiatePenalizedFundsWithdrawal(address staker, uint256 withdrawnAmount) internal virtual override {
         _collectTokens(staker, withdrawnAmount);
     }
 

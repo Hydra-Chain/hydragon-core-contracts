@@ -511,6 +511,17 @@ function initialize(StakerInit[] initialStakers, uint256 newMinStake, address go
 | rewardWalletAddr | address | undefined |
 | liquidToken | address | undefined |
 
+### initiatePenalizedFundsWithdrawal
+
+```solidity
+function initiatePenalizedFundsWithdrawal() external nonpayable
+```
+
+Register withdrawal of the penalized funds
+
+*The funds will be available for withdrawal after the withdrawal waiting period*
+
+
 ### lastDistribution
 
 ```solidity
@@ -1088,17 +1099,6 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
-
-### withdrawBannedFunds
-
-```solidity
-function withdrawBannedFunds() external nonpayable
-```
-
-Withdraws the funds of a banned validator
-
-
-
 
 ### withdrawWaitPeriod
 

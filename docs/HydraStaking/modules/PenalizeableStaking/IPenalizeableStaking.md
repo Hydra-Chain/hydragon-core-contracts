@@ -53,6 +53,17 @@ Claims staking rewards for the sender.
 
 
 
+### initiatePenalizedFundsWithdrawal
+
+```solidity
+function initiatePenalizedFundsWithdrawal() external nonpayable
+```
+
+Register withdrawal of the penalized funds
+
+*The funds will be available for withdrawal after the withdrawal waiting period*
+
+
 ### penalizeStaker
 
 ```solidity
@@ -178,17 +189,6 @@ Withdraws sender&#39;s withdrawable amount to specified address.
 | Name | Type | Description |
 |---|---|---|
 | to | address | Address to withdraw to |
-
-### withdrawBannedFunds
-
-```solidity
-function withdrawBannedFunds() external nonpayable
-```
-
-Withdraws the funds of a banned validator
-
-
-
 
 ### withdrawable
 

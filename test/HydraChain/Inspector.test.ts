@@ -1,7 +1,7 @@
 /* eslint-disable node/no-extraneous-import */
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { loadFixture, time, setBalance } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { calculatePenaltyByWeeks, commitEpochs } from "../helper";
 import { BAN_THRESHOLD, ERRORS, VESTING_DURATION_WEEKS, WEEK } from "../constants";
@@ -241,7 +241,10 @@ export function RunInspectorTests(): void {
       const liquidTokensThatMustBeCollected = (await hydraStaking.liquidityDebts(staker.address)).add(
         withdrawableAmount
       );
-      await expect(hydraStaking.connect(staker).withdrawBannedFunds(), "liquidTokens collect").to.changeTokenBalance(
+      await expect(
+        hydraStaking.connect(staker).initiatePenalizedFundsWithdrawal(),
+        "liquidTokens collect"
+      ).to.changeTokenBalance(
         LiquidityToken__factory.connect(await hydraStaking.liquidToken(), ethers.provider),
         staker.address,
         liquidTokensThatMustBeCollected.mul(-1)
@@ -352,7 +355,7 @@ export function RunInspectorTests(): void {
         withdrawableAmount
       );
       await expect(
-        hydraStaking.connect(inBanProcessValidator).withdrawBannedFunds(),
+        hydraStaking.connect(inBanProcessValidator).initiatePenalizedFundsWithdrawal(),
         "liquidTokens collect"
       ).to.changeTokenBalance(
         LiquidityToken__factory.connect(await hydraStaking.liquidToken(), ethers.provider),
@@ -606,43 +609,59 @@ export function RunInspectorTests(): void {
   });
 
   describe("Withdraw banned funds", function () {
-    it("should fail the withdrawal when there are no funds in the hydraStaking", async function () {
-      const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
-
-      // clear the contract's balance in order to force withdrawal fail
-      setBalance(hydraStaking.address, 0);
-      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWithCustomError(
-        hydraStaking,
-        "WithdrawalFailed"
-      );
-    });
-
     it("should revert when trying to withdraw banned funds when there is none to withdraw", async function () {
       const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
 
-      await hydraStaking.connect(bannedValidator).withdrawBannedFunds();
+      await hydraStaking.connect(bannedValidator).initiatePenalizedFundsWithdrawal();
       expect(await hydraStaking.connect(bannedValidator).leftToWithdrawPerStaker(bannedValidator.address)).to.be.equal(
         0
       );
-      await expect(hydraStaking.connect(bannedValidator).withdrawBannedFunds()).to.be.revertedWithCustomError(
-        hydraStaking,
-        "NoFundsToWithdraw"
+      await expect(
+        hydraStaking.connect(bannedValidator).initiatePenalizedFundsWithdrawal()
+      ).to.be.revertedWithCustomError(hydraStaking, "NoFundsToWithdraw");
+    });
+
+    it("should initiatePenalizedFundsWithdrawal and clean up leftToWithdrawPerStaker & handle liquid tokens", async function () {
+      const { liquidToken, bannedValidator, stakedAmount, hydraStaking } = await loadFixture(
+        this.fixtures.bannedValidatorFixture
       );
+
+      const initiateWithdrawTx = await hydraStaking.connect(bannedValidator).initiatePenalizedFundsWithdrawal();
+
+      await expect(initiateWithdrawTx, "emit Transfer")
+        .to.emit(liquidToken, "Transfer")
+        .withArgs(bannedValidator.address, ethers.constants.AddressZero, stakedAmount);
+      expect(await liquidToken.balanceOf(bannedValidator.address), "lydra balanceOf").to.be.equal(0);
+
+      const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(bannedValidator.address);
+      expect(withdrawalBalance, "withdrawalBalance.withdrawableAmount").to.be.equal(0);
+      expect(await hydraStaking.liquidityDebts(bannedValidator.address)).to.be.equal(0);
+    });
+
+    it("should fail to withdraw the banned funds if waiting withdraw period is not passed", async function () {
+      const { bannedValidator, hydraStaking } = await loadFixture(this.fixtures.bannedValidatorFixture);
+
+      await hydraStaking.connect(bannedValidator).initiatePenalizedFundsWithdrawal();
+
+      await expect(
+        hydraStaking.connect(bannedValidator).withdraw(bannedValidator.address)
+      ).to.be.revertedWithCustomError(hydraStaking, "NoWithdrawalAvailable");
     });
 
     it("should successfully withdraw the funds", async function () {
-      const { hydraChain, liquidToken, bannedValidator, stakedAmount, hydraStaking } = await loadFixture(
+      const { hydraChain, bannedValidator, stakedAmount, hydraStaking } = await loadFixture(
         this.fixtures.bannedValidatorFixture
       );
 
       const validatorBanPenalty = await hydraChain.validatorPenalty();
       const withdrawAmount = stakedAmount.sub(validatorBanPenalty);
-      const withdrawTx = await hydraStaking.connect(bannedValidator).withdrawBannedFunds();
+      await hydraStaking.connect(bannedValidator).initiatePenalizedFundsWithdrawal();
 
-      await expect(withdrawTx, "emit Transfer")
-        .to.emit(liquidToken, "Transfer")
-        .withArgs(bannedValidator.address, ethers.constants.AddressZero, stakedAmount);
-      expect(await liquidToken.balanceOf(bannedValidator.address), "lydra balanceOf").to.be.equal(0);
+      // increase time to pass the waiting period
+      await time.increase(WEEK * 2);
+
+      const withdrawTx = await hydraStaking.connect(bannedValidator).withdraw(bannedValidator.address);
+
       await expect(withdrawTx, "emit WithdrawalFinished")
         .to.emit(hydraStaking, "WithdrawalFinished")
         .withArgs(hydraStaking.address, bannedValidator.address, withdrawAmount);
@@ -650,10 +669,6 @@ export function RunInspectorTests(): void {
         [hydraStaking.address, bannedValidator.address],
         [withdrawAmount.mul(-1), withdrawAmount]
       );
-
-      const withdrawalBalance = await hydraStaking.leftToWithdrawPerStaker(bannedValidator.address);
-      expect(withdrawalBalance, "withdrawalBalance.withdrawableAmount").to.be.equal(0);
-      expect(await hydraStaking.liquidityDebts(bannedValidator.address)).to.be.equal(0);
     });
   });
 }
