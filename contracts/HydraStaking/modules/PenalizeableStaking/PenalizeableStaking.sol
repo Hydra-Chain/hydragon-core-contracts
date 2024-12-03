@@ -51,7 +51,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
     /**
      * @inheritdoc IPenalizeableStaking
      */
-    function withdrawBannedFunds() external {
+    function initiatePenalizedFundsWithdrawal() external {
         uint256 leftToWithdraw = leftToWithdrawPerStaker[msg.sender];
         if (leftToWithdraw == 0) {
             revert NoFundsToWithdraw();
@@ -59,7 +59,7 @@ abstract contract PenalizeableStaking is IPenalizeableStaking, HydraChainConnect
 
         delete leftToWithdrawPerStaker[msg.sender];
 
-        _withdraw(msg.sender, leftToWithdraw);
+        _registerWithdrawal(msg.sender, leftToWithdraw);
         _afterWithdrawBannedFundsHook(msg.sender, leftToWithdraw);
     }
 

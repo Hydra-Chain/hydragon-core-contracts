@@ -31,7 +31,8 @@ interface IPenalizeableStaking is IStaking {
     function penalizeStaker(address staker, PenalizedStakeDistribution[] calldata stakeDistributions) external;
 
     /**
-     * @notice Withdraws the funds of a banned validator
+     * @notice Register withdrawal of the penalized funds
+     * @dev The funds will be available for withdrawal after the withdrawal waiting period
      */
-    function withdrawBannedFunds() external;
+    function initiatePenalizedFundsWithdrawal() external;
 }
