@@ -278,6 +278,7 @@ export function RunPriceOracleTests(): void {
       const provider = ethers.provider;
       const initialBalance = ethers.utils.parseEther("100000");
       const newValidatorAddresses = [];
+      await systemHydraChain.connect(this.signers.governance).updateMaxValidators(150);
       const maxValidators = await systemHydraChain.maxAllowedValidators();
 
       // * Whitelist & Register & Stake & Update Power
@@ -310,7 +311,6 @@ export function RunPriceOracleTests(): void {
       await time.setNextBlockTimestamp(correctVotingTime + 10 * DAY);
 
       const neededValidators = Math.ceil((maxValidators.toNumber() * 61) / 100);
-      console.log("Needed validators: ", neededValidators);
       for (let i = 1; i < neededValidators; i++) {
         let valueToVote;
         if (i % 2 === 0) {
@@ -321,7 +321,7 @@ export function RunPriceOracleTests(): void {
         console.log("Vote", i + " : ", valueToVote);
         await priceOracle.connect(newValidatorAddresses[i]).vote(valueToVote * 1000);
       }
-      await expect(priceOracle.connect(newValidatorAddresses[35]).vote(INITIAL_PRICE * 1000)).to.emit(
+      await expect(priceOracle.connect(newValidatorAddresses[neededValidators + 1]).vote(INITIAL_PRICE * 1000)).to.emit(
         priceOracle,
         "PriceUpdated"
       );
