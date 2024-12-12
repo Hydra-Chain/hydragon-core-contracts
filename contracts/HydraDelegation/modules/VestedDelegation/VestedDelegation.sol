@@ -202,7 +202,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         delegation.cleanDelegatorHistoricalData(msg.sender);
 
         uint256 duration = durationWeeks * 1 weeks;
-        // TODO: calculate end of period instead of write in the cold storage. It is cheaper
         vestedDelegationPositions[staker][msg.sender] = VestingPosition({
             duration: duration,
             start: block.timestamp,
@@ -341,7 +340,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
 
     // _______________ Public functions _______________
 
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     /**
      * @inheritdoc IVestedDelegation
      */

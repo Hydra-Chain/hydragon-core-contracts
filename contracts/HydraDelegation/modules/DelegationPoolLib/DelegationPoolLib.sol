@@ -245,7 +245,6 @@ library DelegationPoolLib {
      * @param currentEpochNum the current epoch number
      * @return bool whether the balance change is made
      */
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     function isBalanceChangeMade(
         DelegationPool storage pool,
         address delegator,

@@ -14,8 +14,6 @@ import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableSta
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {Staking, IStaking} from "./Staking.sol";
 
-// TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
-
 contract HydraStaking is
     IHydraStaking,
     System,
@@ -29,7 +27,8 @@ contract HydraStaking is
 {
     using SafeMathUint for uint256;
 
-    uint256 public lastDistribution; // last rewards distribution timestamp
+    /// @notice last rewards distribution timestamp
+    uint256 public lastDistribution;
     /// @notice Mapping used to keep the paid rewards per epoch
     mapping(uint256 => uint256) public distributedRewardPerEpoch;
 
@@ -105,6 +104,7 @@ contract HydraStaking is
     /**
      * @inheritdoc IHydraStaking
      */
+    // @audit ensure user can't stake unstake and delegations as well, so that balances changed is not invoked
     function temporaryEjectValidator(address account) external onlyHydraChain {
         emit BalanceChanged(account, 0);
     }
@@ -180,6 +180,7 @@ contract HydraStaking is
         }
     }
 
+    // @audit this function can be removed and just using the main _unstake func; beforePenalizeStakeHook must be added to fix liquidity _unstake problem
     function _executeUnstake(
         address staker,
         uint256 unstakeAmount
@@ -193,7 +194,7 @@ contract HydraStaking is
      * @inheritdoc PenalizeableStaking
      */
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
-        // the unstake amount of liquid tokens must be paid at the time of withdrawal
+        // the unstake amount of liquid tokens must be paid at the time of initiatePenalizedFundsWithdrawal
         // but only the leftForStaker will be automatically requested,
         // so we have to set the unstake amount - leftForStaker as liquidity debt that must be paid as well
         liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
@@ -233,10 +234,14 @@ contract HydraStaking is
      */
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
+        // This check works because if position has already been opened, the restrictions on stake() and stakeWithVesting()
+        // will prevent entering the check again
         if (_isOpeningPosition(position)) {
             uint256 currentStake = stakeOf(staker);
             if (currentStake != amount) {
                 currentStake -= amount;
+                // We want all previously distributed tokens from normal stake() to be collected,
+                // because for vested positions we distribute decreased amount of liquid tokens
                 _collectTokens(staker, currentStake);
                 amount += currentStake;
             }
@@ -266,7 +271,7 @@ contract HydraStaking is
 
     /**
      * @notice Distributes the reward for the given staker.
-     * @notice Validator won't receive a reward in the epoch of exiting his position (stake becomes 0). His delegators will receive a reward for his uptime.
+     * @notice Validator won't receive a reward in the epoch of exiting the staking (stake becomes 0). His delegators will receive a reward for his uptime.
      * @param epochId The epoch id
      * @param uptime The uptime data for the validator (staker)
      * @param fullRewardIndex The full reward index
@@ -282,6 +287,7 @@ contract HydraStaking is
         uint256 totalBlocks
     ) private returns (uint256 reward) {
         if (uptime.signedBlocks > totalBlocks) {
+            // @audit if a bug arrises in the node, this revert ca stop the whole distribution process. Better in such case set the signedBlocks to totalBlocks
             revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
         }
 
@@ -296,6 +302,7 @@ contract HydraStaking is
             stakerRewardIndex
         );
 
+        // @audit isn't better check if stakerShares is 0? Same for delegation
         _distributeStakingReward(uptime.validator, stakerShares);
         _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
 
@@ -318,6 +325,7 @@ contract HydraStaking is
         uint256 delegatedBalance,
         uint256 totalReward
     ) private pure returns (uint256, uint256) {
+        // @audit what happens if both stakedBalance and delegatedBalance are 0? the reward will be lost. Is that okay?
         if (stakedBalance == 0) return (0, totalReward);
         if (delegatedBalance == 0) return (totalReward, 0);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
@@ -330,7 +338,7 @@ contract HydraStaking is
      * Calculates the epoch reward index.
      * We call it index because it is not the actual reward
      * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are applied here.
-     * we need to apply the ration because all APR params are yearly
+     * we need to apply the ratio because all APR params are yearly
      * but we distribute rewards only for the time that has passed from last distribution.
      * The participation factor is applied later in the distribution process.
      * (base + vesting and RSI are applied on claimReward for delegators

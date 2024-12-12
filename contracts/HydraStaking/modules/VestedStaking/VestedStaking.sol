@@ -47,6 +47,7 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
             revert StakeRequirement({src: "stakeWithVesting", msg: "ALREADY_IN_VESTING_CYCLE"});
         }
         // Claim the rewards before opening a new position, to avoid locking them during vesting cycle
+        // @audit this claim function doesn't actually claim the rewards. Bug!!!
         if (unclaimedRewards(msg.sender) != 0) _claimStakingRewards(msg.sender);
 
         // Clear the staking rewards history
@@ -133,6 +134,7 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
     /**
      * @inheritdoc IVestedStaking
      */
+    // @audit this function returns wrong data for reward
     function calcVestedStakingPositionPenalty(
         address staker,
         uint256 amount

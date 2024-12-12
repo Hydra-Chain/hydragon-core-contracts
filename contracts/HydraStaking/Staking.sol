@@ -110,6 +110,7 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
      * @param amount The amount to stake
      */
     function _stake(address account, uint256 amount) internal virtual {
+        // @audit move check to HydraStaking._stake
         if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
 
         uint256 currentBalance = stakeOf(account);
@@ -131,6 +132,7 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
         address account,
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
+        // @audit move check to HydraStaking._unstake
         if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
 
         uint256 accountStake = stakeOf(account);
@@ -151,7 +153,6 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
 
     /**
      * @notice Function that calculates the end reward for a user (without vesting bonuses) based on the pool reward index.
-     * @dev Denominator is used because we should work with floating-point numbers
      * @param rewardIndex index The reward index that we apply the base APR to
      * @dev The reward with the applied APR
      */

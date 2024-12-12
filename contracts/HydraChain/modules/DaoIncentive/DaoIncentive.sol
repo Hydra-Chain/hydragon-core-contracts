@@ -39,6 +39,7 @@ abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWa
      * @inheritdoc IDaoIncentive
      */
     function distributeDAOIncentive() external onlySystemCall {
+        // @audit put all multiplications before division to avoid rounding errors
         uint256 reward = (((hydraStakingContract.totalBalance() * 200) / 10000) *
             (block.timestamp - lastDistribution)) / 365 days;
         lastDistribution = block.timestamp;
@@ -51,6 +52,7 @@ abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWa
      * @inheritdoc IDaoIncentive
      */
     function claimVaultFunds() external {
+        // @audit reward can be renamed to incentive or something
         uint256 reward = vaultDistribution;
         if (reward == 0) {
             revert NoVaultFundsToClaim();

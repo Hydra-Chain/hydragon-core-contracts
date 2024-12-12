@@ -59,9 +59,10 @@ abstract contract Liquid is ILiquid, Initializable {
         int256 liquidDebt = liquidityDebts[account];
         int256 amountInt = amount.toInt256Safe();
         int256 amountAfterDebt = amountInt + liquidDebt;
-        // if negative debt is bigger than or equal to the amount, so we get the whole amount from the debt
+        // if negative debt is bigger than or equal to the amount, we get the whole amount from the debt
         if (amountAfterDebt < 1) {
             liquidityDebts[account] -= amountInt;
+            // @audit unused variable
             amount = 0;
 
             return;

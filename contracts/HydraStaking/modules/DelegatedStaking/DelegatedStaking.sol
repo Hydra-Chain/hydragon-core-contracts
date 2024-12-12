@@ -84,6 +84,7 @@ abstract contract DelegatedStaking is IDelegatedStaking, Staking {
      * @return The total amount of delegation
      */
     function _totalDelegation() internal view returns (uint256) {
+        // @audit check of total delegation is properly changed on ban procedures and similar
         return delegationContract.totalDelegation();
     }
 

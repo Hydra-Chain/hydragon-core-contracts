@@ -36,6 +36,7 @@ abstract contract ValidatorManager is
     mapping(address => Validator) public validators;
     /**
      * @notice Mapping that keeps the last time when a validator has participated in the consensus
+     * @dev Updated on epoch-ending blocks only
      * @dev Keep in mind that the validator will initially be set active when stake,
      * but it will be able to participate in the next epoch. So, the validator will have
      * less blocks to participate before getting eligible for ban.
@@ -74,11 +75,13 @@ abstract contract ValidatorManager is
 
     // _______________ Modifiers _______________
 
+    // @audit unused modifier
     modifier onlyActiveValidator(address validator) {
         if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
         _;
     }
 
+    // @audit unused modifier
     /// @notice Modifier to check if the validator is registered or active
     modifier onlyValidator(address validator) {
         if (
