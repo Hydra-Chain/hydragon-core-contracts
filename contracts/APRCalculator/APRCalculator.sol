@@ -99,6 +99,7 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
      * @notice Initializes vesting bonus for each week.
      */
     function _initializeVestingBonus() private {
+        // @audit use simplified syntax here
         vestingBonus[0] = 6;
         vestingBonus[1] = 16;
         vestingBonus[2] = 30;

@@ -12,7 +12,7 @@ import {ILiquidityToken} from "./ILiquidityToken.sol";
  * @title LiquidityToken
  * @dev This contract represents the liquid token for the Hydra staking mechanism.
  */
-contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20PermitUpgradeable, Governed {
+contract LiquidityToken is ILiquidityToken, System, ERC20PermitUpgradeable, Governed {
     /// @notice The role identifier for address(es) that have permission to mint and burn the token.
     bytes32 public constant SUPPLY_CONTROLLER_ROLE = keccak256("SUPPLY_CONTROLLER_ROLE");
 

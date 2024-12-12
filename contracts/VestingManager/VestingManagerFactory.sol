@@ -40,7 +40,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
 
         BeaconProxy manager = new BeaconProxy(
             address(beacon),
-            abi.encodeWithSelector(VestingManager(address(0)).initialize.selector, msg.sender)
+            abi.encodeWithSelector(VestingManager.initialize.selector, msg.sender)
         );
 
         _storeVestingManagerData(address(manager), msg.sender);
@@ -52,7 +52,6 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
      * @inheritdoc IVestingManagerFactory
      */
     function isVestingManager(address account) external view returns (bool) {
-        // @note ensure address is different than zero only if vesting manager exists
         return vestingManagerOwner[account] != address(0);
     }
 
