@@ -276,7 +276,8 @@ library DelegationPoolLib {
     // _______________ Private functions _______________
 
     /**
-     * @notice Saves the RPS for the given staker for the epoch
+     * @notice Saves the RPS for the given staker's delegation pool
+     * @dev must be called when new reward is distributed (at the end of every epoch in our case)
      * @param pool the DelegationPool to save the RPS for
      * @param rewardPerShare Amount of tokens to be withdrawn
      * @param epochNumber Epoch number

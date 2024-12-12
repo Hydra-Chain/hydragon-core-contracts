@@ -242,6 +242,7 @@ contract HydraStaking is
                 currentStake -= amount;
                 // We want all previously distributed tokens from normal stake() to be collected,
                 // because for vested positions we distribute decreased amount of liquid tokens
+                // @audit what if previously distributed tokens are not from normal stake? (Discuss with Sami)
                 _collectTokens(staker, currentStake);
                 amount += currentStake;
             }

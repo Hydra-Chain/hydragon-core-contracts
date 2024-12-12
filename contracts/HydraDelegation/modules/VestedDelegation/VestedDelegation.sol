@@ -57,6 +57,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
 
     // solhint-disable-next-line func-name-mixedcase
     function __VestedDelegation_init_unchained() internal onlyInitializing {
+        // @note check if this is needed as a check to prevent DDOS, otherwise remove it
         balanceChangeThreshold = 32;
     }
 
@@ -222,7 +223,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
      */
     function swapVestedPositionStaker(address oldStaker, address newStaker) external onlyManager {
         VestingPosition memory oldPosition = vestedDelegationPositions[oldStaker][msg.sender];
-        // ensure that the old position is active in order to continue the swap
+        // ensure that the old position is active
         if (!oldPosition.isActive()) {
             revert DelegateRequirement({src: "vesting", msg: "OLD_POSITION_INACTIVE"});
         }
@@ -386,6 +387,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
 
     // _______________ Internal functions _______________
 
+    // @audit this is not needed
     /**
      * @inheritdoc Delegation
      */
@@ -402,7 +404,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         address delegator,
         uint256 amount
     ) internal virtual override {
-        // If it is a vested delegation, withdraw by keeping the change in the delegation pool params
+        // If it is a vested delegation, deposit by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
         if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
             return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());
@@ -422,6 +424,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     ) internal virtual override {
         // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
+        // @audit isn't fine to check if the position is active here instead of if it is in vesting cycle?
         if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
             return delegation.withdraw(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
@@ -429,6 +432,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         super._withdrawDelegation(staker, delegation, delegator, amount);
     }
 
+    // @audit this function is not used anywhere
     /**
      * @inheritdoc Delegation
      */
@@ -518,6 +522,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         }
 
         // If the given RPS is for future time - it is wrong, so revert
+
         if (rpsData.timestamp > alreadyMatured) {
             revert DelegateRequirement({src: "_verifyRewardsMatured", msg: "WRONG_RPS"});
         }

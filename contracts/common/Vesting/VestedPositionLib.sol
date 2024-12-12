@@ -25,6 +25,7 @@ library VestedPositionLib {
         return vestingEnd <= block.timestamp && block.timestamp < matureEnd;
     }
 
+    // @audit it is said that it returns true if not all rewards from the latest active position are matured yet but doesnt make such check
     /**
      * @notice Returns true if the staker/delegator is an active vesting position or not all rewards from the latest active position are matured yet
      * @param position Vesting position

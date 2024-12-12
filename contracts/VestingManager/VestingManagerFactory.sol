@@ -52,6 +52,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
      * @inheritdoc IVestingManagerFactory
      */
     function isVestingManager(address account) external view returns (bool) {
+        // @note ensure address is different than zero only if vesting manager exists
         return vestingManagerOwner[account] != address(0);
     }
 

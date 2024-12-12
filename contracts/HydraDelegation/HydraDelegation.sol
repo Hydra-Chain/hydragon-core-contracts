@@ -83,7 +83,12 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
      */
     function _distributeTokens(address staker, address account, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedDelegationPositions[staker][msg.sender];
+        // This check works because if position has already been opened, the restrictions on delegateWithVesting()
+        // will prevent entering this check again
         if (_isOpeningPosition(position)) {
+            // No previous deby or delegation balance is possible, because
+            // @audit it is possible the user to has previously minted tokens, again from vested delegation,
+            // but they can be for one week vesting and here he will end with more liquid tokens than for one week vesting
             uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[account] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;

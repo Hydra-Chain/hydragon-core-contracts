@@ -216,12 +216,12 @@ contract Delegation is
     }
 
     /**
-     * @notice Base delegation funds to a staker
+     * @notice Core logic for delegating funds to a staker
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
      */
-    function _baseDelegate(address staker, address delegator, uint256 amount) internal virtual {
+    function _baseDelegate(address staker, address delegator, uint256 amount) internal {
         if (amount == 0) revert DelegateRequirement({src: "delegate", msg: "DELEGATING_AMOUNT_ZERO"});
         DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
@@ -253,6 +253,7 @@ contract Delegation is
 
     /**
      * @notice Undelegates funds from a staker
+     * @dev overriden in child contracts to extend core undelegate behaviour
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
@@ -262,12 +263,12 @@ contract Delegation is
     }
 
     /**
-     * @notice Base undelegating funds from a staker
+     * @notice Core logic for undelegating funds from a staker
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
      */
-    function _baseUndelegate(address staker, address delegator, uint256 amount) internal virtual {
+    function _baseUndelegate(address staker, address delegator, uint256 amount) internal {
         DelegationPool storage delegation = delegationPools[staker];
         uint256 delegatedAmount = delegation.balanceOf(delegator);
         if (amount > delegatedAmount) revert DelegateRequirement({src: "undelegate", msg: "INSUFFICIENT_BALANCE"});
@@ -290,6 +291,7 @@ contract Delegation is
 
     /**
      * @notice Withdraws funds from stakers pool
+     * @dev overriden in child contracts to extend core withdraw behaviour
      * @param delegation Delegation pool
      * @param delegator Address of the delegator
      * @param amount Amount to withdraw
