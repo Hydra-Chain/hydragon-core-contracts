@@ -106,23 +106,6 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 |---|---|---|
 | _0 | contract IAPRCalculator | undefined |
 
-### balanceChangeThreshold
-
-```solidity
-function balanceChangeThreshold() external view returns (uint256)
-```
-
-The threshold for the maximum number of allowed balance changes
-
-*We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### calculatePositionClaimableReward
 
 ```solidity

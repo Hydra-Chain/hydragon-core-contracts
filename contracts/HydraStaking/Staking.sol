@@ -84,7 +84,7 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
      * @inheritdoc IStaking
      */
     function claimStakingRewards() public {
-        rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
+        _claimStakingRewards(msg.sender);
     }
 
     /**
@@ -168,6 +168,8 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
         if (rewards == 0) revert NoRewards();
 
         stakingRewards[staker].taken += rewards;
+
+        rewardWalletContract.distributeReward(staker, rewards);
 
         emit StakingRewardsClaimed(staker, rewards);
     }

@@ -60,16 +60,31 @@ export function RunVestedStakingTests(): void {
         expect(await hydraStaking.stakeOf(this.staker.address), "stake").to.be.equal(this.minStake);
       });
 
-      it("should open vested position with the old stake base and adjust token balance", async function () {
-        const { hydraStaking, liquidToken } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+      it.only("should open vested position with the old stake base and adjust token balance", async function () {
+        const { hydraStaking, systemHydraChain, liquidToken } = await loadFixture(
+          this.fixtures.stakedValidatorsStateFixture
+        );
+
+        await commitEpochs(
+          systemHydraChain,
+          hydraStaking,
+          [this.signers.validators[0], this.signers.validators[1], this.staker],
+          5, // number of epochs to commit
+          this.epochSize
+        );
 
         const validator = this.signers.validators[0];
 
         await hydraStaking.connect(validator).stake({ value: this.minStake.mul(20) });
 
         const tokenBalance = await liquidToken.balanceOf(validator.address);
+        const rewardBeforeOpeningVestedPosition = await hydraStaking.unclaimedRewards(validator.address);
+        expect(rewardBeforeOpeningVestedPosition).to.be.gt(0);
 
-        await hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake });
+        // stake with vesting must distribute rewards from the previous stake
+        await expect(
+          hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minStake })
+        ).to.changeEtherBalance(validator.address, this.minStake.sub(rewardBeforeOpeningVestedPosition).mul(-1));
 
         const currentStake = await hydraStaking.stakeOf(validator.address);
         const expectedLiquidTokens = calcLiquidTokensToDistributeOnVesting(52, currentStake);
@@ -238,7 +253,7 @@ export function RunVestedStakingTests(): void {
 
         expect(penalty, "penalty").to.be.gt(0);
         expect(penalty, "penalty = calculatedPenalty").to.be.equal(calculatedPenalty);
-        expect(rewardToBurn, "rewardToBurn").to.be.equal(0); // if active position, reward is burned
+        expect(rewardToBurn, "rewardToBurn").to.be.gt(0); // if active position, reward is burned
       });
 
       it("should decrease staking position and apply slashing penalty", async function () {

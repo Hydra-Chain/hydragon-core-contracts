@@ -17,12 +17,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     using VestedPositionLib for VestingPosition;
 
     /**
-     * @notice The threshold for the maximum number of allowed balance changes
-     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
-     */
-    uint256 public balanceChangeThreshold;
-
-    /**
      * @notice The vesting positions for every delegator
      * @dev Staker => Delegator => VestingPosition
      */
@@ -52,13 +46,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         );
         __Vesting_init(governance, aprCalculatorAddr);
         __VestingManagerFactoryConnector_init(vestingManagerFactoryAddr);
-        __VestedDelegation_init_unchained();
-    }
-
-    // solhint-disable-next-line func-name-mixedcase
-    function __VestedDelegation_init_unchained() internal onlyInitializing {
-        // @note check if this is needed as a check to prevent DDOS, otherwise remove it
-        balanceChangeThreshold = 32;
     }
 
     // _______________ Modifiers _______________
@@ -416,8 +403,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     ) internal virtual override {
         // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
-        // @audit isn't fine to check if the position is active here instead of if it is in vesting cycle?
-        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+        if (vestedDelegationPositions[staker][delegator].isActive()) {
             return delegation.withdraw(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
 
@@ -506,7 +492,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         }
 
         // If the given RPS is for future time - it is wrong, so revert
-
         if (rpsData.timestamp > alreadyMatured) {
             revert DelegateRequirement({src: "_verifyRewardsMatured", msg: "WRONG_RPS"});
         }

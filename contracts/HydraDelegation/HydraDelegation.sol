@@ -39,7 +39,6 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
         __Liquid_init(liquidToken);
         __Vesting_init_unchained();
         __VestingManagerFactoryConnector_init(vestingManagerFactoryAddr);
-        __VestedDelegation_init_unchained();
     }
 
     // _______________ External functions _______________
@@ -86,9 +85,15 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
         // This check works because if position has already been opened, the restrictions on delegateWithVesting()
         // will prevent entering this check again
         if (_isOpeningPosition(position)) {
-            // No previous deby or delegation balance is possible, because
-            // @audit it is possible the user to has previously minted tokens, again from vested delegation,
-            // but they can be for one week vesting and here he will end with more liquid tokens than for one week vesting
+            uint256 previousDelegation = delegationOf(staker, account) - amount;
+            if (previousDelegation != 0) {
+                // We want all previously distributed tokens to be collected,
+                // because the new position vesting period can be different from the previous one
+                // meaning the tokens to distribute amount will be different
+                _collectTokens(staker, previousDelegation);
+                amount += previousDelegation;
+            }
+
             uint256 debt = _calculatePositionDebt(amount, position.duration);
             liquidityDebts[account] -= debt.toInt256Safe(); // Add negative debt
             amount -= debt;

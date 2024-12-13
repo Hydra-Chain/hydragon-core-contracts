@@ -248,14 +248,12 @@ contract HydraStaking is
         // This check works because if position has already been opened, the restrictions on stake() and stakeWithVesting()
         // will prevent entering the check again
         if (_isOpeningPosition(position)) {
-            uint256 currentStake = stakeOf(staker);
-            if (currentStake != amount) {
-                currentStake -= amount;
-                // We want all previously distributed tokens from normal stake() to be collected,
+            uint256 previousStake = stakeOf(staker) - amount;
+            if (previousStake != 0) {
+                // We want all previously distributed tokens to be collected,
                 // because for vested positions we distribute decreased amount of liquid tokens
-                // @audit what if previously distributed tokens are not from normal stake? (Discuss with Sami)
-                _collectTokens(staker, currentStake);
-                amount += currentStake;
+                _collectTokens(staker, previousStake);
+                amount += previousStake;
             }
 
             uint256 debt = _calculatePositionDebt(amount, position.duration);
