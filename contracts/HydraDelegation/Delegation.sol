@@ -253,7 +253,7 @@ contract Delegation is
 
     /**
      * @notice Undelegates funds from a staker
-     * @dev overriden in child contracts to extend core undelegate behaviour
+     * @dev overridden in child contracts to extend core undelegate behaviour
      * @param staker Address of the validator
      * @param delegator Address of the delegator
      * @param amount Amount to delegate
@@ -291,7 +291,7 @@ contract Delegation is
 
     /**
      * @notice Withdraws funds from stakers pool
-     * @dev overriden in child contracts to extend core withdraw behaviour
+     * @dev overridden in child contracts to extend core withdraw behaviour
      * @param delegation Delegation pool
      * @param delegator Address of the delegator
      * @param amount Amount to withdraw

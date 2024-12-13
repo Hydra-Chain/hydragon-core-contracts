@@ -26,7 +26,7 @@ library SortedPriceList {
         address current = self.head;
 
         // If the new price is smaller or equal to the head, insert at the head (or if the list is empty)
-        if (current == address(0) || self.nodes[current].price >= price) {
+        if (self.nodes[current].price >= price || current == address(0)) {
             newNode.next = current;
             self.head = validator;
             self.nodes[validator] = newNode;
