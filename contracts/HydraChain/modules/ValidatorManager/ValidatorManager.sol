@@ -73,24 +73,6 @@ abstract contract ValidatorManager is
         }
     }
 
-    // _______________ Modifiers _______________
-
-    // @audit unused modifier
-    modifier onlyActiveValidator(address validator) {
-        if (validators[validator].status != ValidatorStatus.Active) revert Unauthorized("INACTIVE_VALIDATOR");
-        _;
-    }
-
-    // @audit unused modifier
-    /// @notice Modifier to check if the validator is registered or active
-    modifier onlyValidator(address validator) {
-        if (
-            validators[validator].status != ValidatorStatus.Registered &&
-            validators[validator].status != ValidatorStatus.Active
-        ) revert Unauthorized("INVALID_VALIDATOR");
-        _;
-    }
-
     // _______________ External functions _______________
 
     /**

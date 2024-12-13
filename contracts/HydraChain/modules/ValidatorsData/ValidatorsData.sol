@@ -26,11 +26,9 @@ abstract contract ValidatorsData is IValidatorsData, System, Initializable {
             return;
         }
 
-        // @audt you were able to use a single int256 variable to store the changes in the power
         uint256 totalNewPower = 0;
         uint256 totalOldPower = 0;
         for (uint256 i = 0; i < arrLength; i++) {
-            // @audit naming is confusing
             totalNewPower += validatorsPower[i].votingPower;
             totalOldPower += validatorPower[validatorsPower[i].validator];
             validatorPower[validatorsPower[i].validator] = validatorsPower[i].votingPower;
