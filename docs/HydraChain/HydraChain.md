@@ -223,7 +223,7 @@ Returns if a ban process is initiated for a given validator
 function banThreshold() external view returns (uint256)
 ```
 
-Validator inactiveness (in seconds) threshold. A validator can be banned if in &quot;ban initiated&quot; state for a duration equal to or exceeding this threshold.
+Threshold for validator inactiveness (in seconds). A validator can be banned if it remains in the ban-initiated state for a duration equal to or exceeding this threshold.
 
 
 
