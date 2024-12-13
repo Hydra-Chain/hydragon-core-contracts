@@ -232,6 +232,12 @@ export function RunVestedDelegationTests(): void {
           this.fixtures.vestedDelegationFixture
         );
 
+        const delegatedAmount = await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address);
+        const amountToCut = delegatedAmount.div(2);
+        const amount = await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, amountToCut);
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
+        await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(this.delegatedValidators[0], amountToCut);
+
         // go in the maturing phase
         await time.increase(WEEK * 16);
 
@@ -246,22 +252,16 @@ export function RunVestedDelegationTests(): void {
         );
         expect(mature, "mature").to.be.true;
 
-        const delegatedAmount = await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address);
-        const amountToDelegate = this.minDelegation.mul(2);
-        const amount = await hydraDelegation.calculateOwedLiquidTokens(vestManager.address, delegatedAmount.div(2));
-        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, amount);
-        await vestManager
-          .connect(vestManagerOwner)
-          .cutVestedDelegatePosition(this.delegatedValidators[0], delegatedAmount.div(2));
-
         // check if the balance change is made
         const epochNum = await hydraChain.getCurrentEpochId();
-        const isBalanceMadeChange = await hydraDelegation.isBalanceChangeMade(
+        const isBalanceChangeMade = await hydraDelegation.isBalanceChangeMade(
           this.delegatedValidators[0],
           vestManager.address,
           epochNum
         );
-        expect(isBalanceMadeChange, "isBalanceMadeChange").to.be.true;
+        expect(isBalanceChangeMade, "isBalanceChangeMade").to.be.true;
+
+        const amountToDelegate = this.minDelegation.mul(2);
         const tx = await vestManager.openVestedDelegatePosition(this.delegatedValidators[0], vestingDuration, {
           value: amountToDelegate,
         });
@@ -272,7 +272,7 @@ export function RunVestedDelegationTests(): void {
             vestManager.address,
             this.delegatedValidators[0],
             vestingDuration,
-            amountToDelegate.add(delegatedAmount.div(2))
+            amountToDelegate.add(delegatedAmount.sub(amountToCut))
           );
 
         expect(await hydraDelegation.delegationOf(this.delegatedValidators[0], vestManager.address)).to.be.equal(
