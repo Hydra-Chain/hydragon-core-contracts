@@ -62,8 +62,6 @@ abstract contract Liquid is ILiquid, Initializable {
         // if a negative debt covers the whole amount, no need to burn anything
         if (amountAfterDebt < 1) {
             liquidityDebts[account] -= amountInt;
-            // @audit unused variable
-            amount = 0;
 
             return;
         }

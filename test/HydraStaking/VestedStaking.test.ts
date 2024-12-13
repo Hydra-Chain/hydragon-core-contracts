@@ -228,7 +228,7 @@ export function RunVestedStakingTests(): void {
         const position = await hydraStaking.vestedStakingPositions(this.staker.address);
         const latestTimestamp = hre.ethers.BigNumber.from(await time.latest());
         // get the penalty and reward from the contract
-        const { penalty, reward } = await hydraStaking.calcVestedStakingPositionPenalty(
+        const { penalty, rewardToBurn } = await hydraStaking.calcVestedStakingPositionPenalty(
           this.staker.address,
           this.minStake
         );
@@ -238,7 +238,7 @@ export function RunVestedStakingTests(): void {
 
         expect(penalty, "penalty").to.be.gt(0);
         expect(penalty, "penalty = calculatedPenalty").to.be.equal(calculatedPenalty);
-        expect(reward, "reward").to.be.equal(0); // if active position, reward is burned
+        expect(rewardToBurn, "rewardToBurn").to.be.equal(0); // if active position, reward is burned
       });
 
       it("should decrease staking position and apply slashing penalty", async function () {

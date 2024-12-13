@@ -60,7 +60,7 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
         address staker,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
+    ) internal virtual override(Delegation, LiquidDelegation) {
         super._delegate(staker, delegator, amount);
     }
 
@@ -71,7 +71,7 @@ contract HydraDelegation is IHydraDelegation, System, Delegation, LiquidDelegati
         address staker,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
+    ) internal virtual override(Delegation, LiquidDelegation) {
         super._undelegate(staker, delegator, amount);
     }
 

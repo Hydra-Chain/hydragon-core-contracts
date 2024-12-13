@@ -387,14 +387,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
 
     // _______________ Internal functions _______________
 
-    // @audit this is not needed
-    /**
-     * @inheritdoc Delegation
-     */
-    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._delegate(staker, delegator, amount);
-    }
-
     /**
      * @inheritdoc Delegation
      */
@@ -430,14 +422,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         }
 
         super._withdrawDelegation(staker, delegation, delegator, amount);
-    }
-
-    // @audit this function is not used anywhere
-    /**
-     * @inheritdoc Delegation
-     */
-    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._undelegate(staker, delegator, amount);
     }
 
     /**

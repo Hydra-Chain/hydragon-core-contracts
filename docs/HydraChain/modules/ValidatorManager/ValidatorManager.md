@@ -694,7 +694,7 @@ function validatorsParticipation(address) external view returns (uint256)
 
 Mapping that keeps the last time when a validator has participated in the consensus
 
-*Keep in mind that the validator will initially be set active when stake, but it will be able to participate in the next epoch. So, the validator will have less blocks to participate before getting eligible for ban.*
+*Updated on epoch-ending blocks onlyKeep in mind that the validator will initially be set active when stake, but it will be able to participate in the next epoch. So, the validator will have less blocks to participate before getting eligible for ban.*
 
 #### Parameters
 

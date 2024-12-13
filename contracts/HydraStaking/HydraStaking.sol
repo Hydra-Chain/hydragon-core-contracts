@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
@@ -104,7 +105,6 @@ contract HydraStaking is
     /**
      * @inheritdoc IHydraStaking
      */
-    // @audit ensure user can't stake unstake and delegations as well, so that balances changed is not invoked
     function temporaryEjectValidator(address account) external onlyHydraChain {
         emit BalanceChanged(account, 0);
     }
@@ -135,9 +135,19 @@ contract HydraStaking is
     // _______________ Internal functions _______________
 
     /**
+     * @notice Check if the ban is initiated for the given account
+     * @param account The address of the account
+     */
+    function _isBanInitiated(address account) internal view returns (bool) {
+        return hydraChainContract.banIsInitiated(account);
+    }
+
+    /**
      * @inheritdoc Staking
      */
     function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
+
         if (stakeOf(account) == 0) {
             hydraChainContract.activateValidator(account);
         }
@@ -156,6 +166,8 @@ contract HydraStaking is
         override(Staking, VestedStaking, StateSyncStaking, LiquidStaking)
         returns (uint256 stakeLeft, uint256 withdrawAmount)
     {
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
+
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         if (stakeLeft == 0) {
             hydraChainContract.deactivateValidator(account);
@@ -180,7 +192,6 @@ contract HydraStaking is
         }
     }
 
-    // @audit this function can be removed and just using the main _unstake func; beforePenalizeStakeHook must be added to fix liquidity _unstake problem
     function _executeUnstake(
         address staker,
         uint256 unstakeAmount
@@ -282,14 +293,13 @@ contract HydraStaking is
      */
     function _distributeReward(
         uint256 epochId,
-        Uptime calldata uptime,
+        Uptime memory uptime,
         uint256 fullRewardIndex,
         uint256 totalSupply,
         uint256 totalBlocks
     ) private returns (uint256 reward) {
         if (uptime.signedBlocks > totalBlocks) {
-            // @audit if a bug arrises in the node, this revert ca stop the whole distribution process. Better in such case set the signedBlocks to totalBlocks
-            revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
+            uptime.signedBlocks = totalBlocks;
         }
 
         uint256 currentStake = stakeOf(uptime.validator);
@@ -303,13 +313,14 @@ contract HydraStaking is
             stakerRewardIndex
         );
 
-        // @audit isn't better check if stakerShares is 0? Same for delegation
-        _distributeStakingReward(uptime.validator, stakerShares);
-        _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
-
-        // Keep history record of the staker rewards to be used on maturing vesting reward claim
         if (stakerShares != 0) {
+            _distributeStakingReward(uptime.validator, stakerShares);
+            // Keep history record of the staker rewards to be used on maturing vesting reward claim
             _saveStakerRewardData(uptime.validator, epochId);
+        }
+
+        if (delegatorShares != 0) {
+            _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
         }
 
         return stakerRewardIndex;
@@ -326,9 +337,10 @@ contract HydraStaking is
         uint256 delegatedBalance,
         uint256 totalReward
     ) private pure returns (uint256, uint256) {
-        // @audit what happens if both stakedBalance and delegatedBalance are 0? the reward will be lost. Is that okay?
-        if (stakedBalance == 0) return (0, totalReward);
+        // first check if delegated balance is zero
+        // otherwise if both staked and delegated are zero = reward will be lost
         if (delegatedBalance == 0) return (totalReward, 0);
+        if (stakedBalance == 0) return (0, totalReward);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
         uint256 delegatorReward = totalReward - stakerReward;
 
