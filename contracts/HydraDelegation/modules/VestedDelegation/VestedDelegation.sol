@@ -385,7 +385,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     ) internal virtual override {
         // If it is a vested delegation, deposit by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
-        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+        if (vestedDelegationPositions[staker][delegator].isActive()) {
             return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
 
