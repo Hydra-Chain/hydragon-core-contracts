@@ -60,7 +60,7 @@ export function RunVestedStakingTests(): void {
         expect(await hydraStaking.stakeOf(this.staker.address), "stake").to.be.equal(this.minStake);
       });
 
-      it.only("should open vested position with the old stake base and adjust token balance", async function () {
+      it("should open vested position with the old stake base and adjust token balance", async function () {
         const { hydraStaking, systemHydraChain, liquidToken } = await loadFixture(
           this.fixtures.stakedValidatorsStateFixture
         );
