@@ -13,17 +13,14 @@ import {IHydraChain} from "./IHydraChain.sol";
 import {Epoch} from "./IHydraChain.sol";
 
 contract HydraChain is IHydraChain, Inspector, DaoIncentive, ValidatorsData {
-    // @note unsafe arrays are used in the code
     using ArraysUpgradeable for uint256[];
 
     uint256 public currentEpochId;
-    // @note this is unsafe array
     /// @notice Array with epoch ending blocks
     uint256[] public epochEndBlocks;
     /// @notice Epoch data linked with the epoch id
     mapping(uint256 => Epoch) public epochs;
 
-    // @audit isn't this the same as the epochEndBlocks?
     mapping(uint256 => uint256) internal _commitBlockNumbers;
 
     // _______________ Initializer _______________
@@ -71,7 +68,6 @@ contract HydraChain is IHydraChain, Inspector, DaoIncentive, ValidatorsData {
         if (epoch.startBlock >= epoch.endBlock) {
             revert CommitEpochFailed("NO_BLOCKS_COMMITTED");
         }
-        // @audit this is going to be a problem when slashing is added
         if ((epoch.endBlock - epoch.startBlock + 1) % epochSize != 0) {
             revert CommitEpochFailed("EPOCH_MUST_BE_DIVISIBLE_BY_EPOCH_SIZE");
         }
@@ -149,10 +145,8 @@ contract HydraChain is IHydraChain, Inspector, DaoIncentive, ValidatorsData {
         uint256 validatorParticipation = validatorsParticipation[validator];
         // check if the validator is active and the last participation is less than the threshold
         if (
-            // @audit here we check if the validator is active but this doesn't mean it is actually part of the active set (check if this is breakable)
             validators[validator].status == ValidatorStatus.Active &&
             lastCommittedEndBlock > validatorParticipation &&
-            // @audit at block 1 what is the value of validatorParticipation? lastCommittedEndBlock is 0 in the first 500 blocks
             lastCommittedEndBlock - validatorParticipation >= initiateBanThreshold
         ) {
             return true;
