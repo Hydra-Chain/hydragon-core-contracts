@@ -17,12 +17,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     using VestedPositionLib for VestingPosition;
 
     /**
-     * @notice The threshold for the maximum number of allowed balance changes
-     * @dev We are using this to restrict unlimited changes of the balance (delegationPoolParamsHistory)
-     */
-    uint256 public balanceChangeThreshold;
-
-    /**
      * @notice The vesting positions for every delegator
      * @dev Staker => Delegator => VestingPosition
      */
@@ -52,12 +46,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         );
         __Vesting_init(governance, aprCalculatorAddr);
         __VestingManagerFactoryConnector_init(vestingManagerFactoryAddr);
-        __VestedDelegation_init_unchained();
-    }
-
-    // solhint-disable-next-line func-name-mixedcase
-    function __VestedDelegation_init_unchained() internal onlyInitializing {
-        balanceChangeThreshold = 32;
     }
 
     // _______________ Modifiers _______________
@@ -202,7 +190,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         delegation.cleanDelegatorHistoricalData(msg.sender);
 
         uint256 duration = durationWeeks * 1 weeks;
-        // TODO: calculate end of period instead of write in the cold storage. It is cheaper
         vestedDelegationPositions[staker][msg.sender] = VestingPosition({
             duration: duration,
             start: block.timestamp,
@@ -223,7 +210,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
      */
     function swapVestedPositionStaker(address oldStaker, address newStaker) external onlyManager {
         VestingPosition memory oldPosition = vestedDelegationPositions[oldStaker][msg.sender];
-        // ensure that the old position is active in order to continue the swap
+        // ensure that the old position is active
         if (!oldPosition.isActive()) {
             revert DelegateRequirement({src: "vesting", msg: "OLD_POSITION_INACTIVE"});
         }
@@ -341,7 +328,6 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
 
     // _______________ Public functions _______________
 
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     /**
      * @inheritdoc IVestedDelegation
      */
@@ -391,22 +377,15 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     /**
      * @inheritdoc Delegation
      */
-    function _delegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._delegate(staker, delegator, amount);
-    }
-
-    /**
-     * @inheritdoc Delegation
-     */
     function _depositDelegation(
         address staker,
         DelegationPool storage delegation,
         address delegator,
         uint256 amount
     ) internal virtual override {
-        // If it is a vested delegation, withdraw by keeping the change in the delegation pool params
+        // If it is a vested delegation, deposit by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
-        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+        if (vestedDelegationPositions[staker][delegator].isActive()) {
             return delegation.deposit(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
 
@@ -424,18 +403,11 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
     ) internal virtual override {
         // If it is an vested delegation, withdraw by keeping the change in the delegation pool params
         // so vested rewards claiming is possible
-        if (vestedDelegationPositions[staker][delegator].isInVestingCycle()) {
+        if (vestedDelegationPositions[staker][delegator].isActive()) {
             return delegation.withdraw(delegator, amount, hydraChainContract.getCurrentEpochId());
         }
 
         super._withdrawDelegation(staker, delegation, delegator, amount);
-    }
-
-    /**
-     * @inheritdoc Delegation
-     */
-    function _undelegate(address staker, address delegator, uint256 amount) internal virtual override {
-        super._undelegate(staker, delegator, amount);
     }
 
     /**

@@ -297,13 +297,13 @@ export function RunHydraStakingTests(): void {
 
         const reward = await hydraStaking.unclaimedRewards(rewardingValidator.address);
 
-        await expect(
-          hydraStaking.connect(rewardingValidator).stakeWithVesting(3, {
-            value: this.minStake,
-          })
-        )
-          .to.emit(hydraStaking, "StakingRewardsClaimed")
-          .withArgs(rewardingValidator.address, reward);
+        const tx = hydraStaking.connect(rewardingValidator).stakeWithVesting(3, {
+          value: this.minStake,
+        });
+
+        await expect(tx).to.emit(hydraStaking, "StakingRewardsClaimed").withArgs(rewardingValidator.address, reward);
+
+        await expect(tx).to.changeEtherBalance(rewardingValidator.address, this.minStake.sub(reward).mul(-1));
 
         expect(await hydraStaking.unclaimedRewards(rewardingValidator.address)).to.be.equal(0);
       });

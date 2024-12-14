@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Unauthorized} from "../common/Errors.sol";
 import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
@@ -13,8 +14,6 @@ import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol"
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
 import {IHydraStaking, StakerInit} from "./IHydraStaking.sol";
 import {Staking, IStaking} from "./Staking.sol";
-
-// TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
 contract HydraStaking is
     IHydraStaking,
@@ -29,7 +28,8 @@ contract HydraStaking is
 {
     using SafeMathUint for uint256;
 
-    uint256 public lastDistribution; // last rewards distribution timestamp
+    /// @notice last rewards distribution timestamp
+    uint256 public lastDistribution;
     /// @notice Mapping used to keep the paid rewards per epoch
     mapping(uint256 => uint256) public distributedRewardPerEpoch;
 
@@ -135,9 +135,19 @@ contract HydraStaking is
     // _______________ Internal functions _______________
 
     /**
+     * @notice Check if the ban is initiated for the given account
+     * @param account The address of the account
+     */
+    function _isBanInitiated(address account) internal view returns (bool) {
+        return hydraChainContract.banIsInitiated(account);
+    }
+
+    /**
      * @inheritdoc Staking
      */
     function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
+
         if (stakeOf(account) == 0) {
             hydraChainContract.activateValidator(account);
         }
@@ -156,6 +166,8 @@ contract HydraStaking is
         override(Staking, VestedStaking, StateSyncStaking, LiquidStaking)
         returns (uint256 stakeLeft, uint256 withdrawAmount)
     {
+        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
+
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
         if (stakeLeft == 0) {
             hydraChainContract.deactivateValidator(account);
@@ -193,7 +205,7 @@ contract HydraStaking is
      * @inheritdoc PenalizeableStaking
      */
     function _afterPenalizeStakerHook(address staker, uint256 unstakeAmount, uint256 leftForStaker) internal override {
-        // the unstake amount of liquid tokens must be paid at the time of withdrawal
+        // the unstake amount of liquid tokens must be paid at the time of initiatePenalizedFundsWithdrawal
         // but only the leftForStaker will be automatically requested,
         // so we have to set the unstake amount - leftForStaker as liquidity debt that must be paid as well
         liquidityDebts[staker] += (unstakeAmount - leftForStaker).toInt256Safe();
@@ -233,12 +245,15 @@ contract HydraStaking is
      */
     function _distributeTokens(address staker, uint256 amount) internal virtual override {
         VestingPosition memory position = vestedStakingPositions[staker];
+        // This check works because if position has already been opened, the restrictions on stake() and stakeWithVesting()
+        // will prevent entering the check again
         if (_isOpeningPosition(position)) {
-            uint256 currentStake = stakeOf(staker);
-            if (currentStake != amount) {
-                currentStake -= amount;
-                _collectTokens(staker, currentStake);
-                amount += currentStake;
+            uint256 previousStake = stakeOf(staker) - amount;
+            if (previousStake != 0) {
+                // We want all previously distributed tokens to be collected,
+                // because for vested positions we distribute decreased amount of liquid tokens
+                _collectTokens(staker, previousStake);
+                amount += previousStake;
             }
 
             uint256 debt = _calculatePositionDebt(amount, position.duration);
@@ -266,7 +281,7 @@ contract HydraStaking is
 
     /**
      * @notice Distributes the reward for the given staker.
-     * @notice Validator won't receive a reward in the epoch of exiting his position (stake becomes 0). His delegators will receive a reward for his uptime.
+     * @notice Validator won't receive a reward in the epoch of exiting the staking (stake becomes 0). His delegators will receive a reward for his uptime.
      * @param epochId The epoch id
      * @param uptime The uptime data for the validator (staker)
      * @param fullRewardIndex The full reward index
@@ -276,13 +291,13 @@ contract HydraStaking is
      */
     function _distributeReward(
         uint256 epochId,
-        Uptime calldata uptime,
+        Uptime memory uptime,
         uint256 fullRewardIndex,
         uint256 totalSupply,
         uint256 totalBlocks
     ) private returns (uint256 reward) {
         if (uptime.signedBlocks > totalBlocks) {
-            revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
+            uptime.signedBlocks = totalBlocks;
         }
 
         uint256 currentStake = stakeOf(uptime.validator);
@@ -296,12 +311,14 @@ contract HydraStaking is
             stakerRewardIndex
         );
 
-        _distributeStakingReward(uptime.validator, stakerShares);
-        _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
-
-        // Keep history record of the staker rewards to be used on maturing vesting reward claim
         if (stakerShares != 0) {
+            _distributeStakingReward(uptime.validator, stakerShares);
+            // Keep history record of the staker rewards to be used on maturing vesting reward claim
             _saveStakerRewardData(uptime.validator, epochId);
+        }
+
+        if (delegatorShares != 0) {
+            _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
         }
 
         return stakerRewardIndex;
@@ -318,8 +335,10 @@ contract HydraStaking is
         uint256 delegatedBalance,
         uint256 totalReward
     ) private pure returns (uint256, uint256) {
-        if (stakedBalance == 0) return (0, totalReward);
+        // first check if delegated balance is zero
+        // otherwise if both staked and delegated are zero = reward will be lost
         if (delegatedBalance == 0) return (totalReward, 0);
+        if (stakedBalance == 0) return (0, totalReward);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
         uint256 delegatorReward = totalReward - stakerReward;
 
@@ -330,7 +349,7 @@ contract HydraStaking is
      * Calculates the epoch reward index.
      * We call it index because it is not the actual reward
      * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are applied here.
-     * we need to apply the ration because all APR params are yearly
+     * we need to apply the ratio because all APR params are yearly
      * but we distribute rewards only for the time that has passed from last distribution.
      * The participation factor is applied later in the distribution process.
      * (base + vesting and RSI are applied on claimReward for delegators

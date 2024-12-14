@@ -84,7 +84,7 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
      * @inheritdoc IStaking
      */
     function claimStakingRewards() public {
-        rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
+        _claimStakingRewards(msg.sender);
     }
 
     /**
@@ -110,8 +110,6 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
      * @param amount The amount to stake
      */
     function _stake(address account, uint256 amount) internal virtual {
-        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
-
         uint256 currentBalance = stakeOf(account);
         if (amount + currentBalance < minStake) revert StakeRequirement({src: "stake", msg: "STAKE_TOO_LOW"});
 
@@ -131,8 +129,6 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
         address account,
         uint256 amount
     ) internal virtual returns (uint256 stakeLeft, uint256 withdrawAmount) {
-        if (_isBanInitiated(account)) revert Unauthorized("BAN_INITIATED");
-
         uint256 accountStake = stakeOf(account);
         if (amount > accountStake) revert StakeRequirement({src: "unstake", msg: "INSUFFICIENT_BALANCE"});
 
@@ -151,7 +147,6 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
 
     /**
      * @notice Function that calculates the end reward for a user (without vesting bonuses) based on the pool reward index.
-     * @dev Denominator is used because we should work with floating-point numbers
      * @param rewardIndex index The reward index that we apply the base APR to
      * @dev The reward with the applied APR
      */
@@ -174,15 +169,9 @@ contract Staking is IStaking, Withdrawal, HydraChainConnector, APRCalculatorConn
 
         stakingRewards[staker].taken += rewards;
 
-        emit StakingRewardsClaimed(staker, rewards);
-    }
+        rewardWalletContract.distributeReward(staker, rewards);
 
-    /**
-     * @notice Check if the ban is initiated for the given account
-     * @param account The address of the account
-     */
-    function _isBanInitiated(address account) internal view returns (bool) {
-        return hydraChainContract.banIsInitiated(account);
+        emit StakingRewardsClaimed(staker, rewards);
     }
 
     // _______________ Private functions _______________

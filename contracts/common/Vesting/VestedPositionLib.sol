@@ -26,7 +26,7 @@ library VestedPositionLib {
     }
 
     /**
-     * @notice Returns true if the staker/delegator is an active vesting position or not all rewards from the latest active position are matured yet
+     * @notice Returns true if the staker/delegator is an active vesting position or the max maturing period is not yet reached
      * @param position Vesting position
      * @return bool Returns true if the position is in vesting cycle
      */

@@ -245,7 +245,6 @@ library DelegationPoolLib {
      * @param currentEpochNum the current epoch number
      * @return bool whether the balance change is made
      */
-    // TODO: Check if the commitEpoch is the last transaction in the epoch, otherwise bug may occur
     function isBalanceChangeMade(
         DelegationPool storage pool,
         address delegator,
@@ -277,7 +276,8 @@ library DelegationPoolLib {
     // _______________ Private functions _______________
 
     /**
-     * @notice Saves the RPS for the given staker for the epoch
+     * @notice Saves the RPS for the given staker's delegation pool
+     * @dev must be called when new reward is distributed (at the end of every epoch in our case)
      * @param pool the DelegationPool to save the RPS for
      * @param rewardPerShare Amount of tokens to be withdrawn
      * @param epochNumber Epoch number

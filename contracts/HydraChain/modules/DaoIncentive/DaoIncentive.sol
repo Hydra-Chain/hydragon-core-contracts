@@ -39,8 +39,9 @@ abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWa
      * @inheritdoc IDaoIncentive
      */
     function distributeDAOIncentive() external onlySystemCall {
-        uint256 reward = (((hydraStakingContract.totalBalance() * 200) / 10000) *
-            (block.timestamp - lastDistribution)) / 365 days;
+        uint256 reward = (
+            ((hydraStakingContract.totalBalance() * 200 * (block.timestamp - lastDistribution)) / (10000 * 365 days))
+        );
         lastDistribution = block.timestamp;
         vaultDistribution += reward;
 
@@ -51,15 +52,15 @@ abstract contract DaoIncentive is IDaoIncentive, System, Initializable, RewardWa
      * @inheritdoc IDaoIncentive
      */
     function claimVaultFunds() external {
-        uint256 reward = vaultDistribution;
-        if (reward == 0) {
+        uint256 incentive = vaultDistribution;
+        if (incentive == 0) {
             revert NoVaultFundsToClaim();
         }
 
         vaultDistribution = 0;
-        rewardWalletContract.distributeReward(daoIncentiveVaultContract, reward);
+        rewardWalletContract.distributeReward(daoIncentiveVaultContract, incentive);
 
-        emit VaultFunded(reward);
+        emit VaultFunded(incentive);
     }
 
     // slither-disable-next-line unused-state,naming-convention

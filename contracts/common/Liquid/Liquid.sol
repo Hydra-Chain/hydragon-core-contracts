@@ -54,15 +54,14 @@ abstract contract Liquid is ILiquid, Initializable {
 
     // _______________ Internal functions _______________
 
-    function _collectTokens(address account, uint256 amount) internal virtual {
+    function _collectTokens(address account, uint256 amount) internal {
         // User needs to provide their liquid tokens debt as well
         int256 liquidDebt = liquidityDebts[account];
         int256 amountInt = amount.toInt256Safe();
         int256 amountAfterDebt = amountInt + liquidDebt;
-        // if negative debt is bigger than or equal to the amount, so we get the whole amount from the debt
+        // if a negative debt covers the whole amount, no need to burn anything
         if (amountAfterDebt < 1) {
             liquidityDebts[account] -= amountInt;
-            amount = 0;
 
             return;
         }

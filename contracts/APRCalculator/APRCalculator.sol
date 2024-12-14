@@ -99,58 +99,60 @@ contract APRCalculator is IAPRCalculator, MacroFactor, RSIndex {
      * @notice Initializes vesting bonus for each week.
      */
     function _initializeVestingBonus() private {
-        vestingBonus[0] = 6;
-        vestingBonus[1] = 16;
-        vestingBonus[2] = 30;
-        vestingBonus[3] = 46;
-        vestingBonus[4] = 65;
-        vestingBonus[5] = 85;
-        vestingBonus[6] = 108;
-        vestingBonus[7] = 131;
-        vestingBonus[8] = 157;
-        vestingBonus[9] = 184;
-        vestingBonus[10] = 212;
-        vestingBonus[11] = 241;
-        vestingBonus[12] = 272;
-        vestingBonus[13] = 304;
-        vestingBonus[14] = 338;
-        vestingBonus[15] = 372;
-        vestingBonus[16] = 407;
-        vestingBonus[17] = 444;
-        vestingBonus[18] = 481;
-        vestingBonus[19] = 520;
-        vestingBonus[20] = 559;
-        vestingBonus[21] = 599;
-        vestingBonus[22] = 641;
-        vestingBonus[23] = 683;
-        vestingBonus[24] = 726;
-        vestingBonus[25] = 770;
-        vestingBonus[26] = 815;
-        vestingBonus[27] = 861;
-        vestingBonus[28] = 907;
-        vestingBonus[29] = 955;
-        vestingBonus[30] = 1003;
-        vestingBonus[31] = 1052;
-        vestingBonus[32] = 1101;
-        vestingBonus[33] = 1152;
-        vestingBonus[34] = 1203;
-        vestingBonus[35] = 1255;
-        vestingBonus[36] = 1307;
-        vestingBonus[37] = 1361;
-        vestingBonus[38] = 1415;
-        vestingBonus[39] = 1470;
-        vestingBonus[40] = 1525;
-        vestingBonus[41] = 1581;
-        vestingBonus[42] = 1638;
-        vestingBonus[43] = 1696;
-        vestingBonus[44] = 1754;
-        vestingBonus[45] = 1812;
-        vestingBonus[46] = 1872;
-        vestingBonus[47] = 1932;
-        vestingBonus[48] = 1993;
-        vestingBonus[49] = 2054;
-        vestingBonus[50] = 2116;
-        vestingBonus[51] = 2178;
+        vestingBonus = [
+            6,
+            16,
+            30,
+            46,
+            65,
+            85,
+            108,
+            131,
+            157,
+            184,
+            212,
+            241,
+            272,
+            304,
+            338,
+            372,
+            407,
+            444,
+            481,
+            520,
+            559,
+            599,
+            641,
+            683,
+            726,
+            770,
+            815,
+            861,
+            907,
+            955,
+            1003,
+            1052,
+            1101,
+            1152,
+            1203,
+            1255,
+            1307,
+            1361,
+            1415,
+            1470,
+            1525,
+            1581,
+            1638,
+            1696,
+            1754,
+            1812,
+            1872,
+            1932,
+            1993,
+            2054,
+            2116,
+            2178
+        ];
     }
 
     // slither-disable-next-line unused-state,naming-convention

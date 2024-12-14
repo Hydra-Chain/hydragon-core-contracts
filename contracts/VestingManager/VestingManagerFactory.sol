@@ -40,7 +40,7 @@ contract VestingManagerFactory is IVestingManagerFactory, System, Initializable 
 
         BeaconProxy manager = new BeaconProxy(
             address(beacon),
-            abi.encodeWithSelector(VestingManager(address(0)).initialize.selector, msg.sender)
+            abi.encodeWithSelector(VestingManager.initialize.selector, msg.sender)
         );
 
         _storeVestingManagerData(address(manager), msg.sender);

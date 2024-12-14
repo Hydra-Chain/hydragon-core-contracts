@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 
 import {System} from "../common/System/System.sol";
@@ -12,7 +11,7 @@ import {ILiquidityToken} from "./ILiquidityToken.sol";
  * @title LiquidityToken
  * @dev This contract represents the liquid token for the Hydra staking mechanism.
  */
-contract LiquidityToken is ILiquidityToken, System, ERC20Upgradeable, ERC20PermitUpgradeable, Governed {
+contract LiquidityToken is ILiquidityToken, System, ERC20PermitUpgradeable, Governed {
     /// @notice The role identifier for address(es) that have permission to mint and burn the token.
     bytes32 public constant SUPPLY_CONTROLLER_ROLE = keccak256("SUPPLY_CONTROLLER_ROLE");
 

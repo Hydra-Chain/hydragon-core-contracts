@@ -57,10 +57,10 @@ interface IVestedStaking is IVesting, IStaking {
      * @param staker The address of the staker
      * @param amount The amount that is going to be unstaked
      * @return penalty for the staker
-     * @return reward of the staker
+     * @return rewardToBurn of the staker
      */
     function calcVestedStakingPositionPenalty(
         address staker,
         uint256 amount
-    ) external view returns (uint256 penalty, uint256 reward);
+    ) external view returns (uint256 penalty, uint256 rewardToBurn);
 }

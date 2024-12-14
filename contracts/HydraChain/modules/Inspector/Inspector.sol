@@ -12,9 +12,13 @@ abstract contract Inspector is IInspector, ValidatorManager {
     uint256 public validatorPenalty;
     /// @notice The reward for the person who reports a validator that have to be banned
     uint256 public reporterReward;
-    /// @notice Validator inactiveness (in blocks) threshold that needs to be passed to initiate ban for a validator
+    /// @notice Threshold for validator inactiveness (in blocks).
+    /// A ban can be initiated for a validator if this threshold is reached or exceeded.
+    /// @dev must be always bigger than the epoch length (better bigger than at least 4 epochs),
+    /// otherwise all validators can be banned
     uint256 public initiateBanThreshold;
-    /// @notice Validator inactiveness (in seconds) threshold that needs to be passed to ban a validator
+    /// @notice Threshold for validator inactiveness (in seconds). A validator can be banned
+    /// if it remains in the ban-initiated state for a duration equal to or exceeding this threshold.
     uint256 public banThreshold;
     /// @notice Mapping of the validators that bans has been initiated for (validator => timestamp)
     mapping(address => uint256) public bansInitiated;
