@@ -66,6 +66,7 @@ export const ERRORS = {
   vesting: {
     invalidEpoch: "INVALID_EPOCH",
     wrongRPS: "WRONG_RPS",
+    previousRPS: "PREVIOUS_RPS",
   },
   DelegPoolLib: {
     invalidParamsIndex: "INVALID_PARAMS_INDEX",
