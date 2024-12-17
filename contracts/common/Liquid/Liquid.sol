@@ -61,7 +61,7 @@ abstract contract Liquid is ILiquid, Initializable {
         int256 amountAfterDebt = amountInt + liquidDebt;
         // if a negative debt covers the whole amount, no need to burn anything
         if (amountAfterDebt < 1) {
-            liquidityDebts[account] -= amountInt;
+            liquidityDebts[account] += amountInt;
 
             return;
         }

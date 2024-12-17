@@ -486,14 +486,20 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
      * @dev Reverts if the rewards are not matured
      */
     function _verifyRewardsMatured(address staker, uint256 alreadyMatured, uint256 epochNum) private view {
-        RPS memory rpsData = delegationPools[staker].historyRPS[epochNum];
-        if (rpsData.timestamp == 0) {
+        uint256 rpsDataTimestamp = delegationPools[staker].historyRPS[epochNum].timestamp;
+        if (rpsDataTimestamp == 0) {
             revert DelegateRequirement({src: "_verifyRewardsMatured", msg: "INVALID_EPOCH"});
         }
 
         // If the given RPS is for future time - it is wrong, so revert
-        if (rpsData.timestamp > alreadyMatured) {
+        if (rpsDataTimestamp > alreadyMatured) {
             revert DelegateRequirement({src: "_verifyRewardsMatured", msg: "WRONG_RPS"});
+        }
+
+        // If the next epoch RPS is set and is again suitable for the matured rewards, the provided is wrong, so revert
+        uint256 rpsDataNextTimestamp = delegationPools[staker].historyRPS[epochNum + 1].timestamp;
+        if (rpsDataNextTimestamp != 0 && rpsDataNextTimestamp <= alreadyMatured) {
+            revert DelegateRequirement({src: "_verifyRewardsMatured", msg: "PREVIOUS_RPS"});
         }
     }
 
