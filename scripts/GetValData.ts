@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/GetValData.ts --network childTest
+// Run: npx hardhat run scripts/GetValData.ts --network hydraTest
 import { ethers } from "hardhat";
 
 async function getValData() {

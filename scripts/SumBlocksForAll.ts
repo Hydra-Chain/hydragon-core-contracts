@@ -1,9 +1,10 @@
-// Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest
+// Run: npx hardhat run scripts/SumBlocksForAll.ts --network hydraTest
 import { getTransactionsByBlock, decodeTransaction, getCurrentBlock } from "./_helper";
 
 // Input parameters for the script:
 const CHECKED_BLOCKS = process.env.SUM_BLOCKS_FOR_ALL_CHECKED_BLOCKS;
 const CONTRACT_ADDRESS = process.env.SUM_BLOCKS_FOR_ALL_CONTRACT_ADDRESS;
+const CONTRACT_NAME = process.env.DECODE_CONTRACT_NAME || "Contract Name";
 const FUNCTION_NAME = process.env.SUM_BLOCKS_FOR_ALL_FUNCTION_NAME;
 
 // Get the last block that gave uptime
@@ -22,11 +23,16 @@ async function getDataFromBlock(_blockNumber: number) {
     process.exitCode = 1;
     return;
   }
-  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
-  if (decodedData === undefined || decodedData.uptime === undefined) {
+  const decodedData = await decodeTransaction(
+    CONTRACT_NAME,
+    CONTRACT_ADDRESS,
+    block.transactions[1].hash,
+    FUNCTION_NAME
+  );
+  if (!decodedData || !decodedData.decodedData || decodedData.decodedData.uptime === undefined) {
     return 0;
   }
-  return decodedData.uptime;
+  return decodedData.decodedData.uptime;
 }
 
 // Loop through the blocks and sum the signed blocks for each validator

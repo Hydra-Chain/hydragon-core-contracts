@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/SumBlocksForOne.ts --network childTest
+// Run: npx hardhat run scripts/SumBlocksForOne.ts --network hydraTest
 import { getTransactionsByBlock, decodeTransaction } from "./_helper";
 
 // Input parameters for the script:
@@ -6,6 +6,7 @@ const BLOCK_NUMBER = process.env.SUM_BLOCKS_FOR_ONE_BLOCK_NUMBER;
 const MAX_BLOCK_NUMBER = process.env.SUM_BLOCKS_FOR_ONE_MAX_BLOCK_NUMBER;
 const VALIDATOR_ADDRESS = process.env.SUM_BLOCKS_FOR_ONE_VALIDATOR_ADDRESS;
 const CONTRACT_ADDRESS = process.env.SUM_BLOCKS_FOR_ONE_CONTRACT_ADDRESS;
+const CONTRACT_NAME = process.env.DECODE_CONTRACT_NAME || "Contract Name";
 const FUNCTION_NAME = process.env.SUM_BLOCKS_FOR_ONE_FUNCTION_NAME;
 
 // Get the signed blocks for validator from each the block
@@ -16,11 +17,17 @@ async function getDataFromBlock(_blockNumber: number) {
     process.exitCode = 1;
     return;
   }
-  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
-  if (decodedData === undefined || decodedData.uptime === undefined) {
+  const decodedData = await decodeTransaction(
+    CONTRACT_NAME,
+    CONTRACT_ADDRESS,
+    block.transactions[1].hash,
+    FUNCTION_NAME
+  );
+  if (!decodedData || !decodedData.decodedData || decodedData.decodedData.uptime === undefined) {
     return 0;
   }
-  const signedBlocks = getAddressValue(decodedData.uptime, VALIDATOR_ADDRESS);
+
+  const signedBlocks = getAddressValue(decodedData.decodedData.uptime, VALIDATOR_ADDRESS);
   return signedBlocks;
 }
 

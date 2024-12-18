@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/PermitSign.ts
+// Run: npx hardhat run scripts/PermitSign.ts --network hydraTest
 import { ethers } from "hardhat";
 
 // Inputs

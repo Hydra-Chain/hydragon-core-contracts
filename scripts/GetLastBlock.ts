@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/GetLastBlock.ts --network childTest
+// Run: npx hardhat run scripts/GetLastBlock.ts --network hydraTest
 import { getCurrentBlock } from "./_helper";
 
 async function getCurrentTimestamp() {

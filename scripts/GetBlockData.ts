@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/GetBlockData.ts --network childTest
+// Run: npx hardhat run scripts/GetBlockData.ts --network hydraTest
 import { getTransactionsByBlock } from "./_helper";
 
 // Input parameters for the script:

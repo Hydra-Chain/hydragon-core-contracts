@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/FunctionSign.ts
+// Run: npx hardhat run scripts/FunctionSign.ts --network hydraTest
 import { ethers } from "hardhat";
 
 async function main() {

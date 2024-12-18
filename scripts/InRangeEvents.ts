@@ -1,4 +1,4 @@
-// Run: npx hardhat run scripts/InRangeEvents.ts --network childTest
+// Run: npx hardhat run scripts/InRangeEvents.ts --network hydraTest
 import { getEventsByFilters } from "./_helper";
 
 // Input parameters for the script:
