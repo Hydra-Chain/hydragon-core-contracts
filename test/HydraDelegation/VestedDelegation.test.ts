@@ -1888,11 +1888,9 @@ export function RunVestedDelegationTests(): void {
       it("should revert setting penalty decrease per week if not governance", async function () {
         const { hydraDelegation, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
-        const admin = await hydraDelegation.DEFAULT_ADMIN_ROLE();
-
-        await expect(hydraDelegation.connect(delegatedValidator).setPenaltyDecreasePerWeek(100)).to.be.revertedWith(
-          ERRORS.accessControl(delegatedValidator.address.toLocaleLowerCase(), admin)
-        );
+        await expect(hydraDelegation.connect(delegatedValidator).setPenaltyDecreasePerWeek(100))
+          .to.be.revertedWithCustomError(hydraDelegation, "Unauthorized")
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should revert setting penalty decrease per week if amount of of range", async function () {

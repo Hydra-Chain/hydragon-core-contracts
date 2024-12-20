@@ -521,33 +521,31 @@ export function RunVestedStakingTests(): void {
     });
 
     describe("penaltyDecreasePerWeek()", async function () {
-      it("should revert setting penalty decrease per week if not admin", async function () {
-        const { hydraDelegation, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
+      it("should revert setting penalty decrease per week if not Governance", async function () {
+        const { hydraStaking, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
-        const admin = await hydraDelegation.DEFAULT_ADMIN_ROLE();
-
-        await expect(hydraDelegation.connect(delegatedValidator).setPenaltyDecreasePerWeek(100)).to.be.revertedWith(
-          ERRORS.accessControl(delegatedValidator.address.toLocaleLowerCase(), admin)
-        );
+        await expect(hydraStaking.connect(delegatedValidator).setPenaltyDecreasePerWeek(100))
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should revert setting penalty decrease per week if amount of of range", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.vestedDelegationFixture);
+        const { hydraStaking } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
         await expect(
-          hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(9)
-        ).to.be.revertedWithCustomError(hydraDelegation, "PenaltyRateOutOfRange");
+          hydraStaking.connect(this.signers.governance).setPenaltyDecreasePerWeek(9)
+        ).to.be.revertedWithCustomError(hydraStaking, "PenaltyRateOutOfRange");
 
         await expect(
-          hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(151)
-        ).to.be.revertedWithCustomError(hydraDelegation, "PenaltyRateOutOfRange");
+          hydraStaking.connect(this.signers.governance).setPenaltyDecreasePerWeek(151)
+        ).to.be.revertedWithCustomError(hydraStaking, "PenaltyRateOutOfRange");
       });
 
       it("should set penalty decrease per week", async function () {
-        const { hydraDelegation } = await loadFixture(this.fixtures.vestedDelegationFixture);
+        const { hydraStaking } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
-        await hydraDelegation.connect(this.signers.governance).setPenaltyDecreasePerWeek(100);
-        expect(await hydraDelegation.penaltyDecreasePerWeek()).to.be.eq(100);
+        await hydraStaking.connect(this.signers.governance).setPenaltyDecreasePerWeek(100);
+        expect(await hydraStaking.penaltyDecreasePerWeek()).to.be.eq(100);
       });
     });
   });
