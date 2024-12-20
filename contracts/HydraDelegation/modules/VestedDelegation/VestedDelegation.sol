@@ -223,7 +223,7 @@ abstract contract VestedDelegation is IVestedDelegation, Vesting, Delegation, Ve
         // update the old delegation position
         DelegationPool storage oldDelegation = delegationPools[oldStaker];
         uint256 amount = oldDelegation.balanceOf(msg.sender);
-        // we delete the previous position historical data to avoid any possible issues
+        // we delete the previous position historical data (for the new validator) to avoid any possible issues
         delegationPools[newStaker].cleanDelegatorHistoricalData(msg.sender);
 
         // undelegate (withdraw & emit event) the old amount from the old position
