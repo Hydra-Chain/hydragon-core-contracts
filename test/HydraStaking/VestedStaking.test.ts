@@ -220,6 +220,44 @@ export function RunVestedStakingTests(): void {
         );
       });
 
+      it("Should manage debt and collect tokens properly for vested staking positions", async function () {
+        const { systemHydraChain, hydraStaking } = await loadFixture(this.fixtures.stakedValidatorsStateFixture);
+
+        const validator = this.signers.validators[0];
+        const stakedAmount = await hydraStaking.stakeOf(validator.address);
+
+        const liquidDebtBeforeNewPosition = await hydraStaking.liquidityDebts(validator.address);
+        expect(liquidDebtBeforeNewPosition).to.be.equal(0);
+
+        await hydraStaking.connect(validator).stakeWithVesting(1, { value: this.minDelegation });
+        const expectedLiquidTokensFromPosition = calcLiquidTokensToDistributeOnVesting(
+          1,
+          stakedAmount.add(this.minDelegation)
+        );
+        const liquidDebtForPosition = stakedAmount.add(this.minDelegation).sub(expectedLiquidTokensFromPosition);
+        expect(await hydraStaking.liquidityDebts(validator.address)).to.be.equal(liquidDebtForPosition.mul(-1));
+
+        // commit epochs and increase time to mature the position
+        await commitEpochs(systemHydraChain, hydraStaking, [validator], 3, this.epochSize, WEEK);
+
+        await hydraStaking.connect(validator).stakeWithVesting(52, { value: this.minDelegation.mul(5) });
+        const expectedLiquidTokensFromNewPosition = calcLiquidTokensToDistributeOnVesting(
+          52,
+          this.minDelegation.mul(6).add(stakedAmount)
+        );
+        const liquidDebtForNewPosition = this.minDelegation
+          .mul(6)
+          .add(stakedAmount)
+          .sub(expectedLiquidTokensFromNewPosition);
+        expect(await hydraStaking.liquidityDebts(validator.address)).to.be.equal(liquidDebtForNewPosition.mul(-1));
+
+        await hydraStaking.connect(validator).unstake(this.minDelegation);
+
+        expect(await hydraStaking.liquidityDebts(validator.address)).to.be.equal(
+          liquidDebtForNewPosition.sub(this.minDelegation).mul(-1)
+        );
+      });
+
       it("should get staker penalty and rewards must return 0 (burned), if closing from active position", async function () {
         const { stakerHydraStaking, systemHydraChain, hydraStaking } = await loadFixture(
           this.fixtures.newVestingValidatorFixture
@@ -524,12 +562,14 @@ export function RunVestedStakingTests(): void {
       it("should revert setting penalty decrease per week if not Governance", async function () {
         const { hydraStaking, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
-        await expect(hydraStaking.connect(delegatedValidator).setPenaltyDecreasePerWeek(100))
-          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
-          .withArgs(ERRORS.unauthorized.governanceArg);
+        const admin = await hydraStaking.DEFAULT_ADMIN_ROLE();
+
+        await expect(hydraStaking.connect(delegatedValidator).setPenaltyDecreasePerWeek(100)).to.be.revertedWith(
+          ERRORS.accessControl(delegatedValidator.address.toLocaleLowerCase(), admin)
+        );
       });
 
-      it("should revert setting penalty decrease per week if amount of of range", async function () {
+      it("should revert setting penalty decrease per week if amount out of range", async function () {
         const { hydraStaking } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
         await expect(

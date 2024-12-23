@@ -46,7 +46,7 @@ abstract contract Vesting is IVesting, Governed, APRCalculatorConnector {
     /**
      * @inheritdoc IVesting
      */
-    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyGovernance {
+    function setPenaltyDecreasePerWeek(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newRate < 10 || newRate > 150) revert PenaltyRateOutOfRange();
         penaltyDecreasePerWeek = newRate;
     }
