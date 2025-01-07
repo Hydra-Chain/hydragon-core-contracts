@@ -942,7 +942,7 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.lateBalanceChange);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.previousRPS);
       });
 
       it("should revert when get reward with early balance", async function () {
@@ -1480,7 +1480,36 @@ export function RunVestedDelegationTests(): void {
           )
         )
           .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
-          .withArgs("DelegPoolLib", ERRORS.DelegPoolLib.invalidParamsIndex);
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.previousRPS);
+      });
+
+      it("should revert when the position have future valid RPS and a person is trying to get an old reward", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+          this.fixtures.vestedDelegationFixture
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK * 2);
+
+        // prepare params for call
+        const { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 1, this.epochSize);
+
+        await expect(
+          hydraDelegation.calculatePositionTotalReward(
+            delegatedValidator.address,
+            vestManager.address,
+            epochNum,
+            balanceChangeIndex
+          )
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.previousRPS);
       });
 
       it("should revert when calculate the total reward with earlier balance change index", async function () {
@@ -1570,6 +1599,62 @@ export function RunVestedDelegationTests(): void {
         expect(positionClaimableReward).to.lt(positionTotalReward);
       });
 
+      it("should not claim if position is matured but we pass old RPS data", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager, vestManagerOwner } =
+          await loadFixture(this.fixtures.weeklyVestedDelegationFixture);
+
+        // prepare params for call
+        let { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        const positionClaimableReward = await hydraDelegation.calculatePositionClaimableReward(
+          delegatedValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        );
+
+        // prepare the total reward params
+        ({ epochNum, balanceChangeIndex } = await getTotalRewardRPSData(
+          systemHydraChain,
+          hydraDelegation,
+          delegatedValidator.address,
+          vestManager.address
+        ));
+
+        const positionTotalReward = await hydraDelegation.calculatePositionTotalReward(
+          delegatedValidator.address,
+          vestManager.address,
+          epochNum,
+          balanceChangeIndex
+        );
+
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 1, this.epochSize);
+
+        expect(positionTotalReward).to.not.be.equal(positionClaimableReward);
+
+        const position = await hydraDelegation.vestedDelegationPositions(
+          delegatedValidator.address,
+          vestManager.address
+        );
+
+        // increase so the position is fully matured
+        await time.increaseTo(position.end.add(position.duration).add(DAY));
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 1, this.epochSize);
+
+        await expect(
+          vestManager
+            .connect(vestManagerOwner)
+            .claimVestedPositionReward(delegatedValidator.address, epochNum, balanceChangeIndex)
+        )
+          .to.be.revertedWithCustomError(hydraDelegation, "DelegateRequirement")
+          .withArgs("_verifyRewardsMatured", ERRORS.vesting.previousRPS);
+      });
+
       it("should successfully calculate the total reward (must be equal to claimable) for matured position, and claim", async function () {
         const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
           this.fixtures.vestedDelegationFixture
@@ -1582,7 +1667,7 @@ export function RunVestedDelegationTests(): void {
           vestManager.address
         );
 
-        // increase so the position is fully
+        // increase so the position is fully matured
         await time.increaseTo(position.end.add(position.duration).add(DAY));
 
         await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 3, this.epochSize);
@@ -1715,8 +1800,93 @@ export function RunVestedDelegationTests(): void {
       });
     });
 
+    describe("Liquid Debt", async function () {
+      it("should give negative liquid debt when vesting", async function () {
+        const { hydraDelegation, vestManager } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        const liquidDebt = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        expect(liquidDebt).to.be.lt(0);
+      });
+
+      it("Should clear all debt and take all Lydras on cutting the whole position", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator, vestManagerOwner } =
+          await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        // commit epochs to distribute rewards
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK);
+
+        const liquidDebtBefore = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        await vestManager.connect(vestManagerOwner).cutVestedDelegatePosition(delegatedValidator.address, 100);
+
+        const liquidDebtAfter = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        expect(liquidDebtAfter).to.be.eq(liquidDebtBefore.add(100));
+        expect(liquidDebtAfter).to.be.gt(liquidDebtBefore);
+        expect(liquidDebtAfter).to.be.lt(0);
+      });
+
+      it("When cutting a position, the liquid debt should be changed properly (above), and we provide 0 Lydra", async function () {
+        const {
+          systemHydraChain,
+          hydraStaking,
+          hydraDelegation,
+          vestManager,
+          delegatedValidator,
+          vestManagerOwner,
+          liquidToken,
+        } = await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        // commit epochs to distribute rewards
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK);
+
+        const liquidDebtBefore = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        await liquidToken.connect(vestManagerOwner).approve(vestManager.address, this.minDelegation.mul(100));
+        // cut the entire position without providing any Lydra, because the liquid debt is more than the position for the manager
+        await vestManager
+          .connect(vestManagerOwner)
+          .cutVestedDelegatePosition(delegatedValidator.address, this.minDelegation.mul(2));
+
+        const liquidDebtAfter = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        expect(await liquidToken.balanceOf(vestManagerOwner.address)).to.be.eq(0);
+        expect(liquidDebtAfter).to.be.gt(liquidDebtBefore);
+        expect(liquidDebtAfter).to.be.eq(0);
+      });
+
+      it("When opening a big position (more than the liquid debt), another position with same manager will handle liquid debt properly", async function () {
+        const { systemHydraChain, hydraStaking, hydraDelegation, vestManager, delegatedValidator, vestManagerOwner } =
+          await loadFixture(this.fixtures.vestedDelegationFixture);
+
+        const liquidDebtBeforeNewPosition = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        await vestManager
+          .connect(vestManagerOwner)
+          .openVestedDelegatePosition(this.signers.validators[1].address, 52, { value: this.minDelegation.mul(100) });
+        // commit epochs to distribute rewards
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 5, this.epochSize, WEEK);
+        const expectedLiquidTokensFromPosition = calcLiquidTokensToDistributeOnVesting(52, this.minDelegation.mul(100));
+        const liquidDebtForPosition = this.minDelegation.mul(100).sub(expectedLiquidTokensFromPosition);
+
+        const liquidDebtBeforeCut = await hydraDelegation.liquidityDebts(vestManager.address);
+        expect(liquidDebtBeforeNewPosition).to.be.eq(liquidDebtBeforeCut.add(liquidDebtForPosition));
+
+        // cut the entire position without providing any Lydra, because the liquid debt is more than the position for the manager
+        await vestManager
+          .connect(vestManagerOwner)
+          .cutVestedDelegatePosition(delegatedValidator.address, this.minDelegation.mul(2));
+
+        const liquidDebtAfter = await hydraDelegation.liquidityDebts(vestManager.address);
+
+        expect(liquidDebtAfter).to.be.eq(liquidDebtBeforeCut.add(this.minDelegation.mul(2)));
+        expect(liquidDebtAfter).to.be.lt(0);
+      });
+    });
+
     describe("penaltyDecreasePerWeek()", async function () {
-      it("should revert setting penalty decrease per week if not governance", async function () {
+      it("should revert setting penalty decrease per week if not Governance", async function () {
         const { hydraDelegation, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
         const admin = await hydraDelegation.DEFAULT_ADMIN_ROLE();
@@ -1726,7 +1896,7 @@ export function RunVestedDelegationTests(): void {
         );
       });
 
-      it("should revert setting penalty decrease per week if amount of of range", async function () {
+      it("should revert setting penalty decrease per week if amount out of range", async function () {
         const { hydraDelegation } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
         await expect(
