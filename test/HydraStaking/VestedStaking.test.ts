@@ -562,11 +562,9 @@ export function RunVestedStakingTests(): void {
       it("should revert setting penalty decrease per week if not Governance", async function () {
         const { hydraStaking, delegatedValidator } = await loadFixture(this.fixtures.vestedDelegationFixture);
 
-        const admin = await hydraStaking.DEFAULT_ADMIN_ROLE();
-
-        await expect(hydraStaking.connect(delegatedValidator).setPenaltyDecreasePerWeek(100)).to.be.revertedWith(
-          ERRORS.accessControl(delegatedValidator.address.toLocaleLowerCase(), admin)
-        );
+        await expect(hydraStaking.connect(delegatedValidator).setPenaltyDecreasePerWeek(100))
+          .to.be.revertedWithCustomError(hydraStaking, "Unauthorized")
+          .withArgs(ERRORS.unauthorized.governanceArg);
       });
 
       it("should revert setting penalty decrease per week if amount out of range", async function () {
