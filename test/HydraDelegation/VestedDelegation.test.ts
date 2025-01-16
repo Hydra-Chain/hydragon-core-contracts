@@ -1564,9 +1564,19 @@ export function RunVestedDelegationTests(): void {
       });
 
       it("should successfully calculate the total reward for currently maturing position", async function () {
-        const { systemHydraChain, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
+        const { systemHydraChain, hydraStaking, hydraDelegation, delegatedValidator, vestManager } = await loadFixture(
           this.fixtures.vestedDelegationFixture
         );
+
+        // commit epochs and increase time to make the position matured & commit epochs
+        await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 10, this.epochSize, WEEK);
+
+        // ensure that the position is maturing
+        const isMaturing = await hydraDelegation.isMaturingDelegatePosition(
+          delegatedValidator.address,
+          vestManager.address
+        );
+        expect(isMaturing, "isMaturing").to.be.true;
 
         // prepare params for call
         let { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
@@ -1575,6 +1585,7 @@ export function RunVestedDelegationTests(): void {
           delegatedValidator.address,
           vestManager.address
         );
+
         const positionClaimableReward = await hydraDelegation.calculatePositionClaimableReward(
           delegatedValidator.address,
           vestManager.address,
@@ -1589,6 +1600,7 @@ export function RunVestedDelegationTests(): void {
           delegatedValidator.address,
           vestManager.address
         ));
+
         const positionTotalReward = await hydraDelegation.calculatePositionTotalReward(
           delegatedValidator.address,
           vestManager.address,
@@ -1596,7 +1608,7 @@ export function RunVestedDelegationTests(): void {
           balanceChangeIndex
         );
 
-        expect(positionClaimableReward).to.lt(positionTotalReward);
+        expect(positionClaimableReward, "positionClaimableReward").to.lt(positionTotalReward);
       });
 
       it("should not claim if position is matured but we pass old RPS data", async function () {
