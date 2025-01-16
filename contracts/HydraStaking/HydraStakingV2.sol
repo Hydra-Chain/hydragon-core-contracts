@@ -6,8 +6,8 @@ import {SafeMathUint} from "./../common/libs/SafeMathUint.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
 import {Uptime} from "../HydraChain/modules/ValidatorManager/IValidatorManager.sol";
 import {RewardWalletConnector} from "../RewardWallet/RewardWalletConnector.sol";
-import {LiquidStaking} from "./modules/LiquidStaking/LiquidStaking.sol";
-import {VestedStaking} from "./modules/VestedStaking/VestedStaking.sol";
+import {LiquidStakingV2} from "./modules/LiquidStaking/LiquidStakingV2.sol";
+import {VestedStakingV2} from "./modules/VestedStaking/VestedStakingV2.sol";
 import {DelegatedStaking} from "./modules/DelegatedStaking/DelegatedStaking.sol";
 import {StateSyncStaking} from "./modules/StateSyncStaking/StateSyncStaking.sol";
 import {PenalizeableStaking} from "./modules/PenalizeableStaking/PenalizeableStaking.sol";
@@ -16,14 +16,14 @@ import {Staking, IStaking} from "./Staking.sol";
 
 // TODO: An optimization we can do is keeping only once the general apr params for a block so we don' have to keep them for every single user
 
-contract HydraStaking is
+contract HydraStakingV2 is
     IHydraStaking,
     System,
     RewardWalletConnector,
     Staking,
-    VestedStaking,
+    VestedStakingV2,
     StateSyncStaking,
-    LiquidStaking,
+    LiquidStakingV2,
     PenalizeableStaking,
     DelegatedStaking
 {
@@ -72,7 +72,7 @@ contract HydraStaking is
      * @notice Stakes the sent amount.
      * @dev Reverts if we have an active position for the staker.
      */
-    function stake() public payable override(IStaking, Staking, VestedStaking) {
+    function stake() public payable override(IStaking, Staking, VestedStakingV2) {
         super.stake();
     }
 
@@ -137,7 +137,7 @@ contract HydraStaking is
     /**
      * @inheritdoc Staking
      */
-    function _stake(address account, uint256 amount) internal override(Staking, LiquidStaking, StateSyncStaking) {
+    function _stake(address account, uint256 amount) internal override(Staking, LiquidStakingV2, StateSyncStaking) {
         if (stakeOf(account) == 0) {
             hydraChainContract.activateValidator(account);
         }
@@ -153,7 +153,7 @@ contract HydraStaking is
         uint256 amount
     )
         internal
-        override(Staking, VestedStaking, StateSyncStaking, LiquidStaking)
+        override(Staking, VestedStakingV2, StateSyncStaking, LiquidStakingV2)
         returns (uint256 stakeLeft, uint256 withdrawAmount)
     {
         (stakeLeft, withdrawAmount) = super._unstake(account, amount);
@@ -212,7 +212,9 @@ contract HydraStaking is
      * @notice Claims the staking rewards for the staker.
      * @param staker The staker to claim the rewards for
      */
-    function _claimStakingRewards(address staker) internal override(Staking, VestedStaking) returns (uint256 rewards) {
+    function _claimStakingRewards(
+        address staker
+    ) internal override(Staking, VestedStakingV2) returns (uint256 rewards) {
         return super._claimStakingRewards(staker);
     }
 
@@ -221,7 +223,10 @@ contract HydraStaking is
      * @param account The account to distribute the rewards for
      * @param rewardIndex The reward index to distribute
      */
-    function _distributeStakingReward(address account, uint256 rewardIndex) internal override(Staking, VestedStaking) {
+    function _distributeStakingReward(
+        address account,
+        uint256 rewardIndex
+    ) internal override(Staking, VestedStakingV2) {
         return super._distributeStakingReward(account, rewardIndex);
     }
 

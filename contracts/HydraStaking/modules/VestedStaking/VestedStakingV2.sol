@@ -11,7 +11,7 @@ import {IVestedStaking, StakingRewardsHistory} from "./IVestedStaking.sol";
  * @title VestedStaking
  * @notice An extension of the Staking contract that enables vesting the stake for a higher APY
  */
-abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
+abstract contract VestedStakingV2 is IVestedStaking, Vesting, Staking {
     using VestedPositionLib for VestingPosition;
 
     /**
@@ -47,7 +47,8 @@ abstract contract VestedStaking is IVestedStaking, Vesting, Staking {
             revert StakeRequirement({src: "stakeWithVesting", msg: "ALREADY_IN_VESTING_CYCLE"});
         }
         // Claim the rewards before opening a new position, to avoid locking them during vesting cycle
-        if (unclaimedRewards(msg.sender) != 0) _claimStakingRewards(msg.sender);
+        if (unclaimedRewards(msg.sender) != 0)
+            rewardWalletContract.distributeReward(msg.sender, _claimStakingRewards(msg.sender));
 
         // Clear the staking rewards history
         delete stakingRewardsHistory[msg.sender];

@@ -5,13 +5,13 @@ import {System} from "../common/System/System.sol";
 import {SafeMathUint} from "../common/libs/SafeMathUint.sol";
 import {StakerInit} from "../HydraStaking/IHydraStaking.sol";
 import {VestingPosition} from "../common/Vesting/IVesting.sol";
-import {LiquidDelegation} from "./modules/LiquidDelegation/LiquidDelegation.sol";
-import {VestedDelegation} from "./modules/VestedDelegation/VestedDelegation.sol";
+import {LiquidDelegationV2} from "./modules/LiquidDelegation/LiquidDelegationV2.sol";
+import {VestedDelegationV2} from "./modules/VestedDelegation/VestedDelegationV2.sol";
 import {IHydraDelegation} from "./IHydraDelegation.sol";
 import {Delegation} from "./Delegation.sol";
 import {DelegationPool} from "./modules/DelegationPoolLib/DelegationPoolLib.sol";
 
-contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelegation, VestedDelegation {
+contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelegationV2, VestedDelegationV2 {
     using SafeMathUint for uint256;
 
     // _______________ Initializer _______________
@@ -60,7 +60,7 @@ contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelega
         address staker,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
+    ) internal virtual override(Delegation, LiquidDelegationV2, VestedDelegationV2) {
         super._delegate(staker, delegator, amount);
     }
 
@@ -71,7 +71,7 @@ contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelega
         address staker,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, LiquidDelegation, VestedDelegation) {
+    ) internal virtual override(Delegation, LiquidDelegationV2, VestedDelegationV2) {
         super._undelegate(staker, delegator, amount);
     }
 
@@ -109,7 +109,7 @@ contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelega
         DelegationPool storage delegation,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, VestedDelegation) {
+    ) internal virtual override(Delegation, VestedDelegationV2) {
         super._depositDelegation(staker, delegation, delegator, amount);
     }
 
@@ -121,7 +121,7 @@ contract HydraDelegationV2 is IHydraDelegation, System, Delegation, LiquidDelega
         DelegationPool storage delegation,
         address delegator,
         uint256 amount
-    ) internal virtual override(Delegation, VestedDelegation) {
+    ) internal virtual override(Delegation, VestedDelegationV2) {
         super._withdrawDelegation(staker, delegation, delegator, amount);
     }
 
