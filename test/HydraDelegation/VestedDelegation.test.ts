@@ -1571,6 +1571,13 @@ export function RunVestedDelegationTests(): void {
         // commit epochs and increase time to make the position matured & commit epochs
         await commitEpochs(systemHydraChain, hydraStaking, [delegatedValidator], 10, this.epochSize, WEEK);
 
+        // ensure that the position is maturing
+        const isMaturing = await hydraDelegation.isMaturingDelegatePosition(
+          delegatedValidator.address,
+          vestManager.address
+        );
+        expect(isMaturing, "isMaturing").to.be.true;
+
         // prepare params for call
         let { epochNum, balanceChangeIndex } = await getClaimableRewardRPSData(
           systemHydraChain,
