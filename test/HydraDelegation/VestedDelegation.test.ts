@@ -1608,7 +1608,7 @@ export function RunVestedDelegationTests(): void {
           balanceChangeIndex
         );
 
-        expect(positionClaimableReward).to.lt(positionTotalReward);
+        expect(positionClaimableReward, "positionClaimableReward").to.lt(positionTotalReward);
       });
 
       it("should not claim if position is matured but we pass old RPS data", async function () {
