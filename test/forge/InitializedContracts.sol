@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 
 import {HydraChain, ValidatorInit, IHydraChain} from "contracts/HydraChain/HydraChain.sol";
-import {HydraStaking, StakerInit, IHydraStaking} from "contracts/HydraStaking/HydraStaking.sol";
-import {HydraDelegation, IHydraDelegation} from "contracts/HydraDelegation/HydraDelegation.sol";
+import {HydraStakingV2, StakerInit, IHydraStaking} from "contracts/HydraStaking/HydraStakingV2.sol";
+import {HydraDelegationV2, IHydraDelegation} from "contracts/HydraDelegation/HydraDelegationV2.sol";
 import {APRCalculator, IAPRCalculator} from "contracts/APRCalculator/APRCalculator.sol";
 import {RewardWallet, IRewardWallet} from "contracts/RewardWallet/RewardWallet.sol";
 import {PriceOracle} from "contracts/PriceOracle/PriceOracle.sol";
@@ -20,8 +20,8 @@ import {BLS, IBLS} from "contracts/BLS/BLS.sol";
 
 abstract contract InitializedContracts is Test {
     HydraChain hydraChain;
-    HydraStaking hydraStaking;
-    HydraDelegation hydraDelegation;
+    HydraStakingV2 hydraStaking;
+    HydraDelegationV2 hydraDelegation;
     APRCalculator aprCalculator;
     RewardWallet rewardWallet;
     PriceOracle priceOracle;
@@ -36,8 +36,8 @@ abstract contract InitializedContracts is Test {
 
     function setUp() public {
         hydraChain = new HydraChain();
-        hydraStaking = new HydraStaking();
-        hydraDelegation = new HydraDelegation();
+        hydraStaking = new HydraStakingV2();
+        hydraDelegation = new HydraDelegationV2();
         aprCalculator = new APRCalculator();
         rewardWallet = new RewardWallet();
         priceOracle = new PriceOracle();

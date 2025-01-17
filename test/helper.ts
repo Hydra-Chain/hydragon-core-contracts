@@ -11,8 +11,8 @@ import { CHAIN_ID, DAY, DENOMINATOR, DOMAIN, SYSTEM, WEEK } from "./constants";
 import {
   APRCalculator,
   HydraChain,
-  HydraDelegation,
-  HydraStaking,
+  HydraDelegationV2,
+  HydraStakingV2,
   LiquidityToken,
   VestingManager,
   VestingManager__factory,
@@ -60,14 +60,14 @@ export async function initializeContext(context: any) {
 
 // --------------- Epoch handlers ---------------
 
-export async function getMaxEpochReward(hydraStaking: HydraStaking) {
+export async function getMaxEpochReward(hydraStaking: HydraStakingV2) {
   const totalSupply = await hydraStaking.totalBalance();
   return totalSupply;
 }
 
 export async function commitEpoch(
   systemHydraChain: HydraChain,
-  hydraStaking: HydraStaking,
+  hydraStaking: HydraStakingV2,
   validators: SignerWithAddress[],
   epochSize: BigNumber,
   increaseTime: number = DAY // default 1 day
@@ -106,7 +106,7 @@ export async function commitEpoch(
 
 export async function commitEpochs(
   systemHydraChain: HydraChain,
-  hydraStaking: HydraStaking,
+  hydraStaking: HydraStakingV2,
   validators: SignerWithAddress[],
   numOfEpochsToCommit: number,
   epochSize: BigNumber,
@@ -148,7 +148,7 @@ export async function registerValidator(hydraChain: HydraChain, account: any, co
   }
 }
 
-export async function setAndApplyCommission(hydraDelegation: HydraDelegation, account: any, commission: number) {
+export async function setAndApplyCommission(hydraDelegation: HydraDelegationV2, account: any, commission: number) {
   await hydraDelegation.connect(account).setPendingCommission(commission);
   time.increase(15 * DAY);
   const tx = await hydraDelegation.connect(account).applyPendingCommission();
@@ -159,7 +159,7 @@ export async function setAndApplyCommission(hydraDelegation: HydraDelegation, ac
   }
 }
 
-export async function getValidatorReward(hydraStaking: HydraStaking, validatorAddr: string) {
+export async function getValidatorReward(hydraStaking: HydraStakingV2, validatorAddr: string) {
   return hydraStaking.unclaimedRewards(validatorAddr);
 }
 
@@ -253,7 +253,7 @@ export function findProperBalanceChangeIndex(arr: any[], epochNum: BigNumber): n
 
 export async function getClaimableRewardRPSData(
   hydraChain: HydraChain,
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   validator: string,
   manager: string
 ) {
@@ -273,7 +273,7 @@ export async function getClaimableRewardRPSData(
 
 export async function getTotalRewardRPSData(
   hydraChain: HydraChain,
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   validator: string,
   manager: string
 ) {
@@ -292,7 +292,7 @@ export async function getTotalRewardRPSData(
 
 export async function retrieveRPSData(
   hydraChain: HydraChain,
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   validator: string,
   manager: string,
   maturedIn: number
@@ -362,7 +362,7 @@ export async function getUserManager(
 
 export async function claimPositionRewards(
   hydraChain: HydraChain,
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   vestManager: VestingManager,
   validator: string
 ) {
@@ -460,7 +460,7 @@ export async function createManagerAndVest(
 
 export async function getDelegatorPositionReward(
   hydraChain: HydraChain,
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   validator: string,
   delegator: string
 ) {
@@ -575,7 +575,7 @@ export async function getPermitSignature(
 // function that calculates the position expected (not matured) reward.
 // It works for still active positions only
 export async function calcExpectedPositionRewardForActivePosition(
-  hydraDelegation: HydraDelegation,
+  hydraDelegation: HydraDelegationV2,
   validator: string,
   delegator: string
 ) {

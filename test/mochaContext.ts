@@ -6,8 +6,8 @@ import {
   BLS,
   LiquidityToken,
   HydraChain,
-  HydraDelegation,
-  HydraStaking,
+  HydraDelegationV2,
+  HydraStakingV2,
   APRCalculator,
   VestingManagerFactory,
   VestingManager,
@@ -32,8 +32,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -47,8 +47,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -68,8 +68,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -92,8 +92,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       commitEpochTx: ContractTransaction;
@@ -108,8 +108,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       distributeVaultFundsTx: ContractTransaction;
@@ -123,8 +123,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       priceOracle: PriceOracle;
@@ -135,8 +135,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -149,8 +149,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -163,8 +163,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       priceOracle: PriceOracle;
@@ -175,8 +175,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       priceOracle: PriceOracle;
@@ -189,8 +189,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -200,11 +200,11 @@ export interface Fixtures {
   };
   newVestingValidatorFixture: {
     (): Promise<{
-      stakerHydraStaking: HydraStaking;
+      stakerHydraStaking: HydraStakingV2;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraDelegation: HydraDelegation;
-      hydraStaking: HydraStaking;
+      hydraDelegation: HydraDelegationV2;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       aprCalculator: APRCalculator;
       vestingManagerFactory: VestingManagerFactory;
@@ -216,8 +216,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       unstakedValidator: SignerWithAddress;
       unstakedAmount: BigNumber;
@@ -231,8 +231,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
       aprCalculator: APRCalculator;
@@ -244,8 +244,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       vestManager: VestingManager;
       vestManagerOwner: SignerWithAddress;
@@ -259,8 +259,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
       vestManager: VestingManager;
@@ -274,8 +274,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
       vestManager: VestingManager;
@@ -288,23 +288,23 @@ export interface Fixtures {
   validatorToBanFixture: {
     (): Promise<{
       hydraChain: HydraChain;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       validatorToBan: SignerWithAddress;
     }>;
   };
   banInitiatedFixtureFunction: {
     (): Promise<{
       hydraChain: HydraChain;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       inBanProcessValidator: SignerWithAddress;
     }>;
   };
   bannedValidatorFixture: {
     (): Promise<{
       hydraChain: HydraChain;
-      hydraStaking: HydraStaking;
+      hydraStaking: HydraStakingV2;
       liquidToken: LiquidityToken;
       bannedValidator: SignerWithAddress;
       stakedAmount: BigNumber;
@@ -315,8 +315,8 @@ export interface Fixtures {
       hydraChain: HydraChain;
       systemHydraChain: HydraChain;
       bls: BLS;
-      hydraStaking: HydraStaking;
-      hydraDelegation: HydraDelegation;
+      hydraStaking: HydraStakingV2;
+      hydraDelegation: HydraDelegationV2;
       liquidToken: LiquidityToken;
       vestingManagerFactory: VestingManagerFactory;
       vestManager: VestingManager;

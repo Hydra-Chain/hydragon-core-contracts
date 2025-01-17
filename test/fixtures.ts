@@ -9,10 +9,8 @@ import {
   APRCalculator__factory,
   BLS__factory,
   HydraChain__factory,
-  HydraDelegation__factory,
-  HydraStaking__factory,
-  // HydraDelegationV2__factory,
-  // HydraStakingV2__factory,
+  HydraDelegationV2__factory,
+  HydraStakingV2__factory,
   HydraVault__factory,
   LiquidityToken__factory,
   PriceOracle__factory,
@@ -56,15 +54,14 @@ async function liquidityTokenFixtureFunction(this: Mocha.Context) {
 }
 
 async function HydraDelegationFixtureFunction(this: Mocha.Context) {
-  const hydraDelegationFactory = new HydraDelegation__factory(this.signers.admin);
+  const hydraDelegationFactory = new HydraDelegationV2__factory(this.signers.admin);
   const hydraDelegation = await hydraDelegationFactory.deploy();
 
   return hydraDelegation;
 }
 
 async function HydraStakingFixtureFunction(this: Mocha.Context) {
-  // const hydraStakingFactory = new HydraStaking__factory(this.signers.admin);
-  const hydraStakingFactory = new HydraStaking__factory(this.signers.admin);
+  const hydraStakingFactory = new HydraStakingV2__factory(this.signers.admin);
   const hydraStaking = await hydraStakingFactory.deploy();
 
   return hydraStaking;
