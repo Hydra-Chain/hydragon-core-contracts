@@ -137,13 +137,12 @@ abstract contract VestedStakingV2 is IVestedStaking, Vesting, Staking {
     function calcVestedStakingPositionPenalty(
         address staker,
         uint256 amount
-    ) external view returns (uint256 penalty, uint256 reward) {
-        reward = stakingRewards[staker].total - stakingRewards[staker].taken;
+    ) external view returns (uint256 penalty, uint256 rewardToBurn) {
         VestingPosition memory position = vestedStakingPositions[staker];
         if (position.isActive()) {
             penalty = _calcPenalty(position, amount);
             // if active position, reward is burned
-            reward = 0;
+            rewardToBurn = stakingRewards[staker].total - stakingRewards[staker].taken;
         }
     }
 

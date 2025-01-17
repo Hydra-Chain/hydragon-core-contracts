@@ -11,6 +11,8 @@ import {
   HydraChain__factory,
   HydraDelegation__factory,
   HydraStaking__factory,
+  // HydraDelegationV2__factory,
+  // HydraStakingV2__factory,
   HydraVault__factory,
   LiquidityToken__factory,
   PriceOracle__factory,
@@ -61,6 +63,7 @@ async function HydraDelegationFixtureFunction(this: Mocha.Context) {
 }
 
 async function HydraStakingFixtureFunction(this: Mocha.Context) {
+  // const hydraStakingFactory = new HydraStaking__factory(this.signers.admin);
   const hydraStakingFactory = new HydraStaking__factory(this.signers.admin);
   const hydraStaking = await hydraStakingFactory.deploy();
 

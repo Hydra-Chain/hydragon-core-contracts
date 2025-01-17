@@ -282,13 +282,13 @@ contract HydraStakingV2 is
      */
     function _distributeReward(
         uint256 epochId,
-        Uptime calldata uptime,
+        Uptime memory uptime,
         uint256 fullRewardIndex,
         uint256 totalSupply,
         uint256 totalBlocks
     ) private returns (uint256 reward) {
         if (uptime.signedBlocks > totalBlocks) {
-            revert DistributeRewardFailed("SIGNED_BLOCKS_EXCEEDS_TOTAL");
+            uptime.signedBlocks = totalBlocks;
         }
 
         uint256 currentStake = stakeOf(uptime.validator);
@@ -302,12 +302,14 @@ contract HydraStakingV2 is
             stakerRewardIndex
         );
 
-        _distributeStakingReward(uptime.validator, stakerShares);
-        _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
-
-        // Keep history record of the staker rewards to be used on maturing vesting reward claim
         if (stakerShares != 0) {
+            _distributeStakingReward(uptime.validator, stakerShares);
+            // Keep history record of the staker rewards to be used on maturing vesting reward claim
             _saveStakerRewardData(uptime.validator, epochId);
+        }
+
+        if (delegatorShares != 0) {
+            _distributeDelegationRewards(uptime.validator, delegatorShares, epochId);
         }
 
         return stakerRewardIndex;
@@ -324,8 +326,10 @@ contract HydraStakingV2 is
         uint256 delegatedBalance,
         uint256 totalReward
     ) private pure returns (uint256, uint256) {
-        if (stakedBalance == 0) return (0, totalReward);
+        // first check if delegated balance is zero
+        // otherwise if both staked and delegated are zero = reward will be lost
         if (delegatedBalance == 0) return (totalReward, 0);
+        if (stakedBalance == 0) return (0, totalReward);
         uint256 stakerReward = (totalReward * stakedBalance) / (stakedBalance + delegatedBalance);
         uint256 delegatorReward = totalReward - stakerReward;
 
@@ -336,7 +340,7 @@ contract HydraStakingV2 is
      * Calculates the epoch reward index.
      * We call it index because it is not the actual reward
      * but only the macroFactor and the "time passed from last distribution / 365 days ratio" are applied here.
-     * we need to apply the ration because all APR params are yearly
+     * we need to apply the ratio because all APR params are yearly
      * but we distribute rewards only for the time that has passed from last distribution.
      * The participation factor is applied later in the distribution process.
      * (base + vesting and RSI are applied on claimReward for delegators

@@ -183,7 +183,7 @@ function aprCalculatorContract() external view returns (contract IAPRCalculator)
 ### calcVestedStakingPositionPenalty
 
 ```solidity
-function calcVestedStakingPositionPenalty(address staker, uint256 amount) external view returns (uint256 penalty, uint256 reward)
+function calcVestedStakingPositionPenalty(address staker, uint256 amount) external view returns (uint256 penalty, uint256 rewardToBurn)
 ```
 
 Returns the penalty and reward that will be burned, if vested stake position is active
@@ -202,7 +202,7 @@ Returns the penalty and reward that will be burned, if vested stake position is 
 | Name | Type | Description |
 |---|---|---|
 | penalty | uint256 | for the staker |
-| reward | uint256 | of the staker |
+| rewardToBurn | uint256 | of the staker |
 
 ### calculateOwedLiquidTokens
 
