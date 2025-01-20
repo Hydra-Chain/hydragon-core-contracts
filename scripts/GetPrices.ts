@@ -4,8 +4,8 @@ import { decodeTransactionEvent, getEventsByFilters } from "./_helper";
 const CONTRACT_NAME = "PriceOracle";
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000112";
 const EVENT_NAME = "PriceUpdated";
-const START_BLOCK = 4645000;
-const END_BLOCK = 5115300;
+const START_BLOCK = process.env.IN_RANGE_EVENTS_START_BLOCK;
+const END_BLOCK = process.env.IN_RANGE_EVENTS_END_BLOCK;
 
 async function getPrices(startBlock: number, endBlock: number) {
   const events = await getEventsByFilters(CONTRACT_ADDRESS, CONTRACT_NAME, EVENT_NAME, null, startBlock, endBlock);
@@ -33,17 +33,25 @@ async function getPrices(startBlock: number, endBlock: number) {
   }
 }
 
-const difference = END_BLOCK - START_BLOCK;
-if (difference <= 1000) {
-  getPrices(START_BLOCK, END_BLOCK).catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
-} else {
-  for (let i = START_BLOCK; i < END_BLOCK; i += 1000) {
-    getPrices(i, i + 1000).catch((error) => {
+// Run the script
+if (START_BLOCK && END_BLOCK) {
+  const startBlock = Number(START_BLOCK);
+  const endBlock = Number(END_BLOCK);
+  const difference = endBlock - startBlock;
+  if (difference <= 1000) {
+    getPrices(startBlock, endBlock).catch((error) => {
       console.error(error);
       process.exitCode = 1;
     });
+  } else {
+    for (let i = startBlock; i < endBlock; i += 1000) {
+      getPrices(i, i + 1000).catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+      });
+    }
   }
+} else {
+  console.error("Environment variables are not set.");
+  process.exitCode = 1;
 }
