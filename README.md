@@ -11,13 +11,13 @@
 - distribute reward does not revert if uptime.signed blocks are more than total blocks
 - check if stakers or delegators have reward before distributing
 - on opening vested position, collect the Lydras from previous position
-- fix liquid debt calculating wrong on Lydras
+- fix Lydra liquid debt calculation
 - add check to make sure user when claiming does not give wrong data
 
 ### Remaining logic differences (not upgraded) from v1.0.0
 
-- balanceChangeThreshold made remains in the testnet (removed in v1.0.0)
-- depositing and withdrawing still saves (\_saveAccountParamsChange) in isInVestingCycle (isActive in v1.0.0)
+- balanceChangeThreshold storage variable remains on testnet (removed in v1.0.0)
+- vested positions' deposit and withdrawal keeps account params changes (\_saveAccountParamsChange) while position in vesting cycle (while position is active in v1.0.0)
 
 ## Contents
 
