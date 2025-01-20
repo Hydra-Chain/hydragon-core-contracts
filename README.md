@@ -3,7 +3,21 @@
 [![Solidity CI](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Hydra-Chain/hydragon-core-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/Hydra-Chain/hydragon-core-contracts?branch=main)
 
-**_Note: This repo is based on Polygon Edge core contracts._**
+**_Note: This branch is used to upgrade the testnet from 1.0.0-rc.2 to work as close as v1.0.0._**
+
+### Key Changes that have been made:
+
+- calcVestedStakingPositionPenalty return the rewards that will be burned
+- distribute reward does not revert if uptime.signed blocks are more than total blocks
+- check if stakers or delegators have reward before distributing
+- on opening vested position, collect the Lydras from previous position
+- fix liquid debt calculating wrong on Lydras
+- add check to make sure user when claiming does not give wrong data
+
+### Remaining logic differences (not upgraded) from v1.0.0
+
+- balanceChangeThreshold made remains in the testnet (removed in v1.0.0)
+- depositing and withdrawing still saves (\_saveAccountParamsChange) in isInVestingCycle (isActive in v1.0.0)
 
 ## Contents
 
