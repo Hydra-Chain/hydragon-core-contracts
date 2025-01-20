@@ -23,7 +23,7 @@ export async function getTransactionsByBlock(blockNumber: number) {
   return block;
 }
 // ------------------------- Decode the input data of a transaction -------------------------
-export async function decodeTransaction(
+export async function decodeTransactionInput(
   _contractName: string,
   _contractAddress: string,
   _transactionHash: string,
@@ -35,11 +35,60 @@ export async function decodeTransaction(
     console.log("Transaction not found.");
     return;
   }
+
   // Step 2: Decode the input data using the contract's details
   const Contract = await ethers.getContractFactory(_contractName);
   const contractInstance = Contract.attach(_contractAddress);
   const decodedData = contractInstance.interface.decodeFunctionData(_functionName, transaction.data);
   return decodedData;
+}
+
+// ------------------------- Decode an event params from a transaction -------------------------
+export async function decodeTransactionEvent(
+  _contractName: string,
+  _contractAddress: string,
+  _transactionHash: string,
+  _eventName: string
+) {
+  // Step 1: Get the transaction details
+  const transaction = await provider.getTransaction(_transactionHash);
+  if (!transaction) {
+    console.log("Transaction not found.");
+    return;
+  }
+
+  // Step 2: Get the transaction receipt which contains the events
+  const receipt = await provider.getTransactionReceipt(_transactionHash);
+  if (!receipt) {
+    console.log("Transaction receipt not found.");
+    return;
+  }
+
+  // Step 3: Get contract instance to decode events
+  const Contract = await ethers.getContractFactory(_contractName);
+  const contractInstance = Contract.attach(_contractAddress);
+
+  // Step 4: Filter events from the specified contract
+  const events = receipt.logs
+    .filter((log) => log.address.toLowerCase() === _contractAddress.toLowerCase())
+    .map((log) => {
+      try {
+        // Try to decode each event
+        const decoded = contractInstance.interface.parseLog(log);
+        return {
+          name: decoded.name,
+          args: decoded.args,
+          signature: decoded.signature,
+        };
+      } catch (e) {
+        // Skip events that can't be decoded with this contract's interface
+        return null;
+      }
+    })
+    .filter((event) => event !== null);
+
+  // Step 5: Filter by the event name and return
+  return events.filter((event) => event?.name === _eventName);
 }
 
 // ------------------------- Get events with filters -------------------------
@@ -54,10 +103,11 @@ export async function getEventsByFilters(
   const ContractFactory = await ethers.getContractFactory(contractName);
   const contractInstance = ContractFactory.attach(contractAddress);
   const encodedEvent = contractInstance.interface.getEventTopic(event);
+  const topics = [encodedEvent];
 
-  let encodedAddress = null;
   if (indexedAddress) {
-    encodedAddress = ethers.utils.defaultAbiCoder.encode(["address"], [indexedAddress]);
+    const encodedAddress = ethers.utils.defaultAbiCoder.encode(["address"], [indexedAddress]);
+    topics.push(encodedAddress);
   }
 
   let currentBlockNum = 0;
@@ -68,7 +118,7 @@ export async function getEventsByFilters(
 
   const filter = {
     address: contractAddress,
-    topics: [encodedEvent, encodedAddress],
+    topics,
     fromBlock: startBlock || currentBlockNum - 1000,
     toBlock: endBlock || currentBlockNum,
   };

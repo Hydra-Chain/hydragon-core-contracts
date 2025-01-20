@@ -1,8 +1,9 @@
 // Run: npx hardhat run scripts/SumBlocksForAll.ts --network childTest
-import { getTransactionsByBlock, decodeTransaction, getCurrentBlock } from "./_helper";
+import { getTransactionsByBlock, decodeTransactionInput, getCurrentBlock } from "./_helper";
 
 // Input parameters for the script:
 const CHECKED_BLOCKS = process.env.SUM_BLOCKS_FOR_ALL_CHECKED_BLOCKS;
+const CONTRACT_NAME = process.env.SUM_BLOCKS_FOR_ONE_CONTRACT_NAME;
 const CONTRACT_ADDRESS = process.env.SUM_BLOCKS_FOR_ALL_CONTRACT_ADDRESS;
 const FUNCTION_NAME = process.env.SUM_BLOCKS_FOR_ALL_FUNCTION_NAME;
 
@@ -17,12 +18,17 @@ async function getLastBlockNumberReward() {
 // Get the signed blocks for validators from each block
 async function getDataFromBlock(_blockNumber: number) {
   const block = await getTransactionsByBlock(_blockNumber);
-  if (!CONTRACT_ADDRESS || !FUNCTION_NAME) {
+  if (!CONTRACT_NAME || !CONTRACT_ADDRESS || !FUNCTION_NAME) {
     console.error("Environment variables are not set.");
     process.exitCode = 1;
     return;
   }
-  const decodedData = await decodeTransaction(CONTRACT_ADDRESS, block.transactions[1].hash, FUNCTION_NAME);
+  const decodedData = await decodeTransactionInput(
+    CONTRACT_NAME,
+    CONTRACT_ADDRESS,
+    block.transactions[1].hash,
+    FUNCTION_NAME
+  );
   if (decodedData === undefined || decodedData.uptime === undefined) {
     return 0;
   }

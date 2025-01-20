@@ -18,12 +18,14 @@ async function getEventsByIndexedAddress(
   endBlock: number
 ) {
   const events = await getEventsByFilters(contractAddress, contractName, event, indexedAddress, startBlock, endBlock);
+  if (events.length === 0) return;
+
   console.log(
     ` 
 _________________________________
 
 Events for ${event} 
-indexing ${indexedAddress} 
+${indexedAddress ? `indexing ${indexedAddress}` : ""} 
 from ${startBlock} to ${endBlock} block
 _________________________________`
   );
@@ -32,17 +34,31 @@ _________________________________`
 
 // Run the script
 if (CONTRACT_ADDRESS && CONTRACT_NAME && EVENT && YOUR_START_BLOCK && YOUR_END_BLOCK) {
-  getEventsByIndexedAddress(
-    CONTRACT_ADDRESS,
-    CONTRACT_NAME,
-    EVENT,
-    VALIDATOR_ADDRESS,
-    Number(YOUR_START_BLOCK),
-    Number(YOUR_END_BLOCK)
-  ).catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+  const startBlock = Number(YOUR_START_BLOCK);
+  const endBlock = Number(YOUR_END_BLOCK);
+  const difference = endBlock - startBlock;
+  if (difference <= 1000) {
+    getEventsByIndexedAddress(
+      CONTRACT_ADDRESS,
+      CONTRACT_NAME,
+      EVENT,
+      VALIDATOR_ADDRESS,
+      Number(YOUR_START_BLOCK),
+      Number(YOUR_END_BLOCK)
+    ).catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    });
+  } else {
+    for (let i = startBlock; i < endBlock; i += 1000) {
+      getEventsByIndexedAddress(CONTRACT_ADDRESS, CONTRACT_NAME, EVENT, VALIDATOR_ADDRESS, i, i + 1000).catch(
+        (error) => {
+          console.error(error);
+          process.exitCode = 1;
+        }
+      );
+    }
+  }
 } else {
   console.error("Environment variables are not set.");
   process.exitCode = 1;
