@@ -3,7 +3,12 @@
 [![Solidity CI](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/Hydra-Chain/hydragon-core-contracts/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Hydra-Chain/hydragon-core-contracts/badge.svg?branch=main&t=ZTUm69)](https://coveralls.io/github/Hydra-Chain/hydragon-core-contracts?branch=main)
 
-**_Note: This branch is used to upgrade the testnet from 1.0.0-rc.2 to work as close as v1.0.0._**
+## **_Note: This branch is used to upgrade the testnet from 1.0.0-rc.2 to work as close as v1.0.0._**
+
+### Upgraded Implementations addresses:
+
+- HydraStaking: 0xb5E31136B7ED000261D5f7245F69FB4C734587d1
+- HydraDelegation: 0x22fC108DB5F1501F429fF5f10498447873124F65
 
 ### Key Changes that have been made:
 
