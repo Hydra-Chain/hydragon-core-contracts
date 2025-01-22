@@ -72,6 +72,32 @@ There are a several different contracts with different roles in the suite, as su
 ├─ VestingManagerFactory - "factory creating a vesting manager easily"
 ```
 
+#### Contract addresses:
+
+- HydraChainContract: 0x0000000000000000000000000000000000000101 (predeployed, proxy upgradeable)
+- HydraChainContractV1: 0x0000000000000000000000000000000000001011 (implementation, predeployed)
+- BLSContract: 0x0000000000000000000000000000000000000102 (predeployed, proxy upgradeable)
+- BLSContractV1: 0x0000000000000000000000000000000000001021 (implementation, predeployed)
+- HydraStaking: 0x0000000000000000000000000000000000000104 (predeployed, proxy upgradeable)
+- HydraStakingV1: 0x0000000000000000000000000000000000001041 (implementation, predeployed)
+- DefaultBurnContract: 0x0000000000000000000000000000000000000105 (predeployed, proxy upgradeable) - Eip1559 default proxy contract
+- DefaultBurnContractV1: 0x0000000000000000000000000000000000001051 (implementation, predeployed)
+- FeeHandlerContract: 0x0000000000000000000000000000000000000106 (predeployed, proxy upgradeable) - HydraVault instance
+- FeeHandlerContractV1: 0x0000000000000000000000000000000000001061 (implementation, predeployed)
+- HydraDelegation: 0x0000000000000000000000000000000000000107 (predeployed, proxy upgradeable)
+- HydraDelegationV1: 0x0000000000000000000000000000000000001071 (implementation, predeployed)
+- VestingManagerFactory: 0x0000000000000000000000000000000000000108 (predeployed, proxy upgradeable)
+- VestingManagerFactoryV1: 0x0000000000000000000000000000000000001081 (implementation, predeployed)
+- APRCalculatorContract: 0x0000000000000000000000000000000000000109 (predeployed, proxy upgradeable)
+- APRCalculatorContractV1: 0x0000000000000000000000000000000000001091 (implementation, predeployed)
+- RewardWalletContract: 0x0000000000000000000000000000000000000110 (predeployed, proxy upgradeable)
+- RewardWalletContractV1: 0x0000000000000000000000000000000000001101 (implementation, predeployed)
+- DAOIncentiveVaultContract: 0x0000000000000000000000000000000000000111 (predeployed, proxy upgradeable) - HydraVault instance
+- DAOIncentiveVaultContractV1: 0x0000000000000000000000000000000000001111 (implementation, predeployed)
+- PriceOracle: 0x0000000000000000000000000000000000000112 (predeployed, proxy upgradeable)
+- PriceOracleV1: 0x0000000000000000000000000000000000001121 (implementation, predeployed)
+- LiquidityToken: 0x0000000000000000000000000000000000001013 (predeployed)
+
 #### APRCalculator:
 
 Saving the values of the APR, bonuses and price of Hydra
