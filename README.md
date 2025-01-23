@@ -80,8 +80,6 @@ There are a several different contracts with different roles in the suite, as su
 - BLSContractV1: 0x0000000000000000000000000000000000001021 (implementation, predeployed)
 - HydraStaking: 0x0000000000000000000000000000000000000104 (predeployed, proxy upgradeable)
 - HydraStakingV1: 0x0000000000000000000000000000000000001041 (implementation, predeployed)
-- DefaultBurnContract: 0x0000000000000000000000000000000000000105 (predeployed, proxy upgradeable) - Eip1559 default proxy contract
-- DefaultBurnContractV1: 0x0000000000000000000000000000000000001051 (implementation, predeployed)
 - FeeHandlerContract: 0x0000000000000000000000000000000000000106 (predeployed, proxy upgradeable) - HydraVault instance
 - FeeHandlerContractV1: 0x0000000000000000000000000000000000001061 (implementation, predeployed)
 - HydraDelegation: 0x0000000000000000000000000000000000000107 (predeployed, proxy upgradeable)
