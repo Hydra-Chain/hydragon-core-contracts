@@ -72,7 +72,7 @@ There are a several different contracts with different roles in the suite, as su
 ├─ VestingManagerFactory - "factory creating a vesting manager easily"
 ```
 
-#### Contract addresses:
+#### Contracts addresses:
 
 - HydraChainContract: 0x0000000000000000000000000000000000000101 (predeployed, proxy upgradeable)
 - HydraChainContractV1: 0x0000000000000000000000000000000000001011 (implementation, predeployed)
