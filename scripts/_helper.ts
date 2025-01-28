@@ -4,7 +4,7 @@
 // helper functions for scripts
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
-import { HydraChain__factory, HydraDelegation__factory } from "../typechain-types";
+import { HydraChain__factory, HydraDelegation, HydraDelegation__factory } from "../typechain-types";
 
 // Get the provider
 const provider = ethers.provider;
@@ -130,7 +130,7 @@ export async function getEventsByFilters(
 // ------------------------- Get position details -------------------------
 export async function getClosestMaturedTimestamp(position: any) {
   let alreadyMatureIn = 0;
-  if (await hasMatured(position.end, position.duration)) {
+  if (hasMatured(position.end, position.duration)) {
     alreadyMatureIn = position.end;
   } else {
     const currTime = Math.floor(Date.now() / 1000);
@@ -138,35 +138,52 @@ export async function getClosestMaturedTimestamp(position: any) {
     alreadyMatureIn = position.start.toNumber() + maturedPeriod;
   }
 
-  return alreadyMatureIn;
+  return BigNumber.from(alreadyMatureIn);
 }
 
-async function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
+export function calculatePotentialEpochsForTime(time: number, blockTime: number) {
+  // const bigNumberToNumber = time.toNumber();
+
+  // 500 blocks per epoch, calculated with the block time
+  return Math.floor(time / ((50 * blockTime) / 100));
+}
+
+function hasMatured(positionEnd: BigNumber, positionDuration: BigNumber) {
   const currTime = Math.floor(Date.now() / 1000);
 
   return positionEnd && positionDuration && positionEnd.add(positionDuration).lte(currTime);
 }
 
 interface RewardParams {
-  timestamp: number;
+  timestamp: BigNumber;
 }
 
-export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: number): number {
+// const abs = (n: BigNumber | number) => (BigNumber.isBigNumber(n) ? (n.isNegative() ? n.mul(-1) : n) : n < 0 ? -n : n);
+// const abs = (n: bigint | number) => (n === -0 || n < 0n ? -n : n);
+const abs = (n: BigNumber): BigNumber => (n.isNegative() ? n.mul(-1) : n);
+
+export function findProperRPSIndex<T extends RewardParams>(arr: T[], timestamp: BigNumber): number {
   let left = 0;
   let right = arr.length - 1;
-  let closestTimestamp: null | number = null;
+  let closestTimestamp: null | BigNumber = null;
   let closestIndex: null | number = null;
 
   while (left <= right) {
     const mid = Math.floor((left + right) / 2);
     const midValue = arr[mid].timestamp;
+    // console.log("=== val: ", midValue);
+    if (midValue.eq(ZERO_BN)) {
+      console.log("=== is zero: ", midValue);
 
-    if (midValue === timestamp) {
+      continue;
+    }
+
+    if (midValue.eq(timestamp)) {
       // Timestamp found
       return mid;
-    } else if (midValue < timestamp) {
+    } else if (midValue.lt(timestamp)) {
       // Check if the timestamp is closer to the mid
-      if (closestTimestamp === null || Math.abs(timestamp / midValue) < Math.abs(timestamp / closestTimestamp)) {
+      if (closestTimestamp === null || abs(timestamp.div(midValue)).lt(abs(timestamp.div(closestTimestamp)))) {
         closestTimestamp = midValue;
         closestIndex = mid;
       }
@@ -220,38 +237,56 @@ export function calcProperEpochsRangeForRPSValues(
   currentEpochId: number,
   position: any,
   startEpoch: number,
-  blockTime: number
-): number[] | null {
-  if (!position || !position.duration || !position.end) return [0, 0];
-
-  const currentTime = Date.now() / 1000;
-  // 500 blocks per epoch, block on every ~ 0.6 seconds if cannot catch the block time
-  const potentialEpochsInPosition = position.duration / ((50 * blockTime) / 100);
-
-  let closestEpoch;
-  if (position.end > currentTime || position.end === 0) {
-    // position is still active or position doesn't exist
-    closestEpoch = currentEpochId;
-  } else if (position.end + position.duration > currentTime) {
-    // reward is maturing
-    // check for super early positions if block time changes
-    if (currentEpochId <= potentialEpochsInPosition) {
-      closestEpoch = 1;
-    } else {
-      closestEpoch = currentEpochId - potentialEpochsInPosition;
-    }
-  } else {
-    // reward is fully matured
-    closestEpoch = startEpoch + potentialEpochsInPosition;
+  blockTime: number,
+  isTotalReward: boolean = false
+): [number, number] {
+  // Validate position
+  if (!position?.isVested || !position.start || !position.end || !position.duration) {
+    return [0, 0];
   }
+
+  // const margin = 1000;
+  // const potentialEpochsInPosition = calculatePotentialEpochsForTime(position.duration, blockTime);
+  // // Handle early positions
+  // if (currentEpochId <= margin) {
+  //   return [startEpoch, currentEpochId];
+  // }
+
+  // // Handle active positions
+  // if (isActive(position.end)) {
+  //   if (!isTotalReward) return [0, 0];
+
+  //   // For non-swapped or new swapped positions, use current epoch
+  //   if (!isSwapped(position) || isNewSwapped(position)) {
+  //     return createEpochRange(currentEpochId, margin);
+  //   }
+
+  //   // For the old swapped positions, use swapped epoch
+  //   const swappedAtEpoch = position.swappedBlock ? position.swappedBlock / 500n : currentEpochId;
+  //   return createEpochRange(swappedAtEpoch, margin, startEpoch);
+  // }
 
   const margin = 1000;
-
-  if (closestEpoch <= margin) {
-    return [startEpoch, margin * 2];
+  const currentTime = Date.now() / 1000;
+  // We fetch total rewards, position doesn't exist or is still active
+  if (isTotalReward || position.end === 0 || position.end > currentTime) {
+    return [currentEpochId > margin ? currentEpochId - margin : 0, currentEpochId + margin];
   }
 
-  return [closestEpoch - margin, closestEpoch + margin];
+  // Position has started maturing
+  const positionMaturesIn = position.end + position.duration;
+  if (positionMaturesIn > currentTime && position.end <= currentTime) {
+    const maturedTime = Math.floor(currentTime - position.end);
+    const maturedEpochs = calculatePotentialEpochsForTime(maturedTime, blockTime);
+    const closestEpoch = startEpoch + maturedEpochs;
+
+    return [closestEpoch - margin, currentEpochId];
+  }
+
+  // Position has matured
+  const potentialEpochsInPosition = calculatePotentialEpochsForTime(position.duration, blockTime);
+  const latestPotentialEpoch = startEpoch + potentialEpochsInPosition;
+  return [latestPotentialEpoch - margin, latestPotentialEpoch + margin];
 }
 
 export async function retrievePositionRewardData(
@@ -266,14 +301,131 @@ export async function retrievePositionRewardData(
   }
 
   const maturedIn = isTotalReward ? position.end : await getClosestMaturedTimestamp(position);
+  console.log("==== maturedIn: ", maturedIn);
+  if (isTotalReward) {
+    const newRPS = rpsValues.slice(100, 200);
+    console.log("=== from 100 to 200 rps values: ", newRPS);
+    console.log("=== proper index: ", findProperRPSIndex(newRPS, maturedIn));
+  }
   const rpsIndex = findProperRPSIndex(rpsValues, maturedIn);
   if (rpsIndex === null) {
     return { epochNumber: 0, balanceChangeIndex: 0 };
   }
+
+  if (isTotalReward) {
+    console.log("=== rps index: ", rpsIndex);
+    console.log("=== rps values for index: ", rpsValues[rpsIndex]);
+    console.log("=== initial epochs: ", initialEpochs);
+  }
+
   const epochNumber = initialEpochs + rpsIndex;
   const balanceChangeIndex = findProperBalanceChangeIndex(delegationPoolParamsHistory, epochNumber);
 
   return { epochNumber, balanceChangeIndex };
+}
+
+export async function fetchPositionRewards(
+  hydraDelegationContract: HydraDelegation,
+  currEpochId: number,
+  validator: string,
+  delegator: string,
+  position: any,
+  positionStartEpoch: number,
+  delegationPoolParamsHistory: any
+) {
+  const rewardsInfo = {
+    claimableRewardEpoch: 0,
+    claimableRewardBalanceChangeIndex: 0,
+    claimableReward: BigNumber.from(0),
+    totalRewardEpoch: 0,
+    totalRewardBalanceChangeIndex: 0,
+    totalReward: BigNumber.from(0),
+  };
+
+  let rpsValueParams = calcProperEpochsRangeForRPSValues(currEpochId, position, positionStartEpoch, 400);
+  if (!rpsValueParams) return rewardsInfo;
+  console.log("=== claimable rps value params: ", rpsValueParams);
+
+  let rpsValues = await hydraDelegationContract.getRPSValues(validator, rpsValueParams[0], rpsValueParams[1]);
+
+  let { epochNumber, balanceChangeIndex } = await retrievePositionRewardData(
+    position,
+    delegationPoolParamsHistory,
+    rpsValueParams[0],
+    rpsValues
+  );
+
+  const positionClaimableReward = await fetchClaimableRewards(
+    hydraDelegationContract,
+    validator,
+    delegator,
+    epochNumber,
+    balanceChangeIndex
+  );
+
+  rewardsInfo.claimableRewardEpoch = epochNumber;
+  rewardsInfo.claimableRewardBalanceChangeIndex = balanceChangeIndex;
+  rewardsInfo.claimableReward = positionClaimableReward;
+
+  rpsValueParams = calcProperEpochsRangeForRPSValues(currEpochId, position, positionStartEpoch, 400, true);
+  if (!rpsValueParams) return rewardsInfo;
+  console.log("=== total rps value params: ", rpsValueParams);
+
+  rpsValues = await hydraDelegationContract.getRPSValues(validator, rpsValueParams[0], rpsValueParams[1]);
+
+  ({ epochNumber, balanceChangeIndex } = await retrievePositionRewardData(
+    position,
+    delegationPoolParamsHistory,
+    rpsValueParams[0],
+    rpsValues,
+    true
+  ));
+
+  const positionTotalReward = await fetchTotalRewards(
+    hydraDelegationContract,
+    validator,
+    delegator,
+    epochNumber,
+    balanceChangeIndex
+  );
+
+  rewardsInfo.totalRewardEpoch = epochNumber;
+  rewardsInfo.totalRewardBalanceChangeIndex = balanceChangeIndex;
+  rewardsInfo.totalReward = positionTotalReward;
+
+  return rewardsInfo;
+}
+
+export async function fetchClaimableRewards(
+  hydraDelegationContract: HydraDelegation,
+  validator: string,
+  delegator: string,
+  epochNumber: number,
+  balanceChangeIndex: number
+) {
+  console.log("==== claimable params: ", { epochNumber, balanceChangeIndex });
+  return await hydraDelegationContract.calculatePositionClaimableReward(
+    validator,
+    delegator,
+    epochNumber,
+    balanceChangeIndex
+  );
+}
+
+export async function fetchTotalRewards(
+  hydraDelegationContract: HydraDelegation,
+  validator: string,
+  delegator: string,
+  epochNumber: number,
+  balanceChangeIndex: number
+) {
+  console.log("==== total reward params: ", { epochNumber, balanceChangeIndex });
+  return await hydraDelegationContract.calculatePositionTotalReward(
+    validator,
+    delegator,
+    epochNumber, // correct - 10384
+    balanceChangeIndex
+  );
 }
 
 export async function fetchPositionInfoWithRewardData(validator: string, delegator: string) {
@@ -287,6 +439,7 @@ export async function fetchPositionInfoWithRewardData(validator: string, delegat
 
   const position = await HydraDelegationContract.vestedDelegationPositions(validator, delegator);
   if (!position || position.duration.lte(ZERO_BN)) return;
+  console.log("=== position: ", position);
 
   const delegationPoolParamsHistory = await HydraDelegationContract.getDelegationPoolParamsHistory(
     validator,
@@ -299,39 +452,25 @@ export async function fetchPositionInfoWithRewardData(validator: string, delegat
 
   const currEpochId = (await HydraChainContract.currentEpochId()).toNumber();
   const positionStartEpoch = initialDelegationPoolParam.epochNum.toNumber();
-  const rpsValueParams = calcProperEpochsRangeForRPSValues(currEpochId, position, positionStartEpoch, 600);
-  if (!rpsValueParams) return;
-
-  const rpsValues = await HydraDelegationContract.getRPSValues(validator, rpsValueParams[0], rpsValueParams[1]);
-  const { epochNumber, balanceChangeIndex } = await retrievePositionRewardData(
+  console.log("=== curr epoch: ", currEpochId);
+  console.log("=== pos start epoch: ", positionStartEpoch);
+  const rewardsInfo = await fetchPositionRewards(
+    HydraDelegationContract,
+    currEpochId,
+    validator,
+    delegator,
     position,
-    delegationPoolParamsHistory,
-    rpsValueParams[0],
-    rpsValues
-  );
-
-  const { epochNumber: epochNumberTotal, balanceChangeIndex: balanceChangeIndexTotal } =
-    await retrievePositionRewardData(position, delegationPoolParamsHistory, rpsValueParams[0], rpsValues, true);
-
-  const positionClaimableReward = await HydraDelegationContract.calculatePositionClaimableReward(
-    validator,
-    delegator,
-    epochNumber,
-    balanceChangeIndex
-  );
-
-  const positionTotalReward = await HydraDelegationContract.calculatePositionTotalReward(
-    validator,
-    delegator,
-    epochNumberTotal,
-    balanceChangeIndexTotal
+    positionStartEpoch,
+    delegationPoolParamsHistory
   );
 
   return {
     position: position,
-    epochNumber,
-    balanceChangeIndex,
-    claimableReward: positionClaimableReward,
-    totalReward: positionTotalReward,
+    claimableRewardEpoch: rewardsInfo.claimableRewardEpoch,
+    claimableRewardBalanceChangeIndex: rewardsInfo.claimableRewardBalanceChangeIndex,
+    claimableReward: rewardsInfo.claimableReward,
+    totalRewardEpoch: rewardsInfo.totalRewardEpoch,
+    totalRewardBalanceChangeIndex: rewardsInfo.totalRewardBalanceChangeIndex,
+    totalReward: rewardsInfo.totalReward,
   };
 }

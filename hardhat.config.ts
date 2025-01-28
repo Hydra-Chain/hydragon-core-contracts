@@ -63,7 +63,7 @@ const config: HardhatUserConfig = {
   },
   dodoc: {
     // uncomment to stop docs from autogenerating each compile
-    // runOnCompile: false,
+    runOnCompile: false,
   },
 };
 
